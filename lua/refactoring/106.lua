@@ -3,7 +3,18 @@ dev.reload()
 
 local ts_utils = require("nvim-treesitter.ts_utils")
 local utils = require("refactoring.utils")
-local vim_helpers = require("refactoring.vim-helpers")
+
+function join_tables(a, b)
+    local out = {}
+    for _, v in pairs(a) do
+        table.insert(out, v)
+    end
+    for _, v in pairs(b) do
+        table.insert(out, v)
+    end
+
+    return out
+end
 
 local REFACTORING = {}
 local REFACTORING_OPTIONS = {
@@ -97,6 +108,7 @@ local function get_local_definitions(local_defs, function_args)
     for _, def in pairs(local_defs) do
         local_def_map[ts_utils.get_node_text(def)[1]] = true
     end
+
     for _, def in pairs(function_args) do
         local_def_map[ts_utils.get_node_text(def)[1]] = true
     end
@@ -180,14 +192,14 @@ REFACTORING.extract = function(bufnr)
         end_row,
         lang,
         start_col,
-        start_row,
+        start_row - 1,
         end_col,
         scope_range,
         function_name
     )
     vim.lsp.util.apply_text_edits(text_edits, 0)
+    -- TODO: Ensure indenting is correct
+    vim.cmd [[ :norm! gg=G ]]
 end
-
-REFACTORING.extract()
 
 return REFACTORING

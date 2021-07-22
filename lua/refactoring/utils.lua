@@ -34,6 +34,7 @@ local refactor_constants = {
     lua = {
         scope = {
             ["function"] = true,
+            ["local_function"] = true,
             ["function_definition"] = true,
         },
     },
