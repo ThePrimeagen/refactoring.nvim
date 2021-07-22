@@ -1,4 +1,3 @@
-
 -- Array<node_wrapper>
 local intersect_nodes = function(nodes, row, col)
     local found = {}
@@ -14,4 +13,3 @@ local intersect_nodes = function(nodes, row, col)
     end
     return found
 end
-
