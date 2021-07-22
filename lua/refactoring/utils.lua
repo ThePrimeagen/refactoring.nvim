@@ -27,16 +27,16 @@ M.get_bounded_query = function(query, lang, startR, stopR)
             table.insert(out, node)
         end)
     end
-    return out;
+    return out
 end
 
 local refactor_constants = {
     lua = {
         scope = {
             ["function"] = true,
-            ["function_definition"] = true
-        }
-    }
+            ["function_definition"] = true,
+        },
+    },
 }
 
 -- determines if a contains node b.
@@ -48,8 +48,8 @@ function M.node_contains(a, b)
     end
 
     local start_row, start_col, end_row, end_col = b:range()
-    return ts_utils.is_in_node_range(a, start_row, start_col) and
-           ts_utils.is_in_node_range(a, end_row, end_col)
+    return ts_utils.is_in_node_range(a, start_row, start_col)
+        and ts_utils.is_in_node_range(a, end_row, end_col)
 end
 
 -- determines if a node exists within a range.  Imagine a range selection
@@ -59,7 +59,8 @@ end
 -- @param a the containing node
 -- @param b the node to be contained
 M.range_contains_node = function(node, start_row, start_col, end_row, end_col)
-    local node_start_row, node_start_col, node_end_row, node_end_col = node:range()
+    local node_start_row, node_start_col, node_end_row, node_end_col =
+        node:range()
 
     -- There are five possible conditions
     -- 1. node start/end row are contained exclusively within the range.
@@ -77,11 +78,10 @@ M.range_contains_node = function(node, start_row, start_col, end_row, end_col)
     if start_row < node_start_row and end_row > node_end_row then
         return true
     elseif start_row == end_row then
-        return start_row == node_start_row and
-               end_row == node_end_row and
-               start_col <= node_start_col and
-               end_col >= node_end_col
-
+        return start_row == node_start_row
+            and end_row == node_end_row
+            and start_col <= node_start_col
+            and end_col >= node_end_col
     elseif start_row == node_start_row and start_row == node_end_row then
         return start_col <= node_start_col
     elseif end_row == node_start_row and end_row == node_end_row then
@@ -93,23 +93,27 @@ M.range_contains_node = function(node, start_row, start_col, end_row, end_col)
     return false
 end
 
-M.get_scope_over_selection = function(root, start_line, start_col, end_line, end_col, lang)
-    local start_scope = M.get_scope(root, start_line, start_col, lang)
-    local end_scope = M.get_scope(root, end_line, end_col, lang)
+M.get_scope_over_selection =
+    function(root, start_line, start_col, end_line, end_col, lang)
+        local start_scope = M.get_scope(root, start_line, start_col, lang)
+        local end_scope = M.get_scope(root, end_line, end_col, lang)
 
-    if start_scope ~= end_scope then
-        error("Selection spans over two scopes, cannot determine scope")
+        if start_scope ~= end_scope then
+            error("Selection spans over two scopes, cannot determine scope")
+        end
+
+        return start_scope
     end
-
-    return start_scope
-end
 
 M.get_scope = function(root, line, col, lang)
     local function_scopes = {}
     local query = vim.treesitter.get_query(lang, "locals")
 
     for id, n, _ in query:iter_captures(root, 0, 0, -1) do
-        if query.captures[id] == "scope" and refactor_constants[lang].scope[n:type()] then
+        if
+            query.captures[id] == "scope"
+            and refactor_constants[lang].scope[n:type()]
+        then
             table.insert(function_scopes, n)
         end
     end
@@ -120,9 +124,10 @@ M.get_scope = function(root, line, col, lang)
         -- should a scope that contains another scope but terminates at the
         -- same point be the outer or inner?  Should potentially be considered
         -- a list of scopes...
-        if ts_utils.is_in_node_range(scope, line, col) and
-            (out == nil or M.node_contains(out, scope)) then
-
+        if
+            ts_utils.is_in_node_range(scope, line, col)
+            and (out == nil or M.node_contains(out, scope))
+        then
             out = scope
         end
     end
@@ -133,7 +138,9 @@ end
 local function get_refactoring_query(lang)
     local query = vim.treesitter.get_query(lang, "refactoring")
     if not query then
-        error("refactoring not supported in this language.  Please provide a queries/<lang>/refactoring.scm")
+        error(
+            "refactoring not supported in this language.  Please provide a queries/<lang>/refactoring.scm"
+        )
     end
     return query
 end
@@ -142,7 +149,10 @@ local function pluck_by_capture(scope, lang, query, capture_name)
     local local_defs = {}
     local root = M.get_root(lang)
     for id, node, _ in query:iter_captures(root, 0, 0, -1) do
-        if query.captures[id] == capture_name and M.node_contains(scope, node) then
+        if
+            query.captures[id] == capture_name
+            and M.node_contains(scope, node)
+        then
             table.insert(local_defs, node)
         end
     end
@@ -151,15 +161,30 @@ local function pluck_by_capture(scope, lang, query, capture_name)
 end
 
 M.get_function_args = function(scope, lang)
-    return pluck_by_capture(scope, lang, get_refactoring_query(lang), "definition.function_argument")
+    return pluck_by_capture(
+        scope,
+        lang,
+        get_refactoring_query(lang),
+        "definition.function_argument"
+    )
 end
 
 M.get_locals_defs = function(scope, lang)
-    return pluck_by_capture(scope, lang, get_refactoring_query(lang), "definition.local_var")
+    return pluck_by_capture(
+        scope,
+        lang,
+        get_refactoring_query(lang),
+        "definition.local_var"
+    )
 end
 
-M.get_all_identifiers  = function(scope, lang)
-    return pluck_by_capture(scope, lang, vim.treesitter.get_query(lang, "locals"), "reference")
+M.get_all_identifiers = function(scope, lang)
+    return pluck_by_capture(
+        scope,
+        lang,
+        vim.treesitter.get_query(lang, "locals"),
+        "reference"
+    )
 end
 
 -- is there a better way?
@@ -168,7 +193,7 @@ M.range_to_table = function(node)
         return "range nil"
     end
     local a, b, c, d = node:range()
-    return {a, b, c, d}
+    return { a, b, c, d }
 end
 
 return M

@@ -17,11 +17,12 @@ describe("Refactoring", function()
         vim.cmd(":norm! ggVjj")
 
         eq(0, vim.fn.col("'<"), "Selections start at 0")
-        eq(#"foo = foo + 5 + foo" + 1, vim.fn.col("'>"), "Selection stops + 1 after last line.")
+        eq(
+            #"foo = foo + 5 + foo" + 1,
+            vim.fn.col("'>"),
+            "Selection stops + 1 after last line."
+        )
 
         -- print("COL", vim.fn.col("'<"), vim.fn.col("'>"))
     end)
 end)
-
-
-
