@@ -10,36 +10,6 @@ M.get_root = function(lang)
     return parser:parse()[1]:root()
 end
 
-M.get_bounded_query = function(query, lang, startR, stopR)
-    local success, parsed_query = pcall(function()
-        return vim.treesitter.parse_query(lang, query)
-    end)
-
-    if not success then
-        error("Unsuccessful successful first try")
-    end
-
-    local root = M.get_root(lang)
-
-    local out = {}
-    for match in ts_query.iter_prepared_matches(parsed_query, root, 0, startR - 1, stopR) do
-        locals.recurse_local_nodes(match, function(_, node, path)
-            table.insert(out, node)
-        end)
-    end
-    return out
-end
-
-local refactor_constants = {
-    lua = {
-        scope = {
-            ["function"] = true,
-            ["local_function"] = true,
-            ["function_definition"] = true,
-        },
-    },
-}
-
 -- determines if a contains node b.
 -- @param a the containing node
 -- @param b the node to be contained
@@ -94,42 +64,30 @@ M.range_contains_node = function(node, start_row, start_col, end_row, end_col)
     return false
 end
 
-M.get_scope_over_selection =
-    function(root, start_line, start_col, end_line, end_col, lang)
-        local start_scope = M.get_scope(root, start_line, start_col, lang)
-        local end_scope = M.get_scope(root, end_line, end_col, lang)
+-- param region Region
+M.get_scope_over_selection = function(root, region, lang)
+    local start_row, start_col, end_row, end_col = region:to_ts()
+    local start_scope = M.get_scope(root, start_row, start_col, lang)
+    local end_scope = M.get_scope(root, end_row, end_col, lang)
 
-        if start_scope ~= end_scope then
-            error("Selection spans over two scopes, cannot determine scope")
-        end
-
-        return start_scope
+    if start_scope ~= end_scope then
+        error("Selection spans over two scopes, cannot determine scope")
     end
+
+    return start_scope
+end
 
 M.get_scope = function(root, line, col, lang)
-    local function_scopes = {}
-    local query = vim.treesitter.get_query(lang, "locals")
-
-    for id, n, _ in query:iter_captures(root, 0, 0, -1) do
-        if
-            query.captures[id] == "scope"
-            and refactor_constants[lang].scope[n:type()]
-        then
-            table.insert(function_scopes, n)
-        end
-    end
+    -- TODO: Cache them queries boy -- but maybe not?
+    local query = vim.treesitter.get_query(lang, "refactoring")
 
     local out = nil
-    for _, scope in pairs(function_scopes) do
-        -- TODO: This is a confusing issue
-        -- should a scope that contains another scope but terminates at the
-        -- same point be the outer or inner?  Should potentially be considered
-        -- a list of scopes...
+    for _, n, _ in query:iter_captures(root, 0, 0, -1) do
         if
-            ts_utils.is_in_node_range(scope, line, col)
-            and (out == nil or M.node_contains(out, scope))
+            ts_utils.is_in_node_range(n, line, col)
+            and (out == nil or M.node_contains(out, n))
         then
-            out = scope
+            out = n
         end
     end
 

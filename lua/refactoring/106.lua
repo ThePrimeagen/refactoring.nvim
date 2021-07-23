@@ -1,20 +1,9 @@
 local dev = require("refactoring.dev")
 dev.reload()
 
+local Region = require("refactoring.region")
 local ts_utils = require("nvim-treesitter.ts_utils")
 local utils = require("refactoring.utils")
-
-function join_tables(a, b)
-    local out = {}
-    for _, v in pairs(a) do
-        table.insert(out, v)
-    end
-    for _, v in pairs(b) do
-        table.insert(out, v)
-    end
-
-    return out
-end
 
 local REFACTORING = {}
 local REFACTORING_OPTIONS = {
@@ -22,16 +11,19 @@ local REFACTORING_OPTIONS = {
         lua = {
             extract_function = function(opts)
                 return {
-                    create = table.concat(vim.tbl_flatten({
-                        string.format(
-                            "local function %s(%s)",
-                            opts.name,
-                            table.concat(opts.args, ", ")
-                        ),
-                        opts.body,
-                        "end",
-                        "",
-                    }), "\n"),
+                    create = table.concat(
+                        vim.tbl_flatten({
+                            string.format(
+                                "local function %s(%s)",
+                                opts.name,
+                                table.concat(opts.args, ", ")
+                            ),
+                            opts.body,
+                            "end",
+                            "",
+                        }),
+                        "\n"
+                    ),
 
                     call = string.format(
                         "%s(%s)",
@@ -44,30 +36,11 @@ local REFACTORING_OPTIONS = {
     },
 }
 
-local function get_selection_range()
-    local _, start_row, start_col, _ = unpack(vim.fn.getpos("'<"))
-    local _, end_row, _, _ = unpack(vim.fn.getpos("'>"))
-    local end_col = vim.fn.col("'>")
-
-    -- end_col :: TS is 0 based, and '> on line selections is char_count + 1
-    -- I think - 2 is correct on
-    --
-    -- end_row : end_row is exclusive in TS, so we don't minus
-    return start_row, start_col, end_row, end_col
-end
-
-local function vim_range_to_ts_range(start_row, start_col, end_row, end_col)
-    return start_row - 1, start_col, end_row - 1, end_col
-end
-
 -- 106
 local function get_text_edits(
     selected_local_references,
-    end_row,
+    region,
     lang,
-    start_col,
-    start_row,
-    end_col,
     scope_range,
     function_name
 )
@@ -76,7 +49,7 @@ local function get_text_edits(
     local extract_function =
         REFACTORING_OPTIONS.code_generation[lang].extract_function({
             args = vim.tbl_keys(selected_local_references),
-            body = vim.api.nvim_buf_get_lines(0, start_row, end_row, false),
+            body = region:get_buffer_text(),
             name = function_name,
         })
     table.insert(lsp_text_edits, {
@@ -84,10 +57,7 @@ local function get_text_edits(
         newText = string.format("\n%s", extract_function.create),
     })
     table.insert(lsp_text_edits, {
-        range = {
-            start = { line = start_row, character = start_col },
-            ["end"] = { line = end_row, character = end_col },
-        },
+        range = region:to_lsp_range(),
         newText = string.format("\n%s", extract_function.call),
     })
     return lsp_text_edits
@@ -96,6 +66,7 @@ end
 local function get_scope_range(scope)
     -- vim_helpers.move_text(0, start_row, end_row, scope:range())
     local scope_range = ts_utils.node_to_lsp_range(scope)
+
     scope_range.start.line = scope_range.start.line - 1
     scope_range["end"] = scope_range.start
 
@@ -124,36 +95,16 @@ REFACTORING.extract = function(bufnr)
     bufnr = bufnr or 0
 
     local lang = vim.bo.filetype
-    local start_row, start_col, end_row, end_col = get_selection_range()
-    local ts_start_row, ts_start_col, ts_end_row, ts_end_col =
-        vim_range_to_ts_range(
-            start_row,
-            start_col,
-            end_row,
-            end_col
-        )
+    local region = Region:from_current_selection()
     local root = utils.get_root(lang)
-    local scope = utils.get_scope_over_selection(
-        root,
-        start_row,
-        start_col,
-        end_row + 1,
-        end_col,
-        lang
-    )
+    local scope = utils.get_scope_over_selection(root, region, lang)
 
     if scope == nil then
         error("Scope is nil")
     end
 
     local local_defs = vim.tbl_filter(function(node)
-        return not utils.range_contains_node(
-            node,
-            ts_start_row,
-            ts_start_col,
-            ts_end_row,
-            ts_end_col
-        )
+        return not utils.range_contains_node(node, region:to_ts())
     end, utils.get_locals_defs(
         scope,
         lang
@@ -169,10 +120,7 @@ REFACTORING.extract = function(bufnr)
         if
             utils.range_contains_node(
                 local_ref,
-                ts_start_row,
-                ts_start_col,
-                ts_end_row,
-                ts_end_col
+                region:to_ts()
             ) and local_def_map[local_name]
         then
             selected_local_references[local_name] = true
@@ -189,17 +137,14 @@ REFACTORING.extract = function(bufnr)
     -- TODO: Polor, could you also make the variable that is returned the first
     local text_edits = get_text_edits(
         selected_local_references,
-        end_row,
+        region,
         lang,
-        start_col,
-        start_row - 1,
-        end_col,
         scope_range,
         function_name
     )
     vim.lsp.util.apply_text_edits(text_edits, 0)
     -- TODO: Ensure indenting is correct
-    vim.cmd [[ :norm! gg=G ]]
+    vim.cmd([[ :norm! gg=G ]])
 end
 
 return REFACTORING

@@ -10,3 +10,9 @@
 ;; function extraction, 106
 ((parameters
     (identifier) @definition.function_argument))
+
+;; This is for function scope finding
+(function) @definition.scope
+(local_function) @definition.scope
+(function_definition) @definition.scope
+
