@@ -3,7 +3,18 @@ dev.reload()
 
 local ts_utils = require("nvim-treesitter.ts_utils")
 local utils = require("refactoring.utils")
-local vim_helpers = require("refactoring.vim-helpers")
+
+function join_tables(a, b)
+    local out = {}
+    for _, v in pairs(a) do
+        table.insert(out, v)
+    end
+    for _, v in pairs(b) do
+        table.insert(out, v)
+    end
+
+    return out
+end
 
 local REFACTORING = {}
 local REFACTORING_OPTIONS = {
@@ -12,17 +23,25 @@ local REFACTORING_OPTIONS = {
             extract_function = function(opts)
                 return {
                     create = table.concat(vim.tbl_flatten({
-                        string.format("local function %s(%s)", opts.name, table.concat(opts.args, ", ")),
+                        string.format(
+                            "local function %s(%s)",
+                            opts.name,
+                            table.concat(opts.args, ", ")
+                        ),
                         opts.body,
                         "end",
-                        ""
+                        "",
                     }), "\n"),
 
-                    call = string.format("%s(%s)", opts.name, table.concat(opts.args, ", ")),
+                    call = string.format(
+                        "%s(%s)",
+                        opts.name,
+                        table.concat(opts.args, ", ")
+                    ),
                 }
             end,
-        }
-    }
+        },
+    },
 }
 
 local function get_selection_range()
@@ -42,24 +61,34 @@ local function vim_range_to_ts_range(start_row, start_col, end_row, end_col)
 end
 
 -- 106
-local function get_text_edits(selected_local_references, end_row, lang, start_col, start_row, end_col, scope_range, function_name)
+local function get_text_edits(
+    selected_local_references,
+    end_row,
+    lang,
+    start_col,
+    start_row,
+    end_col,
+    scope_range,
+    function_name
+)
     -- local declaration within the selection range.
     local lsp_text_edits = {}
-    local extract_function = REFACTORING_OPTIONS.code_generation[lang].extract_function({
-        args = vim.tbl_keys(selected_local_references),
-        body = vim.api.nvim_buf_get_lines(0, start_row, end_row, false),
-        name = function_name,
-    })
+    local extract_function =
+        REFACTORING_OPTIONS.code_generation[lang].extract_function({
+            args = vim.tbl_keys(selected_local_references),
+            body = vim.api.nvim_buf_get_lines(0, start_row, end_row, false),
+            name = function_name,
+        })
     table.insert(lsp_text_edits, {
         range = scope_range,
-        newText = string.format("\n%s", extract_function.create)
+        newText = string.format("\n%s", extract_function.create),
     })
     table.insert(lsp_text_edits, {
         range = {
-            start = {line = start_row, character = start_col},
-            ["end"] = {line = end_row, character = end_col}
+            start = { line = start_row, character = start_col },
+            ["end"] = { line = end_row, character = end_col },
         },
-        newText = string.format("\n%s", extract_function.call)
+        newText = string.format("\n%s", extract_function.call),
     })
     return lsp_text_edits
 end
@@ -79,6 +108,7 @@ local function get_local_definitions(local_defs, function_args)
     for _, def in pairs(local_defs) do
         local_def_map[ts_utils.get_node_text(def)[1]] = true
     end
+
     for _, def in pairs(function_args) do
         local_def_map[ts_utils.get_node_text(def)[1]] = true
     end
@@ -96,17 +126,38 @@ REFACTORING.extract = function(bufnr)
     local lang = vim.bo.filetype
     local start_row, start_col, end_row, end_col = get_selection_range()
     local ts_start_row, ts_start_col, ts_end_row, ts_end_col =
-        vim_range_to_ts_range(start_row, start_col, end_row, end_col)
+        vim_range_to_ts_range(
+            start_row,
+            start_col,
+            end_row,
+            end_col
+        )
     local root = utils.get_root(lang)
-    local scope = utils.get_scope_over_selection(root, start_row, start_col, end_row + 1, end_col, lang)
+    local scope = utils.get_scope_over_selection(
+        root,
+        start_row,
+        start_col,
+        end_row + 1,
+        end_col,
+        lang
+    )
 
     if scope == nil then
         error("Scope is nil")
     end
 
     local local_defs = vim.tbl_filter(function(node)
-        return not utils.range_contains_node(node, ts_start_row, ts_start_col, ts_end_row, ts_end_col)
-    end, utils.get_locals_defs(scope, lang))
+        return not utils.range_contains_node(
+            node,
+            ts_start_row,
+            ts_start_col,
+            ts_end_row,
+            ts_end_col
+        )
+    end, utils.get_locals_defs(
+        scope,
+        lang
+    ))
 
     local function_args = utils.get_function_args(scope, lang)
     local local_def_map = get_local_definitions(local_defs, function_args)
@@ -115,8 +166,15 @@ REFACTORING.extract = function(bufnr)
 
     for _, local_ref in pairs(local_references) do
         local local_name = ts_utils.get_node_text(local_ref)[1]
-        if utils.range_contains_node(local_ref, ts_start_row, ts_start_col, ts_end_row, ts_end_col) and
-            local_def_map[local_name] then
+        if
+            utils.range_contains_node(
+                local_ref,
+                ts_start_row,
+                ts_start_col,
+                ts_end_row,
+                ts_end_col
+            ) and local_def_map[local_name]
+        then
             selected_local_references[local_name] = true
         end
     end
@@ -129,10 +187,19 @@ REFACTORING.extract = function(bufnr)
     local function_name = vim.fn.input("106: Extract Function Name > ")
 
     -- TODO: Polor, could you also make the variable that is returned the first
-    local text_edits = get_text_edits(selected_local_references, end_row, lang, start_col, start_row, end_col, scope_range, function_name)
+    local text_edits = get_text_edits(
+        selected_local_references,
+        end_row,
+        lang,
+        start_col,
+        start_row - 1,
+        end_col,
+        scope_range,
+        function_name
+    )
     vim.lsp.util.apply_text_edits(text_edits, 0)
+    -- TODO: Ensure indenting is correct
+    vim.cmd [[ :norm! gg=G ]]
 end
-
-REFACTORING.extract()
 
 return REFACTORING

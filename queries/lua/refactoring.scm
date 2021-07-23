@@ -8,5 +8,5 @@
 
 ;; grabs all the arguments that are passed into the function.  Needed for
 ;; function extraction, 106
-((parameters)
-    (identifier) @definition.function_argument)
+((parameters
+    (identifier) @definition.function_argument))
