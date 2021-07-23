@@ -49,7 +49,7 @@ local function get_text_edits(
     local extract_function =
         REFACTORING_OPTIONS.code_generation[lang].extract_function({
             args = vim.tbl_keys(selected_local_references),
-            body = region:get_buffer_text(),
+            body = region:get_text(),
             name = function_name,
         })
     table.insert(lsp_text_edits, {

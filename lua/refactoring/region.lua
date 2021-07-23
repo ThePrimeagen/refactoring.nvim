@@ -61,8 +61,7 @@ function Region:to_ts()
     return self.start_row - 1, self.start_col, self.end_row - 1, self.end_col
 end
 
--- TODO: Fixme polarmutex
-function Region:get_buffer_text()
+function Region:get_text()
     return vim.api.nvim_buf_get_lines(0, self.start_row - 1, self.end_row, false)
 end
 
