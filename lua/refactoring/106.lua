@@ -11,22 +11,23 @@ local REFACTORING_OPTIONS = {
         lua = {
             extract_function = function(opts)
                 return {
-                    create = table.concat(
-                        vim.tbl_flatten({
-                            string.format(
-                                "local function %s(%s)",
-                                opts.name,
-                                table.concat(opts.args, ", ")
-                            ),
-                            opts.body,
-                            "end",
-                            "",
-                        }),
-                        "\n"
+                    create = string.format(
+                        [[
+local function %s(%s)
+  %s
+  return %s
+end
+]],
+                        opts.name,
+                        table.concat(opts.args, ", "),
+                        type(opts.body) == "table" and table.concat(opts.body, "\n")
+                            or opts.body,
+                        opts.ret
                     ),
 
                     call = string.format(
-                        "%s(%s)",
+                        "local %s = %s(%s)",
+                        opts.ret,
                         opts.name,
                         table.concat(opts.args, ", ")
                     ),
@@ -42,7 +43,8 @@ local function get_text_edits(
     region,
     lang,
     scope_range,
-    function_name
+    function_name,
+    ret
 )
     -- local declaration within the selection range.
     local lsp_text_edits = {}
@@ -51,6 +53,7 @@ local function get_text_edits(
             args = vim.tbl_keys(selected_local_references),
             body = region:get_text(),
             name = function_name,
+            ret = ret,
         })
     table.insert(lsp_text_edits, {
         range = scope_range,
@@ -67,7 +70,7 @@ local function get_scope_range(scope)
     -- vim_helpers.move_text(0, start_row, end_row, scope:range())
     local scope_range = ts_utils.node_to_lsp_range(scope)
 
-    scope_range.start.line = scope_range.start.line - 1
+    scope_range.start.line = math.max(scope_range.start.line - 1, 0)
     scope_range["end"] = scope_range.start
 
     return scope_range
@@ -118,10 +121,8 @@ REFACTORING.extract = function(bufnr)
     for _, local_ref in pairs(local_references) do
         local local_name = ts_utils.get_node_text(local_ref)[1]
         if
-            utils.range_contains_node(
-                local_ref,
-                region:to_ts()
-            ) and local_def_map[local_name]
+            utils.range_contains_node(local_ref, region:to_ts())
+            and local_def_map[local_name]
         then
             selected_local_references[local_name] = true
         end
@@ -134,13 +135,19 @@ REFACTORING.extract = function(bufnr)
     -- region, instead the highlighted rows
     local function_name = vim.fn.input("106: Extract Function Name > ")
 
+    local first_local_def_name = ts_utils.get_node_text(
+        utils.get_locals_defs(scope, lang)[1],
+        0
+    )[1]
+
     -- TODO: Polor, could you also make the variable that is returned the first
     local text_edits = get_text_edits(
         selected_local_references,
         region,
         lang,
         scope_range,
-        function_name
+        function_name,
+        first_local_def_name
     )
     vim.lsp.util.apply_text_edits(text_edits, 0)
     -- TODO: Ensure indenting is correct
