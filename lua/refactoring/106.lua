@@ -7,9 +7,20 @@ local utils = require("refactoring.utils")
 local Pipeline = require("refactoring.pipeline")
 local selection_setup = require("refactoring.pipeline.selection_setup")
 local refactor_setup = require("refactoring.pipeline.refactor_setup")
+local get_input = require("refactoring.pipeline.get_input")
+local format = require("refactoring.pipeline.format")
+local save = require("refactoring.pipeline.save")
+local get_selected_local_defs = require(
+    "refactoring.pipeline.get_selected_local_defs"
+)
 
 local REFACTORING = {}
 local REFACTORING_OPTIONS = {
+    formatting = {
+        lua = {
+            cmd = [[ !stylua % ]]
+        }
+    },
     code_generation = {
         lua = {
             extract_function = function(opts)
@@ -93,43 +104,43 @@ local function get_top_of_scope_region(scope)
     return Region:from_lsp_range(lsp_range)
 end
 
+local function get_selected_local_references(refactor)
+    local function_args = utils.get_function_args(refactor.scope, refactor.lang)
+    local local_def_map = get_local_definitions(
+        refactor.selected_local_defs,
+        function_args
+    )
+    local local_references = utils.get_all_identifiers(
+        refactor.scope,
+        refactor.lang
+    )
+    local selected_local_references = {}
+
+    for _, local_ref in pairs(local_references) do
+        local local_name = ts_utils.get_node_text(local_ref)[1]
+        if
+            utils.range_contains_node(local_ref, refactor.region:to_ts())
+            and local_def_map[local_name]
+        then
+            selected_local_references[local_name] = true
+        end
+    end
+
+    return selected_local_references
+end
+
+REFACTORING.extract_to_file = function(bufnr) end
+
 REFACTORING.extract = function(bufnr)
     Pipeline
-        :from_task(refactor_setup(bufnr))
+        :from_task(refactor_setup(bufnr, REFACTORING_OPTIONS))
         :add_task(selection_setup)
+        :add_task(get_selected_local_defs)
+        :add_task(get_input("106: Extract Function Name > "))
         :add_task(function(refactor)
-
-            local local_defs = vim.tbl_filter(function(node)
-                return not utils.range_contains_node(node, refactor.region:to_ts())
-            end, utils.get_locals_defs(
-                refactor.scope,
-                refactor.lang
-            ))
-
-            local function_args = utils.get_function_args(refactor.scope, refactor.lang)
-            local local_def_map = get_local_definitions(
-                local_defs,
-                function_args
-            )
-            local local_references = utils.get_all_identifiers(refactor.scope, refactor.lang)
-            local selected_local_references = {}
-
-            for _, local_ref in pairs(local_references) do
-                local local_name = ts_utils.get_node_text(local_ref)[1]
-                if
-                    utils.range_contains_node(local_ref, refactor.region:to_ts())
-                    and local_def_map[local_name]
-                then
-                    selected_local_references[local_name] = true
-                end
-            end
-
-            -- TODO: Probably use text edit
+            local selected_local_references = get_selected_local_references(refactor)
             local scope_region = get_top_of_scope_region(refactor.scope)
-
-            -- TODO: Polar, nvim_buf_get_lines doesn't actually get the highlighted
-            -- region, instead the highlighted rows
-            local function_name = vim.fn.input("106: Extract Function Name > ")
+            local function_name = refactor.input[1]
 
             --[[
             local first_local_def_name = ts_utils.get_node_text(
@@ -145,15 +156,17 @@ REFACTORING.extract = function(bufnr)
                 refactor.lang,
                 scope_region,
                 function_name,
-                "fill me in daddy"
+                "fill_me_in_daddy"
             )
 
             vim.lsp.util.apply_text_edits(text_edits, 0)
             -- TODO: Ensure indenting is correct
-            vim.cmd([[ :norm! gg=G ]])
 
-            return true, "I am result"
+            return true, refactor
         end)
+        :add_task(save)
+        :add_task(format)
+        :add_task(save)
         :run(function(ok, result)
             print("Success!!", ok, result)
         end)

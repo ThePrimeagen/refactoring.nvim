@@ -1,6 +1,6 @@
 local utils = require("refactoring.utils")
 
-local function refactor_setup(bufnr)
+local function refactor_setup(bufnr, options)
     return function()
         -- lua 1  based index
         -- vim apis are 1 based
@@ -15,6 +15,7 @@ local function refactor_setup(bufnr)
             bufnr = bufnr,
             root = root,
             lang = lang,
+            options = options
         }
     end
 end
