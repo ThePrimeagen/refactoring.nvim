@@ -13,45 +13,9 @@ local save = require("refactoring.pipeline.save")
 local get_selected_local_defs = require(
     "refactoring.pipeline.get_selected_local_defs"
 )
+local Config = require("refactoring.config")
 
-local REFACTORING = {}
-local REFACTORING_OPTIONS = {
-    formatting = {
-        lua = {
-            cmd = [[ !stylua % ]]
-        }
-    },
-    code_generation = {
-        lua = {
-            extract_function = function(opts)
-                return {
-                    create = string.format(
-                        [[
-                    local function %s(%s)
-                    %s
-                    return %s
-                end
-                ]],
-                        opts.name,
-                        table.concat(opts.args, ", "),
-                        type(opts.body) == "table"
-                                and table.concat(opts.body, "\n")
-                            or opts.body,
-                        opts.ret
-                    ),
-
-                    call = string.format(
-                        "local %s = %s(%s)",
-                        opts.ret,
-                        opts.name,
-                        table.concat(opts.args, ", ")
-                    ),
-                }
-            end,
-        },
-    },
-}
-
+local M = {}
 -- 106
 local function get_text_edits(
     selected_local_references,
@@ -64,7 +28,7 @@ local function get_text_edits(
     -- local declaration within the selection range.
     local lsp_text_edits = {}
     local extract_function =
-        REFACTORING_OPTIONS.code_generation[lang].extract_function({
+        Config.get_config().code_generation[lang].extract_function({
             args = vim.tbl_keys(selected_local_references),
             body = region:get_text(),
             name = function_name,
@@ -129,16 +93,18 @@ local function get_selected_local_references(refactor)
     return selected_local_references
 end
 
-REFACTORING.extract_to_file = function(bufnr) end
+M.extract_to_file = function(bufnr) end
 
-REFACTORING.extract = function(bufnr)
+M.extract = function(bufnr)
     Pipeline
-        :from_task(refactor_setup(bufnr, REFACTORING_OPTIONS))
+        :from_task(refactor_setup(bufnr, Config.get_config()))
         :add_task(selection_setup)
         :add_task(get_selected_local_defs)
         :add_task(get_input("106: Extract Function Name > "))
         :add_task(function(refactor)
-            local selected_local_references = get_selected_local_references(refactor)
+            local selected_local_references = get_selected_local_references(
+                refactor
+            )
             local scope_region = get_top_of_scope_region(refactor.scope)
             local function_name = refactor.input[1]
 
@@ -160,7 +126,6 @@ REFACTORING.extract = function(bufnr)
             )
 
             vim.lsp.util.apply_text_edits(text_edits, 0)
-            -- TODO: Ensure indenting is correct
 
             return true, refactor
         end)
@@ -172,4 +137,4 @@ REFACTORING.extract = function(bufnr)
         end)
 end
 
-return REFACTORING
+return M
