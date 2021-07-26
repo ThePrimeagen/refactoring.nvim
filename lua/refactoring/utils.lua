@@ -27,8 +27,6 @@ end
 -- across '<,'> and an identifier.  Does the identifier exist within the
 -- selection?
 --
--- @param a the containing node
--- @param b the node to be contained
 M.range_contains_node = function(node, start_row, start_col, end_row, end_col)
     local node_start_row, node_start_col, node_end_row, node_end_col =
         node:range()
