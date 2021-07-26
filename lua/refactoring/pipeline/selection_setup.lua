@@ -1,27 +1,18 @@
 local utils = require("refactoring.utils")
 local Region = require("refactoring.region")
 
-local function extract_setup(bufnr)
-    return function()
-        -- lua 1  based index
-        -- vim apis are 1 based
-        -- treesitter is 0 based
-        -- first entry (1), line 1, row 0
-        bufnr = bufnr or 0
+local function selection_setup(refactor)
+    local region = Region:from_current_selection()
+    local scope = utils.get_scope_over_selection(refactor.root, region, refactor.lang)
 
-        local lang = vim.bo.filetype
-        local region = Region:from_current_selection()
-        local root = utils.get_root(lang)
-        local scope = utils.get_scope_over_selection(root, region, lang)
+    refactor.region = region
+    refactor.scope = scope
 
-        return true, {
-            bufnr = bufnr,
-            lang = lang,
-            region = region,
-            root = root,
-            scope = scope,
-        }
+    if refactor.scope == nil then
+        return false, "Scope is nil"
     end
+
+    return true, refactor
 end
 
-return extract_setup
+return selection_setup

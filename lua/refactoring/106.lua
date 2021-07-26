@@ -6,6 +6,7 @@ local ts_utils = require("nvim-treesitter.ts_utils")
 local utils = require("refactoring.utils")
 local Pipeline = require("refactoring.pipeline")
 local selection_setup = require("refactoring.pipeline.selection_setup")
+local refactor_setup = require("refactoring.pipeline.refactor_setup")
 
 local REFACTORING = {}
 local REFACTORING_OPTIONS = {
@@ -94,11 +95,9 @@ end
 
 REFACTORING.extract = function(bufnr)
     Pipeline
-        :from_task(selection_setup(bufnr))
+        :from_task(refactor_setup(bufnr))
+        :add_task(selection_setup)
         :add_task(function(refactor)
-            if refactor.scope == nil then
-                return false, "Scope is nil"
-            end
 
             local local_defs = vim.tbl_filter(function(node)
                 return not utils.range_contains_node(node, refactor.region:to_ts())
