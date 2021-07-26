@@ -38,16 +38,29 @@ end
 --- Get a region from a Treesitter Node
 ---@return Region
 function Region:from_node(node, bufnr)
+    bufnr = bufnr or vim.fn.bufnr()
     local start_line, start_col, end_line, end_col = node:range()
 
     -- todo: is col correct?
     return setmetatable({
         bufnr = vim.fn.bufnr(bufnr),
-        from_ts = true,
         start_row = start_line + 1,
         start_col = start_col,
         end_row = end_line + 1,
         end_col = end_col,
+    }, self)
+end
+
+function Region:from_lsp_range(lsp_range, bufnr)
+    bufnr = bufnr or vim.fn.bufnr()
+
+    -- todo: is col correct?
+    return setmetatable({
+        bufnr = vim.fn.bufnr(bufnr),
+        start_row = lsp_range.start.line + 1,
+        start_col = lsp_range.start.character,
+        end_row = lsp_range["end"].line + 1,
+        end_col = lsp_range["end"].character,
     }, self)
 end
 

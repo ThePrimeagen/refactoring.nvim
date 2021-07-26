@@ -152,7 +152,6 @@ M.range_to_table = function(node)
         return "range nil"
     end
     local a, b, c, d = node:range()
-    return { a, b, c, d }
 end
 
 return M

@@ -12,7 +12,8 @@
     (identifier) @definition.function_argument))
 
 ;; This is for function scope finding
-(function) @definition.scope
+(function) @definition
 (local_function) @definition.scope
-(function_definition) @definition.scope
+((variable_declaration
+  (function_definition) @definition.scope))
 
