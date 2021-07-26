@@ -5,6 +5,7 @@ local Region = require("refactoring.region")
 local ts_utils = require("nvim-treesitter.ts_utils")
 local utils = require("refactoring.utils")
 local Pipeline = require("refactoring.pipeline")
+local selection_setup = require("refactoring.pipeline.selection_setup")
 
 local REFACTORING = {}
 local REFACTORING_OPTIONS = {
@@ -14,11 +15,11 @@ local REFACTORING_OPTIONS = {
                 return {
                     create = string.format(
                         [[
-local function %s(%s)
-  %s
-  return %s
-end
-]],
+                    local function %s(%s)
+                    %s
+                    return %s
+                end
+                ]],
                         opts.name,
                         table.concat(opts.args, ", "),
                         type(opts.body) == "table"
@@ -93,41 +94,31 @@ end
 
 REFACTORING.extract = function(bufnr)
     Pipeline
-        :from_task(function()
-            -- lua 1  based index
-            -- vim apis are 1 based
-            -- treesitter is 0 based
-            -- first entry (1), line 1, row 0
-            bufnr = bufnr or 0
-
-            local lang = vim.bo.filetype
-            local region = Region:from_current_selection()
-            local root = utils.get_root(lang)
-            local scope = utils.get_scope_over_selection(root, region, lang)
-
-            if scope == nil then
+        :from_task(selection_setup(bufnr))
+        :add_task(function(refactor)
+            if refactor.scope == nil then
                 return false, "Scope is nil"
             end
 
             local local_defs = vim.tbl_filter(function(node)
-                return not utils.range_contains_node(node, region:to_ts())
+                return not utils.range_contains_node(node, refactor.region:to_ts())
             end, utils.get_locals_defs(
-                scope,
-                lang
+                refactor.scope,
+                refactor.lang
             ))
 
-            local function_args = utils.get_function_args(scope, lang)
+            local function_args = utils.get_function_args(refactor.scope, refactor.lang)
             local local_def_map = get_local_definitions(
                 local_defs,
                 function_args
             )
-            local local_references = utils.get_all_identifiers(scope, lang)
+            local local_references = utils.get_all_identifiers(refactor.scope, refactor.lang)
             local selected_local_references = {}
 
             for _, local_ref in pairs(local_references) do
                 local local_name = ts_utils.get_node_text(local_ref)[1]
                 if
-                    utils.range_contains_node(local_ref, region:to_ts())
+                    utils.range_contains_node(local_ref, refactor.region:to_ts())
                     and local_def_map[local_name]
                 then
                     selected_local_references[local_name] = true
@@ -135,7 +126,7 @@ REFACTORING.extract = function(bufnr)
             end
 
             -- TODO: Probably use text edit
-            local scope_region = get_top_of_scope_region(scope)
+            local scope_region = get_top_of_scope_region(refactor.scope)
 
             -- TODO: Polar, nvim_buf_get_lines doesn't actually get the highlighted
             -- region, instead the highlighted rows
@@ -143,16 +134,16 @@ REFACTORING.extract = function(bufnr)
 
             --[[
             local first_local_def_name = ts_utils.get_node_text(
-                utils.get_locals_defs(scope, lang)[1],
-                0
+            utils.get_locals_defs(refactor.scope, refactor.lang)[1],
+            0
             )[1]
             --]]
 
             -- TODO: Polor, could you also make the variable that is returned the first
             local text_edits = get_text_edits(
                 selected_local_references,
-                region,
-                lang,
+                refactor.region,
+                refactor.lang,
                 scope_region,
                 function_name,
                 "fill me in daddy"

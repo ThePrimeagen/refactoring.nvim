@@ -28,8 +28,10 @@ function Pipeline:run(cb, err)
         local results = nil
 
         local idx = 1
+        print("self._tasks", vim.inspect(self._tasks))
         repeat
             ok, results = self._tasks[idx](results)
+            print("TIME", ok, "RESULTS", vim.inspect(results))
             idx = idx + 1
         until not ok or idx > #self._tasks
 
