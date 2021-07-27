@@ -1,5 +1,5 @@
 local function get_selection_range()
-    local bufnr, start_row, start_col, _ = unpack(vim.fn.getpos("'<"))
+    local _, start_row, start_col, _ = unpack(vim.fn.getpos("'<"))
     local _, end_row, _, _ = unpack(vim.fn.getpos("'>"))
     local end_col = vim.fn.col("'>")
 
@@ -7,7 +7,7 @@ local function get_selection_range()
     -- I think - 2 is correct on
     --
     -- end_row : end_row is exclusive in TS, so we don't minus
-    return bufnr, start_row, start_col, end_row, end_col
+    return start_row, start_col, end_row, end_col
 end
 
 ---@class Region
@@ -23,10 +23,10 @@ Region.__index = Region
 --- Get a Region from the current selection
 ---@return Region
 function Region:from_current_selection()
-    local bufnr, start_row, start_col, end_row, end_col = get_selection_range()
+    local start_row, start_col, end_row, end_col = get_selection_range()
 
     return setmetatable({
-        bufnr = bufnr,
+        bufnr = vim.fn.bufnr(),
         from_vim = true,
         start_row = start_row,
         start_col = start_col,
@@ -75,7 +75,9 @@ function Region:to_ts()
 end
 
 function Region:get_text()
-    return vim.api.nvim_buf_get_lines(0, self.start_row - 1, self.end_row, false)
+    local text = vim.api.nvim_buf_get_lines(0, self.start_row - 1, self.end_row, false)
+    print("Region:get_text()", text)
+    return text
 end
 
 --- Convert a region to an LSP Range
@@ -89,6 +91,13 @@ function Region:to_lsp_range()
             line = self.end_row - 1,
             character = self.end_col,
         },
+    }
+end
+
+function Region:to_lsp_text_edit(text)
+    return {
+        range = self:to_lsp_range(),
+        newText = text
     }
 end
 

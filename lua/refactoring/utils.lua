@@ -1,13 +1,17 @@
 local ts_utils = require("nvim-treesitter.ts_utils")
-local ts_query = require("nvim-treesitter.query")
 local parsers = require("nvim-treesitter.parsers")
-local locals = require("nvim-treesitter.locals")
+local Region = require("refactoring.region")
 
 local M = {}
 
 M.get_root = function(lang)
     local parser = parsers.get_parser(0, lang)
     return parser:parse()[1]:root()
+end
+
+function M.get_top_of_file_region()
+    local range = { line = 0, character = 0 }
+    return Region:from_lsp_range({ start = range, ["end"] = range })
 end
 
 -- determines if a contains node b.
@@ -128,7 +132,7 @@ M.get_function_args = function(scope, lang)
     )
 end
 
-M.get_locals_defs = function(scope, lang)
+M.get_local_defs = function(scope, lang)
     return pluck_by_capture(
         scope,
         lang,
@@ -146,12 +150,32 @@ M.get_all_identifiers = function(scope, lang)
     )
 end
 
--- is there a better way?
-M.range_to_table = function(node)
-    if node == nil then
-        return "range nil"
+M.filter_to_selection = function(nodes, region)
+    return vim.tbl_filter(function(node)
+        return not M.range_contains_node(node, region:to_ts())
+    end, nodes)
+
+end
+
+-- TODO: Very unsure if this needs to be a "util" or not But this is super
+-- useful in refactor 106 and I assume it will be used elsewhere quite a bit
+function M.node_text_to_set(...)
+    local out = {}
+    for i = 1, select("#", ...) do
+        local nodes = select(i, ...)
+        for _, node in pairs(nodes) do
+            out[ts_utils.get_node_text(node)[1]] = true
+        end
     end
-    local a, b, c, d = node:range()
+    return out
+end
+
+function M.region_above_node(node)
+    local scope_region = Region:from_node(node)
+    local lsp_range = scope_region:to_lsp_range()
+    lsp_range.start.line = math.max(lsp_range.start.line - 1, 0)
+    lsp_range["end"] = lsp_range.start
+    return Region:from_lsp_range(lsp_range)
 end
 
 return M

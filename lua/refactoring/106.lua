@@ -1,48 +1,35 @@
 local dev = require("refactoring.dev")
 dev.reload()
 
-local Region = require("refactoring.region")
 local ts_utils = require("nvim-treesitter.ts_utils")
 local utils = require("refactoring.utils")
 local Pipeline = require("refactoring.pipeline")
 local selection_setup = require("refactoring.pipeline.selection_setup")
 local refactor_setup = require("refactoring.pipeline.refactor_setup")
 local get_input = require("refactoring.pipeline.get_input")
-local format = require("refactoring.pipeline.format")
-local save = require("refactoring.pipeline.save")
+local create_file = require("refactoring.pipeline.create_file")
+local helpers = require("refactoring.helpers")
 local get_selected_local_defs = require(
     "refactoring.pipeline.get_selected_local_defs"
 )
 local Config = require("refactoring.config")
 
 local M = {}
--- 106
-local function get_text_edits(
-    selected_local_references,
-    region,
+
+local function get_code(
     lang,
-    scope_region,
+    region,
+    selected_local_references,
     function_name,
     ret
 )
-    -- local declaration within the selection range.
-    local lsp_text_edits = {}
-    local extract_function =
-        Config.get_config().code_generation[lang].extract_function({
-            args = vim.tbl_keys(selected_local_references),
-            body = region:get_text(),
-            name = function_name,
-            ret = ret,
-        })
-    table.insert(lsp_text_edits, {
-        range = scope_region:to_lsp_range(),
-        newText = string.format("\n%s", extract_function.create),
+    print("TEST REGION TEXT", region:get_text())
+    return Config.get_config().code_generation[lang].extract_function({
+        args = vim.tbl_keys(selected_local_references),
+        body = region:get_text(),
+        name = function_name,
+        ret = ret,
     })
-    table.insert(lsp_text_edits, {
-        range = region:to_lsp_range(),
-        newText = string.format("\n%s", extract_function.call),
-    })
-    return lsp_text_edits
 end
 
 local function get_local_definitions(local_defs, function_args)
@@ -57,15 +44,6 @@ local function get_local_definitions(local_defs, function_args)
     end
 
     return local_def_map
-end
-
-local function get_top_of_scope_region(scope)
-    local scope_region = Region:from_node(scope)
-    local lsp_range = scope_region:to_lsp_range()
-    lsp_range.start.line = math.max(lsp_range.start.line - 1, 0)
-    lsp_range["end"] = lsp_range.start
-
-    return Region:from_lsp_range(lsp_range)
 end
 
 local function get_selected_local_references(refactor)
@@ -89,52 +67,84 @@ local function get_selected_local_references(refactor)
             selected_local_references[local_name] = true
         end
     end
-
     return selected_local_references
 end
 
-M.extract_to_file = function(bufnr) end
-
-M.extract = function(bufnr)
-    Pipeline
+local function get_extract_setup_pipeline(bufnr)
+    return Pipeline
         :from_task(refactor_setup(bufnr, Config.get_config()))
         :add_task(selection_setup)
         :add_task(get_selected_local_defs)
         :add_task(get_input("106: Extract Function Name > "))
+end
+
+M.extract_to_file = function(bufnr)
+    bufnr = bufnr or vim.fn.bufnr(vim.fn.bufname())
+    get_extract_setup_pipeline(bufnr)
+        :add_task(get_input("106: File Name > "))
+        :add_task(create_file.from_input(2))
         :add_task(function(refactor)
             local selected_local_references = get_selected_local_references(
                 refactor
             )
-            local scope_region = get_top_of_scope_region(refactor.scope)
             local function_name = refactor.input[1]
-
-            --[[
-            local first_local_def_name = ts_utils.get_node_text(
-            utils.get_locals_defs(refactor.scope, refactor.lang)[1],
-            0
-            )[1]
-            --]]
-
-            -- TODO: Polor, could you also make the variable that is returned the first
-            local text_edits = get_text_edits(
-                selected_local_references,
-                refactor.region,
+            local extract_function = get_code(
                 refactor.lang,
-                scope_region,
+                refactor.region,
+                selected_local_references,
                 function_name,
-                "fill_me_in_daddy"
+                "fill_me"
             )
 
-            vim.lsp.util.apply_text_edits(text_edits, 0)
+            refactor.text_edits = {
+                {
+                    region = utils.region_above_node(refactor.scope),
+                    text = extract_function.create,
+                    bufnr = refactor.buffers[2],
+                },
+                {
+                    region = refactor.region,
+                    text = extract_function.call,
+                },
+            }
 
             return true, refactor
         end)
-        :add_task(save)
-        :add_task(format)
-        :add_task(save)
-        :run(function(ok, result)
-            print("Success!!", ok, result)
+        :after(helpers.create_post_refactor_tasks())
+        :run()
+end
+
+M.extract = function(bufnr)
+    bufnr = bufnr or vim.fn.bufnr()
+    get_extract_setup_pipeline(bufnr)
+        :add_task(function(refactor)
+            local selected_local_references = get_selected_local_references(
+                refactor
+            )
+            local function_name = refactor.input[1]
+            local extract_function = get_code(
+                refactor.lang,
+                refactor.region,
+                selected_local_references,
+                function_name,
+                "fill_me"
+            )
+
+            refactor.text_edits = {
+                {
+                    region = utils.region_above_node(refactor.scope),
+                    text = extract_function.create,
+                },
+                {
+                    region = refactor.region,
+                    text = extract_function.call,
+                },
+            }
+
+            return true, refactor
         end)
+        :after(helpers.create_post_refactor_tasks())
+        :run()
 end
 
 return M
