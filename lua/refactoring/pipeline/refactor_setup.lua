@@ -5,7 +5,8 @@ local function refactor_setup(bufnr, options)
 
     return function()
         local lang = vim.bo.filetype
-        local root = utils.get_root(lang)
+        local root = utils.get_root(bufnr, lang)
+
         return true, {
             filetype = vim.bo[bufnr].filetype,
             bufnr = bufnr,

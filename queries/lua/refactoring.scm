@@ -12,8 +12,8 @@
     (identifier) @definition.function_argument))
 
 ;; This is for function scope finding
-(program) @definition
-(function) @definition
+(program) @definition.scope
+(function) @definition.scope
 (local_function) @definition.scope
 ((variable_declaration
   (function_definition) @definition.scope))

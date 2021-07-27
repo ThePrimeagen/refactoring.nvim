@@ -4,8 +4,8 @@ local Region = require("refactoring.region")
 
 local M = {}
 
-M.get_root = function(lang)
-    local parser = parsers.get_parser(0, lang)
+M.get_root = function(bufnr, lang)
+    local parser = parsers.get_parser(bufnr or 0, lang)
     return parser:parse()[1]:root()
 end
 
@@ -69,10 +69,10 @@ M.range_contains_node = function(node, start_row, start_col, end_row, end_col)
 end
 
 -- param region Region
-M.get_scope_over_selection = function(root, region, lang)
+M.get_scope_over_selection = function(bufnr, root, region, lang)
     local start_row, start_col, end_row, end_col = region:to_ts()
-    local start_scope = M.get_scope(root, start_row, start_col, lang)
-    local end_scope = M.get_scope(root, end_row, end_col, lang)
+    local start_scope = M.get_scope(bufnr, root, start_row, start_col, lang)
+    local end_scope = M.get_scope(bufnr, root, end_row, end_col, lang)
 
     if start_scope ~= end_scope then
         error("Selection spans over two scopes, cannot determine scope")
@@ -81,12 +81,12 @@ M.get_scope_over_selection = function(root, region, lang)
     return start_scope
 end
 
-M.get_scope = function(root, line, col, lang)
+M.get_scope = function(bufnr, root, line, col, lang)
     -- TODO: Cache them queries boy -- but maybe not?
     local query = vim.treesitter.get_query(lang, "refactoring")
 
     local out = nil
-    for _, n, _ in query:iter_captures(root, 0, 0, -1) do
+    for _, n, _ in query:iter_captures(root, bufnr, 0, -1) do
         if
             ts_utils.is_in_node_range(n, line, col)
             and (out == nil or M.node_contains(out, n))
@@ -108,9 +108,9 @@ local function get_refactoring_query(lang)
     return query
 end
 
-local function pluck_by_capture(scope, lang, query, capture_name)
+local function pluck_by_capture(bufnr, scope, lang, query, capture_name)
     local local_defs = {}
-    local root = M.get_root(lang)
+    local root = M.get_root(bufnr, lang)
     for id, node, _ in query:iter_captures(root, 0, 0, -1) do
         if
             query.captures[id] == capture_name
@@ -123,8 +123,9 @@ local function pluck_by_capture(scope, lang, query, capture_name)
     return local_defs
 end
 
-M.get_function_args = function(scope, lang)
+M.get_function_args = function(bufnr, scope, lang)
     return pluck_by_capture(
+        bufnr,
         scope,
         lang,
         get_refactoring_query(lang),
@@ -132,8 +133,9 @@ M.get_function_args = function(scope, lang)
     )
 end
 
-M.get_local_defs = function(scope, lang)
+M.get_local_defs = function(bufnr, scope, lang)
     return pluck_by_capture(
+        bufnr,
         scope,
         lang,
         get_refactoring_query(lang),
@@ -141,8 +143,9 @@ M.get_local_defs = function(scope, lang)
     )
 end
 
-M.get_all_identifiers = function(scope, lang)
+M.get_all_identifiers = function(bufnr, scope, lang)
     return pluck_by_capture(
+        bufnr,
         scope,
         lang,
         vim.treesitter.get_query(lang, "locals"),

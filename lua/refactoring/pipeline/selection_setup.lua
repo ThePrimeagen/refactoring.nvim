@@ -3,7 +3,7 @@ local Region = require("refactoring.region")
 
 local function selection_setup(refactor)
     local region = Region:from_current_selection(refactor.bufnr)
-    local scope = utils.get_scope_over_selection(refactor.root, region, refactor.lang)
+    local scope = utils.get_scope_over_selection(refactor.bufnr, refactor.root, region, refactor.lang)
 
     refactor.region = region
     refactor.scope = scope

@@ -74,9 +74,8 @@ function Region:to_ts()
     return self.start_row - 1, self.start_col, self.end_row - 1, self.end_col
 end
 
-function Region:get_text()
-    local text = vim.api.nvim_buf_get_lines(0, self.start_row - 1, self.end_row, false)
-    print("Region:get_text()", text)
+function Region:get_text(bufnr)
+    local text = vim.api.nvim_buf_get_lines(bufnr or 0, self.start_row - 1, self.end_row, false)
     return text
 end
 

@@ -17,49 +17,52 @@ local Config = require("refactoring.config")
 local M = {}
 
 local function get_code(
+    bufnr,
     lang,
     region,
     selected_local_references,
     function_name,
     ret
 )
-    print("TEST REGION TEXT", region:get_text())
     return Config.get_config().code_generation[lang].extract_function({
         args = vim.tbl_keys(selected_local_references),
-        body = region:get_text(),
+        body = region:get_text(bufnr),
         name = function_name,
         ret = ret,
     })
 end
 
-local function get_local_definitions(local_defs, function_args)
+local function get_local_definitions(bufnr, local_defs, function_args)
     local local_def_map = {}
 
     for _, def in pairs(local_defs) do
-        local_def_map[ts_utils.get_node_text(def)[1]] = true
+        local_def_map[ts_utils.get_node_text(def, bufnr)[1]] = true
     end
 
     for _, def in pairs(function_args) do
-        local_def_map[ts_utils.get_node_text(def)[1]] = true
+        local_def_map[ts_utils.get_node_text(def, bufnr)[1]] = true
     end
 
     return local_def_map
 end
 
 local function get_selected_local_references(refactor)
-    local function_args = utils.get_function_args(refactor.scope, refactor.lang)
+    local function_args = utils.get_function_args(refactor.bufnr, refactor.scope, refactor.lang)
     local local_def_map = get_local_definitions(
+        refactor.bufnr,
         refactor.selected_local_defs,
         function_args
     )
+
     local local_references = utils.get_all_identifiers(
+        refactor.bufnr,
         refactor.scope,
         refactor.lang
     )
     local selected_local_references = {}
 
     for _, local_ref in pairs(local_references) do
-        local local_name = ts_utils.get_node_text(local_ref)[1]
+        local local_name = ts_utils.get_node_text(local_ref, refactor.bufnr)[1]
         if
             utils.range_contains_node(local_ref, refactor.region:to_ts())
             and local_def_map[local_name]
@@ -89,6 +92,7 @@ M.extract_to_file = function(bufnr)
             )
             local function_name = refactor.input[1]
             local extract_function = get_code(
+                refactor.bufnr,
                 refactor.lang,
                 refactor.region,
                 selected_local_references,
@@ -98,7 +102,7 @@ M.extract_to_file = function(bufnr)
 
             refactor.text_edits = {
                 {
-                    region = utils.region_above_node(refactor.scope),
+                    region = utils.get_top_of_file_region(refactor.scope),
                     text = extract_function.create,
                     bufnr = refactor.buffers[2],
                 },
@@ -121,8 +125,10 @@ M.extract = function(bufnr)
             local selected_local_references = get_selected_local_references(
                 refactor
             )
+
             local function_name = refactor.input[1]
             local extract_function = get_code(
+                refactor.bufnr,
                 refactor.lang,
                 refactor.region,
                 selected_local_references,
