@@ -84,7 +84,7 @@ end
 M.extract_to_file = function(bufnr)
     bufnr = bufnr or vim.fn.bufnr(vim.fn.bufname())
     get_extract_setup_pipeline(bufnr)
-        :add_task(get_input("106: File Name > "))
+        :add_task(get_input("106: File Name > ", vim.fn.expand("%:h")))
         :add_task(create_file.from_input(2))
         :add_task(function(refactor)
             local selected_local_references = get_selected_local_references(

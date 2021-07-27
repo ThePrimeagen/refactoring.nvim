@@ -1,6 +1,7 @@
-local function get_input(question)
+local function get_input(question, text)
+    text = text or ""
     return function(refactor)
-        local result = vim.fn.input(question)
+        local result = vim.fn.input(question, text)
         if not refactor.input then
             refactor.input = {}
         end
