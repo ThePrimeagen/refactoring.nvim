@@ -13,13 +13,19 @@ The Refactoring library based off the Refactoring book by Martin Fowler
 
 ## Setup
 
+**Requirements**:
+- Treesitter
+- Lsp
+- Plenary
+
 ### Basic Setup
 **Packer setup:**
 ```lua
 use {
     "ThePrimeagen/refactoring.nvim",
     requires = {
-        {"nvim-lua/plenary.nvim"}
+        {"nvim-lua/plenary.nvim"},
+        {"nvim-treesitter/nvim-treesitter"}
     }
 }
 ```
