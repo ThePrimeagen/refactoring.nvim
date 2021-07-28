@@ -10,8 +10,8 @@ M.get_root = function(bufnr, lang)
 end
 
 function M.get_top_of_file_region()
-    local range = { line = 0, character = 0 }
-    return Region:from_lsp_range({ start = range, ["end"] = range })
+    local range = {line = 0, character = 0}
+    return Region:from_lsp_range({start = range, ["end"] = range})
 end
 
 -- determines if a contains node b.
@@ -23,8 +23,7 @@ function M.node_contains(a, b)
     end
 
     local start_row, start_col, end_row, end_col = b:range()
-    return ts_utils.is_in_node_range(a, start_row, start_col)
-        and ts_utils.is_in_node_range(a, end_row, end_col)
+    return ts_utils.is_in_node_range(a, start_row, start_col) and ts_utils.is_in_node_range(a, end_row, end_col)
 end
 
 -- determines if a node exists within a range.  Imagine a range selection
@@ -34,8 +33,7 @@ end
 -- @param a the containing node
 -- @param b the node to be contained
 M.range_contains_node = function(node, start_row, start_col, end_row, end_col)
-    local node_start_row, node_start_col, node_end_row, node_end_col =
-        node:range()
+    local node_start_row, node_start_col, node_end_row, node_end_col = node:range()
 
     -- There are five possible conditions
     -- 1. node start/end row are contained exclusively within the range.
@@ -53,10 +51,8 @@ M.range_contains_node = function(node, start_row, start_col, end_row, end_col)
     if start_row < node_start_row and end_row > node_end_row then
         return true
     elseif start_row == end_row then
-        return start_row == node_start_row
-            and end_row == node_end_row
-            and start_col <= node_start_col
-            and end_col >= node_end_col
+        return start_row == node_start_row and end_row == node_end_row and start_col <= node_start_col and
+            end_col >= node_end_col
     elseif start_row == node_start_row and start_row == node_end_row then
         return start_col <= node_start_col
     elseif end_row == node_start_row and end_row == node_end_row then
@@ -87,10 +83,7 @@ M.get_scope = function(bufnr, root, line, col, lang)
 
     local out = nil
     for _, n, _ in query:iter_captures(root, bufnr, 0, -1) do
-        if
-            ts_utils.is_in_node_range(n, line, col)
-            and (out == nil or M.node_contains(out, n))
-        then
+        if ts_utils.is_in_node_range(n, line, col) and (out == nil or M.node_contains(out, n)) then
             out = n
         end
     end
@@ -101,9 +94,7 @@ end
 local function get_refactoring_query(lang)
     local query = vim.treesitter.get_query(lang, "refactoring")
     if not query then
-        error(
-            "refactoring not supported in this language.  Please provide a queries/<lang>/refactoring.scm"
-        )
+        error("refactoring not supported in this language.  Please provide a queries/<lang>/refactoring.scm")
     end
     return query
 end
@@ -112,10 +103,7 @@ local function pluck_by_capture(bufnr, scope, lang, query, capture_name)
     local local_defs = {}
     local root = M.get_root(bufnr, lang)
     for id, node, _ in query:iter_captures(root, 0, 0, -1) do
-        if
-            query.captures[id] == capture_name
-            and M.node_contains(scope, node)
-        then
+        if query.captures[id] == capture_name and M.node_contains(scope, node) then
             table.insert(local_defs, node)
         end
     end
@@ -124,40 +112,24 @@ local function pluck_by_capture(bufnr, scope, lang, query, capture_name)
 end
 
 M.get_function_args = function(bufnr, scope, lang)
-    return pluck_by_capture(
-        bufnr,
-        scope,
-        lang,
-        get_refactoring_query(lang),
-        "definition.function_argument"
-    )
+    return pluck_by_capture(bufnr, scope, lang, get_refactoring_query(lang), "definition.function_argument")
 end
 
 M.get_local_defs = function(bufnr, scope, lang)
-    return pluck_by_capture(
-        bufnr,
-        scope,
-        lang,
-        get_refactoring_query(lang),
-        "definition.local_var"
-    )
+    return pluck_by_capture(bufnr, scope, lang, get_refactoring_query(lang), "definition.local_var")
 end
 
 M.get_all_identifiers = function(bufnr, scope, lang)
-    return pluck_by_capture(
-        bufnr,
-        scope,
-        lang,
-        vim.treesitter.get_query(lang, "locals"),
-        "reference"
-    )
+    return pluck_by_capture(bufnr, scope, lang, vim.treesitter.get_query(lang, "locals"), "reference")
 end
 
 M.filter_to_selection = function(nodes, region)
-    return vim.tbl_filter(function(node)
-        return not M.range_contains_node(node, region:to_ts())
-    end, nodes)
-
+    return vim.tbl_filter(
+        function(node)
+            return not M.range_contains_node(node, region:to_ts())
+        end,
+        nodes
+    )
 end
 
 -- TODO: Very unsure if this needs to be a "util" or not But this is super
