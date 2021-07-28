@@ -54,6 +54,9 @@ function Pipeline:run(cb, err, seed_value)
         until not ok or idx > #self._tasks
 
         -- Err should ultimately stop execution
+        -- BUG: when visual mode has been triggered once and a refactor is executed we get:
+        -- 5108: Error executing lua ...ck/packer/start/plenary.nvim/lua/plenary/async/async.lua:14: The coroutine
+        -- failed with this message: ...start/refactoring.nvim/lua/refactoring/pipeline/init.lua:64: Scope is nil
         if not ok then
             err(results)
             return
