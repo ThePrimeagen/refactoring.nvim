@@ -11,7 +11,7 @@
   (required_parameter
     (identifier) @definition.function_argument)?
   (optional_parameter
-   (identifier) @definition.function_argument?)))
+    (identifier) @definition.function_argument?)))
 
 (program) @definition.scope
 (function_declaration) @definition.scope
