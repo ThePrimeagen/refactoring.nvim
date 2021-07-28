@@ -16,7 +16,7 @@ local M = {}
 -- but there is also the option for something like neoformat
 -- we also could expose the post refactor method as a callback in the setup func or vim event
 -- that way the user has controll over the post refactor logic and would support third party
--- refactor plugins
+-- formatting plugins
 function M.create_post_refactor_tasks()
     return Pipeline:from_task(apply_text_edits):add_task(format)
 
