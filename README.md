@@ -36,7 +36,7 @@ local function refactor(prompt_bufnr)
     require("telescope.actions").close(prompt_bufnr)
     require("refactoring").refactor(content.value)
 end
--- NOTE: M is a global object in this file scope
+-- NOTE: M is a global object
 -- for the sake of simplicity in this example
 -- you can extract this function and the helper above
 -- and then require the file and call the extracted function
