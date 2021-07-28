@@ -5,17 +5,13 @@
   (variable_declarator
     (identifier) @definition.local_var)))
 
-;; grabs all the arguments that are passed into the function.  Needed for
-;; function extraction, 106
+;; grabs all the arguments that are passed into the function. Needed for
+;; function extraction, 106.
 ((formal_parameters
   (required_parameter
-   (identifier) @definition.function_argument)))
-
-;; Can I do this in one query instead of two?
-((formal_parameters
+    (identifier) @definition.function_argument)?
   (optional_parameter
-   (identifier) @definition.function_argument)))
-
+    (identifier) @definition.function_argument?)))
 
 (program) @definition.scope
 (function_declaration) @definition.scope
