@@ -1,4 +1,4 @@
-local async = require('plenary.async')
+local async = require("plenary.async")
 
 ---@class Pipeline
 ---Allows for pipelining tasks.  Tasks are functions that are expected to
@@ -13,7 +13,7 @@ Pipeline.__index = Pipeline
 
 function Pipeline:from_task(task)
     return setmetatable({
-        _tasks = {task}
+        _tasks = { task },
     }, self)
 end
 

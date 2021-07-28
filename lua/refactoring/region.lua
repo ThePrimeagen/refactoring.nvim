@@ -75,7 +75,12 @@ function Region:to_ts()
 end
 
 function Region:get_text(bufnr)
-    local text = vim.api.nvim_buf_get_lines(bufnr or 0, self.start_row - 1, self.end_row, false)
+    local text = vim.api.nvim_buf_get_lines(
+        bufnr or 0,
+        self.start_row - 1,
+        self.end_row,
+        false
+    )
     return text
 end
 
@@ -96,7 +101,7 @@ end
 function Region:to_lsp_text_edit(text)
     return {
         range = self:to_lsp_range(),
-        newText = text
+        newText = text,
     }
 end
 

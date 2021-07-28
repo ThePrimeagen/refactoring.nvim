@@ -35,7 +35,7 @@ end
     },
 }
 
-local M = { }
+local M = {}
 
 function M.get_config()
     return config

@@ -1,12 +1,9 @@
-local dev = require("refactoring.dev")
-dev.reload()
-
 local ts_utils = require("nvim-treesitter.ts_utils")
 local utils = require("refactoring.utils")
 local Pipeline = require("refactoring.pipeline")
 local selection_setup = require("refactoring.pipeline.selection_setup")
 local refactor_setup = require("refactoring.pipeline.refactor_setup")
-local get_input = require("refactoring.pipeline.get_input")
+local get_input = require("refactoring.get_input")
 local create_file = require("refactoring.pipeline.create_file")
 local helpers = require("refactoring.helpers")
 local get_selected_local_defs = require(
@@ -47,7 +44,11 @@ local function get_local_definitions(bufnr, local_defs, function_args)
 end
 
 local function get_selected_local_references(refactor)
-    local function_args = utils.get_function_args(refactor.bufnr, refactor.scope, refactor.lang)
+    local function_args = utils.get_function_args(
+        refactor.bufnr,
+        refactor.scope,
+        refactor.lang
+    )
     local local_def_map = get_local_definitions(
         refactor.bufnr,
         refactor.selected_local_defs,
@@ -78,19 +79,17 @@ local function get_extract_setup_pipeline(bufnr)
         :from_task(refactor_setup(bufnr, Config.get_config()))
         :add_task(selection_setup)
         :add_task(get_selected_local_defs)
-        :add_task(get_input("106: Extract Function Name > "))
 end
 
 M.extract_to_file = function(bufnr)
     bufnr = bufnr or vim.fn.bufnr(vim.fn.bufname())
     get_extract_setup_pipeline(bufnr)
-        :add_task(get_input("106: File Name > ", vim.fn.expand("%:h")))
-        :add_task(create_file.from_input(2))
+        :add_task(create_file.from_input)
         :add_task(function(refactor)
             local selected_local_references = get_selected_local_references(
                 refactor
             )
-            local function_name = refactor.input[1]
+            local function_name = get_input("106: Extract Function Name > ")
             local extract_function = get_code(
                 refactor.bufnr,
                 refactor.lang,
@@ -126,7 +125,7 @@ M.extract = function(bufnr)
                 refactor
             )
 
-            local function_name = refactor.input[1]
+            local function_name = get_input("106: Extract Function Name > ")
             local extract_function = get_code(
                 refactor.bufnr,
                 refactor.lang,
