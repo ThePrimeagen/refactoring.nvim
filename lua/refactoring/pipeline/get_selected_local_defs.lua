@@ -6,7 +6,7 @@ local function get_selected_local_defs(refactor)
     end, utils.get_local_defs(
         refactor.bufnr,
         refactor.scope,
-        refactor.lang
+        refactor.filetype
     ))
 
     refactor.selected_local_defs = local_defs

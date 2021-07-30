@@ -47,7 +47,7 @@ local function get_selected_local_references(refactor)
     local function_args = utils.get_function_args(
         refactor.bufnr,
         refactor.scope,
-        refactor.lang
+        refactor.filetype
     )
     local local_def_map = get_local_definitions(
         refactor.bufnr,
@@ -58,7 +58,7 @@ local function get_selected_local_references(refactor)
     local local_references = utils.get_all_identifiers(
         refactor.bufnr,
         refactor.scope,
-        refactor.lang
+        refactor.filetype
     )
     local selected_local_references = {}
 
@@ -92,7 +92,7 @@ M.extract_to_file = function(bufnr)
             local function_name = get_input("106: Extract Function Name > ")
             local extract_function = get_code(
                 refactor.bufnr,
-                refactor.lang,
+                refactor.filetype,
                 refactor.region,
                 selected_local_references,
                 function_name,
@@ -128,7 +128,7 @@ M.extract = function(bufnr)
             local function_name = get_input("106: Extract Function Name > ")
             local extract_function = get_code(
                 refactor.bufnr,
-                refactor.lang,
+                refactor.filetype,
                 refactor.region,
                 selected_local_references,
                 function_name,

@@ -7,7 +7,7 @@ local function selection_setup(refactor)
         refactor.bufnr,
         refactor.root,
         region,
-        refactor.lang
+        refactor.filetype
     )
 
     refactor.region = region

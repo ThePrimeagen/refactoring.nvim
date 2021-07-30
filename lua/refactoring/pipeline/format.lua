@@ -1,5 +1,5 @@
 local function format(refactor)
-    local format_cmd = refactor.options.formatting[refactor.lang].cmd
+    local format_cmd = refactor.options.formatting[refactor.filetype].cmd
     if format_cmd then
         for _, bufnr in pairs(refactor.buffers) do
             -- TODO: Window?
