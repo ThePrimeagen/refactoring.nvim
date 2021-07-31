@@ -1,4 +1,4 @@
-local extract = require("refactoring.refactors.106")
+local extract = require("refactoring.refactor.106")
 
 local M = {}
 

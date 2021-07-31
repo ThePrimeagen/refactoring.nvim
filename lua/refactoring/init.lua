@@ -1,4 +1,4 @@
-local refactors = require("refactoring.refactors")
+local refactors = require("refactoring.refactor")
 local Config = require("refactoring.config")
 
 local M = {}
