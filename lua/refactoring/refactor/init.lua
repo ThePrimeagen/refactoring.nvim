@@ -1,4 +1,5 @@
 local extract = require("refactoring.refactor.106")
+local extract_var = require("refactoring.refactor.123")
 
 local M = {}
 
@@ -7,6 +8,7 @@ local M = {}
 -- object... not sure if I like that.
 M.extract = extract.extract
 M.extract_to_file = extract.extract_to_file
+M.extract_var = extract.extract_var
 
 -- TODO: Perhaps I am really out thinking myself on this one.  But it seems way
 -- nicer if we can query all the names of refactors that allow us to use fzf or
@@ -14,6 +16,7 @@ M.extract_to_file = extract.extract_to_file
 M.refactor_names = {
     ["Extract Function"] = "extract",
     ["Extract Function To File"] = "extract_to_file",
+    ["Extract Var"] = "extract_var",
 }
 
 return M

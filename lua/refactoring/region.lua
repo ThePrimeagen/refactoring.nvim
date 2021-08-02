@@ -89,7 +89,7 @@ function Region:to_lsp_range()
     return {
         ["start"] = {
             line = self.start_row - 1,
-            character = self.start_col,
+            character = self.start_col - 1,
         },
         ["end"] = {
             line = self.end_row - 1,

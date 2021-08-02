@@ -17,7 +17,8 @@ function %s(%s) {
     %s
     return %s
 }
-                ]],
+
+]],
                         opts.name,
                         table.concat(opts.args, ", "),
                         type(opts.body) == "table"
@@ -44,7 +45,8 @@ local function %s(%s)
     %s
     return %s
 end
-                ]],
+
+]],
                         opts.name,
                         table.concat(opts.args, ", "),
                         type(opts.body) == "table"
@@ -63,12 +65,24 @@ end
             end,
         },
     },
+    _automation = {}
 }
 
 local M = {}
 
 function M.get_config()
     return config
+end
+
+function M.automate_input(inputs)
+    if type(inputs) ~= "table" then
+        inputs = {inputs}
+    end
+
+    -- TODO: This feels wrong.  I feel like config needs to become an object
+    -- TODO: Refactor this into a class.
+    config._automation.inputs = inputs
+    config._automation.inputs_idx = 0
 end
 
 function M.setup(config)

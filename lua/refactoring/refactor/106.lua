@@ -22,7 +22,7 @@ local function get_code(
     ret
 )
     return Config.get_config().code_generation[lang].extract_function({
-        args = vim.tbl_keys(selected_local_references),
+        args = vim.fn.sort(vim.tbl_keys(selected_local_references)),
         body = region:get_text(bufnr),
         name = function_name,
         ret = ret,
