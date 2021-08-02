@@ -9,9 +9,10 @@
 ;; function extraction, 106.
 ((formal_parameters
   (required_parameter
-    (identifier) @definition.function_argument)?
+    (identifier) @definition.function_argument)))
+((formal_parameters
   (optional_parameter
-    (identifier) @definition.function_argument?)))
+    (identifier) @definition.function_argument)))
 
 (program) @definition.scope
 (function_declaration) @definition.scope
