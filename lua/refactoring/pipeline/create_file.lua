@@ -3,7 +3,7 @@ local get_input = require("refactoring.get_input")
 local M = {}
 
 function M.from_input(refactor)
-    local file_name = get_input("106: File Name > ", vim.fn.expand("%:h"))
+    local file_name = get_input("Create File: Name > ", vim.fn.expand("%:h"))
     -- OPTIONS? We should probably configure this
     -- extract on second method added
     vim.cmd(":vnew")

@@ -1,0 +1,4 @@
+:4
+:exe "norm! Vjj\<Esc>"
+:4
+:norm! Vjj
