@@ -34,16 +34,14 @@ local function read_file(file)
     return Path:new("lua", "refactoring", "tests", file):read()
 end
 
-local extension_to_filetype = {
-    ["lua"] = "lua",
-    ["ts"] = "typescript",
-}
+local extension_to_filetype = { ["lua"] = "lua", ["ts"] = "typescript" }
 
 describe("Refactoring", function()
     it("All refactoring", function()
         local files = scandir.scan_dir(
             Path:new(cwd, "lua", "refactoring", "tests"):absolute()
         )
+        local config = Config.setup()
         for _, file in pairs(files) do
             file = remove_cwd(file)
             if string.match(file, "start") then
@@ -82,15 +80,20 @@ describe("Refactoring", function()
                 )
 
                 vim.cmd(":new")
-                vim.cmd(string.format(":set filetype=%s", extension_to_filetype[parts[4]]))
+                vim.cmd(
+                    string.format(
+                        ":set filetype=%s",
+                        extension_to_filetype[parts[4]]
+                    )
+                )
                 vim.api.nvim_buf_set_lines(0, 0, -1, false, contents)
-                Config.automate_input(inputs)
+                config:automate_input(inputs)
 
                 for _, command in pairs(commands) do
                     vim.cmd(command)
                 end
 
-                refactoring[parts[1]](0)
+                refactoring[parts[1]](0, config)
 
                 local lines = vim.api.nvim_buf_get_lines(0, 0, -1, false)
                 eq(expected, lines)

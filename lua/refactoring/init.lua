@@ -2,12 +2,16 @@ local refactors = require("refactoring.refactor")
 local Config = require("refactoring.config")
 
 local M = {}
+local config = {}
 
 function M.setup(config)
-    Config.setup(config)
+    config = Config.setup(config)
 end
 
-function M.refactor(name)
+function M.refactor(name, options)
+    if options == nil then
+        options = config
+    end
     local refactor = refactors.refactor_names[name]
     if not refactor then
         error(
@@ -20,7 +24,7 @@ function M.refactor(name)
 
     -- Remove the calls to vim.fn
     -- I just forgot the name of this ;)
-    refactors[refactor](vim.api.nvim_buf_get_number(0))
+    refactors[refactor](vim.api.nvim_buf_get_number(0), options)
 end
 
 function M.get_refactors()

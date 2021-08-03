@@ -9,11 +9,11 @@ local helpers = require("refactoring.helpers")
 local get_selected_local_defs = require(
     "refactoring.pipeline.get_selected_local_defs"
 )
-local Config = require("refactoring.config")
 
 local M = {}
 
 local function get_code(
+    options,
     bufnr,
     lang,
     region,
@@ -21,7 +21,7 @@ local function get_code(
     function_name,
     ret
 )
-    return Config.get_config().code_generation[lang].extract_function({
+    return options.get_code_generation_for(lang).extract_function({
         args = vim.fn.sort(vim.tbl_keys(selected_local_references)),
         body = region:get_text(bufnr),
         name = function_name,
@@ -74,23 +74,27 @@ local function get_selected_local_references(refactor)
     return selected_local_references
 end
 
-local function get_extract_setup_pipeline(bufnr)
+local function get_extract_setup_pipeline(bufnr, options)
     return Pipeline
-        :from_task(refactor_setup(bufnr, Config.get_config()))
+        :from_task(refactor_setup(bufnr, options))
         :add_task(selection_setup)
         :add_task(get_selected_local_defs)
 end
 
-M.extract_to_file = function(bufnr)
+M.extract_to_file = function(bufnr, options)
     bufnr = bufnr or vim.fn.bufnr(vim.fn.bufname())
-    get_extract_setup_pipeline(bufnr)
+    get_extract_setup_pipeline(bufnr, options)
         :add_task(create_file.from_input)
         :add_task(function(refactor)
             local selected_local_references = get_selected_local_references(
                 refactor
             )
-            local function_name = get_input("106: Extract Function Name > ")
+            local function_name = get_input(
+                "106: Extract Function Name > ",
+                refactor.options
+            )
             local extract_function = get_code(
+                refactor.options,
                 refactor.bufnr,
                 refactor.filetype,
                 refactor.region,
@@ -105,10 +109,7 @@ M.extract_to_file = function(bufnr)
                     text = extract_function.create,
                     bufnr = refactor.buffers[2],
                 },
-                {
-                    region = refactor.region,
-                    text = extract_function.call,
-                },
+                { region = refactor.region, text = extract_function.call },
             }
 
             return true, refactor
@@ -117,16 +118,20 @@ M.extract_to_file = function(bufnr)
         :run()
 end
 
-M.extract = function(bufnr)
+M.extract = function(bufnr, options)
     bufnr = bufnr or vim.fn.bufnr()
-    get_extract_setup_pipeline(bufnr)
+    get_extract_setup_pipeline(bufnr, options)
         :add_task(function(refactor)
             local selected_local_references = get_selected_local_references(
                 refactor
             )
 
-            local function_name = get_input("106: Extract Function Name > ")
+            local function_name = get_input(
+                "106: Extract Function Name > ",
+                options
+            )
             local extract_function = get_code(
+                options,
                 refactor.bufnr,
                 refactor.filetype,
                 refactor.region,
@@ -140,10 +145,10 @@ M.extract = function(bufnr)
                     region = utils.region_above_node(refactor.scope),
                     text = extract_function.create,
                 },
-                {
-                    region = refactor.region,
-                    text = extract_function.call,
-                },
+                { 
+		    region = refactor.region,
+		    text = extract_function.call
+	        },
             }
 
             return true, refactor

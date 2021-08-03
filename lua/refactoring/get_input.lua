@@ -1,21 +1,14 @@
-local Config = require("refactoring.config")
-
 -- This will be able to be hot swapped out with better input capture as we
 -- go on.  This is just a place holder
-local function get_input(question, text)
+local function get_input(question, text, options)
     text = text or ""
 
-    -- TODO: Extract to class
-    local a = Config.get_config()._automation
-    if a.inputs then
-        local inputs = a.inputs
-        if #inputs > a.inputs_idx then
-            a.inputs_idx = a.inputs_idx + 1
-            return a.inputs[a.inputs_idx]
-        end
+    local next_input = options.get_next_input()
+    if next_input == nil then
+        next_input = vim.fn.input(question, text)
     end
 
-    return vim.fn.input(question, text)
+    return next_input
 end
 
 return get_input
