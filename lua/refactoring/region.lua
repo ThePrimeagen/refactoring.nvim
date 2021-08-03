@@ -1,6 +1,8 @@
 local function get_selection_range()
-    local _, start_row, start_col, _ = unpack(vim.fn.getpos("'<"))
-    local _, end_row, _, _ = unpack(vim.fn.getpos("'>"))
+    -- local _, end_row, _, _ = unpack(vim.fn.getpos("'>"))
+    local start_row = vim.fn.line("'<")
+    local start_col = vim.fn.col("'<")
+    local end_row = vim.fn.line("'>")
     local end_col = vim.fn.col("'>")
 
     -- end_col :: TS is 0 based, and '> on line selections is char_count + 1
@@ -27,7 +29,6 @@ function Region:from_current_selection()
 
     return setmetatable({
         bufnr = vim.fn.bufnr(),
-        from_vim = true,
         start_row = start_row,
         start_col = start_col,
         end_row = end_row,
@@ -81,6 +82,15 @@ function Region:get_text(bufnr)
         self.end_row,
         false
     )
+
+    local text_length = #text
+    local end_col = math.min(#text[text_length], self.end_col)
+    local end_idx = vim.str_byteindex(text[text_length], end_col)
+    local start_idx = vim.str_byteindex(text[1], self.start_col)
+
+    text[text_length] = text[text_length]:sub(1, end_idx)
+    text[1] = text[1]:sub(start_idx)
+
     return text
 end
 

@@ -4,5 +4,4 @@ function simple_function(a: number) {
     for (let idx = test - 1; idx < test_other; ++idx) {
         console.log(idx, a)
     }
-    // TODO: Why doesn't the const indent? We are running gg=G
 }
