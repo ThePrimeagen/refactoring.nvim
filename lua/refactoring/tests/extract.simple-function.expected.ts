@@ -10,6 +10,5 @@ function simple_function(a: number) {
     let test = 1;
     let test_other = 11
 
-const fill_me = foo_bar(a, test, test_other)
-    // TODO: Why doesn't the const indent? We are running gg=G
+    const fill_me = foo_bar(a, test, test_other)
 }
