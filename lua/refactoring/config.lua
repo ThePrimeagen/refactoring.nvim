@@ -76,7 +76,7 @@ func %s(%s) {
     %s
     return %s
 }
-                ]],
+]],
                         opts.name,
                         table.concat(opts.args, ", "),
                         type(opts.body) == "table"

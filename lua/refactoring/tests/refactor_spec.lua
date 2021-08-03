@@ -37,6 +37,7 @@ end
 local extension_to_filetype = {
     ["lua"] = "lua",
     ["ts"] = "typescript",
+    ["go"] = "go",
 }
 
 local function for_each_file(cb)
@@ -71,7 +72,7 @@ describe("Refactoring", function()
                 "\n"
             )
             local commands = split_string(
-                read_file(string.format("%s.%s.commands", parts[1], parts[2])),
+                read_file(string.format("%s.%s.%s.commands", parts[1], parts[2], parts[4])),
                 "\n"
             )
             local expected = split_string(
