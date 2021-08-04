@@ -94,7 +94,7 @@ func %s(%s) {
             end,
         },
     },
-    _automation = {}
+    _automation = {},
 }
 
 local M = {}
@@ -105,7 +105,7 @@ end
 
 function M.automate_input(inputs)
     if type(inputs) ~= "table" then
-        inputs = {inputs}
+        inputs = { inputs }
     end
 
     -- TODO: This feels wrong.  I feel like config needs to become an object
