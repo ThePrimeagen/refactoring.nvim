@@ -7,7 +7,7 @@ local config = {
             -- cmd = [[ !stylua % ]],
         },
         go = {
-
+            -- cmd = [[ !gofmt -w % ]],
         },
     },
     code_generation = {
