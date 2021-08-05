@@ -72,7 +72,9 @@ end
 
 --- Convert a region to a tree sitter region
 function Region:to_ts()
-    return self.start_row - 1, self.start_col, self.end_row - 1, self.end_col
+    -- Need the -2 for end_col to be  correct for `ts_utils.is_in_node_range`
+    -- function results when checking scope for languages like python
+    return self.start_row - 1, self.start_col, self.end_row - 1, self.end_col - 2
 end
 
 function Region:get_text(bufnr)

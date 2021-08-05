@@ -38,6 +38,7 @@ local extension_to_filetype = {
     ["lua"] = "lua",
     ["ts"] = "typescript",
     ["go"] = "go",
+    ["py"] = "python",
 }
 
 local function for_each_file(cb)
