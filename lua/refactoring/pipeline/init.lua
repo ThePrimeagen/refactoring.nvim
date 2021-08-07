@@ -44,7 +44,7 @@ end
 function Pipeline:run(cb, err, seed_value)
     err = err or error
     async.void(function()
-        local ok = true
+        local ok
         local results = seed_value
 
         local idx = 1

@@ -1,4 +1,3 @@
-local utils = require("refactoring.utils")
 local Region = require("refactoring.region")
 
 local function selection_setup(refactor)
