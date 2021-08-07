@@ -33,14 +33,8 @@ end
 
 function Query:get_scope_over_region(region)
     local start_row, start_col, end_row, end_col = region:to_ts()
-    local start_scope = self:get_scope_by_position(
-        start_row,
-        start_col
-    )
-    local end_scope = self:get_scope_by_position(
-        end_row,
-        end_col
-    )
+    local start_scope = self:get_scope_by_position(start_row, start_col)
+    local end_scope = self:get_scope_by_position(end_row, end_col)
 
     if start_scope ~= end_scope then
         error("Selection spans over two scopes, cannot determine scope")
@@ -79,7 +73,10 @@ end
 
 function Query:find_occurances(scope, sexpr)
     -- TODO: Ask tj why my life is terrible
-    local sexpr_query = vim.treesitter.parse_query(self.lang, sexpr .. " @tmp_capture")
+    local sexpr_query = vim.treesitter.parse_query(
+        self.lang,
+        sexpr .. " @tmp_capture"
+    )
     for _, n in sexpr_query:iter_captures(scope, self.bufnr, 0, -1) do
         print(vim.inspect(ts_utils.get_node_text(n)))
     end

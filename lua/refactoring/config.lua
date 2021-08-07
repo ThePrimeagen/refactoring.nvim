@@ -164,7 +164,7 @@ function M.automate_input(inputs)
     config._automation.inputs_idx = 0
 end
 
-function M.setup(config)
+function M.setup()
     -- TODO: TJ fill this in...
 end
 

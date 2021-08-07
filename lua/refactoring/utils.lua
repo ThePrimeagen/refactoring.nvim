@@ -66,7 +66,6 @@ M.filter_to_selection = function(nodes, region)
     return vim.tbl_filter(function(node)
         return not M.range_contains_node(node, region:to_ts())
     end, nodes)
-
 end
 
 -- TODO: Very unsure if this needs to be a "util" or not But this is super

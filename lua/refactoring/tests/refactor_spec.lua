@@ -73,7 +73,14 @@ describe("Refactoring", function()
                 "\n"
             )
             local commands = split_string(
-                read_file(string.format("%s.%s.%s.commands", parts[1], parts[2], parts[4])),
+                read_file(
+                    string.format(
+                        "%s.%s.%s.commands",
+                        parts[1],
+                        parts[2],
+                        parts[4]
+                    )
+                ),
                 "\n"
             )
             local expected = split_string(
