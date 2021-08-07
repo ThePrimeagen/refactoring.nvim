@@ -1,13 +1,7 @@
 local ts_utils = require("nvim-treesitter.ts_utils")
-local parsers = require("nvim-treesitter.parsers")
 local Region = require("refactoring.region")
 
 local M = {}
-
-M.get_root = function(bufnr, lang)
-    local parser = parsers.get_parser(bufnr or 0, lang)
-    return parser:parse()[1]:root()
-end
 
 function M.get_top_of_file_region()
     local range = { line = 0, character = 0 }
@@ -66,91 +60,6 @@ M.range_contains_node = function(node, start_row, start_col, end_row, end_col)
     end
 
     return false
-end
-
--- param region Region
-M.get_scope_over_selection = function(bufnr, root, region, lang)
-    local start_row, start_col, end_row, end_col = region:to_ts()
-    local start_scope = M.get_scope(bufnr, root, start_row, start_col, lang)
-    local end_scope = M.get_scope(bufnr, root, end_row, end_col, lang)
-
-    if start_scope ~= end_scope then
-        error("Selection spans over two scopes, cannot determine scope")
-    end
-
-    return start_scope
-end
-
-M.get_scope = function(bufnr, root, line, col, lang)
-    -- TODO: Cache them queries boy -- but maybe not?
-    local query = vim.treesitter.get_query(lang, "refactoring")
-
-    local out = nil
-    for _, n, _ in query:iter_captures(root, bufnr, 0, -1) do
-        if
-            ts_utils.is_in_node_range(n, line, col)
-            and (out == nil or M.node_contains(out, n))
-        then
-            out = n
-        end
-    end
-
-    return out
-end
-
-local function get_refactoring_query(lang)
-    local query = vim.treesitter.get_query(lang, "refactoring")
-    if not query then
-        error(
-            "refactoring not supported in this language.  Please provide a queries/<lang>/refactoring.scm"
-        )
-    end
-    return query
-end
-
-local function pluck_by_capture(bufnr, scope, lang, query, capture_name)
-    local local_defs = {}
-    local root = M.get_root(bufnr, lang)
-    for id, node, _ in query:iter_captures(root, 0, 0, -1) do
-        if
-            query.captures[id] == capture_name
-            and M.node_contains(scope, node)
-        then
-            table.insert(local_defs, node)
-        end
-    end
-
-    return local_defs
-end
-
-M.get_function_args = function(bufnr, scope, lang)
-    return pluck_by_capture(
-        bufnr,
-        scope,
-        lang,
-        get_refactoring_query(lang),
-        "definition.function_argument"
-    )
-end
-
-M.get_local_defs = function(bufnr, scope, lang)
-    return pluck_by_capture(
-        bufnr,
-        scope,
-        lang,
-        get_refactoring_query(lang),
-        "definition.local_var"
-    )
-end
-
-M.get_all_identifiers = function(bufnr, scope, lang)
-    return pluck_by_capture(
-        bufnr,
-        scope,
-        lang,
-        vim.treesitter.get_query(lang, "locals"),
-        "reference"
-    )
 end
 
 M.filter_to_selection = function(nodes, region)
