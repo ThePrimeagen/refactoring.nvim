@@ -1,133 +1,153 @@
-local config = {
-    formatting = {
-        typescript = {
-            cmd = [[ :norm! gg=G ]],
-        },
-        lua = {
-            -- cmd = [[ !stylua % ]],
-        },
-        go = {
-            -- cmd = [[ !gofmt -w % ]],
-        },
-        python = {
-            -- TODO: add python formatting command
-        },
+local default_formatting = {
+    typescript = {
+        cmd = [[ :norm! gg=G ]],
     },
-    code_generation = {
-        typescript = {
-            extract_function = function(opts)
-                return {
-                    create = string.format(
-                        [[
+    lua = {
+        -- cmd = [[ !stylua % ]],
+    },
+    go = {
+        -- cmd = [[ !gofmt -w % ]],
+    },
+    python = {
+        -- TODO: add python formatting command
+    },
+}
+local default_code_generation = {
+    typescript = {
+        extract_function = function(opts)
+            return {
+                create = string.format(
+                    [[
 function %s(%s) {
     %s
     return %s
 }
 
 ]],
-                        opts.name,
-                        table.concat(opts.args, ", "),
-                        type(opts.body) == "table"
-                                and table.concat(opts.body, "\n")
-                            or opts.body,
-                        opts.ret
-                    ),
-                    -- TODO: OBVI THIS NEEDS TO BE DIFFERENT...
-                    call = string.format(
-                        "const %s = %s(%s)",
-                        opts.ret,
-                        opts.name,
-                        table.concat(opts.args, ", ")
-                    ),
-                }
-            end,
-        },
-        lua = {
-            extract_function = function(opts)
-                return {
-                    create = string.format(
-                        [[
+                    opts.name,
+                    table.concat(opts.args, ", "),
+                    type(opts.body) == "table"
+                            and table.concat(opts.body, "\n")
+                        or opts.body,
+                    opts.ret
+                ),
+                -- TODO: OBVI THIS NEEDS TO BE DIFFERENT...
+                call = string.format(
+                    "const %s = %s(%s)",
+                    opts.ret,
+                    opts.name,
+                    table.concat(opts.args, ", ")
+                ),
+            }
+        end,
+    },
+    lua = {
+        extract_function = function(opts)
+            return {
+                create = string.format(
+                    [[
 local function %s(%s)
     %s
     return %s
 end
 
 ]],
-                        opts.name,
-                        table.concat(opts.args, ", "),
-                        type(opts.body) == "table"
-                                and table.concat(opts.body, "\n")
-                            or opts.body,
-                        opts.ret
-                    ),
+                    opts.name,
+                    table.concat(opts.args, ", "),
+                    type(opts.body) == "table"
+                            and table.concat(opts.body, "\n")
+                        or opts.body,
+                    opts.ret
+                ),
 
-                    call = string.format(
-                        "local %s = %s(%s)",
-                        opts.ret,
-                        opts.name,
-                        table.concat(opts.args, ", ")
-                    ),
-                }
-            end,
-        },
-        go = {
-            extract_function = function(opts)
-                return {
-                    create = string.format(
-                        [[
+                call = string.format(
+                    "local %s = %s(%s)",
+                    opts.ret,
+                    opts.name,
+                    table.concat(opts.args, ", ")
+                ),
+            }
+        end,
+    },
+    go = {
+        extract_function = function(opts)
+            return {
+                create = string.format(
+                    [[
 func %s(%s) {
     %s
     return %s
 }
 ]],
-                        opts.name,
-                        table.concat(opts.args, ", "),
-                        type(opts.body) == "table"
-                                  and table.concat(opts.body, "\n")
-                              or opts.body,
-                        opts.ret
-                    ),
-                    call = string.format(
-                        "%s := %s(%s)",
-                        opts.ret,
-                        opts.name,
-                        table.concat(opts.args, ", ")
-                    ),
-                }
-            end,
-        },
-        python = {
-            extract_function = function(opts)
-                return {
-                    create = string.format(
-                        [[
+
+                    opts.name,
+                    table.concat(opts.args, ", "),
+                    type(opts.body) == "table"
+                            and table.concat(opts.body, "\n")
+                        or opts.body,
+                    opts.ret
+                ),
+                call = string.format(
+                    "%s := %s(%s)",
+                    opts.ret,
+                    opts.name,
+                    table.concat(opts.args, ", ")
+                ),
+            }
+        end,
+    },
+    python = {
+        extract_function = function(opts)
+            return {
+                create = string.format(
+                    [[
 def %s(%s):
     %s
     return %s
 
 
 ]],
-                        opts.name,
-                        table.concat(opts.args, ", "),
-                        type(opts.body) == "table"
-                                  and table.concat(opts.body, "\n")
-                              or opts.body,
-                        opts.ret
-                    ),
-                    call = string.format(
-                        "%s = %s(%s)",
-                        opts.ret,
-                        opts.name,
-                        table.concat(opts.args, ", ")
-                    ),
-                }
-            end,
-        },
+                    opts.name,
+                    table.concat(opts.args, ", "),
+                    type(opts.body) == "table"
+                            and table.concat(opts.body, "\n")
+                        or opts.body,
+                    opts.ret
+                ),
+                call = string.format(
+                    "%s = %s(%s)",
+                    opts.ret,
+                    opts.name,
+                    table.concat(opts.args, ", ")
+                ),
+            }
+        end,
     },
+}
+
+local config = {
+    code_generation = default_code_generation,
+    formatting = default_formatting,
     _automation = {},
 }
 
+function config.get_code_generation_for(lang)
+    return config.code_generation[lang]
+end
+
+function config.get_formatting_for(filetype)
+    return config.formatting[filetype]
+end
+
 local M = {}
+
+function M.get_code_generation_for(lang)
+    return config.get_code_generation_for(lang)
+end
+
+function M.get_formatting_for(filetype)
+    return config.get_formatting_for(filetype)
+end
 
 function M.get_config()
     return config

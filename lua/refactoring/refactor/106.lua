@@ -1,4 +1,5 @@
 local ts_utils = require("nvim-treesitter.ts_utils")
+local Query = require("refactoring.query")
 local utils = require("refactoring.utils")
 local Pipeline = require("refactoring.pipeline")
 local selection_setup = require("refactoring.pipeline.selection_setup")
@@ -21,7 +22,7 @@ local function get_code(
     function_name,
     ret
 )
-    return Config.get_config().code_generation[lang].extract_function({
+    return Config.get_code_generation_for(lang).extract_function({
         args = vim.fn.sort(vim.tbl_keys(selected_local_references)),
         body = region:get_text(bufnr),
         name = function_name,
@@ -44,10 +45,9 @@ local function get_local_definitions(bufnr, local_defs, function_args)
 end
 
 local function get_selected_local_references(refactor)
-    local function_args = utils.get_function_args(
-        refactor.bufnr,
+    local function_args = refactor.query:pluck_by_capture(
         refactor.scope,
-        refactor.filetype
+        Query.query_type.FunctionArgument
     )
     local local_def_map = get_local_definitions(
         refactor.bufnr,
@@ -55,10 +55,9 @@ local function get_selected_local_references(refactor)
         function_args
     )
 
-    local local_references = utils.get_all_identifiers(
-        refactor.bufnr,
+    local local_references = refactor.locals:pluck_by_capture(
         refactor.scope,
-        refactor.filetype
+        Query.query_type.Reference
     )
     local selected_local_references = {}
 
