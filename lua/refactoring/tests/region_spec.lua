@@ -1,8 +1,8 @@
 local Region = require("refactoring.region")
 local eq = assert.are.same
+local vim_motion = require("refactoring.tests.motion")
 
 describe("Region", function()
-
     it("select text : line", function()
         vim.cmd(":new")
         vim.api.nvim_buf_set_lines(0, 0, -1, false, {
@@ -11,7 +11,7 @@ describe("Region", function()
             "    bar",
             "}",
         })
-        vim.cmd(":norm! jVVV")
+        vim_motion("jV")
         local region = Region:from_current_selection()
         eq(region:get_text(), {"if (true) {"})
     end)
@@ -26,8 +26,7 @@ describe("Region", function()
         })
 
         -- TODO: Why is first selection just not present...
-        vim.cmd(":norm! jwvwwvbbvww")
-        eq("v", vim.fn.mode())
+        vim_motion("jwvww")
         local region = Region:from_current_selection()
         eq({"(true)"}, region:get_text())
     end)
@@ -43,7 +42,7 @@ describe("Region", function()
 
         -- TODO: Why is first selection just not present...
         vim.cmd(":1")
-        vim.cmd(":execute \"norm! jwvje\\<Esc>\"")
+        vim_motion("jwvje")
         eq("n", vim.fn.mode())
         eq(3, vim.fn.line('.'))
         local region = Region:from_current_selection()
