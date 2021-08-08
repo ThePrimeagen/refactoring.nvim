@@ -1,7 +1,8 @@
-local scandir = require("plenary.scandir")
 local Path = require("plenary.path")
+local scandir = require("plenary.scandir")
 local refactoring = require("refactoring.refactor")
 local Config = require("refactoring.config")
+local test_utils = require("refactoring.tests.utils")
 
 local cwd = vim.loop.cwd()
 vim.cmd("set rtp+=" .. cwd)
@@ -10,28 +11,6 @@ local eq = assert.are.same
 
 local function remove_cwd(file)
     return file:sub(#cwd + 2 + #"lua/refactoring/tests/")
-end
-
-local function split_string(inputstr, sep)
-    local t = {}
-    -- [[ lets not think about the edge case there... --]]
-    while #inputstr > 0 do
-        local start, stop = inputstr:find(sep)
-        local str
-        if not start then
-            str = inputstr
-            inputstr = ""
-        else
-            str = inputstr:sub(1, start - 1)
-            inputstr = inputstr:sub(stop + 1)
-        end
-        table.insert(t, str)
-    end
-    return t
-end
-
-local function read_file(file)
-    return Path:new("lua", "refactoring", "tests", file):read()
 end
 
 local extension_to_filetype = {
@@ -56,7 +35,7 @@ end
 describe("Refactoring", function()
     for_each_file(function(file)
         it(string.format("Refactoring: %s", file), function()
-            local parts = split_string(file, "%.")
+            local parts = test_utils.split_string(file, "%.")
 
             if not refactoring[parts[1]] then
                 error(
@@ -67,13 +46,18 @@ describe("Refactoring", function()
                 )
             end
 
-            local contents = split_string(read_file(file), "\n")
-            local inputs = split_string(
-                read_file(string.format("%s.%s.inputs", parts[1], parts[2])),
+            local contents = test_utils.split_string(
+                test_utils.read_file(file),
                 "\n"
             )
-            local commands = split_string(
-                read_file(
+            local inputs = test_utils.split_string(
+                test_utils.read_file(
+                    string.format("%s.%s.inputs", parts[1], parts[2])
+                ),
+                "\n"
+            )
+            local commands = test_utils.split_string(
+                test_utils.read_file(
                     string.format(
                         "%s.%s.%s.commands",
                         parts[1],
@@ -83,8 +67,8 @@ describe("Refactoring", function()
                 ),
                 "\n"
             )
-            local expected = split_string(
-                read_file(
+            local expected = test_utils.split_string(
+                test_utils.read_file(
                     string.format(
                         "%s.%s.expected.%s",
                         parts[1],

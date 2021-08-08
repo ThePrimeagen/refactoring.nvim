@@ -7,8 +7,9 @@ local function foo_bar(a, test, test_other)
     return fill_me
 end
 
+
 function simple_function(a)
-    local test = 1;
+    local test = 1
     local test_other = 11
 
 local fill_me = foo_bar(a, test, test_other)

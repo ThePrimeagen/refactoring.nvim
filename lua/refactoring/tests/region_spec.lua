@@ -1,6 +1,6 @@
 local Region = require("refactoring.region")
 local eq = assert.are.same
-local vim_motion = require("refactoring.tests.motion")
+local vim_motion = require("refactoring.tests.utils").vim_motion
 
 describe("Region", function()
     it("select text : line", function()
