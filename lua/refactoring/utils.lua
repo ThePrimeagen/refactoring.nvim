@@ -22,11 +22,13 @@ function M.node_contains(a, b)
 end
 
 -- determines if a node exists within a range.  Imagine a range selection
--- across '<,'> and an identifier.  Does the identifier exist within the
--- selection?
---
--- @param a the containing node
--- @param b the node to be contained
+-- across '<,'> (a start,end row/column)and an identifier.
+-- Does the identifier exist within the selection?
+-- @param node the node to be contained
+-- @param start_row the start row of the range
+-- @param start_col the start column of the range
+-- @param end_row the end row of the range
+-- @param end_col the end column of the range
 M.range_contains_node = function(node, start_row, start_col, end_row, end_col)
     local node_start_row, node_start_col, node_end_row, node_end_col =
         node:range()
