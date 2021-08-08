@@ -77,9 +77,12 @@ function Query:find_occurances(scope, sexpr)
         self.lang,
         sexpr .. " @tmp_capture"
     )
+
+    local occurances = {}
     for _, n in sexpr_query:iter_captures(scope, self.bufnr, 0, -1) do
-        print(vim.inspect(ts_utils.get_node_text(n)))
+        table.insert(occurances, n)
     end
+    return occurances
 end
 
 return Query
