@@ -8,6 +8,19 @@ function M.get_top_of_file_region()
     return Region:from_lsp_range({ start = range, ["end"] = range })
 end
 
+-- FROM http://lua-users.org/wiki/CommonFunctions
+-- remove trailing and leading whitespace from string.
+function M.trim(s)
+    if type(s) == "table" then
+        for i, str in pairs(s) do
+            s[i] = M.trim(str)
+        end
+        return s
+    end
+    -- from PiL2 20.4
+    return (s:gsub("^%s*(.-)%s*$", "%1"))
+end
+
 -- determines if a contains node b.
 -- @param a the containing node
 -- @param b the node to be contained

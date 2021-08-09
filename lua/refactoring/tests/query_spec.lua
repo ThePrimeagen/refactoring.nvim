@@ -1,6 +1,7 @@
 local Query = require("refactoring.query")
 local Region = require("refactoring.region")
 local test_utils = require("refactoring.tests.utils")
+local utils = require("refactoring.utils")
 local ts_utils = require("nvim-treesitter.ts_utils")
 local eq = assert.are.same
 
@@ -19,7 +20,7 @@ describe("Query", function()
 
         local root = Query.get_root()
 
-        vim.cmd(":10")
+        vim.cmd(":14")
         test_utils.vim_motion("fovt-h")
 
         local query = Query:new(
@@ -34,16 +35,16 @@ describe("Query", function()
         local occurances = query:find_occurances(scope, extract_node:sexpr())
         eq(3, #occurances)
         eq(
-            { "order.quantity * order.itemPrice" },
-            ts_utils.get_node_text(occurances[1])
+            { "order.quantity", "*", "order.itemPrice" },
+            utils.trim(ts_utils.get_node_text(occurances[1]))
         )
         eq(
             { "order.quantity * order.itemPrice" },
-            ts_utils.get_node_text(occurances[2])
+            utils.trim(ts_utils.get_node_text(occurances[2]))
         )
         eq(
-            { "order.quantity *", "                 order.itemPrice" },
-            ts_utils.get_node_text(occurances[3])
+            { "order.quantity *", "order.itemPrice" },
+            utils.trim(ts_utils.get_node_text(occurances[3]))
         )
     end)
 end)
