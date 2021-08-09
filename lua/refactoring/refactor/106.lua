@@ -6,7 +6,7 @@ local selection_setup = require("refactoring.pipeline.selection_setup")
 local refactor_setup = require("refactoring.pipeline.refactor_setup")
 local get_input = require("refactoring.get_input")
 local create_file = require("refactoring.pipeline.create_file")
-local helpers = require("refactoring.helpers")
+local post_refactor = require("refactoring.pipeline.post_refactor")
 local get_selected_local_defs = require(
     "refactoring.pipeline.get_selected_local_defs"
 )
@@ -112,7 +112,7 @@ M.extract_to_file = function(bufnr)
 
             return true, refactor
         end)
-        :after(helpers.create_post_refactor_tasks())
+        :after(post_refactor)
         :run()
 end
 
@@ -147,7 +147,7 @@ M.extract = function(bufnr)
 
             return true, refactor
         end)
-        :after(helpers.create_post_refactor_tasks())
+        :after(post_refactor)
         :run()
 end
 

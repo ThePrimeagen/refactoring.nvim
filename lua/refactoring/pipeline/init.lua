@@ -37,6 +37,9 @@ end
 --
 -- @param pipeline Pipeline the next pipeline to run after the primary pipeline has been an
 function Pipeline:after(pipeline)
+    if type(pipeline) == "function" then
+        pipeline = pipeline()
+    end
     self._after = pipeline
     return self
 end
