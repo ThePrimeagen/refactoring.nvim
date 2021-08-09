@@ -21,6 +21,33 @@ function M.trim(s)
     return (s:gsub("^%s*(.-)%s*$", "%1"))
 end
 
+function M.get_node_text(node, out)
+    out = out or {}
+    local count = node:child_count()
+
+    if count == 0 then
+        table.insert(out, ts_utils.get_node_text(node)[1])
+        return out
+    end
+
+    for idx = 0, count - 1 do
+        M.get_node_text(node:child(idx), out)
+    end
+
+    return out
+end
+
+--[[
+--TODO: Finish this function.
+function M.appears_before(a, b)
+    local a_row, a_col, a_bytes = a:start()
+    local b_row, b_col, b_bytes = b:start()
+    if a_row ~= b_row then
+        return a_row > b_row
+    end
+end
+--]]
+
 -- determines if a contains node b.
 -- @param a the containing node
 -- @param b the node to be contained

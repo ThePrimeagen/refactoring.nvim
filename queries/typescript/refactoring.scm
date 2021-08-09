@@ -16,4 +16,12 @@
 
 (program) @definition.scope
 (function_declaration) @definition.scope
-(lexical_declaration) @definition.scope
+(arrow_function) @definition.scope
+
+(expression_statement) @definition.statement
+(return_statement) @definition.statement
+(if_statement) @definition.statement
+(for_statement) @definition.statement
+(do_statement) @definition.statement
+(while_statement) @definition.statement
+(lexical_declaration) @definition.statement

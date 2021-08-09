@@ -46,7 +46,7 @@ function Region:from_node(node, bufnr)
     return setmetatable({
         bufnr = vim.fn.bufnr(bufnr),
         start_row = start_line + 1,
-        start_col = start_col,
+        start_col = start_col + 1,
         end_row = end_line + 1,
         end_col = end_col,
     }, self)

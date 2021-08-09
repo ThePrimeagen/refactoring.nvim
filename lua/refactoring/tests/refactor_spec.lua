@@ -79,23 +79,19 @@ describe("Refactoring", function()
                 "\n"
             )
 
-            vim.cmd(":new")
-            vim.cmd(
-                string.format(
-                    ":set filetype=%s",
-                    extension_to_filetype[parts[4]]
-                )
-            )
-            vim.api.nvim_buf_set_lines(0, 0, -1, false, contents)
+            local bufnr = vim.api.nvim_create_buf(false, false)
+            vim.api.nvim_win_set_buf(0, bufnr)
+            vim.bo[bufnr].filetype = extension_to_filetype[parts[4]]
+            vim.api.nvim_buf_set_lines(bufnr, 0, -1, false, contents)
             Config.automate_input(inputs)
 
             for _, command in pairs(commands) do
                 vim.cmd(command)
             end
 
-            refactoring[parts[1]](0)
+            refactoring[parts[1]](bufnr)
 
-            local lines = vim.api.nvim_buf_get_lines(0, 0, -1, false)
+            local lines = vim.api.nvim_buf_get_lines(bufnr, 0, -1, false)
             eq(expected, lines)
         end)
     end)
