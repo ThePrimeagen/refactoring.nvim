@@ -15,6 +15,8 @@ Query.query_type = {
     FunctionArgument = "definition.function_argument",
     LocalVar = "definition.local_var",
     Reference = "reference",
+    Statement = "definition.statement",
+    Scope = "definition.scope",
 }
 
 function Query.get_root(bufnr, lang)
@@ -45,9 +47,10 @@ end
 
 function Query:get_scope_by_position(line, col)
     local out = nil
-    for _, n, _ in self.query:iter_captures(self.root, self.bufnr, 0, -1) do
+    for id, n, _ in self.query:iter_captures(self.root, self.bufnr, 0, -1) do
         if
-            ts_utils.is_in_node_range(n, line, col)
+            self.query.captures[id] == Query.query_type.Scope
+            and ts_utils.is_in_node_range(n, line, col)
             and (out == nil or utils.node_contains(out, n))
         then
             out = n
@@ -59,11 +62,8 @@ end
 
 function Query:pluck_by_capture(scope, capture_name)
     local local_defs = {}
-    for id, node, _ in self.query:iter_captures(self.root, self.bufnr, 0, -1) do
-        if
-            self.query.captures[id] == capture_name
-            and utils.node_contains(scope, node)
-        then
+    for id, node, _ in self.query:iter_captures(scope, self.bufnr, 0, -1) do
+        if self.query.captures[id] == capture_name then
             table.insert(local_defs, node)
         end
     end
@@ -71,15 +71,16 @@ function Query:pluck_by_capture(scope, capture_name)
     return local_defs
 end
 
-function Query:find_occurances(scope, sexpr)
+function Query.find_occurrences(scope, sexpr, bufnr)
+    local lang = vim.bo[bufnr].filetype
     -- TODO: Ask tj why my life is terrible
     local sexpr_query = vim.treesitter.parse_query(
-        self.lang,
+        lang,
         sexpr .. " @tmp_capture"
     )
 
     local occurances = {}
-    for _, n in sexpr_query:iter_captures(scope, self.bufnr, 0, -1) do
+    for _, n in sexpr_query:iter_captures(scope, bufnr, 0, -1) do
         table.insert(occurances, n)
     end
     return occurances
