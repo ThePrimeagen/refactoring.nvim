@@ -18,6 +18,9 @@
 (function_declaration) @definition.scope
 (arrow_function) @definition.scope
 
+(program) @definition.block
+(statement_block) @definition.block
+
 (expression_statement) @definition.statement
 (return_statement) @definition.statement
 (if_statement) @definition.statement

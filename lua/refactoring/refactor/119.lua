@@ -39,6 +39,7 @@ function M.extract_var(bufnr)
                     table.insert(texts, text)
                 end
             end
+            utils.sort_in_appearance_order(actual_occurrences)
 
             local var_name = get_input("119: What is the var name > ")
             refactor.text_edits = {}
@@ -51,20 +52,45 @@ function M.extract_var(bufnr)
                 })
             end
 
-            --[[
+            local block_scope = refactor.query:get_scope_over_region(
+                refactor.region,
+                Query.query_type.Block
+            )
+
             local unfiltered_statements = refactor.query:pluck_by_capture(
-                refactor.scope,
+                block_scope,
                 Query.query_type.Statement
             )
 
             local statements = vim.tbl_filter(function(node)
-                return node:parent():id() == refactor.scope:id()
+                return node:parent():id() == block_scope:id()
             end, unfiltered_statements)
+            utils.sort_in_appearance_order(statements)
 
+            local contained = nil
+            local top_occurrence = actual_occurrences[1]
             for _, statement in pairs(statements) do
-                print("Statement", utils.get_node_text(statement))
+                if utils.node_contains(statement, top_occurrence) then
+                    contained = statement
+                end
             end
-            --]]
+
+            if not contained then
+                error(
+                    "Extract var unable to determine its containing statement within the block scope, please post issue with exact highlight + code!  Thanks"
+                )
+            end
+            local code =
+                Config.get_code_generation_for(refactor.filetype).create_constant({
+                    name = var_name,
+                    value = extract_node_text,
+                })
+
+            table.insert(refactor.text_edits, {
+                add_newline = false,
+                region = utils.region_one_line_up_from_node(top_occurrence),
+                text = code,
+            })
 
             return true, refactor
         end)

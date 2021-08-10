@@ -14,6 +14,9 @@ local default_formatting = {
 }
 local default_code_generation = {
     typescript = {
+        create_constant = function(opts)
+            return string.format("const %s = %s;\n", opts.name, opts.value)
+        end,
         extract_function = function(opts)
             return {
                 create = string.format(
