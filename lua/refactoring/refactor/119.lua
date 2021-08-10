@@ -88,7 +88,7 @@ function M.extract_var(bufnr)
 
             table.insert(refactor.text_edits, {
                 add_newline = false,
-                region = utils.region_one_line_up_from_node(top_occurrence),
+                region = utils.region_one_line_up_from_node(contained),
                 text = code,
             })
 

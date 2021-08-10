@@ -6,6 +6,7 @@ type Order = {
 // This the straight from the book (slight modifications
 order.quantity * order.itemPrice;
 function orderCalculation(order: Order) {
+    foo.blah * nonsense.nonsense;
     const basePrice = order.quantity*order.itemPrice;
     basePrice;
     return basePrice -

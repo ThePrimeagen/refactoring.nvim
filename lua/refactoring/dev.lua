@@ -28,4 +28,13 @@ function M.debug_current_selection()
     )
 end
 
+function M.print_selections_sexpr()
+    local bufnr = vim.fn.bufnr()
+    local filetype = vim.bo[bufnr].filetype
+    local root = Query.get_root(bufnr, filetype)
+    local region = Region:from_current_selection()
+    local selection_node = root:named_descendant_for_range(region:to_ts())
+    print(vim.inspect(selection_node:sexpr()))
+end
+
 return M
