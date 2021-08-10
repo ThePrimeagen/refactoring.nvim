@@ -37,16 +37,22 @@ function M.get_node_text(node, out)
     return out
 end
 
---[[
---TODO: Finish this function.
 function M.appears_before(a, b)
     local a_row, a_col, a_bytes = a:start()
     local b_row, b_col, b_bytes = b:start()
     if a_row ~= b_row then
-        return a_row > b_row
+        return a_row < b_row
     end
+
+    -- A starts before B
+    -- B ends after A
+    return (a_col < b_col or b_col + b_bytes > a_col + a_bytes)
 end
---]]
+
+function M.sort_in_appearance_order(nodes)
+    table.sort(nodes, M.appears_before)
+    return nodes
+end
 
 -- determines if a contains node b.
 -- @param a the containing node
@@ -59,6 +65,15 @@ function M.node_contains(a, b)
     local start_row, start_col, end_row, end_col = b:range()
     return ts_utils.is_in_node_range(a, start_row, start_col)
         and ts_utils.is_in_node_range(a, end_row, end_col)
+end
+
+-- TODO: This likely doesn't work with multistatement line inserts
+function M.region_one_line_up_from_node(node)
+    local region = Region:from_node(node)
+    region.end_row = region.start_row
+    region.start_col = 1
+    region.end_col = 1
+    return region
 end
 
 -- determines if a node exists within a range.  Imagine a range selection

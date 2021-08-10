@@ -17,6 +17,7 @@ Query.query_type = {
     Reference = "reference",
     Statement = "definition.statement",
     Scope = "definition.scope",
+    Block = "definition.block",
 }
 
 function Query.get_root(bufnr, lang)
@@ -33,10 +34,15 @@ function Query:new(bufnr, lang, query)
     }, self)
 end
 
-function Query:get_scope_over_region(region)
+function Query:get_scope_over_region(region, capture_name)
+    capture_name = capture_name or Query.query_type.Scope
     local start_row, start_col, end_row, end_col = region:to_ts()
-    local start_scope = self:get_scope_by_position(start_row, start_col)
-    local end_scope = self:get_scope_by_position(end_row, end_col)
+    local start_scope = self:get_scope_by_position(
+        start_row,
+        start_col,
+        capture_name
+    )
+    local end_scope = self:get_scope_by_position(end_row, end_col, capture_name)
 
     if start_scope ~= end_scope then
         error("Selection spans over two scopes, cannot determine scope")
@@ -45,11 +51,12 @@ function Query:get_scope_over_region(region)
     return start_scope
 end
 
-function Query:get_scope_by_position(line, col)
+function Query:get_scope_by_position(line, col, capture_name)
+    capture_name = capture_name or Query.query_type.Scope
     local out = nil
     for id, n, _ in self.query:iter_captures(self.root, self.bufnr, 0, -1) do
         if
-            self.query.captures[id] == Query.query_type.Scope
+            self.query.captures[id] == capture_name
             and ts_utils.is_in_node_range(n, line, col)
             and (out == nil or utils.node_contains(out, n))
         then
