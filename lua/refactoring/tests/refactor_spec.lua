@@ -79,6 +79,7 @@ describe("Refactoring", function()
                 "\n"
             )
 
+            -- what is this trying to do
             local bufnr = vim.api.nvim_create_buf(false, false)
             vim.api.nvim_win_set_buf(0, bufnr)
             vim.bo[bufnr].filetype = extension_to_filetype[parts[4]]
@@ -92,6 +93,10 @@ describe("Refactoring", function()
             refactoring[parts[1]](bufnr)
 
             local lines = vim.api.nvim_buf_get_lines(bufnr, 0, -1, false)
+
+            -- Need this for make file so that next test has clean buffer
+            vim.api.nvim_buf_delete(bufnr, { force = true })
+
             eq(expected, lines)
         end)
     end)
