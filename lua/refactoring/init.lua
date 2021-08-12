@@ -2,9 +2,10 @@ local refactors = require("refactoring.refactor")
 local Config = require("refactoring.config")
 
 local M = {}
+local config = {}
 
-function M.setup(config)
-    Config.setup(config)
+function M.setup(initial_config)
+    config = Config.setup(initial_config)
 end
 
 function M.refactor(name)
@@ -20,7 +21,7 @@ function M.refactor(name)
 
     -- Remove the calls to vim.fn
     -- I just forgot the name of this ;)
-    refactors[refactor](vim.api.nvim_buf_get_number(0))
+    refactors[refactor](vim.api.nvim_buf_get_number(0), config)
 end
 
 function M.get_refactors()
