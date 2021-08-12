@@ -79,7 +79,6 @@ describe("Refactoring", function()
                 "\n"
             )
 
-            -- what is this trying to do
             local bufnr = vim.api.nvim_create_buf(false, false)
             vim.api.nvim_win_set_buf(0, bufnr)
             vim.bo[bufnr].filetype = extension_to_filetype[parts[4]]
