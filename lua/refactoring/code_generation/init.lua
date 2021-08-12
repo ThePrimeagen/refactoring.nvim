@@ -24,7 +24,8 @@ local function %s(%s)
     return %s
 end
 
-]]--[[,
+]]
+--[[,
                     opts.name,
                     table.concat(opts.args, ", "),
                     type(opts.body) == "table"
@@ -51,7 +52,8 @@ func %s(%s) {
     %s
     return %s
 }
-]]--[[,
+]]
+--[[,
 
                     opts.name,
                     table.concat(opts.args, ", "),
@@ -79,7 +81,8 @@ def %s(%s):
     return %s
 
 
-]]--[[,
+]]
+--[[,
                     opts.name,
                     table.concat(opts.args, ", "),
                     type(opts.body) == "table"
