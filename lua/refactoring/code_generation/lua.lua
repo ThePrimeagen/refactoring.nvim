@@ -1,4 +1,7 @@
 local lua = {
+    create_constant = function(opts)
+        return string.format("local %s = %s\n", opts.name, opts.value)
+    end,
     extract_function = function(opts)
         return {
             create = string.format(
