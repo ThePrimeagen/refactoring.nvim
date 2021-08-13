@@ -1,28 +1,27 @@
+local utils = require("refactoring.code_generation.utils")
+
 local go = {
-    extract_function = function(opts)
-        return {
-            create = string.format(
-                [[
+    constant = function(opts)
+        return string.format("%s := %s\n", opts.name, opts.value)
+    end,
+    ["return"] = function(code)
+        return string.format("return %s", utils.stringify_code(code))
+    end,
+    ["function"] = function(opts)
+        return string.format(
+            [[
 func %s(%s) {
     %s
-    return %s
 }
 ]],
 
-                opts.name,
-                table.concat(opts.args, ", "),
-                type(opts.body) == "table"
-                        and table.concat(opts.body, "\n")
-                    or opts.body,
-                opts.ret
-            ),
-            call = string.format(
-                "%s := %s(%s)",
-                opts.ret,
-                opts.name,
-                table.concat(opts.args, ", ")
-            ),
-        }
+            opts.name,
+            table.concat(opts.args, ", "),
+            utils.stringify_code(opts.body)
+        )
+    end,
+    call_function = function(opts)
+        return string.format("%s(%s)", opts.name, table.concat(opts.args, ", "))
     end,
 }
 return go

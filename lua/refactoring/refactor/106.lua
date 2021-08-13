@@ -14,22 +14,6 @@ local Config = require("refactoring.config")
 
 local M = {}
 
-local function get_code(
-    bufnr,
-    lang,
-    region,
-    selected_local_references,
-    function_name,
-    ret
-)
-    return Config.get_code_generation_for(lang).extract_function({
-        args = vim.fn.sort(vim.tbl_keys(selected_local_references)),
-        body = region:get_text(bufnr),
-        name = function_name,
-        ret = ret,
-    })
-end
-
 local function get_local_definitions(bufnr, local_defs, function_args)
     local local_def_map = {}
 
@@ -89,24 +73,32 @@ M.extract_to_file = function(bufnr)
                 refactor
             )
             local function_name = get_input("106: Extract Function Name > ")
-            local extract_function = get_code(
-                refactor.bufnr,
-                refactor.filetype,
-                refactor.region,
-                selected_local_references,
-                function_name,
-                "fill_me"
-            )
+
+            local function_body = refactor.region:get_text()
+            table.insert(function_body, refactor.code["return"]("fill_me"))
+            local args = vim.fn.sort(vim.tbl_keys(selected_local_references))
+
+            local function_code = refactor.code["function"]({
+                name = function_name,
+                args = args,
+                body = function_body,
+            })
 
             refactor.text_edits = {
                 {
                     region = utils.get_top_of_file_region(refactor.scope),
-                    text = extract_function.create,
+                    text = function_code,
                     bufnr = refactor.buffers[2],
                 },
                 {
                     region = refactor.region,
-                    text = extract_function.call,
+                    text = refactor.code.constant({
+                        name = "fill_me",
+                        value = refactor.code.call_function({
+                            name = function_name,
+                            args = args,
+                        }),
+                    }),
                 },
             }
 
@@ -125,23 +117,31 @@ M.extract = function(bufnr)
             )
 
             local function_name = get_input("106: Extract Function Name > ")
-            local extract_function = get_code(
-                refactor.bufnr,
-                refactor.filetype,
-                refactor.region,
-                selected_local_references,
-                function_name,
-                "fill_me"
-            )
+            local function_body = refactor.region:get_text()
+            table.insert(function_body, refactor.code["return"]("fill_me"))
+            local args = vim.fn.sort(vim.tbl_keys(selected_local_references))
+
+            local function_code = refactor.code["function"]({
+                name = function_name,
+                args = args,
+                body = function_body,
+            })
 
             refactor.text_edits = {
                 {
                     region = utils.region_above_node(refactor.scope),
-                    text = extract_function.create,
+                    text = function_code,
+                    bufnr = refactor.buffers[2],
                 },
                 {
                     region = refactor.region,
-                    text = extract_function.call,
+                    text = refactor.code.constant({
+                        name = "fill_me",
+                        value = refactor.code.call_function({
+                            name = function_name,
+                            args = args,
+                        }),
+                    }),
                 },
             }
 
