@@ -80,11 +80,10 @@ function M.extract_var(bufnr)
                     "Extract var unable to determine its containing statement within the block scope, please post issue with exact highlight + code!  Thanks"
                 )
             end
-            local code =
-                Config.get_code_generation_for(refactor.filetype).create_constant({
-                    name = var_name,
-                    value = extract_node_text,
-                })
+            local code = refactor.code.constant({
+                name = var_name,
+                value = extract_node_text,
+            })
 
             table.insert(refactor.text_edits, {
                 add_newline = false,

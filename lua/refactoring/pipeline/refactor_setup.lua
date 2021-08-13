@@ -7,6 +7,7 @@ local function refactor_setup(bufnr, options)
         local filetype = vim.bo[bufnr].filetype
         local root = Query.get_root(bufnr, filetype)
         local refactor = {
+            code = options.get_code_generation_for(filetype),
             filetype = filetype,
             bufnr = bufnr,
             query = Query:new(
