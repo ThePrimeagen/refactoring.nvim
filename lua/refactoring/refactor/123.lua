@@ -5,13 +5,12 @@ local get_input = require("refactoring.get_input")
 local Query = require("refactoring.query")
 ]]
 local ensure_lsp = require("refactoring.tasks.ensure_lsp")
-local lsp_definition_setup = require(
-    "refactoring.tasks.lsp_definition_setup"
-)
+local lsp_definition_setup = require("refactoring.tasks.lsp_definition_setup")
 local Pipeline = require("refactoring.pipeline")
 local refactor_setup = require("refactoring.tasks.refactor_setup")
 local not_ready = require("refactoring.tasks.not_ready")
 local post_refactor = require("refactoring.tasks.post_refactor")
+local inline_variable = require("refactoring.tasks.inline_variable")
 local Config = require("refactoring.config")
 
 local M = {}
@@ -22,9 +21,7 @@ function M.inline_var(bufnr)
         :add_task(ensure_lsp)
         :add_task(lsp_definition_setup)
         :add_task(not_ready)
-        :add_task(function(refactor)
-            return true, refactor
-        end)
+        :add_task(inline_variable)
         :after(post_refactor)
         :run()
 end
