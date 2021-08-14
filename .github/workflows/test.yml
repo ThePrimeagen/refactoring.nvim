@@ -1,0 +1,28 @@
+name: Test
+
+on: [push, pull_request]
+
+jobs:
+    lint:
+        name: PlenaryBustedDirectory
+        runs-on: ubuntu-latest
+        steps:
+            - uses: actions/checkout@v2
+              with:
+                path: refactoring.nvim
+            - uses: actions/checkout@v2
+              with:
+                repository: nvim-treesitter/nvim-treesitter
+                path: nvim-treesitter
+            - uses: actions/checkout@v2
+              with:
+                repository: nvim-lua/plenary.nvim
+                path: plenary.nvim
+            - name: Setup
+              run: |
+                  sudo apt-get update
+                  sudo add-apt-repository ppa:neovim-ppa/unstable
+                  sudo apt-get install neovim
+            - name: Test
+              run:
+                cd refactoring.nvim && make test
