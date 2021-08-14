@@ -14,6 +14,10 @@ set rtp+=~/.vim/plugged/nvim-treesitter
 set rtp+=~/.local/share/nvim/site/pack/packer/start/plenary.nvim
 set rtp+=~/.local/share/nvim/site/pack/packer/start/nvim-treesitter
 
+" If you are using lunarvim
+set rtp+=~/.local/share/lunarvim/site/pack/packer/start/plenary.nvim
+set rtp+=~/.local/share/lunarvim/site/pack/packer/start/nvim-treesitter
+
 set autoindent
 set smartindent
 set tabstop=4
