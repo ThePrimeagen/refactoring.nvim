@@ -4,14 +4,14 @@ local utils = require("refactoring.utils")
 local get_input = require("refactoring.get_input")
 local Query = require("refactoring.query")
 ]]
-local ensure_lsp = require("refactoring.pipeline.ensure_lsp")
+local ensure_lsp = require("refactoring.tasks.ensure_lsp")
 local lsp_definition_setup = require(
-    "refactoring.pipeline.lsp_definition_setup"
+    "refactoring.tasks.lsp_definition_setup"
 )
 local Pipeline = require("refactoring.pipeline")
-local refactor_setup = require("refactoring.pipeline.refactor_setup")
-local not_ready = require("refactoring.pipeline.not_ready")
-local post_refactor = require("refactoring.pipeline.post_refactor")
+local refactor_setup = require("refactoring.tasks.refactor_setup")
+local not_ready = require("refactoring.tasks.not_ready")
+local post_refactor = require("refactoring.tasks.post_refactor")
 local Config = require("refactoring.config")
 
 local M = {}

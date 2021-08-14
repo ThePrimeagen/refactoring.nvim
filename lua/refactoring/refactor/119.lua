@@ -3,9 +3,9 @@ local utils = require("refactoring.utils")
 local get_input = require("refactoring.get_input")
 local Query = require("refactoring.query")
 local Pipeline = require("refactoring.pipeline")
-local selection_setup = require("refactoring.pipeline.selection_setup")
-local refactor_setup = require("refactoring.pipeline.refactor_setup")
-local post_refactor = require("refactoring.pipeline.post_refactor")
+local selection_setup = require("refactoring.tasks.selection_setup")
+local refactor_setup = require("refactoring.tasks.refactor_setup")
+local post_refactor = require("refactoring.tasks.post_refactor")
 local Config = require("refactoring.config")
 
 local M = {}
