@@ -3,7 +3,8 @@
 ;; function?
 ((lexical_declaration
   (variable_declarator
-    (identifier) @definition.local_var)))
+    (identifier) @definition.local_name
+    value: (*) @definition.local_value)))
 
 ;; grabs all the arguments that are passed into the function. Needed for
 ;; function extraction, 106.

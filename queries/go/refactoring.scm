@@ -3,10 +3,10 @@
 ;; function?
 ((short_var_declaration
  (expression_list
-   (identifier) @definition.local_var)))
+   (identifier) @definition.local_name)))
 ((var_declaration
  (var_spec
-   (identifier) @definition.local_var)))
+   (identifier) @definition.local_name)))
 
 ;; grabs all the arguments that are passed into the function.  Needed for
 ;; function extraction, 106
