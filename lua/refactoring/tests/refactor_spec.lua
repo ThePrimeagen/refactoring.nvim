@@ -4,6 +4,18 @@ local refactoring = require("refactoring.refactor")
 local Config = require("refactoring.config")
 local test_utils = require("refactoring.tests.utils")
 
+local extension_to_filetype = {
+    ["lua"] = "lua",
+    ["ts"] = "typescript",
+    ["go"] = "go",
+    ["py"] = "python",
+}
+
+local refactor_id_to_name = {
+    ["119"] = "extract",
+    ["106"] = "extract_var",
+}
+
 local cwd = vim.loop.cwd()
 vim.cmd("set rtp+=" .. cwd)
 
@@ -13,12 +25,19 @@ local function remove_cwd(file)
     return file:sub(#cwd + 2 + #"lua/refactoring/tests/")
 end
 
-local extension_to_filetype = {
-    ["lua"] = "lua",
-    ["ts"] = "typescript",
-    ["go"] = "go",
-    ["py"] = "python",
-}
+local function get_refactor_name_from_path(path)
+    local refactor_id = path:match("%d+")
+    local refactor_name = refactor_id_to_name[tostring(refactor_id)]
+    if not refactor_name then
+        error(
+            string.format(
+                "malformed test structure: expected %s to contain a valid refactor id",
+                path
+            )
+        )
+    end
+    return refactor_name
+end
 
 local function for_each_file(cb)
     local files = scandir.scan_dir(
@@ -36,15 +55,7 @@ describe("Refactoring", function()
     for_each_file(function(file)
         it(string.format("Refactoring: %s", file), function()
             local parts = test_utils.split_string(file, "%.")
-
-            if not refactoring[parts[1]] then
-                error(
-                    string.format(
-                        "malformed test file: expected %s to be a valid refactor",
-                        refactoring[parts[1]]
-                    )
-                )
-            end
+            local refactor_name = get_refactor_name_from_path(parts[1])
 
             local contents = test_utils.split_string(
                 test_utils.read_file(file),
@@ -89,7 +100,7 @@ describe("Refactoring", function()
                 vim.cmd(command)
             end
 
-            refactoring[parts[1]](bufnr)
+            refactoring[refactor_name](bufnr)
 
             local lines = vim.api.nvim_buf_get_lines(bufnr, 0, -1, false)
 
