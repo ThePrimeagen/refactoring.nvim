@@ -8,6 +8,20 @@ function M.get_top_of_file_region()
     return Region:from_lsp_range({ start = range, ["end"] = range })
 end
 
+-- LSP will provide a file name with the uri
+-- Will it be any other uri? But I doubt we can refactor anything else, so the
+-- other checks should fail.
+local function strip_file_uri(file)
+    if file:sub(1, #"file://") == "file://" then
+        return file:sub(#"file://" + 1)
+    end
+    return file
+end
+
+function M.lps_uri_to_bufnr(file)
+    return vim.fn.bufnr(strip_file_uri(file))
+end
+
 -- FROM http://lua-users.org/wiki/CommonFunctions
 -- remove trailing and leading whitespace from string.
 function M.trim(s)

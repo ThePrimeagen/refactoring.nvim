@@ -17,7 +17,13 @@ local function lsp_definition_setup(refactor)
         end
     end
 
-    refactor.lsp_definition = target[1].targetRange
+    if not target then
+        return false,
+            "LSP Failed to find definition. You either don't have an LSP or it was unable to local definition of identifier under cursor."
+        -- I think I need TJ to tell me what function does bufnr replacement
+    end
+
+    refactor.lsp_definition = target[1]
     refactor.lsp_definition_region = Region:from_lsp_range(
         target[1].targetRange
     )
