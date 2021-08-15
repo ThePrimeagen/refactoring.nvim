@@ -2,13 +2,13 @@ local ts_utils = require("nvim-treesitter.ts_utils")
 local Query = require("refactoring.query")
 local utils = require("refactoring.utils")
 local Pipeline = require("refactoring.pipeline")
-local selection_setup = require("refactoring.pipeline.selection_setup")
-local refactor_setup = require("refactoring.pipeline.refactor_setup")
+local selection_setup = require("refactoring.tasks.selection_setup")
+local refactor_setup = require("refactoring.tasks.refactor_setup")
 local get_input = require("refactoring.get_input")
-local create_file = require("refactoring.pipeline.create_file")
-local post_refactor = require("refactoring.pipeline.post_refactor")
+local create_file = require("refactoring.tasks.create_file")
+local post_refactor = require("refactoring.tasks.post_refactor")
 local get_selected_local_defs = require(
-    "refactoring.pipeline.get_selected_local_defs"
+    "refactoring.tasks.get_selected_local_defs"
 )
 local Config = require("refactoring.config")
 
