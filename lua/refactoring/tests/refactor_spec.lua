@@ -73,13 +73,11 @@ local function test_empty_input()
         [1] = {
             ["inputs"] = "",
             ["file"] = "refactor/119/lua/simple-function/extract.start.lua",
-            ["refactor_func"] = "extract",
             ["error_message"] = "Error: Must provide function name",
         },
         [2] = {
             ["inputs"] = "",
             ["file"] = "refactor/106/ts/example/extract_var.start.ts",
-            ["refactor_func"] = "extract_var",
             ["error_message"] = "Error: Must provide new var name",
         },
     }
@@ -102,10 +100,7 @@ local function test_empty_input()
 
         run_commands(filename_prefix)
 
-        local status, err = pcall(
-            refactoring[test_case["refactor_func"]],
-            bufnr
-        )
+        local status, err = pcall(refactoring[refactor_name], bufnr)
 
         -- Need this for make file so that next test has clean buffer
         vim.api.nvim_buf_delete(bufnr, { force = true })
