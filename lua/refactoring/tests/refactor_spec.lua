@@ -74,13 +74,13 @@ local function test_empty_input()
     local test_cases = {
         [1] = {
             ["inputs"] = "",
-            ["file"] = "extract.simple-function.start.lua",
+            ["file"] = "refactor/119/lua/simple-function/extract.simple-function.start.lua",
             ["refactor_func"] = "extract",
             ["error_message"] = "Error: Must provide function name",
         },
         [2] = {
             ["inputs"] = "",
-            ["file"] = "extract_var.example.start.ts",
+            ["file"] = "refactor/106/ts/example/extract_var.example.start.ts",
             ["refactor_func"] = "extract_var",
             ["error_message"] = "Error: Must provide new var name",
         },
@@ -92,6 +92,7 @@ local function test_empty_input()
             :absolute()
         file = remove_cwd(file)
         local parts = test_utils.split_string(file, "%.")
+        local refactor_name = get_refactor_name_from_path(parts[1])
 
         local bufnr = vim.api.nvim_create_buf(false, false)
         vim.api.nvim_win_set_buf(0, bufnr)
