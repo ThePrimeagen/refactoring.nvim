@@ -51,11 +51,9 @@ local function for_each_file(cb)
     end
 end
 
-local function get_commands(parts)
+local function get_commands(filename_prefix)
     return test_utils.split_string(
-        test_utils.read_file(
-            string.format("%s.%s.%s.commands", parts[1], parts[2], parts[4])
-        ),
+        test_utils.read_file(string.format("%s.commands", filename_prefix)),
         "\n"
     )
 end
@@ -64,8 +62,8 @@ local function get_contents(file)
     return test_utils.split_string(test_utils.read_file(file), "\n")
 end
 
-local function run_commands(parts)
-    for _, command in pairs(get_commands(parts)) do
+local function run_commands(filename_prefix)
+    for _, command in pairs(get_commands(filename_prefix)) do
         vim.cmd(command)
     end
 end
@@ -74,13 +72,13 @@ local function test_empty_input()
     local test_cases = {
         [1] = {
             ["inputs"] = "",
-            ["file"] = "refactor/119/lua/simple-function/extract.simple-function.start.lua",
+            ["file"] = "refactor/119/lua/simple-function/extract.start.lua",
             ["refactor_func"] = "extract",
             ["error_message"] = "Error: Must provide function name",
         },
         [2] = {
             ["inputs"] = "",
-            ["file"] = "refactor/106/ts/example/extract_var.example.start.ts",
+            ["file"] = "refactor/106/ts/example/extract_var.start.ts",
             ["refactor_func"] = "extract_var",
             ["error_message"] = "Error: Must provide new var name",
         },
@@ -92,15 +90,17 @@ local function test_empty_input()
             :absolute()
         file = remove_cwd(file)
         local parts = test_utils.split_string(file, "%.")
-        local refactor_name = get_refactor_name_from_path(parts[1])
+        local filename_prefix = parts[1]
+        local filename_extension = parts[3]
+        local refactor_name = get_refactor_name_from_path(filename_prefix)
 
         local bufnr = vim.api.nvim_create_buf(false, false)
         vim.api.nvim_win_set_buf(0, bufnr)
-        vim.bo[bufnr].filetype = extension_to_filetype[parts[4]]
+        vim.bo[bufnr].filetype = extension_to_filetype[filename_extension]
         vim.api.nvim_buf_set_lines(bufnr, 0, -1, false, get_contents(file))
         Config.automate_input(test_case["inputs"])
 
-        run_commands(parts)
+        run_commands(filename_prefix)
 
         local status, err = pcall(
             refactoring[test_case["refactor_func"]],
@@ -120,23 +120,29 @@ describe("Refactoring", function()
     for_each_file(function(file)
         it(string.format("Refactoring: %s", file), function()
             local parts = test_utils.split_string(file, "%.")
-            local refactor_name = get_refactor_name_from_path(parts[1])
+            local filename_prefix = parts[1]
+            local filename_extension = parts[3]
+            local refactor_name = get_refactor_name_from_path(filename_prefix)
 
             local start_contents = get_contents(file)
             local inputs = get_contents(
-                string.format("%s.%s.inputs", parts[1], parts[2])
+                string.format("%s.inputs", filename_prefix)
             )
             local expected = get_contents(
-                string.format("%s.%s.expected.%s", parts[1], parts[2], parts[4])
+                string.format(
+                    "%s.expected.%s",
+                    filename_prefix,
+                    filename_extension
+                )
             )
 
             local bufnr = vim.api.nvim_create_buf(false, false)
             vim.api.nvim_win_set_buf(0, bufnr)
-            vim.bo[bufnr].filetype = extension_to_filetype[parts[4]]
+            vim.bo[bufnr].filetype = extension_to_filetype[filename_extension]
             vim.api.nvim_buf_set_lines(bufnr, 0, -1, false, start_contents)
             Config.automate_input(inputs)
 
-            run_commands(parts)
+            run_commands(filename_prefix)
 
             refactoring[refactor_name](bufnr)
 
