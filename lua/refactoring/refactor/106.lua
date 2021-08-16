@@ -117,6 +117,8 @@ M.extract = function(bufnr)
             )
 
             local function_name = get_input("106: Extract Function Name > ")
+            assert(function_name ~= "", "Error: Must provide function name")
+
             local function_body = refactor.region:get_text()
             table.insert(function_body, refactor.code["return"]("fill_me"))
             local args = vim.fn.sort(vim.tbl_keys(selected_local_references))
