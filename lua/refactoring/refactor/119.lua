@@ -42,6 +42,8 @@ function M.extract_var(bufnr)
             utils.sort_in_appearance_order(actual_occurrences)
 
             local var_name = get_input("119: What is the var name > ")
+            assert(var_name ~= "", "Error: Must provide new var name")
+
             refactor.text_edits = {}
             for _, occurrence in pairs(actual_occurrences) do
                 local region = Region:from_node(occurrence, refactor.bufnr)
