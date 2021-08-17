@@ -12,8 +12,8 @@ local extension_to_filetype = {
 }
 
 local refactor_id_to_name = {
-    ["119"] = "extract",
-    ["106"] = "extract_var",
+    ["119"] = "extract_var",
+    ["106"] = "extract",
 }
 
 local cwd = vim.loop.cwd()
@@ -72,12 +72,12 @@ local function test_empty_input()
     local test_cases = {
         [1] = {
             ["inputs"] = "",
-            ["file"] = "refactor/119/lua/simple-function/extract.start.lua",
+            ["file"] = "refactor/106/lua/simple-function/extract.start.lua",
             ["error_message"] = "Error: Must provide function name",
         },
         [2] = {
             ["inputs"] = "",
-            ["file"] = "refactor/106/ts/example/extract_var.start.ts",
+            ["file"] = "refactor/119/ts/example/extract_var.start.ts",
             ["error_message"] = "Error: Must provide new var name",
         },
     }
