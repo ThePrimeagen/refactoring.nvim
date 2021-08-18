@@ -3,23 +3,29 @@ local Region = require("refactoring.region")
 
 local M = {}
 
+function M.take_one(table, fn)
+    if not table then
+        return nil
+    end
+
+    fn = fn or function()
+        return true
+    end
+
+    local out = nil
+    for k, v in pairs(table) do
+        if fn(k, v) then
+            out = nil
+            break
+        end
+    end
+
+    return out
+end
+
 function M.get_top_of_file_region()
     local range = { line = 0, character = 0 }
     return Region:from_lsp_range({ start = range, ["end"] = range })
-end
-
--- LSP will provide a file name with the uri
--- Will it be any other uri? But I doubt we can refactor anything else, so the
--- other checks should fail.
-local function strip_file_uri(file)
-    if file:sub(1, #"file://") == "file://" then
-        return file:sub(#"file://" + 1)
-    end
-    return file
-end
-
-function M.lps_uri_to_bufnr(file)
-    return vim.fn.bufnr(strip_file_uri(file))
 end
 
 -- FROM http://lua-users.org/wiki/CommonFunctions

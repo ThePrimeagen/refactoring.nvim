@@ -23,6 +23,8 @@ jobs:
                   sudo apt-get update
                   sudo add-apt-repository ppa:neovim-ppa/unstable
                   sudo apt-get install neovim
+                  sudo apt install nodejs npm
+                  npm install -g typescript typescript-language-server
             - name: Test
               run:
                 cd refactoring.nvim && make test
