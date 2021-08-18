@@ -36,6 +36,13 @@ function Region:from_current_selection()
     }, self)
 end
 
+function Region:empty(bufnr)
+    -- todo: is col correct?
+    return setmetatable({
+        bufnr = vim.fn.bufnr(bufnr),
+    }, self)
+end
+
 --- Get a region from a Treesitter Node
 ---@return Region
 function Region:from_node(node, bufnr)
@@ -118,6 +125,17 @@ function Region:to_lsp_text_edit(text)
         range = self:to_lsp_range(),
         newText = text,
     }
+end
+
+function Region:clone()
+    local clone = Region:empty(self.bufnr)
+
+    clone.start_row = self.start_row
+    clone.start_col = self.start_col
+    clone.end_row = self.end_row
+    clone.end_col = self.end_col
+
+    return clone
 end
 
 return Region
