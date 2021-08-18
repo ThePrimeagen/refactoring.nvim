@@ -3,6 +3,10 @@ There will be some inevitable churn for the next week as I settle on the api!
 
 This is a WORK IN PROGRESS repo :)
 
+### Supported languages
+
+Look in [queries/](queries/) to see which languages are currently supported.
+
 #### Things todo
 * I want to write tests for a bunch of stuff.
 * ...
