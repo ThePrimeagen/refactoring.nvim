@@ -18,3 +18,11 @@
 ;; TODO is this scope required? Fails when this is uncommented
 ;; (program) @definition.scope
 (function_declaration) @definition.scope
+
+(block) @definition.block
+
+(short_var_declaration) @definition.statement
+(return_statement) @definition.statement
+(if_statement) @definition.statement
+(for_statement) @definition.statement
+(call_expression) @definition.statement
