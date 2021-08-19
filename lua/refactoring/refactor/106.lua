@@ -84,6 +84,11 @@ M.extract_to_file = function(bufnr)
                 body = function_body,
             })
 
+            local extract_node = refactor.root:named_descendant_for_range(
+                refactor.region:to_ts()
+            )
+
+            local _, start_col, _, _ = extract_node:range()
             refactor.text_edits = {
                 {
                     region = utils.get_top_of_file_region(refactor.scope),
@@ -98,6 +103,7 @@ M.extract_to_file = function(bufnr)
                             name = function_name,
                             args = args,
                         }),
+                        start_col = start_col,
                     }),
                 },
             }
@@ -129,6 +135,10 @@ M.extract = function(bufnr)
                 body = function_body,
             })
 
+            local extract_node = refactor.root:named_descendant_for_range(
+                refactor.region:to_ts()
+            )
+            local _, start_col, _, _ = extract_node:range()
             refactor.text_edits = {
                 {
                     region = utils.region_above_node(refactor.scope),
@@ -143,6 +153,7 @@ M.extract = function(bufnr)
                             name = function_name,
                             args = args,
                         }),
+                        start_col = start_col,
                     }),
                 },
             }
