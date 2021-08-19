@@ -64,6 +64,18 @@ local function get_extract_setup_pipeline(bufnr)
         :add_task(get_selected_local_defs)
 end
 
+local function get_start_col(str)
+    local start_col = 0
+    for i = 1, #str do
+        if str:sub(i, i) ~= " " then
+            -- Have to minus 1 because it starts at 1... because lua
+            start_col = i - 1
+            break
+        end
+    end
+    return start_col
+end
+
 M.extract_to_file = function(bufnr)
     bufnr = bufnr or vim.fn.bufnr(vim.fn.bufname())
     get_extract_setup_pipeline(bufnr)
@@ -98,6 +110,7 @@ M.extract_to_file = function(bufnr)
                             name = function_name,
                             args = args,
                         }),
+                        start_col = get_start_col(function_body[1]),
                     }),
                 },
             }
@@ -120,6 +133,7 @@ M.extract = function(bufnr)
             assert(function_name ~= "", "Error: Must provide function name")
 
             local function_body = refactor.region:get_text()
+
             table.insert(function_body, refactor.code["return"]("fill_me"))
             local args = vim.fn.sort(vim.tbl_keys(selected_local_references))
 
@@ -143,6 +157,7 @@ M.extract = function(bufnr)
                             name = function_name,
                             args = args,
                         }),
+                        start_col = get_start_col(function_body[1]),
                     }),
                 },
             }
