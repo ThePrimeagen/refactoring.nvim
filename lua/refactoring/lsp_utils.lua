@@ -60,7 +60,7 @@ function M.get_definition_under_cursor(bufnr)
         -- I think I need TJ to tell me what function does bufnr replacement
     end
 
-    return target[1]
+    return target.result[1]
 end
 
 function M.lsp_range_contains(range, point)
@@ -87,7 +87,7 @@ end
 
 -- TODO: THis isn't very pretty.  What can we do to remove this.  I feel like
 -- that silly look that looks for the first item, we should probably pull that out
-function M.get_references_under_cursor(bufnr)
+function M.get_references_under_cursor(bufnr, definition)
     local params = vim.lsp.util.make_position_params()
     params.context = {
         includeDeclaration = false,
@@ -111,12 +111,16 @@ function M.get_references_under_cursor(bufnr)
     -- I'll leave it here until I can fix it
     local out = {}
     for _, ref in pairs(reference.result) do
-        if not M.lsp_range_contains(ref.range, params.position) then
+        if not M.lsp_range_contains(ref.range, definition) then
             table.insert(out, ref)
         end
     end
 
     return out
+end
+
+function M.get_range(lsp_def)
+    return lsp_def.targetRange or lsp_def.range
 end
 
 return M
