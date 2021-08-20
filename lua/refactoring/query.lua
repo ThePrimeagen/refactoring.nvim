@@ -18,6 +18,8 @@ Query.query_type = {
     Statement = "definition.statement",
     Scope = "definition.scope",
     Block = "definition.block",
+    Declarator = "definition.local_declarator",
+    LocalVarValue = "definition.local_value",
 }
 
 function Query.get_root(bufnr, lang)

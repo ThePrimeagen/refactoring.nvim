@@ -1,3 +1,4 @@
+local Region = require("refactoring.region")
 local utils = require("refactoring.utils")
 
 local M = {}
@@ -17,7 +18,7 @@ function M.lsp_uri_to_bufnr(file)
 end
 
 function M.delete_text(region)
-    return { region:to_lsp_text_edit("") }
+    return region:to_lsp_text_edit("")
 end
 
 function M.insert_text(region, text)
@@ -32,14 +33,14 @@ function M.insert_text(region, text)
     clone.end_row = clone.start_row
     clone.end_col = clone.start_col - 1
 
-    return { clone:to_lsp_text_edit(text) }
+    return clone:to_lsp_text_edit(text)
 end
 
 function M.replace_text(region, text)
     local delete_text = M.delete_text(region)
     local insert_text = M.insert_text(region, text)
 
-    return { insert_text[1], delete_text[1] }
+    return insert_text, delete_text
 end
 
 function M.get_definition_under_cursor(bufnr)
@@ -63,31 +64,9 @@ function M.get_definition_under_cursor(bufnr)
     return target.result[1]
 end
 
-function M.lsp_range_contains(range, point)
-    local start_point = range.start
-    local end_point = range["end"]
-
-    if point.line < start_point.line then
-        return false
-    elseif
-        point.line == start_point.line
-        and point.character < start_point.character
-    then
-        return false
-    elseif point.line > end_point.line then
-        return false
-    elseif
-        point.line == end_point.line
-        and point.character > end_point.character
-    then
-        return false
-    end
-    return true
-end
-
 -- TODO: THis isn't very pretty.  What can we do to remove this.  I feel like
 -- that silly look that looks for the first item, we should probably pull that out
-function M.get_references_under_cursor(bufnr, definition)
+function M.get_references_under_cursor(bufnr, definition_region)
     local params = vim.lsp.util.make_position_params()
     params.context = {
         includeDeclaration = false,
@@ -111,7 +90,11 @@ function M.get_references_under_cursor(bufnr, definition)
     -- I'll leave it here until I can fix it
     local out = {}
     for _, ref in pairs(reference.result) do
-        if not M.lsp_range_contains(ref.range, definition) then
+        if
+            not Region
+                :from_lsp_range(M.get_range(ref))
+                :contains(definition_region)
+        then
             table.insert(out, ref)
         end
     end
