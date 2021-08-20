@@ -1,3 +1,7 @@
+local function calculate_row_col_score(row, col)
+    return row * 100000 + col
+end
+
 local function get_selection_range()
     -- local _, end_row, _, _ = unpack(vim.fn.getpos("'>"))
     local start_row = vim.fn.line("'<")
@@ -36,8 +40,17 @@ function Region:from_current_selection()
     }, self)
 end
 
+function Region:from_values(bufnr, start_row, start_col, end_row, end_col)
+    return setmetatable({
+        start_row = start_row,
+        start_col = start_col,
+        end_row = end_row,
+        end_col = end_col,
+        bufnr = vim.fn.bufnr(bufnr),
+    }, self)
+end
+
 function Region:empty(bufnr)
-    -- todo: is col correct?
     return setmetatable({
         bufnr = vim.fn.bufnr(bufnr),
     }, self)
@@ -136,6 +149,26 @@ function Region:clone()
     clone.end_col = self.end_col
 
     return clone
+end
+
+function Region:contains(other_range)
+    if self.bufnr ~= other_range.bufnr then
+        return false
+    end
+
+    local start_score = calculate_row_col_score(self.start_row, self.start_col)
+    local end_score = calculate_row_col_score(self.end_row, self.end_col)
+
+    local other_start_score = calculate_row_col_score(
+        other_range.start_row,
+        other_range.start_col
+    )
+    local other_end_score = calculate_row_col_score(
+        other_range.end_row,
+        other_range.end_col
+    )
+
+    return start_score <= other_start_score and end_score >= other_end_score
 end
 
 return Region
