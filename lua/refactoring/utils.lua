@@ -15,7 +15,7 @@ function M.take_one(table, fn)
     local out = nil
     for k, v in pairs(table) do
         if fn(k, v) then
-            out = nil
+            out = v
             break
         end
     end

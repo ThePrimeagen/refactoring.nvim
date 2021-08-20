@@ -17,7 +17,16 @@ local function apply_text_edits(refactor)
             edits[bufnr] = {}
         end
 
-        table.insert(edits[bufnr], edit.region:to_lsp_text_edit(get_text(edit)))
+        -- TODO: We should think of a way to make this work with better for both
+        -- new line auto additions and just lsp generated content
+        if edit.newText then
+            table.insert(edits[bufnr], edit)
+        else
+            table.insert(
+                edits[bufnr],
+                edit.region:to_lsp_text_edit(get_text(edit))
+            )
+        end
     end
 
     for bufnr, edit_set in pairs(edits) do
