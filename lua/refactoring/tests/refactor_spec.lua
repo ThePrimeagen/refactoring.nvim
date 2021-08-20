@@ -7,6 +7,7 @@ local test_utils = require("refactoring.tests.utils")
 local extension_to_filetype = {
     ["lua"] = "lua",
     ["ts"] = "typescript",
+    ["js"] = "javascript",
     ["go"] = "go",
     ["py"] = "python",
 }
@@ -92,7 +93,7 @@ local function test_empty_input()
         local filename_extension = parts[3]
         local refactor_name = get_refactor_name_from_path(filename_prefix)
 
-        local bufnr = vim.api.nvim_create_buf(false, false)
+        local bufnr = vim.api.nvim_create_buf(false, true)
         vim.api.nvim_win_set_buf(0, bufnr)
         vim.bo[bufnr].filetype = extension_to_filetype[filename_extension]
         vim.api.nvim_buf_set_lines(bufnr, 0, -1, false, get_contents(file))
