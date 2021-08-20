@@ -2,10 +2,10 @@ local default_code_generation = require("refactoring.code_generation")
 
 local default_formatting = {
     javascript = {
-        cmd = [[ :norm! gg=G ]],
+        cmd = [[ :silent norm! gg=G ]],
     },
     typescript = {
-        cmd = [[ :norm! gg=G ]],
+        cmd = [[ :silent norm! gg=G ]],
     },
     lua = {
         -- cmd = [[ !stylua % ]],
