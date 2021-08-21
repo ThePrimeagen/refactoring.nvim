@@ -101,8 +101,12 @@ function Region:to_ts()
 end
 
 function Region:get_text(bufnr)
+    if bufnr == nil then
+        error("Bufnr is nil, pass in bufnr to get text")
+    end
+
     local text = vim.api.nvim_buf_get_lines(
-        bufnr or 0,
+        bufnr,
         self.start_row - 1,
         self.end_row,
         false

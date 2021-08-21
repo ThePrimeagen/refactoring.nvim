@@ -93,7 +93,6 @@ function M.inline_var(bufnr)
             end
 
             refactor.text_edits = text_edits
-            print(vim.inspect(text_edits))
             return true, refactor, foo
         end)
         :after(post_refactor)
