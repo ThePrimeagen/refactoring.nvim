@@ -64,45 +64,47 @@ local function get_extract_setup_pipeline(bufnr)
         :add_task(get_selected_local_defs)
 end
 
+local function extract_setup(refactor)
+    local selected_local_references = get_selected_local_references(refactor)
+
+    local function_name = get_input("106: Extract Function Name > ")
+    assert(function_name ~= "", "Error: Must provide function name")
+
+    local function_body = refactor.region:get_text(refactor.region.bufnr)
+    table.insert(function_body, refactor.code["return"]("fill_me"))
+    local args = vim.fn.sort(vim.tbl_keys(selected_local_references))
+
+    local function_code = refactor.code["function"]({
+        name = function_name,
+        args = args,
+        body = function_body,
+    })
+
+    refactor.text_edits = {
+        {
+            region = utils.region_above_node(refactor.scope),
+            text = function_code,
+            bufnr = refactor.buffers[2],
+        },
+        {
+            region = refactor.region,
+            text = refactor.code.constant({
+                name = "fill_me",
+                value = refactor.code.call_function({
+                    name = function_name,
+                    args = args,
+                }),
+            }),
+        },
+    }
+end
+
 M.extract_to_file = function(bufnr)
     bufnr = bufnr or vim.fn.bufnr(vim.fn.bufname())
     get_extract_setup_pipeline(bufnr)
         :add_task(create_file.from_input)
         :add_task(function(refactor)
-            local selected_local_references = get_selected_local_references(
-                refactor
-            )
-            local function_name = get_input("106: Extract Function Name > ")
-
-            local function_body = refactor.region:get_text(
-                refactor.region.bufnr)
-            table.insert(function_body, refactor.code["return"]("fill_me"))
-            local args = vim.fn.sort(vim.tbl_keys(selected_local_references))
-
-            local function_code = refactor.code["function"]({
-                name = function_name,
-                args = args,
-                body = function_body,
-            })
-
-            refactor.text_edits = {
-                {
-                    region = utils.get_top_of_file_region(refactor.scope),
-                    text = function_code,
-                    bufnr = refactor.buffers[2],
-                },
-                {
-                    region = refactor.region,
-                    text = refactor.code.constant({
-                        name = "fill_me",
-                        value = refactor.code.call_function({
-                            name = function_name,
-                            args = args,
-                        }),
-                    }),
-                },
-            }
-
+            extract_setup(refactor)
             return true, refactor
         end)
         :after(post_refactor)
@@ -113,42 +115,7 @@ M.extract = function(bufnr)
     bufnr = bufnr or vim.fn.bufnr()
     get_extract_setup_pipeline(bufnr)
         :add_task(function(refactor)
-            local selected_local_references = get_selected_local_references(
-                refactor
-            )
-
-            local function_name = get_input("106: Extract Function Name > ")
-            assert(function_name ~= "", "Error: Must provide function name")
-
-            local function_body = refactor.region:get_text(
-                refactor.region.bufnr)
-            table.insert(function_body, refactor.code["return"]("fill_me"))
-            local args = vim.fn.sort(vim.tbl_keys(selected_local_references))
-
-            local function_code = refactor.code["function"]({
-                name = function_name,
-                args = args,
-                body = function_body,
-            })
-
-            refactor.text_edits = {
-                {
-                    region = utils.region_above_node(refactor.scope),
-                    text = function_code,
-                    bufnr = refactor.buffers[2],
-                },
-                {
-                    region = refactor.region,
-                    text = refactor.code.constant({
-                        name = "fill_me",
-                        value = refactor.code.call_function({
-                            name = function_name,
-                            args = args,
-                        }),
-                    }),
-                },
-            }
-
+            extract_setup(refactor)
             return true, refactor
         end)
         :after(post_refactor)
