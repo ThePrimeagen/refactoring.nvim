@@ -7,6 +7,7 @@ local refactor_setup = require("refactoring.tasks.refactor_setup")
 local get_input = require("refactoring.get_input")
 local create_file = require("refactoring.tasks.create_file")
 local post_refactor = require("refactoring.tasks.post_refactor")
+local indent = require("refactoring.indent")
 local get_selected_local_defs = require(
     "refactoring.tasks.get_selected_local_defs"
 )
@@ -64,18 +65,6 @@ local function get_extract_setup_pipeline(bufnr)
         :add_task(get_selected_local_defs)
 end
 
-local function get_start_col(str)
-    local start_col = 0
-    for i = 1, #str do
-        if str:sub(i, i) ~= " " then
-            -- Have to minus 1 because it starts at 1... because lua
-            start_col = i - 1
-            break
-        end
-    end
-    return start_col
-end
-
 M.extract_to_file = function(bufnr)
     bufnr = bufnr or vim.fn.bufnr(vim.fn.bufname())
     get_extract_setup_pipeline(bufnr)
@@ -110,7 +99,7 @@ M.extract_to_file = function(bufnr)
                             name = function_name,
                             args = args,
                         }),
-                        start_col = get_start_col(function_body[1]),
+                        start_col = indent.get_whitespace(function_body[1]),
                     }),
                 },
             }
@@ -157,7 +146,7 @@ M.extract = function(bufnr)
                             name = function_name,
                             args = args,
                         }),
-                        start_col = get_start_col(function_body[1]),
+                        start_col = indent.get_whitespace(function_body[1]),
                     }),
                 },
             }

@@ -1,26 +1,10 @@
 local utils = require("refactoring.code_generation.utils")
-
-local function get_prefix(start_col)
-    local temp = {}
-    for i = 1, start_col do
-        temp[i] = " "
-    end
-    return table.concat(temp)
-end
-
-local function combine_strings(a, b)
-    local temp = {}
-    temp[1] = a
-    temp[2] = b
-    return table.concat(temp)
-end
+local indent = require("refactoring.indent")
 
 local python = {
     constant = function(opts)
-        return combine_strings(
-            get_prefix(opts.start_col),
-            string.format("%s = %s\n", opts.name, opts.value)
-        )
+        return indent.make_whitespace(opts.start_col)
+            .. string.format("%s = %s\n", opts.name, opts.value)
     end,
     ["return"] = function(code)
         return string.format("return %s", utils.stringify_code(code))
