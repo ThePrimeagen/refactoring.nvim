@@ -18,7 +18,7 @@ describe("Region", function()
 
         vim_motion("jV")
         local region = Region:from_current_selection()
-        eq(region:get_text(0), { "if (true) {" })
+        eq(region:get_text(), { "if (true) {" })
     end)
 
     it("select text : partial-line", function()
@@ -27,7 +27,7 @@ describe("Region", function()
         -- TODO: Why is first selection just not present...
         vim_motion("jwvww")
         local region = Region:from_current_selection()
-        eq({ "(true)" }, region:get_text(0))
+        eq({ "(true)" }, region:get_text())
     end)
 
     it("select text : multi-partial-line", function()
@@ -39,7 +39,7 @@ describe("Region", function()
         eq("n", vim.fn.mode())
         eq(3, vim.fn.line("."))
         local region = Region:from_current_selection()
-        eq({ "(true) {", "    bar" }, region:get_text(0))
+        eq({ "(true) {", "    bar" }, region:get_text())
     end)
 
     it("contain region", function()
