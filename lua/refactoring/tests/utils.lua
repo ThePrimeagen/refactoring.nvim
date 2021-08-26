@@ -1,4 +1,5 @@
 local Path = require("plenary.path")
+local lsp_utils = require("refactoring.lsp_utils")
 
 local M = {}
 function M.read_file(file)
@@ -25,6 +26,26 @@ function M.split_string(inputstr, sep)
         table.insert(t, str)
     end
     return t
+end
+
+function M.get_references_under_cursor(bufnr, definition_region)
+    local references
+    vim.wait(4000, function()
+        -- TODO: why cant i pcall this?
+        references = lsp_utils.get_references_under_cursor(bufnr, definition_region)
+        return references
+    end)
+    return references
+end
+
+function M.get_definition_under_cursor(bufnr)
+    local definition
+    vim.wait(4000, function()
+        local ok, value = pcall(lsp_utils.get_definition_under_cursor, bufnr)
+        definition = value
+        return ok
+    end)
+    return definition
 end
 
 return M
