@@ -17,10 +17,12 @@ describe("lsp_utils", function()
         vim.cmd(":e ./lua/refactoring/tests/lsp_utils_test_file.ts")
         local bufnr = vim.api.nvim_get_current_buf()
         vim.cmd(":LspStart")
-        vim.wait(4000, function()
-            return #vim.lsp.buf_get_clients() > 0
+        vim.wait(10000, function()
+            return #vim.lsp.buf_get_clients(bufnr) > 0
         end)
-        assert.are.same(#vim.lsp.buf_get_clients(), 1)
+
+        assert.are.same(#vim.lsp.buf_get_clients(bufnr), 1)
+        assert.are.same(vim.lsp.buf_is_attached(bufnr, 1), true)
 
         vim.cmd(":3")
         test_utils.vim_motion("fo")

@@ -30,5 +30,7 @@ jobs:
                   sudo apt install nodejs npm
                   npm install -g typescript typescript-language-server
             - name: Test
-              run:
-                cd refactoring.nvim && make test
+              run: |
+                cd refactoring.nvim
+                make test
+

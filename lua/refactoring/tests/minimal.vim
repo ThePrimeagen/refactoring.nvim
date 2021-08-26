@@ -32,8 +32,13 @@ set shiftwidth=4
 set noswapfile
 
 runtime! plugin/plenary.vim
+runtime! plugin/lspconfig.vim
 
 lua <<EOF
+-- lsp-config setup
+require'lspconfig'.tsserver.setup{}
+
+-- treeshitter setup
 local required_parsers = {'go', 'lua', 'python', 'typescript', 'javascript'}
 local installed_parsers = require'nvim-treesitter.info'.installed_parsers()
 local to_install = vim.tbl_filter(function(parser)
@@ -46,5 +51,6 @@ if #to_install > 0 then
   vim.cmd 'runtime! plugin/nvim-treesitter.vim'
   vim.cmd('TSInstallSync ' .. table.concat(to_install, ' '))
 end
-require('lspconfig').tsserver.setup{}
+
 EOF
+

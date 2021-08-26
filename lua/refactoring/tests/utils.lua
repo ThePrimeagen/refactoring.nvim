@@ -30,7 +30,7 @@ end
 
 function M.get_references_under_cursor(bufnr, definition_region)
     local references
-    vim.wait(4000, function()
+    vim.wait(100000, function()
         -- TODO: why cant i pcall this?
         references = lsp_utils.get_references_under_cursor(
             bufnr,
@@ -43,7 +43,7 @@ end
 
 function M.get_definition_under_cursor(bufnr)
     local definition
-    vim.wait(4000, function()
+    vim.wait(100000, function()
         local ok, value = pcall(lsp_utils.get_definition_under_cursor, bufnr)
         definition = value
         return ok
