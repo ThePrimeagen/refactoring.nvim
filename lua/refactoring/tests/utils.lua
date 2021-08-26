@@ -32,7 +32,10 @@ function M.get_references_under_cursor(bufnr, definition_region)
     local references
     vim.wait(4000, function()
         -- TODO: why cant i pcall this?
-        references = lsp_utils.get_references_under_cursor(bufnr, definition_region)
+        references = lsp_utils.get_references_under_cursor(
+            bufnr,
+            definition_region
+        )
         return references
     end)
     return references

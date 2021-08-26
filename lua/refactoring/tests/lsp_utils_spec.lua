@@ -28,13 +28,17 @@ describe("lsp_utils", function()
 
         local definition = test_utils.get_definition_under_cursor(bufnr)
         local def_region = Region:from_lsp_range(definition.range)
-        local references = test_utils.get_references_under_cursor(bufnr, def_region)
+        local references = test_utils.get_references_under_cursor(
+            bufnr,
+            def_region
+        )
 
         assert.are.same(def_region, Region:from_values(bufnr, 2, 11, 2, 13))
         assert.are.same(#references, 1)
         assert.are.same(
             Region:from_lsp_range(references[1].range),
-            Region:from_values(bufnr, 3, 16, 3, 18))
+            Region:from_values(bufnr, 3, 16, 3, 18)
+        )
     end)
 
     it("should delete text.", function()
