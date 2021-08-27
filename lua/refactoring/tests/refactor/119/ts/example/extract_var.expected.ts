@@ -3,7 +3,7 @@ type Order = {
     itemPrice: number;
 }
 
-// This the straight from the book (slight modifications
+// This the straight from the book (slight modifications)
 order.quantity * order.itemPrice;
 function orderCalculation(order: Order) {
     foo.blah * nonsense.nonsense;
