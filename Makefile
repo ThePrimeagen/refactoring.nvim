@@ -11,3 +11,9 @@ lint:
 
 pr-ready: fmt test lint
 
+docker-build:
+	docker build --no-cache . -t refactoring
+
+docker-test:
+	docker run -v $(shell pwd):/code/refactoring.nvim -t refactoring
+
