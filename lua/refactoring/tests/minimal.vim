@@ -35,6 +35,10 @@ runtime! plugin/plenary.vim
 runtime! plugin/lspconfig.vim
 
 lua <<EOF
+-- lspconfig
+require('lspconfig').tsserver.setup{}
+
+-- treeshitter
 local required_parsers = {'go', 'lua', 'python', 'typescript', 'javascript'}
 local installed_parsers = require'nvim-treesitter.info'.installed_parsers()
 local to_install = vim.tbl_filter(function(parser)
@@ -48,5 +52,4 @@ if #to_install > 0 then
   vim.cmd('TSInstallSync ' .. table.concat(to_install, ' '))
 end
 
-require('lspconfig').tsserver.setup{}
 EOF
