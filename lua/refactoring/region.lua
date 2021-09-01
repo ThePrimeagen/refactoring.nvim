@@ -79,7 +79,7 @@ function Region:from_lsp_range(lsp_range, bufnr)
     return setmetatable({
         bufnr = vim.fn.bufnr(bufnr),
         start_row = lsp_range.start.line + 1,
-        start_col = lsp_range.start.character,
+        start_col = lsp_range.start.character + 1,
         end_row = lsp_range["end"].line + 1,
         end_col = lsp_range["end"].character,
     }, self)
@@ -100,9 +100,19 @@ function Region:to_ts()
         self.end_col - 2
 end
 
-function Region:get_text(bufnr)
+function Region:get_lines()
     local text = vim.api.nvim_buf_get_lines(
-        bufnr or 0,
+        self.bufnr,
+        self.start_row - 1,
+        self.end_row,
+        false
+    )
+    return text
+end
+
+function Region:get_text()
+    local text = vim.api.nvim_buf_get_lines(
+        self.bufnr,
         self.start_row - 1,
         self.end_row,
         false

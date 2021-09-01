@@ -14,26 +14,33 @@ end
 
 describe("lsp_utils", function()
     it("should get the references and definition of cursor", function()
-        -- local bufnr = vim.api.nvim_create_buf(false, false)
         vim.cmd(":e ./lua/refactoring/tests/lsp_utils_test_file.ts")
-        --[[
+        local bufnr = vim.api.nvim_get_current_buf()
         vim.cmd(":LspStart")
-        vim.wait(4000, function()
-            return #vim.lsp.buf_get_clients() > 0
+        vim.wait(10000, function()
+            return #vim.lsp.buf_get_clients(bufnr) > 0
         end)
-        assert.are.same(#vim.lsp.buf_get_clients(), 1)
-        ]]
+
+        assert.are.same(#vim.lsp.buf_get_clients(bufnr), 1)
+        assert.are.same(vim.lsp.buf_is_attached(bufnr, 1), true)
 
         vim.cmd(":3")
         test_utils.vim_motion("fo")
         assert.are.same(vim.fn.expand("<cWORD>"), "foo")
 
-        --[[
-        local definition = lsp_utils.get_definition_under_cursor(bufnr)
-        local references = lsp_utils.get_references_under_cursor(bufnr)
+        local definition = test_utils.get_definition_under_cursor(bufnr)
+        local def_region = Region:from_lsp_range(definition.range)
+        local references = test_utils.get_references_under_cursor(
+            bufnr,
+            def_region
+        )
 
-        assert.are.same(definition, references)
-        ]]
+        assert.are.same(def_region, Region:from_values(bufnr, 2, 11, 2, 13))
+        assert.are.same(#references, 1)
+        assert.are.same(
+            Region:from_lsp_range(references[1].range),
+            Region:from_values(bufnr, 3, 16, 3, 18)
+        )
     end)
 
     it("should delete text.", function()

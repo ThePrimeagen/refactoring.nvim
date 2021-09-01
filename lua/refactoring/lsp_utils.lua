@@ -47,7 +47,8 @@ function M.get_definition_under_cursor(bufnr)
     local def = vim.lsp.buf_request_sync(
         bufnr,
         "textDocument/definition",
-        vim.lsp.util.make_position_params()
+        vim.lsp.util.make_position_params(),
+        90000
     )
 
     local target = utils.take_one(def, function(_, v)
@@ -75,7 +76,8 @@ function M.get_references_under_cursor(bufnr, definition_region)
     local references = vim.lsp.buf_request_sync(
         bufnr,
         "textDocument/references",
-        params
+        params,
+        90000
     )
 
     local reference = utils.take_one(references)
