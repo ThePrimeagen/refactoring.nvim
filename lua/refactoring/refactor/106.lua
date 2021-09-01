@@ -95,8 +95,8 @@ local function extract_setup(refactor)
                     name = function_name,
                     args = args,
                 }),
+                start_col = indent.get_whitespace(function_body[1]),
             }),
-            start_col = indent.get_whitespace(function_body[1]),
         },
     }
 end
