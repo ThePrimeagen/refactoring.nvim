@@ -22,6 +22,7 @@ function LspDefinition:from_cursor(bufnr, ts_query)
         definition_region,
         Query.query_type.Declarator
     )
+
     local name_node = ts_query:pluck_by_capture(
         declarator_node,
         Query.query_type.LocalVarName
@@ -30,6 +31,7 @@ function LspDefinition:from_cursor(bufnr, ts_query)
         declarator_node,
         Query.query_type.LocalVarValue
     )[1]
+
     if not value_node or not name_node then
         error("Unable to find the value or name node of the local declarator")
     end

@@ -8,7 +8,7 @@ local function get_selected_local_defs(refactor)
         end,
         refactor.query:pluck_by_capture(
             refactor.scope,
-            Query.query_type.LocalVar
+            Query.query_type.LocalVarName
         )
     )
 
