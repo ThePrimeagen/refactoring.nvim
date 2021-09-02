@@ -3,7 +3,7 @@
 ;; function?
 (lexical_declaration
   (variable_declarator
-    (identifier) @definition.local_name
+    name: (*) @definition.local_name
     value: (*) @definition.local_value)
 ) @definition.local_declarator
 

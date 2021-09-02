@@ -4,6 +4,7 @@ local Region = require("refactoring.region")
 local Query = require("refactoring.query")
 
 ---@class LspDefinition
+---@field name_node ts_node
 ---@field value_node ts_node
 ---@field declarator_node ts_node
 ---@field definition lsp_range
@@ -21,16 +22,23 @@ function LspDefinition:from_cursor(bufnr, ts_query)
         definition_region,
         Query.query_type.Declarator
     )
+
+    local name_node = ts_query:pluck_by_capture(
+        declarator_node,
+        Query.query_type.LocalVarName
+    )[1]
     local value_node = ts_query:pluck_by_capture(
         declarator_node,
         Query.query_type.LocalVarValue
     )[1]
-    if not value_node then
-        error("Unable to find the value node of the local declarator")
+
+    if not value_node or not name_node then
+        error("Unable to find the value or name node of the local declarator")
     end
 
     return setmetatable({
         definition = definition,
+        name_node = name_node,
         value_node = value_node,
         declarator_node = declarator_node,
         definition_region = definition_region,
@@ -43,6 +51,10 @@ end
 
 function LspDefinition:get_value_text()
     return table.concat(utils.get_node_text(self.value_node), "")
+end
+
+function LspDefinition:get_name_text()
+    return table.concat(utils.get_node_text(self.name_node), "")
 end
 
 return LspDefinition
