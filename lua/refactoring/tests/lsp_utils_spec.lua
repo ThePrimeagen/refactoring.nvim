@@ -14,6 +14,7 @@ end
 
 describe("lsp_utils", function()
     it("should get the references and definition of cursor", function()
+        print("should get the references and definition of cursor test")
         vim.cmd(":e ./lua/refactoring/tests/lsp_utils_test_file.ts")
         local bufnr = vim.api.nvim_get_current_buf()
         vim.cmd(":LspStart")
