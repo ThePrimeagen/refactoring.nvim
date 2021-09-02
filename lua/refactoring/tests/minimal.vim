@@ -40,7 +40,7 @@ lua <<EOF
 require'lspconfig'.tsserver.setup{}
 
 -- treeshitter setup
-local required_parsers = {'go', 'lua', 'python', 'typescript', 'javascript'}
+local required_parsers = {'javascript', 'go', 'lua', 'python', 'typescript'}
 local installed_parsers = require'nvim-treesitter.info'.installed_parsers()
 local to_install = vim.tbl_filter(function(parser)
   return not vim.tbl_contains(installed_parsers, parser)
