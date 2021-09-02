@@ -33,6 +33,7 @@ set noswapfile
 
 runtime! plugin/plenary.vim
 runtime! plugin/lspconfig.vim
+runtime! plugin/nvim-treesitter.vim
 
 lua <<EOF
 -- lsp-config setup
@@ -47,9 +48,12 @@ end, required_parsers)
 if #to_install > 0 then
   -- fixes 'pos_delta >= 0' error - https://github.com/nvim-lua/plenary.nvim/issues/52
   vim.cmd('set display=lastline')
+
   -- make "TSInstall*" available
-  vim.cmd 'runtime! plugin/nvim-treesitter.vim'
-  vim.cmd('TSInstallSync ' .. table.concat(to_install, ' '))
+  for k, v in pairs(to_install) do
+      vim.cmd('TSInstallSync ' .. v)
+  end
+
 end
 
 EOF
