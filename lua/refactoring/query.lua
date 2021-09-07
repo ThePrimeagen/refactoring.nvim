@@ -9,8 +9,68 @@ local utils = require("refactoring.utils")
 ---     'Baz',          -- Takes value 11
 --- }
 
+-- @class Query2
+-- @field query Query
+-- @field types Query
+-- @field scope tsnode
+-- @field region Region
+-- @field filter function
+-- @field region_calc_type string
 local Query = {}
 Query.__index = Query
+
+local Query2 = {}
+Query2.__index = Query2
+function Query2:from_query(query)
+    return setmetatable({
+        query = query,
+    }, self)
+end
+
+function Query2:with_types(types)
+    self.types = types
+    return self
+end
+
+function Query2:with_scope(scope)
+    self.scope = scope
+    return self
+end
+
+function Query2:with_intersect(region)
+    self.region_calc_type = "intersect"
+    self.region = region
+    return self
+end
+
+function Query2:with_filter(fn)
+    self.filter = fn
+    return self
+end
+
+function Query2:with_complement(region)
+    self.region_calc_type = "complement"
+    self.region = region
+    return self
+end
+
+function Query2:get_nodes()
+    local root = self.scope or Query.get_root(self.query.bufnr, self.query.filetype)
+    local nodes = self.query:pluck_by_capture(root, self.types)
+
+    if self.region then
+        nodes = self.region_calc_type == "intersect" and
+            utils.region_intersect(nodes, self.region) or
+            utils.region_complement(nodes, self.region)
+    end
+
+    if self.filter then
+        nodes = vim.tbl_filter(self.filter, nodes)
+    end
+
+    return nodes
+end
+
 Query.query_type = {
     FunctionArgument = "definition.function_argument",
     LocalVarName = "definition.local_name",
@@ -22,17 +82,17 @@ Query.query_type = {
     LocalVarValue = "definition.local_value",
 }
 
-function Query.get_root(bufnr, lang)
-    local parser = parsers.get_parser(bufnr or 0, lang)
+function Query.get_root(bufnr, filetype)
+    local parser = parsers.get_parser(bufnr or 0, filetype)
     return parser:parse()[1]:root()
 end
 
-function Query:new(bufnr, lang, query)
+function Query:new(bufnr, filetype, query)
     return setmetatable({
         query = query,
         bufnr = bufnr,
-        lang = lang,
-        root = Query.get_root(bufnr, lang),
+        filetype = filetype,
+        root = Query.get_root(bufnr, filetype),
     }, self)
 end
 
@@ -69,12 +129,16 @@ function Query:get_scope_by_position(line, col, capture_name)
     return out
 end
 
-function Query:pluck_by_capture(scope, ...)
+function Query:pluck_by_capture(scope, captures)
+    if type(captures) ~= "table" then
+        captures = {captures}
+    end
+
     local out = {}
     for id, node, _ in self.query:iter_captures(scope, self.bufnr, 0, -1) do
-        local capture = self.query.captures[id]
-        for i = 1, select("#", ...) do
-            if capture == select(i, ...) then
+        local n_capture = self.query.captures[id]
+        for _, capture in pairs(captures) do
+            if n_capture == capture then
                 table.insert(out, node)
                 break
             end
@@ -84,11 +148,11 @@ function Query:pluck_by_capture(scope, ...)
 end
 
 function Query.find_occurrences(scope, sexpr, bufnr)
-    local lang = vim.bo[bufnr].filetype
+    local filetype = vim.bo[bufnr].filetype
 
     -- TODO: Ask tj why my life is terrible
     local sexpr_query = vim.treesitter.parse_query(
-        lang,
+        filetype,
         sexpr .. " @tmp_capture"
     )
 
@@ -99,4 +163,4 @@ function Query.find_occurrences(scope, sexpr, bufnr)
     return occurances
 end
 
-return Query
+return Query, Query2
