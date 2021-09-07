@@ -69,19 +69,23 @@ function Query:get_scope_by_position(line, col, capture_name)
     return out
 end
 
-function Query:pluck_by_capture(scope, capture_name)
-    local local_defs = {}
+function Query:pluck_by_capture(scope, ...)
+    local out = {}
     for id, node, _ in self.query:iter_captures(scope, self.bufnr, 0, -1) do
-        if self.query.captures[id] == capture_name then
-            table.insert(local_defs, node)
+        local capture = self.query.captures[id]
+        for i = 1, select("#", ...) do
+            if capture == select(i, ...) then
+                table.insert(out, node)
+                break
+            end
         end
     end
-
-    return local_defs
+    return out
 end
 
 function Query.find_occurrences(scope, sexpr, bufnr)
     local lang = vim.bo[bufnr].filetype
+
     -- TODO: Ask tj why my life is terrible
     local sexpr_query = vim.treesitter.parse_query(
         lang,

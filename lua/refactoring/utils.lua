@@ -139,9 +139,15 @@ M.range_contains_node = function(node, start_row, start_col, end_row, end_col)
     return false
 end
 
-M.filter_to_selection = function(nodes, region)
+M.region_complement = function(nodes, region)
     return vim.tbl_filter(function(node)
-        return not M.range_contains_node(node, region:to_ts())
+        return not region:contains(Region:from_node(node))
+    end, nodes)
+end
+
+M.region_intersect = function(nodes, region)
+    return vim.tbl_filter(function(node)
+        return region:contains(Region:from_node(node))
     end, nodes)
 end
 
@@ -153,6 +159,16 @@ function M.node_text_to_set(...)
         local nodes = select(i, ...)
         for _, node in pairs(nodes) do
             out[ts_utils.get_node_text(node)[1]] = true
+        end
+    end
+    return out
+end
+
+function M.table_key_intersect(a, b)
+    local out = {}
+    for k, v in pairs(b) do
+        if a[k] then
+            out[k] = v
         end
     end
     return out
