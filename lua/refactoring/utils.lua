@@ -158,7 +158,10 @@ function M.node_text_to_set(...)
     for i = 1, select("#", ...) do
         local nodes = select(i, ...)
         for _, node in pairs(nodes) do
-            out[ts_utils.get_node_text(node)[1]] = true
+            local text = ts_utils.get_node_text(node)
+            if text then
+                out[text] = true
+            end
         end
     end
     return out
