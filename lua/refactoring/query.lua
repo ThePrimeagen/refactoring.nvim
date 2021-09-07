@@ -11,6 +11,7 @@ local utils = require("refactoring.utils")
 
 local Query = {}
 Query.__index = Query
+
 Query.query_type = {
     FunctionArgument = "definition.function_argument",
     LocalVarName = "definition.local_name",
@@ -22,17 +23,17 @@ Query.query_type = {
     LocalVarValue = "definition.local_value",
 }
 
-function Query.get_root(bufnr, lang)
-    local parser = parsers.get_parser(bufnr or 0, lang)
+function Query.get_root(bufnr, filetype)
+    local parser = parsers.get_parser(bufnr or 0, filetype)
     return parser:parse()[1]:root()
 end
 
-function Query:new(bufnr, lang, query)
+function Query:new(bufnr, filetype, query)
     return setmetatable({
         query = query,
         bufnr = bufnr,
-        lang = lang,
-        root = Query.get_root(bufnr, lang),
+        filetype = filetype,
+        root = Query.get_root(bufnr, filetype),
     }, self)
 end
 
@@ -69,12 +70,16 @@ function Query:get_scope_by_position(line, col, capture_name)
     return out
 end
 
-function Query:pluck_by_capture(scope, ...)
+function Query:pluck_by_capture(scope, captures)
+    if type(captures) ~= "table" then
+        captures = { captures }
+    end
+
     local out = {}
     for id, node, _ in self.query:iter_captures(scope, self.bufnr, 0, -1) do
-        local capture = self.query.captures[id]
-        for i = 1, select("#", ...) do
-            if capture == select(i, ...) then
+        local n_capture = self.query.captures[id]
+        for _, capture in pairs(captures) do
+            if n_capture == capture then
                 table.insert(out, node)
                 break
             end
@@ -84,11 +89,11 @@ function Query:pluck_by_capture(scope, ...)
 end
 
 function Query.find_occurrences(scope, sexpr, bufnr)
-    local lang = vim.bo[bufnr].filetype
+    local filetype = vim.bo[bufnr].filetype
 
     -- TODO: Ask tj why my life is terrible
     local sexpr_query = vim.treesitter.parse_query(
-        lang,
+        filetype,
         sexpr .. " @tmp_capture"
     )
 
