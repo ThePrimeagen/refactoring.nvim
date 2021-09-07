@@ -19,7 +19,6 @@ local function get_extract_setup_pipeline(bufnr)
 end
 
 local function extract_setup(refactor)
-
     local function_name = get_input("106: Extract Function Name > ")
     assert(function_name ~= "", "Error: Must provide function name")
 
