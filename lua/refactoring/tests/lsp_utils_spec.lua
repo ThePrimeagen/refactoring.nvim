@@ -14,12 +14,8 @@ end
 
 describe("lsp_utils", function()
     it("should get the references and definition of cursor", function()
-        vim.cmd(":e ./lua/refactoring/tests/lsp_utils_test_file.ts")
-        local bufnr = vim.api.nvim_get_current_buf()
-        vim.cmd(":LspStart")
-        vim.wait(10000, function()
-            return #vim.lsp.buf_get_clients(bufnr) > 0
-        end)
+        local bufnr = test_utils.open_test_file("lsp_utils_test_file.ts")
+        test_utils.start_lsp(bufnr)
 
         assert.are.same(#vim.lsp.buf_get_clients(bufnr), 1)
         assert.are.same(vim.lsp.buf_is_attached(bufnr, 1), true)

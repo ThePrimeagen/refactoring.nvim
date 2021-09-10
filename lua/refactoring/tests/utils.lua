@@ -51,4 +51,16 @@ function M.get_definition_under_cursor(bufnr)
     return definition
 end
 
+function M.open_test_file(file)
+    vim.cmd(":e  ./lua/refactoring/tests/" .. file)
+    return vim.api.nvim_get_current_buf()
+end
+
+function M.start_lsp(bufnr)
+    vim.cmd(":LspStart")
+    vim.wait(10000, function()
+        return #vim.lsp.buf_get_clients(bufnr) > 0
+    end)
+end
+
 return M

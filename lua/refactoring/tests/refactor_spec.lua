@@ -12,9 +12,19 @@ local extension_to_filetype = {
     ["py"] = "python",
 }
 
-local refactor_id_to_name = {
-    ["119"] = "extract_var",
-    ["106"] = "extract",
+local refactor_id_to_refactor = {
+    ["119"] = {
+        ["name"] = "extract_var",
+        ["lsp"] = false,
+    },
+    ["106"] = {
+        ["name"] = "extract",
+        ["lsp"] = false,
+    },
+    ["123"] = {
+        ["name"] = "inline_var",
+        ["lsp"] = true,
+    },
 }
 
 local cwd = vim.loop.cwd()
@@ -28,8 +38,8 @@ end
 
 local function get_refactor_name_from_path(path)
     local refactor_id = path:match("%d+")
-    local refactor_name = refactor_id_to_name[tostring(refactor_id)]
-    if not refactor_name then
+    local refactor = refactor_id_to_refactor[tostring(refactor_id)]
+    if not refactor then
         error(
             string.format(
                 "malformed test structure: expected %s to contain a valid refactor id",
@@ -37,7 +47,7 @@ local function get_refactor_name_from_path(path)
             )
         )
     end
-    return refactor_name
+    return refactor
 end
 
 local function for_each_file(cb)
@@ -69,6 +79,21 @@ local function run_commands(filename_prefix)
     end
 end
 
+local function run_inputs_if_exist(filename_prefix)
+    local input_file_name = string.format("%s.inputs", filename_prefix)
+    local inputs_file = Path:new(
+        cwd,
+        "lua",
+        "refactoring",
+        "tests",
+        input_file_name
+    )
+    if inputs_file:exists() then
+        local inputs = get_contents(string.format("%s.inputs", filename_prefix))
+        Config.automate_input(inputs)
+    end
+end
+
 local function test_empty_input()
     local test_cases = {
         [1] = {
@@ -91,7 +116,7 @@ local function test_empty_input()
         local parts = test_utils.split_string(file, "%.")
         local filename_prefix = parts[1]
         local filename_extension = parts[3]
-        local refactor_name = get_refactor_name_from_path(filename_prefix)
+        local refactor = get_refactor_name_from_path(filename_prefix)
 
         local bufnr = vim.api.nvim_create_buf(false, true)
         vim.api.nvim_win_set_buf(0, bufnr)
@@ -101,7 +126,7 @@ local function test_empty_input()
 
         run_commands(filename_prefix)
 
-        local status, err = pcall(refactoring[refactor_name], bufnr)
+        local status, err = pcall(refactoring[refactor["name"]], bufnr)
 
         -- Need this for make file so that next test has clean buffer
         vim.api.nvim_buf_delete(bufnr, { force = true })
@@ -118,12 +143,13 @@ describe("Refactoring", function()
             local parts = test_utils.split_string(file, "%.")
             local filename_prefix = parts[1]
             local filename_extension = parts[3]
-            local refactor_name = get_refactor_name_from_path(filename_prefix)
+            local refactor = get_refactor_name_from_path(filename_prefix)
 
-            local start_contents = get_contents(file)
-            local inputs = get_contents(
-                string.format("%s.inputs", filename_prefix)
-            )
+            local bufnr = test_utils.open_test_file(file)
+            if refactor["lsp"] then
+                test_utils.start_lsp(bufnr)
+            end
+
             local expected = get_contents(
                 string.format(
                     "%s.expected.%s",
@@ -132,20 +158,11 @@ describe("Refactoring", function()
                 )
             )
 
-            local bufnr = vim.api.nvim_create_buf(false, false)
-            vim.api.nvim_win_set_buf(0, bufnr)
-            vim.bo[bufnr].filetype = extension_to_filetype[filename_extension]
-            vim.api.nvim_buf_set_lines(bufnr, 0, -1, false, start_contents)
-            Config.automate_input(inputs)
-
+            run_inputs_if_exist(filename_prefix)
             run_commands(filename_prefix)
-
-            refactoring[refactor_name](bufnr)
+            refactoring[refactor["name"]](bufnr)
 
             local lines = vim.api.nvim_buf_get_lines(bufnr, 0, -1, false)
-
-            -- Need this for make file so that next test has clean buffer
-            vim.api.nvim_buf_delete(bufnr, { force = true })
 
             eq(expected, lines)
         end)
