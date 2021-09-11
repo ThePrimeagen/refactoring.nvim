@@ -15,6 +15,8 @@
 ((formal_parameters
   (optional_parameter
     (identifier) @definition.function_argument)))
+(for_in_statement
+  left: (identifier) @definition.function_argument)
 
 (program) @definition.scope
 (function_declaration) @definition.scope
