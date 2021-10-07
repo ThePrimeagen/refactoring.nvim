@@ -34,6 +34,7 @@ local function extract_setup(refactor)
     })
 
     refactor.text_edits = {
+        -- TODO: First text edit is causing cursor issues
         {
             region = utils.region_above_node(refactor.scope),
             text = function_code,

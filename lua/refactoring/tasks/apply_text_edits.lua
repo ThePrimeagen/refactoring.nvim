@@ -30,7 +30,19 @@ local function apply_text_edits(refactor)
     end
 
     for bufnr, edit_set in pairs(edits) do
-        vim.lsp.util.apply_text_edits(edit_set, bufnr)
+        local status, retval = pcall(
+            vim.lsp.util.apply_text_edits,
+            edit_set,
+            bufnr
+        )
+        if status == false then
+            -- HACK:: Figure out why this started failing for cursor position
+            -- print ("Return Value: ", retval)
+            -- If not the expected error, throw it
+            if not string.match(retval, "Cursor position outside buffer") then
+                error(retval)
+            end
+        end
     end
     return true, refactor
 end
