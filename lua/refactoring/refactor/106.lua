@@ -34,7 +34,6 @@ local function extract_setup(refactor)
     })
 
     refactor.text_edits = {
-        -- TODO: First text edit is causing cursor issues
         {
             region = utils.region_above_node(refactor.scope),
             text = function_code,
@@ -58,6 +57,7 @@ M.extract_to_file = function(bufnr)
     get_extract_setup_pipeline(bufnr)
         :add_task(create_file.from_input)
         :add_task(function(refactor)
+            refactor.name = "extract_to_file"
             extract_setup(refactor)
             return true, refactor
         end)
@@ -69,6 +69,7 @@ M.extract = function(bufnr)
     bufnr = bufnr or vim.fn.bufnr()
     get_extract_setup_pipeline(bufnr)
         :add_task(function(refactor)
+            refactor.name = "extract"
             extract_setup(refactor)
             return true, refactor
         end)

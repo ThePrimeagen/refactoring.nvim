@@ -44,6 +44,10 @@ local function apply_text_edits(refactor)
             end
         end
     end
+
+    -- required for move_cursor
+    refactor.edits = edits
+
     return true, refactor
 end
 

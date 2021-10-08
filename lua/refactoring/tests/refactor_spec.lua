@@ -137,6 +137,33 @@ local function test_empty_input()
     end
 end
 
+local function validate_cursor_if_file_exists(filename_prefix)
+    local cursor_position_name = string.format(
+        "%s.cursor_position",
+        filename_prefix
+    )
+    local cursor_position_file = Path:new(
+        cwd,
+        "lua",
+        "refactoring",
+        "tests",
+        cursor_position_name
+    )
+    if cursor_position_file:exists() then
+        local cursor_position = get_contents(
+            string.format("%s.cursor_position", filename_prefix)
+        )
+        local expected_row = tonumber(cursor_position[1])
+        local expected_col = tonumber(cursor_position[2])
+
+        local cursor = vim.api.nvim_win_get_cursor(0)
+        local result_row = cursor[1]
+        local result_col = cursor[2]
+        eq(expected_row, result_row)
+        eq(expected_col, result_col)
+    end
+end
+
 describe("Refactoring", function()
     for_each_file(function(file)
         it(string.format("Refactoring: %s", file), function()
@@ -165,6 +192,8 @@ describe("Refactoring", function()
             local lines = vim.api.nvim_buf_get_lines(bufnr, 0, -1, false)
 
             eq(expected, lines)
+
+            validate_cursor_if_file_exists(filename_prefix)
         end)
     end)
 
