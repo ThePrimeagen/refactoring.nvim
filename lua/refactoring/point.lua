@@ -40,6 +40,10 @@ function Point:to_ts()
     return self.row - 1, self.col
 end
 
+function Point:to_ts_node(root)
+    return root:descendant_for_range(self:to_ts(), self:to_ts())
+end
+
 function Point:clone()
     local clone = Point:empty()
 

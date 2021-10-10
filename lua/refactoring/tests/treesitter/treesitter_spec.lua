@@ -17,9 +17,7 @@ local function get_scope(ts, line, col)
 
     -- todo, I forgot how to set the column and I cannot find it currently
     -- within the help docs
-    local point = Point:from_cursor()
-    local root = ts:get_root()
-    local node = root:descendant_for_range(point:to_ts(), point:to_ts())
+    local node = Point:from_cursor():to_ts_node(ts:get_root())
     return get_parent_scope(ts, node, 1)
 end
 
