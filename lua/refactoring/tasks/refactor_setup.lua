@@ -1,4 +1,5 @@
 local Query = require("refactoring.query")
+local TreeSitter = require("refactoring.treesitter")
 
 local function refactor_setup(bufnr, options)
     bufnr = bufnr or vim.fn.bufnr()
@@ -8,6 +9,7 @@ local function refactor_setup(bufnr, options)
         local root = Query.get_root(bufnr, filetype)
         local refactor = {
             code = options.get_code_generation_for(filetype),
+            ts = TreeSitter.get_treesitter(),
             filetype = filetype,
             bufnr = bufnr,
             query = Query:new(
