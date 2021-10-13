@@ -24,14 +24,15 @@ local function extract_setup(refactor)
     assert(function_name ~= "", "Error: Must provide function name")
 
     local function_body = refactor.region:get_text()
-    table.insert(function_body, refactor.code["return"]("fill_me"))
     local args = vim.fn.sort(vim.tbl_keys(get_selected_locals(refactor)))
 
     local function_code = refactor.code["function"]({
         name = function_name,
         args = args,
         body = function_body,
+        ask_return = refactor.options.ask_return
     })
+
 
     refactor.text_edits = {
         -- TODO: First text edit is causing cursor issues

@@ -21,6 +21,7 @@ local default_formatting = {
 local config = {
     code_generation = default_code_generation,
     formatting = default_formatting,
+    ask_return = true,
     _automation = {},
 }
 
@@ -57,8 +58,14 @@ function M.automate_input(inputs)
     config._automation.inputs_idx = 0
 end
 
-function M.setup()
-    -- TODO: TJ fill this in...
+function M.setup(opts)
+    -- TODO: Clean this up
+    if opts ~= nil then
+        for k, v in pairs(opts) do
+          print(k, v)
+          config[k] = v
+        end
+    end
 end
 
 return M
