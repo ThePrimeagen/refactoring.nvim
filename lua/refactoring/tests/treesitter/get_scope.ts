@@ -28,3 +28,15 @@ function top_level_function(): number {
     return 5;
 }
 
+function local_var_test() {
+    let foo = 5;
+    const bar = 5;
+
+    function inner() {
+        let baz = 5;
+        return 5;
+    }
+
+    return inner() * foo * bar;
+}
+

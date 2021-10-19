@@ -181,4 +181,12 @@ function Region:contains(other_range)
     return start_score <= other_start_score and end_score >= other_end_score
 end
 
+function Region:contains_point(point)
+    local start_score = calculate_row_col_score(self.start_row, self.start_col)
+    local end_score = calculate_row_col_score(self.end_row, self.end_col)
+    local point_score = calculate_row_col_score(point.row, point.col)
+
+    return start_score <= point_score and end_score >= point_score
+end
+
 return Region

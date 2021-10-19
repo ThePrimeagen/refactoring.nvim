@@ -56,12 +56,18 @@ function M.print_selections_sexpr()
     print(vim.inspect(selection_node:sexpr()))
 end
 
+function M.print_local_def()
+    local def = TreeSitter.get_treesitter():local_declarations_under_cursor()
+
+    print(def)
+    print(vim.inspect(def))
+    print(def[1]:type())
+    print(ts_utils.get_node_text(def))
+end
+
 function M.get_current_node()
-    local root = TreeSitter.get_root()
-    return root:descendant_for_range(
-        Point:from_cursor():to_ts(),
-        Point:from_cursor():to_ts()
-    )
+    local root = TreeSitter.get_treesitter():get_root()
+    return Point:from_cursor():to_ts_node(root)
 end
 
 function M.print_scope(scope)

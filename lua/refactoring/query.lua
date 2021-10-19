@@ -28,6 +28,11 @@ function Query.get_root(bufnr, filetype)
     return parser:parse()[1]:root()
 end
 
+function Query.from_query_name(bufnr, filetype, query_name)
+    local query = vim.treesitter.get_query(filetype, query_name)
+    return Query:new(bufnr, filetype, query)
+end
+
 function Query:new(bufnr, filetype, query)
     return setmetatable({
         query = query,

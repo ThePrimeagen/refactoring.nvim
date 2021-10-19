@@ -1,3 +1,5 @@
+local Region = require("refactoring.region")
+
 local function getpos()
     return vim.fn.line("."), vim.fn.col(".")
 end
@@ -41,7 +43,8 @@ function Point:to_ts()
 end
 
 function Point:to_ts_node(root)
-    return root:descendant_for_range(self:to_ts(), self:to_ts())
+    local s_row, s_col = self:to_ts()
+    return root:descendant_for_range(s_row, s_col, self:to_ts())
 end
 
 function Point:clone()
@@ -51,6 +54,10 @@ function Point:clone()
     clone.col = self.col
 
     return clone
+end
+
+function Point:within_node(node)
+    return Region:from_node(node, 0):contains_point(self) -- buffer doesn't matter in this case
 end
 
 return Point
