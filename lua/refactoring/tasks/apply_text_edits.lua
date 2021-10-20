@@ -49,14 +49,6 @@ local function apply_text_edits(refactor)
                 diff = diff + 1
             end
 
-            print(
-                "HELLO WORLD",
-                vim.inspect(edit.region),
-                length,
-                diff,
-                length - diff
-            )
-
             length = length - diff
         end
 
@@ -91,11 +83,9 @@ local function apply_text_edits(refactor)
     local add_rows = 0
     for _, v in pairs(text_moved) do
         if v.start < cursor.row then
-            print("adding", v.length)
             add_rows = add_rows + v.length
         end
     end
-    print("total", add_rows)
 
     local r, c = cursor:to_vim_win()
     vim.schedule(function()
