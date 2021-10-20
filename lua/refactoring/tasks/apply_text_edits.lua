@@ -26,34 +26,46 @@ local function apply_text_edits(refactor)
         -- new line auto additions and just lsp generated content
         local start = 0
         local length = 0
-        local is_delete = false
         if edit.newText then
             table.insert(edits[bufnr], edit)
-            start = edits.start.line
+            start = edit.start.line
             length = #utils.split_string(edits.newText, "\n")
-            is_delete = edit.newText == ""
+            if edit.newText == "" then
+                length = length * -1
+            end
         else
             local newText = get_text(edit)
 
-            table.insert(
-                edits[bufnr],
-                edit.region:to_lsp_text_edit(newText)
+            table.insert(edits[bufnr], edit.region:to_lsp_text_edit(newText))
+
+            start = edit.region.start_row
+            length = #utils.split_string(newText, "\n")
+            local diff = edit.region.end_row - edit.region.start_row
+
+            if
+                edit.region.start_row ~= edit.region.end_row
+                or edit.region.end_col ~= edit.region.start_col
+            then
+                diff = diff + 1
+            end
+
+            print(
+                "HELLO WORLD",
+                vim.inspect(edit.region),
+                length,
+                diff,
+                length - diff
             )
 
-            table.insert(text_moved, {
-                start = edit.region.start_row,
-                length = #utils.split_string(newText, "\n")
-            })
+            length = length - diff
         end
 
         if refactor.bufnr == bufnr then
             table.insert(text_moved, {
-                is_delete,
                 start = start,
-                length = length
+                length = length,
             })
         end
-
     end
 
     for bufnr, edit_set in pairs(edits) do
@@ -79,17 +91,15 @@ local function apply_text_edits(refactor)
     local add_rows = 0
     for _, v in pairs(text_moved) do
         if v.start < cursor.row then
-            if v.is_delete then
-                add_rows = add_rows - v.length
-            else
-                add_rows = add_rows + v.length
-            end
+            print("adding", v.length)
+            add_rows = add_rows + v.length
         end
     end
+    print("total", add_rows)
 
     local r, c = cursor:to_vim_win()
     vim.schedule(function()
-        vim.api.nvim_win_set_cursor(refactor.win, {r + add_rows, c})
+        vim.api.nvim_win_set_cursor(refactor.win, { r + add_rows, c })
     end)
 
     return true, refactor
