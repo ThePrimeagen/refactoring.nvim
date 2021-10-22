@@ -16,7 +16,7 @@ function %s(%s) {
     %s
 }
 
-            ]],
+]],
             opts.name,
             table.concat(opts.args, ", "),
             utils.stringify_code(opts.body)

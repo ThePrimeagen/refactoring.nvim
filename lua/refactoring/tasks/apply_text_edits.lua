@@ -28,9 +28,7 @@ local function apply_text_edits(refactor)
             add_change(Region:from_lsp_range(edit.range, bufnr), edit.newText)
         else
             local newText = get_text(edit)
-
             table.insert(edits[bufnr], edit.region:to_lsp_text_edit(newText))
-
             add_change(edit.region, newText)
         end
     end
