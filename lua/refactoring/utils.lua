@@ -41,7 +41,6 @@ function M.split_string(inputstr, sep)
     return t
 end
 
-
 function M.get_top_of_file_region()
     local range = { line = 0, character = 0 }
     return Region:from_lsp_range({ start = range, ["end"] = range })

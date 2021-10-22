@@ -1,4 +1,5 @@
-local utils = require("refactoring.utils")
+local add_change = require("refactoring.tasks.adjust_cursor").add_change
+local Region = require("refactoring.region")
 
 local function get_text(edit)
     if edit.add_newline or edit.add_newline == nil then
@@ -13,8 +14,6 @@ local function apply_text_edits(refactor)
     end
 
     local edits = {}
-    -- Clean this up so that I don't have to have two tables
-    local text_moved = {}
 
     for _, edit in pairs(refactor.text_edits) do
         local bufnr = edit.bufnr or refactor.buffers[1]
@@ -24,39 +23,15 @@ local function apply_text_edits(refactor)
 
         -- TODO: We should think of a way to make this work with better for both
         -- new line auto additions and just lsp generated content
-        local start = 0
-        local length = 0
         if edit.newText then
             table.insert(edits[bufnr], edit)
-            start = edit.start.line
-            length = #utils.split_string(edits.newText, "\n")
-            if edit.newText == "" then
-                length = length * -1
-            end
+            add_change(Region:from_lsp_range(edit.range, bufnr), edit.newText)
         else
             local newText = get_text(edit)
 
             table.insert(edits[bufnr], edit.region:to_lsp_text_edit(newText))
 
-            start = edit.region.start_row
-            length = #utils.split_string(newText, "\n")
-            local diff = edit.region.end_row - edit.region.start_row
-
-            if
-                edit.region.start_row ~= edit.region.end_row
-                or edit.region.end_col ~= edit.region.start_col
-            then
-                diff = diff + 1
-            end
-
-            length = length - diff
-        end
-
-        if refactor.bufnr == bufnr then
-            table.insert(text_moved, {
-                start = start,
-                length = length,
-            })
+            add_change(edit.region, newText)
         end
     end
 
@@ -76,21 +51,6 @@ local function apply_text_edits(refactor)
             end
         end
     end
-
-    -- TODO: should I make this its own task?
-    -- teddy weigh in by changing this if you feel different.
-    local cursor = refactor.cursor_point
-    local add_rows = 0
-    for _, v in pairs(text_moved) do
-        if v.start < cursor.row then
-            add_rows = add_rows + v.length
-        end
-    end
-
-    local r, c = cursor:to_vim_win()
-    vim.schedule(function()
-        vim.api.nvim_win_set_cursor(refactor.win, { r + add_rows, c })
-    end)
 
     return true, refactor
 end

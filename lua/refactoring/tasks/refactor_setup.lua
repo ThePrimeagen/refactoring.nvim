@@ -11,7 +11,7 @@ local function refactor_setup(bufnr, options)
         local win = vim.api.nvim_get_current_win()
 
         local refactor = {
-            cursor_point = Point:from_cursor(),
+            cursor = Point:from_cursor(),
             code = options.get_code_generation_for(filetype),
             ts = TreeSitter.get_treesitter(),
             filetype = filetype,
