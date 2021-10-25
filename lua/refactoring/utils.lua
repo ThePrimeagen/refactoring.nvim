@@ -169,6 +169,19 @@ M.region_intersect = function(nodes, region)
     end, nodes)
 end
 
+M.after_region = function(nodes, region)
+    return vim.tbl_filter(function(node)
+        return region:is_after(Region:from_node(node))
+    end, nodes)
+end
+
+function M.table_has_keys(t)
+    for _ in pairs(t) do
+        return true
+    end
+    return false
+end
+
 -- TODO: Very unsure if this needs to be a "util" or not But this is super
 -- useful in refactor 106 and I assume it will be used elsewhere quite a bit
 function M.node_text_to_set(...)

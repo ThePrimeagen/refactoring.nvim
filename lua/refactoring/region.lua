@@ -59,6 +59,7 @@ end
 --- Get a region from a Treesitter Node
 ---@return Region
 function Region:from_node(node, bufnr)
+
     bufnr = bufnr or vim.fn.bufnr()
     local start_line, start_col, end_line, end_col = node:range()
 
@@ -187,6 +188,14 @@ function Region:contains_point(point)
     local point_score = calculate_row_col_score(point.row, point.col)
 
     return start_score <= point_score and end_score >= point_score
+end
+
+function Region:is_after(region)
+    local end_score = calculate_row_col_score(self.end_row, self.end_col)
+    local n_start_score =
+        calculate_row_col_score(region.start_row, region.start_col)
+
+    return end_score < n_start_score
 end
 
 return Region

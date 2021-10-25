@@ -5,9 +5,11 @@ local function format(refactor)
         ).cmd
     if format_cmd then
         for _, bufnr in pairs(refactor.buffers) do
-            -- TODO: Window?
-            vim.api.nvim_win_set_buf(0, bufnr)
-            vim.cmd(format_cmd)
+            -- This makes it locally much more predictable
+            -- vim.schedule(function()
+                vim.api.nvim_win_set_buf(0, bufnr)
+                vim.cmd(format_cmd)
+            -- end)
         end
     end
 

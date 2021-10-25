@@ -6,13 +6,25 @@ local M = {
     typescript = Typescript,
 }
 
+local DefaultSitter = {}
+
+function DefaultSitter.new(bufnr, ft)
+    return TreeSitter:new({
+        version = 0,
+        filetype = ft,
+        bufnr = bufnr,
+    }, bufnr)
+end
+
 local function get_bufrn(bufnr)
     return bufnr or vim.api.nvim_get_current_buf()
 end
 
 function M.get_treesitter(bufnr)
-    local ft = vim.bo[get_bufrn(bufnr)].ft
-    return M[ft] and M[ft].new(bufnr, ft) or nil
+    bufnr = get_bufrn(bufnr)
+
+    local ft = vim.bo[bufnr].ft
+    return M[ft] and M[ft].new(bufnr, ft) or DefaultSitter.new(bufnr, ft)
 end
 
 return M
