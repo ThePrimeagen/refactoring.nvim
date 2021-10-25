@@ -23,6 +23,24 @@ function M.take_one(table, fn)
     return out
 end
 
+function M.split_string(inputstr, sep)
+    local t = {}
+    -- [[ lets not think about the edge case there... --]]
+    while #inputstr > 0 do
+        local start, stop = inputstr:find(sep)
+        local str
+        if not start then
+            str = inputstr
+            inputstr = ""
+        else
+            str = inputstr:sub(1, start - 1)
+            inputstr = inputstr:sub(stop + 1)
+        end
+        table.insert(t, str)
+    end
+    return t
+end
+
 function M.get_top_of_file_region()
     local range = { line = 0, character = 0 }
     return Region:from_lsp_range({ start = range, ["end"] = range })

@@ -32,6 +32,10 @@ function Point:empty()
     return setmetatable({}, self)
 end
 
+function Point:to_vim_win()
+    return self.row, self.col - 1
+end
+
 --- Convert a point to a vim point (line, col 1 based)
 function Point:to_vim()
     return self.row, self.col

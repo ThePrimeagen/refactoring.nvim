@@ -3,6 +3,7 @@ local scandir = require("plenary.scandir")
 local refactoring = require("refactoring.refactor")
 local Config = require("refactoring.config")
 local test_utils = require("refactoring.tests.utils")
+local utils = require("refactoring.utils")
 
 local extension_to_filetype = {
     ["lua"] = "lua",
@@ -63,14 +64,14 @@ local function for_each_file(cb)
 end
 
 local function get_commands(filename_prefix)
-    return test_utils.split_string(
+    return utils.split_string(
         test_utils.read_file(string.format("%s.commands", filename_prefix)),
         "\n"
     )
 end
 
 local function get_contents(file)
-    return test_utils.split_string(test_utils.read_file(file), "\n")
+    return utils.split_string(test_utils.read_file(file), "\n")
 end
 
 local function run_commands(filename_prefix)
@@ -113,7 +114,7 @@ local function test_empty_input()
             :new(cwd, "lua", "refactoring", "tests", test_case["file"])
             :absolute()
         file = remove_cwd(file)
-        local parts = test_utils.split_string(file, "%.")
+        local parts = utils.split_string(file, "%.")
         local filename_prefix = parts[1]
         local filename_extension = parts[3]
         local refactor = get_refactor_name_from_path(filename_prefix)
@@ -140,7 +141,7 @@ end
 describe("Refactoring", function()
     for_each_file(function(file)
         it(string.format("Refactoring: %s", file), function()
-            local parts = test_utils.split_string(file, "%.")
+            local parts = utils.split_string(file, "%.")
             local filename_prefix = parts[1]
             local filename_extension = parts[3]
             local refactor = get_refactor_name_from_path(filename_prefix)

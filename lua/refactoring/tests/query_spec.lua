@@ -15,7 +15,7 @@ describe("Query", function()
             0,
             -1,
             false,
-            test_utils.split_string(file, "\n")
+            utils.split_string(file, "\n")
         )
 
         local root = Query.get_root()
