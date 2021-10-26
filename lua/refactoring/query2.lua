@@ -62,4 +62,14 @@ function Query2:get_nodes()
     return nodes
 end
 
+function Query2.get_references(scope, locals_query)
+    return Query2
+        :from_query(locals_query)
+        :with_scope(scope)
+        :with_types({
+            Query.query_type.Reference,
+        })
+        :get_nodes()
+end
+
 return Query2

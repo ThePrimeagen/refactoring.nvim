@@ -2,9 +2,9 @@ local TreeSitter = require("refactoring.treesitter.treesitter")
 local Bits = require("refactoring.bits")
 local Version = require("refactoring.treesitter.version")
 
-local Typescript = {}
+local JavaScript = {}
 
-function Typescript.new(bufnr, ft)
+function JavaScript.new(bufnr, ft)
     return TreeSitter:new({
         version = Bits.bor(Version.Scopes, Version.Locals),
         filetype = ft,
@@ -19,4 +19,4 @@ function Typescript.new(bufnr, ft)
     }, bufnr)
 end
 
-return Typescript
+return JavaScript

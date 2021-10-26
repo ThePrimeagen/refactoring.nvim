@@ -12,7 +12,7 @@ function foobar(foo, key) {
             localAmount += Math.max(900 - foo[key] * 69, 420);
         break;
     }
-    return fill_me
+    return localAmount;
 }
 
 function test() {

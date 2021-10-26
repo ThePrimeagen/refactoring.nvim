@@ -2,21 +2,20 @@ local TreeSitter = require("refactoring.treesitter.treesitter")
 local Bits = require("refactoring.bits")
 local Version = require("refactoring.treesitter.version")
 
-local Typescript = {}
+local Lua = {}
 
-function Typescript.new(bufnr, ft)
+function Lua.new(bufnr, ft)
     return TreeSitter:new({
         version = Bits.bor(Version.Scopes, Version.Locals),
         filetype = ft,
         bufnr = bufnr,
         scope_names = {
             program = "program",
-            function_declaration = "function",
-            method_definition = "function",
-            arrow_function = "function",
-            class_declaration = "class",
+            local_function = "function",
+            ["function"] = "function",
+            function_definition = "function",
         },
     }, bufnr)
 end
 
-return Typescript
+return Lua
