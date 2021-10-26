@@ -1,9 +1,12 @@
+require("plenary.async").tests.add_to_env()
 local Path = require("plenary.path")
 local scandir = require("plenary.scandir")
 local refactoring = require("refactoring.refactor")
 local Config = require("refactoring.config")
 local test_utils = require("refactoring.tests.utils")
 local utils = require("refactoring.utils")
+
+local async = require("plenary.async")
 
 local extension_to_filetype = {
     ["lua"] = "lua",
@@ -129,7 +132,9 @@ local function test_empty_input()
 
         local status, err = pcall(refactoring[refactor["name"]], bufnr)
 
-        -- Need this for make file so that next test has clean buffer
+        -- waits for the next frame for formatting to work.
+        async.util.scheduler()
+
         vim.api.nvim_buf_delete(bufnr, { force = true })
 
         eq(false, status)
@@ -140,7 +145,7 @@ end
 
 describe("Refactoring", function()
     for_each_file(function(file)
-        it(string.format("Refactoring: %s", file), function()
+        a.it(string.format("Refactoring: %s", file), function()
             local parts = utils.split_string(file, "%.")
             local filename_prefix = parts[1]
             local filename_extension = parts[3]
@@ -163,13 +168,14 @@ describe("Refactoring", function()
             run_commands(filename_prefix)
             refactoring[refactor["name"]](bufnr)
 
+            async.util.scheduler()
             local lines = vim.api.nvim_buf_get_lines(bufnr, 0, -1, false)
 
             eq(expected, lines)
         end)
     end)
 
-    it("Refactoring: empty input", function()
+    a.it("Refactoring: empty input", function()
         test_empty_input()
     end)
 end)

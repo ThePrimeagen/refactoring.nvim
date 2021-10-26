@@ -1,9 +1,17 @@
 local TreeSitter = require("refactoring.treesitter.treesitter")
 local Typescript = require("refactoring.treesitter.typescript")
+local Golang = require("refactoring.treesitter.golang")
+local Lua = require("refactoring.treesitter.lua")
+local Python = require("refactoring.treesitter.python")
+local JavaScript = require("refactoring.treesitter.javascript")
 
 local M = {
     TreeSitter = TreeSitter,
+    javascript = JavaScript,
     typescript = Typescript,
+    python = Python,
+    go = Golang,
+    lua = Lua,
 }
 
 local DefaultSitter = {}

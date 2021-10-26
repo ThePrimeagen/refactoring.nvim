@@ -11,11 +11,17 @@ local default_formatting = {
         -- cmd = [[ !stylua % ]],
     },
     go = {
+        -- ummm...??? should I change this?
         -- cmd = [[ !gofmt -w % ]],
     },
     python = {
         -- TODO: add python formatting command
     },
+
+    ["default"] = {
+        -- should we do this?
+        -- cmd = [[ ? ]]
+    }
 }
 
 local config = {
