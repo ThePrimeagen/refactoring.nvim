@@ -16,4 +16,3 @@ function Golang.new(bufnr, ft)
 end
 
 return Golang
-

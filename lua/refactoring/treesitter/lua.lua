@@ -19,5 +19,3 @@ function Lua.new(bufnr, ft)
 end
 
 return Lua
-
-

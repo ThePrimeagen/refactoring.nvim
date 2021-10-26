@@ -21,7 +21,7 @@ local default_formatting = {
     ["default"] = {
         -- should we do this?
         -- cmd = [[ ? ]]
-    }
+    },
 }
 
 local config = {

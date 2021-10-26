@@ -1,4 +1,5 @@
-require("plenary.async").tests.add_to_env()
+local a = require("plenary.async").tests
+local describe = a.describe
 local Path = require("plenary.path")
 local scandir = require("plenary.scandir")
 local refactoring = require("refactoring.refactor")

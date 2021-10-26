@@ -20,5 +20,3 @@ function JavaScript.new(bufnr, ft)
 end
 
 return JavaScript
-
-

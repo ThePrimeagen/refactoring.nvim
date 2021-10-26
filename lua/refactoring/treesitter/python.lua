@@ -16,6 +16,3 @@ function Python.new(bufnr, ft)
 end
 
 return Python
-
-
-
