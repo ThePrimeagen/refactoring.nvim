@@ -31,10 +31,15 @@ local function extract_setup(refactor)
     local args = vim.fn.sort(vim.tbl_keys(get_selected_locals(refactor)))
 
     local region_vars = utils.region_intersect(
-        refactor.ts:local_declarations(refactor.scope), refactor.region)
+        refactor.ts:local_declarations(refactor.scope),
+        refactor.region
+    )
 
     region_vars = vim.tbl_map(function(node)
-        return refactor.query:pluck_by_capture(node, Query.query_type.LocalVarName)[1]
+        return refactor.query:pluck_by_capture(
+            node,
+            Query.query_type.LocalVarName
+        )[1]
     end, region_vars)
 
     region_vars = vim.tbl_filter(function(node)
@@ -50,7 +55,10 @@ local function extract_setup(refactor)
     local return_vals = utils.table_key_intersect(region_var_map, ref_map)
 
     if utils.table_has_keys(return_vals) then
-        table.insert(function_body, refactor.code["return"](vim.tbl_keys(return_vals)))
+        table.insert(
+            function_body,
+            refactor.code["return"](vim.tbl_keys(return_vals))
+        )
     end
 
     local function_code = refactor.code["function"]({
