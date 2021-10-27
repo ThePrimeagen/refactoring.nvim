@@ -1,12 +1,14 @@
 local TreeSitter = require("refactoring.treesitter.treesitter")
-local Bits = require("refactoring.bits")
-local Version = require("refactoring.treesitter.version")
+local Version = require("refactoring.version")
 
 local Typescript = {}
 
 function Typescript.new(bufnr, ft)
     return TreeSitter:new({
-        version = Bits.bor(Version.Scopes, Version.Locals),
+        version = Version:new(
+            TreeSitter.version_flags.Scopes,
+            TreeSitter.version_flags.Locals
+        ),
         filetype = ft,
         bufnr = bufnr,
         scope_names = {
