@@ -28,5 +28,3 @@ function Version:ensure_version(...)
 end
 
 return Version
-
-
