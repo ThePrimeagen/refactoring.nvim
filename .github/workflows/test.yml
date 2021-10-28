@@ -31,7 +31,7 @@ jobs:
                   npm install -g typescript typescript-language-server
             - name: TreeSitter Installation
               run: |
-                nvim --headless -c "so refactoring.nvim/lua/refactoring/tests/minimal.vim" -c "q"
+                cd refactoring.nvim && nvim --headless -c "so refactoring.nvim/lua/refactoring/tests/minimal.vim" -c "q"
             - name: Test
               run: |
                 cd refactoring.nvim
