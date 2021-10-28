@@ -12,6 +12,7 @@ local function refactor_setup(bufnr, options)
 
         local refactor = {
             cursor = Point:from_cursor(),
+            highlight_start_col = vim.fn.col("'<"),
             code = options.get_code_generation_for(filetype),
             ts = TreeSitter.get_treesitter(),
             filetype = filetype,
