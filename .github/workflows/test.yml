@@ -29,6 +29,9 @@ jobs:
                   sudo apt-get install neovim
                   sudo apt install nodejs npm
                   npm install -g typescript typescript-language-server
+            - name: treesitter
+              run: |
+                nvim --headless -c "TSInstallSync all" -c "q"
             - name: Test
               run: |
                 cd refactoring.nvim
