@@ -22,6 +22,12 @@ jobs:
               with:
                 repository: nvim-lua/plenary.nvim
                 path: plenary.nvim
+            - name: help
+              run: |
+                pwd
+            - name: help
+              run: |
+                ls lua/refactoring/tests
             - name: Setup
               run: |
                   sudo apt-get update
