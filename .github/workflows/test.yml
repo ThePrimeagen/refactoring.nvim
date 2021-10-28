@@ -29,9 +29,6 @@ jobs:
                   sudo apt-get install neovim
                   sudo apt install nodejs npm
                   npm install -g typescript typescript-language-server
-            - name: TreeSitter Installation
-              run: |
-                cd refactoring.nvim && nvim --headless -c "so lua/refactoring/tests/minimal.vim" -c "q"
             - name: Test
               run: |
                 cd refactoring.nvim
