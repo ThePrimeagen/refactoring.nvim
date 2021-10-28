@@ -22,12 +22,6 @@ jobs:
               with:
                 repository: nvim-lua/plenary.nvim
                 path: plenary.nvim
-            - name: help
-              run: |
-                pwd
-            - name: help
-              run: |
-                ls refactoring.nvim/lua/refactoring/tests
             - name: Setup
               run: |
                   sudo apt-get update
@@ -35,9 +29,9 @@ jobs:
                   sudo apt-get install neovim
                   sudo apt install nodejs npm
                   npm install -g typescript typescript-language-server
-            - name: treesitter
+            - name: TreeSitter Installation
               run: |
-                nvim --headless -c "TSInstallSync all" -c "q"
+                nvim --headless -c "so refactoring.nvim/lua/refactoring/tests/minimal.vim" -c "q"
             - name: Test
               run: |
                 cd refactoring.nvim
