@@ -52,12 +52,14 @@ local function extract_setup(refactor)
     local region_var_map = utils.node_text_to_set(region_vars)
 
     local ref_map = utils.node_text_to_set(refs)
-    local return_vals = utils.table_key_intersect(region_var_map, ref_map)
+    local return_vals = vim.fn.sort(
+        vim.tbl_keys(utils.table_key_intersect(region_var_map, ref_map))
+    )
 
-    if utils.table_has_keys(return_vals) then
+    if #return_vals > 0 then
         table.insert(
             function_body,
-            refactor.code["return"](vim.tbl_keys(return_vals))
+            refactor.code["return"](refactor.code.pack(return_vals))
         )
     end
 
@@ -67,6 +69,26 @@ local function extract_setup(refactor)
         body = function_body,
     })
 
+    local value = {
+        region = refactor.region,
+        text = refactor.code.call_function({
+            name = function_name,
+            args = args,
+        }),
+    }
+
+    if #return_vals > 0 then
+        value = {
+            region = refactor.region,
+            text = refactor.code.constant({
+                name = return_vals,
+                value = value.text,
+            }),
+        }
+    else
+        value.text = refactor.code.terminate(value.text)
+    end
+
     refactor.text_edits = {
         -- TODO: First text edit is causing cursor issues
         {
@@ -74,16 +96,7 @@ local function extract_setup(refactor)
             text = function_code,
             bufnr = refactor.buffers[2],
         },
-        {
-            region = refactor.region,
-            text = refactor.code.constant({
-                name = "fill_me",
-                value = refactor.code.call_function({
-                    name = function_name,
-                    args = args,
-                }),
-            }),
-        },
+        value,
     }
 end
 

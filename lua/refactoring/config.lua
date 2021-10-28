@@ -1,26 +1,15 @@
 local default_code_generation = require("refactoring.code_generation")
 
+-- There is no formatting that we should do
 local default_formatting = {
-    javascript = {
-        cmd = [[ :silent norm! gg=G ]],
-    },
-    typescript = {
-        cmd = [[ :silent norm! gg=G ]],
-    },
-    lua = {
-        -- cmd = [[ !stylua % ]],
-    },
-    go = {
-        -- ummm...??? should I change this?
-        -- cmd = [[ !gofmt -w % ]],
-    },
-    python = {
-        -- TODO: add python formatting command
-    },
+    lua = {},
+    go = {},
 
-    ["default"] = {
-        -- should we do this?
-        -- cmd = [[ ? ]]
+    -- Python needs tons of work to become correct.
+    python = {},
+
+    default = {
+        cmd = [[ :silent norm! mzgg=G`z ]],
     },
 }
 
@@ -35,7 +24,7 @@ function config.get_code_generation_for(lang)
 end
 
 function config.get_formatting_for(filetype)
-    return config.formatting[filetype]
+    return config.formatting[filetype] or config.formatting.default
 end
 
 local M = {}
