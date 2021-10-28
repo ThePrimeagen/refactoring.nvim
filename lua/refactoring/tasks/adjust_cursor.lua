@@ -1,5 +1,3 @@
-local utils = require("refactoring.utils")
-
 local changes = {}
 local function add_change(region, text)
     table.insert(changes, { region, text })
@@ -17,18 +15,14 @@ local function adjust_cursor(refactor)
     for _, edit in pairs(changes) do
         local region = edit[1]
         local text = edit[2]
-
         local start = region.start_row
-        local length = #utils.split_string(text, "\n")
+        -- this counts occurances of newline not lines in there with spaces
+        local length = select(2, text:gsub("\n", "\n"))
         local diff = region.end_row - region.start_row
 
-        if
-            region.start_row ~= region.end_row
-            or region.end_col ~= region.start_col
-        then
-            diff = diff + 1
+        if length ~= 0 and diff > length then
+            length = length - 1
         end
-
         length = length - diff
 
         if start < cursor.row then
@@ -36,10 +30,12 @@ local function adjust_cursor(refactor)
         end
     end
 
-    local r, c = cursor:to_vim_win()
+    local r, _ = cursor:to_vim_win()
+    local result_row = r + add_rows
     vim.schedule(function()
-        vim.api.nvim_win_set_cursor(win, { r + add_rows, c })
+        vim.api.nvim_win_set_cursor(win, { result_row, 0 })
     end)
+    reset()
 
     return true, refactor
 end
