@@ -27,7 +27,7 @@ jobs:
                 pwd
             - name: help
               run: |
-                ls
+                ls refactoring.nvim/lua/refactoring/tests
             - name: Setup
               run: |
                   sudo apt-get update
