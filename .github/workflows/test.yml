@@ -27,7 +27,7 @@ jobs:
                 pwd
             - name: help
               run: |
-                ls lua/refactoring/tests
+                ls
             - name: Setup
               run: |
                   sudo apt-get update
