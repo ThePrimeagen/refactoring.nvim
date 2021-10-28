@@ -25,7 +25,7 @@ function test() {
     let total = 0;
     for (let key of foo) {
 
-        const fill_me = foobar(foo, key);
+        const localAmount = foobar(foo, key);
 
 
         total += localAmount;

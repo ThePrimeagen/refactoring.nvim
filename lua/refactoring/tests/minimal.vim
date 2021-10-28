@@ -36,7 +36,6 @@ runtime! plugin/lspconfig.vim
 
 lua <<EOF
 -- lsp-config setup
-require'lspconfig'.tsserver.setup{}
 
 -- treeshitter setup
 local required_parsers = {'go', 'lua', 'python', 'typescript', 'javascript'}
@@ -52,5 +51,7 @@ if #to_install > 0 then
   vim.cmd('TSInstallSync ' .. table.concat(to_install, ' '))
 end
 
+-- If I do this last, it will not fail the startup...
+require'lspconfig'.tsserver.setup{}
 EOF
 

@@ -24,5 +24,9 @@ def %s(%s):
     call_function = function(opts)
         return string.format("%s(%s)", opts.name, table.concat(opts.args, ", "))
     end,
+
+    terminate = function(code)
+        return code .. "\n"
+    end,
 }
 return python

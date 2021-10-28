@@ -12,6 +12,6 @@ func simple_function(a int) {
 	var test int = 1
 	test_other := 1
 
-fill_me := foo_bar(a, test, test_other)
+foo_bar(a, test, test_other)
 
 }
