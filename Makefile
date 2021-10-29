@@ -11,6 +11,8 @@ ci-install-deps:
 		-u ci.vim \
 		-c "TSInstallSync typescript go lua javascript python" -c "q"
 
+ci: ci-install-deps test
+
 lint:
 	luacheck lua --globals vim --exclude-files lua/refactoring/tests/refactor/ --no-max-line-length
 

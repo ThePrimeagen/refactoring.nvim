@@ -20,5 +20,5 @@ RUN add-apt-repository --yes ppa:neovim-ppa/unstable && \
     npm install -g typescript typescript-language-server
 
 # Run tests when run container
-CMD cd /code/refactoring.nvim && make test
+CMD cd /code/refactoring.nvim && make ci
 
