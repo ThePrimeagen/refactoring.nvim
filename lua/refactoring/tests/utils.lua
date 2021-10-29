@@ -1,5 +1,4 @@
 local Path = require("plenary.path")
-local lsp_utils = require("refactoring.lsp_utils")
 
 local M = {}
 function M.read_file(file)
@@ -10,39 +9,9 @@ function M.vim_motion(motion)
     vim.cmd(string.format(':exe "norm! %s\\<esc>"', motion))
 end
 
-function M.get_references_under_cursor(bufnr, definition_region)
-    local references
-    vim.wait(100000, function()
-        -- TODO: why cant i pcall this?
-        references = lsp_utils.get_references_under_cursor(
-            bufnr,
-            definition_region
-        )
-        return references
-    end)
-    return references
-end
-
-function M.get_definition_under_cursor(bufnr)
-    local definition
-    vim.wait(100000, function()
-        local ok, value = pcall(lsp_utils.get_definition_under_cursor, bufnr)
-        definition = value
-        return ok
-    end)
-    return definition
-end
-
 function M.open_test_file(file)
     vim.cmd(":e  ./lua/refactoring/tests/" .. file)
     return vim.api.nvim_get_current_buf()
-end
-
-function M.start_lsp(bufnr)
-    vim.cmd(":LspStart")
-    vim.wait(10000, function()
-        return #vim.lsp.buf_get_clients(bufnr) > 0
-    end)
 end
 
 return M
