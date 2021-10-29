@@ -32,4 +32,6 @@ jobs:
             - name: Test
               run: |
                 cd refactoring.nvim
-                make ci
+                make ci-install-deps
+                make test
+

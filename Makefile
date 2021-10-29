@@ -7,11 +7,7 @@ test:
 	-c "PlenaryBustedDirectory lua/refactoring/tests/ {minimal_init = 'lua/refactoring/tests/minimal.vim'}"
 
 ci-install-deps:
-	nvim --headless --clean \
-		-u ci.vim \
-		-c "TSInstallSync typescript go lua javascript python" -c "q"
-
-ci: ci-install-deps test
+	./find-supported-languages.sh
 
 lint:
 	luacheck lua --globals vim --exclude-files lua/refactoring/tests/refactor/ --no-max-line-length
