@@ -18,18 +18,9 @@ local extension_to_filetype = {
 }
 
 local refactor_id_to_refactor = {
-    ["119"] = {
-        ["name"] = "extract_var",
-        ["lsp"] = false,
-    },
-    ["106"] = {
-        ["name"] = "extract",
-        ["lsp"] = false,
-    },
-    ["123"] = {
-        ["name"] = "inline_var",
-        ["lsp"] = true,
-    },
+    ["119"] = { name = "extract_var" },
+    ["106"] = { name = "extract" },
+    ["123"] = { name = "inline_var" },
 }
 
 local cwd = vim.loop.cwd()
@@ -194,10 +185,6 @@ describe("Refactoring", function()
             local refactor = get_refactor_name_from_path(filename_prefix)
 
             local bufnr = test_utils.open_test_file(file)
-            if refactor["lsp"] then
-                test_utils.start_lsp(bufnr)
-            end
-
             local expected = get_contents(
                 string.format(
                     "%s.expected.%s",

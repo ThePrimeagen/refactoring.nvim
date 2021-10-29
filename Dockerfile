@@ -14,10 +14,9 @@ RUN git clone https://github.com/nvim-treesitter/nvim-treesitter.git /code/nvim-
 RUN git clone https://github.com/nvim-lua/plenary.nvim.git /code/plenary.nvim
 
 # Install latest neovim, nodejs, npm, typescript + language server
+# TODO: How much can be removed?
 RUN add-apt-repository --yes ppa:neovim-ppa/unstable && \
-    apt-get install -y neovim && \
-    apt install -y nodejs npm && \
-    npm install -g typescript typescript-language-server
+    apt-get install -y neovim
 
 # Run tests when run container
 CMD cd /code/refactoring.nvim && make test

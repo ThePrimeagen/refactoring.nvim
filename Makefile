@@ -3,8 +3,8 @@ fmt:
 
 test:
 	nvim --headless --clean \
-	-u lua/refactoring/tests/minimal.vim \
-	-c "PlenaryBustedDirectory lua/refactoring/tests/ {minimal_init = 'lua/refactoring/tests/minimal.vim'}"
+	-u scripts/minimal.vim \
+	-c "PlenaryBustedDirectory lua/refactoring/tests/ {minimal_init = 'scripts/minimal.vim'}"
 
 ci-install-deps:
 	./find-supported-languages.sh

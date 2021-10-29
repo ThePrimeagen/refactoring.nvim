@@ -12,10 +12,6 @@ jobs:
                 path: refactoring.nvim
             - uses: actions/checkout@v2
               with:
-                repository: neovim/nvim-lspconfig
-                path: nvim-lspconfig
-            - uses: actions/checkout@v2
-              with:
                 repository: nvim-treesitter/nvim-treesitter
                 path: nvim-treesitter
             - uses: actions/checkout@v2
@@ -27,8 +23,6 @@ jobs:
                   sudo apt-get update
                   sudo add-apt-repository ppa:neovim-ppa/unstable
                   sudo apt-get install neovim
-                  sudo apt install nodejs npm
-                  npm install -g typescript typescript-language-server
             - name: Test
               run: |
                 cd refactoring.nvim

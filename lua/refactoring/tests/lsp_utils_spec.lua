@@ -1,6 +1,7 @@
 local Region = require("refactoring.region")
 local lsp_utils = require("refactoring.lsp_utils")
 local test_utils = require("refactoring.tests.utils")
+local ts = require("refactoring.ts")
 
 local function setup()
     vim.cmd(":new")
@@ -15,26 +16,20 @@ end
 describe("lsp_utils", function()
     it("should get the references and definition of cursor", function()
         local bufnr = test_utils.open_test_file("lsp_utils_test_file.ts")
-        test_utils.start_lsp(bufnr)
-
-        assert.are.same(#vim.lsp.buf_get_clients(bufnr), 1)
-        assert.are.same(vim.lsp.buf_is_attached(bufnr, 1), true)
 
         vim.cmd(":3")
         test_utils.vim_motion("fo")
         assert.are.same(vim.fn.expand("<cWORD>"), "foo")
 
-        local definition = test_utils.get_definition_under_cursor(bufnr)
-        local def_region = Region:from_lsp_range(definition.range)
-        local references = test_utils.get_references_under_cursor(
-            bufnr,
-            def_region
-        )
+        local current_node = ts.get_node_at_cursor(0)
+        local definition = ts.find_definition(current_node, bufnr)
+        local def_region = Region:from_node(definition)
+        local references = ts.find_references(definition, nil, bufnr)
 
         assert.are.same(def_region, Region:from_values(bufnr, 2, 11, 2, 13))
         assert.are.same(#references, 1)
         assert.are.same(
-            Region:from_lsp_range(references[1].range),
+            Region:from_node(references[1]),
             Region:from_values(bufnr, 3, 16, 3, 18)
         )
     end)
