@@ -3,22 +3,18 @@ set rtp+=.
 
 " Using local versions of plenary and nvim-treesitter if possible
 " This is required for CI
-set rtp+=../nvim-lspconfig
 set rtp+=../plenary.nvim
 set rtp+=../nvim-treesitter
 
 " If you use vim-plug if you got it locally
-set rtp+=~/.vim/plugged/nvim-lspconfig
 set rtp+=~/.vim/plugged/plenary.nvim
 set rtp+=~/.vim/plugged/nvim-treesitter
 
 " If you are using packer
-set rtp+=~/.local/share/nvim/site/pack/packer/start/nvim-lspconfig
 set rtp+=~/.local/share/nvim/site/pack/packer/start/plenary.nvim
 set rtp+=~/.local/share/nvim/site/pack/packer/start/nvim-treesitter
 
 " If you are using lunarvim
-set rtp+=~/.local/share/lunarvim/site/pack/packer/start/nvim-lspconfig
 set rtp+=~/.local/share/lunarvim/site/pack/packer/start/plenary.nvim
 set rtp+=~/.local/share/lunarvim/site/pack/packer/start/nvim-treesitter
 
@@ -32,7 +28,6 @@ set shiftwidth=4
 set noswapfile
 
 runtime! plugin/plenary.vim
-runtime! plugin/lspconfig.vim
 
 lua <<EOF
 -- lsp-config setup
@@ -50,8 +45,5 @@ if #to_install > 0 then
   vim.cmd 'runtime! plugin/nvim-treesitter.vim'
   vim.cmd('TSInstallSync ' .. table.concat(to_install, ' '))
 end
-
--- If I do this last, it will not fail the startup...
-require'lspconfig'.tsserver.setup{}
 EOF
 

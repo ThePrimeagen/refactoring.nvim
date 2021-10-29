@@ -7,7 +7,7 @@ test:
 	-c "PlenaryBustedDirectory lua/refactoring/tests/ {minimal_init = 'scripts/minimal.vim'}"
 
 ci-install-deps:
-	./find-supported-languages.sh
+	./scripts/find-supported-languages.sh
 
 lint:
 	luacheck lua --globals vim --exclude-files lua/refactoring/tests/refactor/ --no-max-line-length
