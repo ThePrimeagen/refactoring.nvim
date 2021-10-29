@@ -20,3 +20,5 @@ docker-build:
 docker-test:
 	docker run -v $(shell pwd):/code/refactoring.nvim -t refactoring
 
+pr-ready-docker: fmt lint docker-test
+
