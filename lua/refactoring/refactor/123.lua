@@ -4,14 +4,12 @@
 --  it's just about using one of the data structures.
 
 local Config = require("refactoring.config")
-local LspDefinition = require("refactoring.lsp")
 local Pipeline = require("refactoring.pipeline")
 local Query = require("refactoring.query")
 local Region = require("refactoring.region")
 local post_refactor = require("refactoring.tasks.post_refactor")
 local refactor_setup = require("refactoring.tasks.refactor_setup")
 
-local utils = require("refactoring.utils")
 local lsp_utils = require("refactoring.lsp_utils")
 
 local ts = require("refactoring.ts")
@@ -39,11 +37,6 @@ function M.inline_var(bufnr)
                 Region:from_node(definition),
                 Query.query_type.Declarator
             )
-
-            local name_node = ts_query:pluck_by_capture(
-                declarator_node,
-                Query.query_type.LocalVarName
-            )[1]
 
             local value_node = ts_query:pluck_by_capture(
                 declarator_node,

@@ -1,6 +1,3 @@
-local Region = require("refactoring.region")
-local utils = require("refactoring.utils")
-
 local M = {}
 
 function M.delete_text(region)

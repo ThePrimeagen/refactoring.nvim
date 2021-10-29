@@ -1,5 +1,4 @@
 local Path = require("plenary.path")
-local lsp_utils = require("refactoring.lsp_utils")
 
 local M = {}
 function M.read_file(file)
