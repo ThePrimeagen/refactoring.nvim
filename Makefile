@@ -7,9 +7,7 @@ test:
 	-c "PlenaryBustedDirectory lua/refactoring/tests/ {minimal_init = 'scripts/minimal.vim'}"
 
 ci-install-deps:
-	nvim --headless --clean \
-		-u ci.vim \
-		-c "TSInstallSync typescript go lua javascript python" -c "q"
+	./scripts/find-supported-languages.sh
 
 lint:
 	luacheck lua --globals vim --exclude-files lua/refactoring/tests/refactor/ --no-max-line-length
@@ -21,4 +19,6 @@ docker-build:
 
 docker-test:
 	docker run -v $(shell pwd):/code/refactoring.nvim -t refactoring
+
+pr-ready-docker: fmt lint docker-test
 
