@@ -22,14 +22,8 @@ local function get_extract_setup_pipeline(bufnr)
 end
 
 --
---
-local function extract_setup(refactor)
-    local function_name = get_input("106: Extract Function Name > ")
-    assert(function_name ~= "", "Error: Must provide function name")
 
-    local function_body = refactor.region:get_text()
-    local args = vim.fn.sort(vim.tbl_keys(get_selected_locals(refactor)))
-
+local function get_return_vals(refactor)
     local region_vars = utils.region_intersect(
         refactor.ts:local_declarations(refactor.scope),
         refactor.region
@@ -56,6 +50,17 @@ local function extract_setup(refactor)
         vim.tbl_keys(utils.table_key_intersect(region_var_map, ref_map))
     )
 
+    return return_vals
+end
+
+--
+local function extract_setup(refactor)
+    local function_name = get_input("106: Extract Function Name > ")
+    assert(function_name ~= "", "Error: Must provide function name")
+    local function_body = refactor.region:get_text()
+    local args = vim.fn.sort(vim.tbl_keys(get_selected_locals(refactor)))
+
+    local return_vals = get_return_vals(refactor)
     if #return_vals > 0 then
         table.insert(
             function_body,
@@ -67,6 +72,8 @@ local function extract_setup(refactor)
         name = function_name,
         args = args,
         body = function_body,
+        scope = refactor.scope,
+        query = refactor.query,
     })
 
     local value = {
@@ -74,6 +81,8 @@ local function extract_setup(refactor)
         text = refactor.code.call_function({
             name = function_name,
             args = args,
+            scope = refactor.scope,
+            query = refactor.query,
         }),
     }
 

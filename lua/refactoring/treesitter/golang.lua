@@ -13,6 +13,7 @@ function Golang.new(bufnr, ft)
         bufnr = bufnr,
         scope_names = {
             function_declaration = "function",
+            method_declaration = "function",
         },
     }, bufnr)
 end
