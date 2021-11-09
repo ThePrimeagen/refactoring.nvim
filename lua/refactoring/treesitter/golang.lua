@@ -15,6 +15,9 @@ function Golang.new(bufnr, ft)
             function_declaration = "function",
             method_declaration = "function",
         },
+        class_names = {
+            "method_declaration",
+        },
     }, bufnr)
 end
 

@@ -68,23 +68,42 @@ local function extract_setup(refactor)
         )
     end
 
-    local function_code = refactor.code["function"]({
-        name = function_name,
-        args = args,
-        body = function_body,
-        scope = refactor.scope,
-        query = refactor.query,
-    })
-
-    local value = {
-        region = refactor.region,
-        text = refactor.code.call_function({
+    local function_code
+    local isClass = refactor.ts:isClassFunction(refactor.scope)
+    if isClass then
+        function_code = refactor.code["class_function"]({
             name = function_name,
             args = args,
-            scope = refactor.scope,
-            query = refactor.query,
-        }),
-    }
+            body = function_body,
+            className = refactor.ts:class_name(refactor.scope),
+        })
+    else
+        function_code = refactor.code["function"]({
+            name = function_name,
+            args = args,
+            body = function_body,
+        })
+    end
+
+    local value
+    if isClass then
+        value = {
+            region = refactor.region,
+            text = refactor.code.call_class_function({
+                name = function_name,
+                args = args,
+                classType = refactor.ts:class_type(refactor.scope),
+            }),
+        }
+    else
+        value = {
+            region = refactor.region,
+            text = refactor.code.call_function({
+                name = function_name,
+                args = args,
+            }),
+        }
+    end
 
     if #return_vals > 0 then
         value = {

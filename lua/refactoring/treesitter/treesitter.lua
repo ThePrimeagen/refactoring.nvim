@@ -3,10 +3,12 @@ local Query = require("refactoring.query")
 local Point = require("refactoring.point")
 local utils = require("refactoring.utils")
 local Version = require("refactoring.version")
+local Region = require("refactoring.region")
 
 ---@class TreeSitter
 --- The following fields act similar to a cursor
 ---@field scope_names table: The 1-based row
+---@field class_names list: names of nodes that are classes
 ---@field bufnr number: the bufnr to which this belongs
 ---@field filetype string: the filetype
 ---@field version Version: supperted operation flags
@@ -22,6 +24,7 @@ TreeSitter.version_flags = {
 function TreeSitter:new(config, bufnr)
     local c = vim.tbl_extend("force", {
         scope_names = {},
+        class_names = {},
         bufnr = bufnr,
         version = Version:new(),
     }, config)
@@ -33,6 +36,35 @@ function TreeSitter:new(config, bufnr)
     )
 
     return setmetatable(c, self)
+end
+
+function TreeSitter:isClassFunction(scope)
+    if #self.class_names > 0 then
+        for _, name in ipairs(self.class_names) do
+            if name == scope:type() then
+                return true
+            end
+        end
+    end
+    return false
+end
+
+function TreeSitter:class_name(scope)
+    local class_name_node = self.query:pluck_by_capture(
+        scope,
+        Query.query_type.ClassName
+    )[1]
+    local region = Region:from_node(class_name_node)
+    return region:get_text()[1]
+end
+
+function TreeSitter:class_type(scope)
+    local class_type_node = self.query:pluck_by_capture(
+        scope,
+        Query.query_type.ClassType
+    )[1]
+    local region = Region:from_node(class_type_node)
+    return region:get_text()[1]
 end
 
 local function containing_node_by_type(node, container_map)
