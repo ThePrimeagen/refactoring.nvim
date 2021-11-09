@@ -69,8 +69,8 @@ local function extract_setup(refactor)
     end
 
     local function_code
-    local isClass = refactor.ts:isClassFunction(refactor.scope)
-    if isClass then
+    local is_class = refactor.ts:is_class_function(refactor.scope)
+    if is_class then
         function_code = refactor.code["class_function"]({
             name = function_name,
             args = args,
@@ -86,7 +86,7 @@ local function extract_setup(refactor)
     end
 
     local value
-    if isClass then
+    if is_class then
         value = {
             region = refactor.region,
             text = refactor.code.call_class_function({

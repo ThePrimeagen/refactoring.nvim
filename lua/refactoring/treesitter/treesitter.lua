@@ -18,6 +18,7 @@ TreeSitter.__index = TreeSitter
 TreeSitter.version_flags = {
     Scopes = 0x1,
     Locals = 0x2,
+    Classes = 0x3,
 }
 
 ---@return TreeSitter
@@ -38,18 +39,15 @@ function TreeSitter:new(config, bufnr)
     return setmetatable(c, self)
 end
 
-function TreeSitter:isClassFunction(scope)
-    if #self.class_names > 0 then
-        for _, name in ipairs(self.class_names) do
-            if name == scope:type() then
-                return true
-            end
-        end
+function TreeSitter:is_class_function(scope)
+    if self.class_names[scope:type()] ~= nil then
+        return true
     end
     return false
 end
 
 function TreeSitter:class_name(scope)
+    self.version:ensure_version(TreeSitter.version_flags.Classes)
     local class_name_node = self.query:pluck_by_capture(
         scope,
         Query.query_type.ClassName
@@ -59,6 +57,7 @@ function TreeSitter:class_name(scope)
 end
 
 function TreeSitter:class_type(scope)
+    self.version:ensure_version(TreeSitter.version_flags.Classes)
     local class_type_node = self.query:pluck_by_capture(
         scope,
         Query.query_type.ClassType
