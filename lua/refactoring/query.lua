@@ -21,6 +21,8 @@ Query.query_type = {
     Block = "definition.block",
     Declarator = "definition.local_declarator",
     LocalVarValue = "definition.local_value",
+    ClassName = "definition.class_name",
+    ClassType = "definition.class_type",
 }
 
 function Query.get_root(bufnr, filetype)

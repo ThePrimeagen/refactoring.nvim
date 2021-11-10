@@ -14,10 +14,13 @@
    parameters: (parameter_list
    (parameter_declaration
    (identifier) @definition.function_argument)))
+(method_declaration
+   parameters: (parameter_list
+   (parameter_declaration
+   name: (identifier) @definition.function_argument)))
 
-;; TODO is this scope required? Fails when this is uncommented
-;; (program) @definition.scope
 (function_declaration) @definition.scope
+(method_declaration) @definition.scope
 
 (block) @definition.block
 
@@ -26,3 +29,10 @@
 (if_statement) @definition.statement
 (for_statement) @definition.statement
 (call_expression) @definition.statement
+
+(method_declaration
+   receiver: (parameter_list) @definition.class_name)
+(method_declaration
+   receiver: (parameter_list
+   (parameter_declaration
+   name: (identifier) @definition.class_type)))
