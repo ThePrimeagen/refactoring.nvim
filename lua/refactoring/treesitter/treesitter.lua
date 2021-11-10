@@ -18,7 +18,7 @@ TreeSitter.__index = TreeSitter
 TreeSitter.version_flags = {
     Scopes = 0x1,
     Locals = 0x2,
-    Classes = 0x3,
+    Classes = 0x4,
 }
 
 ---@return TreeSitter

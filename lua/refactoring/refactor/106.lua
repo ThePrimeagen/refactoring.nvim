@@ -92,7 +92,7 @@ local function extract_setup(refactor)
             text = refactor.code.call_class_function({
                 name = function_name,
                 args = args,
-                classType = refactor.ts:class_type(refactor.scope),
+                class_type = refactor.ts:class_type(refactor.scope),
             }),
         }
     else

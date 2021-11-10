@@ -30,7 +30,7 @@ end
 local function go_call_class_func(opts)
     return string.format(
         "%s.%s(%s)",
-        opts.classType,
+        opts.class_type,
         opts.name,
         table.concat(opts.args, ", ")
     )
