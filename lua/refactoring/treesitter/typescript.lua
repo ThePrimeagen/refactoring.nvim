@@ -18,6 +18,14 @@ function Typescript.new(bufnr, ft)
             arrow_function = "function",
             class_declaration = "class",
         },
+        debug_path_names = {
+            function_declaration = "function",
+            method_definition = "function",
+            class_declaration = "class",
+        },
+        to_string = function(self, node)
+            return self.debug_path_names[node:type()] or "(unknown node)"
+        end
     }, bufnr)
 end
 

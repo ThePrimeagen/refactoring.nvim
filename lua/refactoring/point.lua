@@ -41,6 +41,10 @@ function Point:to_vim()
     return self.row, self.col
 end
 
+function Point:to_region()
+    return Region:from_values(0, self.row, self.col, self.row, self.col)
+end
+
 --- Convert a point to a tree sitter point
 function Point:to_ts()
     return self.row - 1, self.col
