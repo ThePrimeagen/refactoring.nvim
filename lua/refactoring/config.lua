@@ -30,6 +30,7 @@ end
 local M = {}
 
 function M.get_code_generation_for(lang)
+    lang = lang or vim.bo[0].ft
     return config.get_code_generation_for(lang)
 end
 

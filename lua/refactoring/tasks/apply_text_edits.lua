@@ -8,7 +8,7 @@ local function get_text(edit)
     return edit.text
 end
 
-local function apply_text_edits(refactor)
+local function refactor_apply_text_edits(refactor)
     if not refactor.text_edits then
         return true, refactor
     end
@@ -53,4 +53,4 @@ local function apply_text_edits(refactor)
     return true, refactor
 end
 
-return apply_text_edits
+return refactor_apply_text_edits
