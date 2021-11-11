@@ -94,6 +94,7 @@ local function extract_setup(refactor)
                 args = args,
                 class_type = refactor.ts:class_type(refactor.scope),
             }),
+            add_newline = false,
         }
     else
         value = {
@@ -102,6 +103,7 @@ local function extract_setup(refactor)
                 name = function_name,
                 args = args,
             }),
+            add_newline = false,
         }
     end
 
@@ -112,6 +114,7 @@ local function extract_setup(refactor)
                 name = return_vals,
                 value = value.text,
             }),
+            add_newline = false,
         }
     else
         value.text = refactor.code.terminate(value.text)

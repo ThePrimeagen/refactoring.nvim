@@ -24,7 +24,6 @@ function test() {
 
     let total = 0;
     for (let key of foo) {
-
         const localAmount = foobar(foo, key);
 
 
