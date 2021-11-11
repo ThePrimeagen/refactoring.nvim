@@ -25,11 +25,13 @@ local function printDebug(bufnr)
     local print_statement = code_gen.print(debug_path_concat)
 
     local refactor = {
-        text_edits = {{
-            region = point:to_region(),
-            text = print_statement,
-        }},
-        buffers = {bufnr},
+        text_edits = {
+            {
+                region = point:to_region(),
+                text = print_statement,
+            },
+        },
+        buffers = { bufnr },
     }
     apply_text_edits(refactor)
 end

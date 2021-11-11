@@ -25,7 +25,7 @@ function Typescript.new(bufnr, ft)
         },
         to_string = function(self, node)
             return self.debug_path_names[node:type()] or "(unknown node)"
-        end
+        end,
     }, bufnr)
 end
 
