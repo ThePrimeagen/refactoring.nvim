@@ -22,6 +22,10 @@ function Typescript.new(bufnr, ft)
             function_declaration = "function",
             method_definition = "function",
             class_declaration = "class",
+            if_statement = "if",
+            for_statement = "for",
+            while_statement = "while",
+            do_statement = "do",
         },
         to_string = function(self, node)
             return self.debug_path_names[node:type()] or "(unknown node)"

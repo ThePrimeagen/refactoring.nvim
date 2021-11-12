@@ -27,4 +27,6 @@ function M.get_refactors()
     return vim.tbl_keys(refactors.refactor_names)
 end
 
+M.debug = require("refactoring.debug")
+
 return M

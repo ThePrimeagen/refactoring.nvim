@@ -38,9 +38,10 @@ local function adjust_cursor(refactor)
     local r, _ = cursor:to_vim_win()
     local result_row = r + add_rows
     vim.schedule(function()
+        local _, col = cursor:to_vim()
         vim.api.nvim_win_set_cursor(win, {
             result_row,
-            refactor.highlight_start_col - 1,
+            col,
         })
     end)
     reset()

@@ -1,7 +1,15 @@
 local ts_utils = require("nvim-treesitter.ts_utils")
 local Region = require("refactoring.region")
+local async = require("plenary.async")
 
 local M = {}
+
+-- TODO: Make this work.  I have vim.schedules in the code, though they
+-- shouldn't need to be there.  When I use this all my results are before LSP
+-- comes back and does something to the code.
+function M.wait_frame()
+    async.util.scheduler()
+end
 
 function M.take_one(table, fn)
     if not table then
