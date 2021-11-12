@@ -15,7 +15,6 @@ func (b *foobar) foo(a, test, test_other) {
 func (b *foobar) simple_function(a int) {
 	var test int = 1
 	test_other := 1
-
 b.foo(a, test, test_other)
 
 }
