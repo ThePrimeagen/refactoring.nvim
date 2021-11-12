@@ -26,6 +26,7 @@ function TreeSitter:new(config, bufnr)
     local c = vim.tbl_extend("force", {
         scope_names = {},
         class_names = {},
+        debug_path_names = {},
         bufnr = bufnr,
         version = Version:new(),
     }, config)
@@ -82,6 +83,17 @@ local function containing_node_by_type(node, container_map)
     return node
 end
 
+function TreeSitter:get_debug_path(node)
+    local path = {}
+
+    repeat
+        node = containing_node_by_type(node:parent(), self.debug_path_names)
+        table.insert(path, node)
+    until node == nil
+
+    return path
+end
+
 -- Will walk through the top level statements of the
 function TreeSitter:local_declarations(scope)
     self.version:ensure_version(TreeSitter.version_flags.Scopes)
@@ -130,6 +142,11 @@ end
 function TreeSitter:get_root()
     local parser = parsers.get_parser(self.bufnr, self.filetype)
     return parser:parse()[1]:root()
+end
+
+function TreeSitter:to_string(node)
+    print("node type:", node:type())
+    error("to_string not supported for ", self.filetype)
 end
 
 return TreeSitter

@@ -18,6 +18,9 @@ local function returnify(args)
 end
 
 local typescript = {
+    print = function(statement)
+        return string.format('console.log("%s");', statement)
+    end,
 
     -- The constant can be destructured
     constant = function(opts)
