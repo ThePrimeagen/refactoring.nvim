@@ -88,7 +88,10 @@ function TreeSitter:get_debug_path(node)
 
     repeat
         node = containing_node_by_type(node:parent(), self.debug_path_names)
-        table.insert(path, node)
+
+        if node then
+            table.insert(path, node)
+        end
     until node == nil
 
     return path

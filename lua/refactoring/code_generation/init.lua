@@ -10,6 +10,12 @@ local M = {
     lua = lua,
     go = go,
     python = python,
+
+    -- TODO: Take this and make all code generation subclassed.
+    -- This should just be a function of code generation.
+    new_line = function()
+        return "\n"
+    end,
 }
 
 return M
