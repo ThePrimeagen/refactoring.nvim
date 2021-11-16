@@ -7,7 +7,7 @@ function M.setup(config)
     Config.setup(config)
 end
 
-function M.refactor(name)
+function M.refactor(name, opts)
     local refactor = refactors.refactor_names[name]
     if not refactor then
         error(
@@ -20,7 +20,8 @@ function M.refactor(name)
 
     -- Remove the calls to vim.fn
     -- I just forgot the name of this ;)
-    refactors[refactor](vim.api.nvim_buf_get_number(0))
+    local config = Config.get():merge(opts)
+    refactors[refactor](vim.api.nvim_buf_get_number(0), config)
 end
 
 function M.get_refactors()

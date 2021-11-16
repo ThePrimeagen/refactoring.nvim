@@ -7,7 +7,6 @@ local refactor_setup = require("refactoring.tasks.refactor_setup")
 local get_input = require("refactoring.get_input")
 local create_file = require("refactoring.tasks.create_file")
 local post_refactor = require("refactoring.tasks.post_refactor")
-local Config = require("refactoring.config")
 local Query2 = require("refactoring.query2")
 local Query = require("refactoring.query")
 
@@ -15,9 +14,9 @@ local M = {}
 
 -- 1.  We need definition set of potential captpokiWured variables
 
-local function get_extract_setup_pipeline(bufnr)
+local function get_extract_setup_pipeline(bufnr, opts)
     return Pipeline
-        :from_task(refactor_setup(bufnr, Config.get_config()))
+        :from_task(refactor_setup(bufnr, opts))
         :add_task(selection_setup)
 end
 
@@ -131,9 +130,9 @@ local function extract_setup(refactor)
     }
 end
 
-M.extract_to_file = function(bufnr)
+M.extract_to_file = function(bufnr, opts)
     bufnr = bufnr or vim.fn.bufnr(vim.fn.bufname())
-    get_extract_setup_pipeline(bufnr)
+    get_extract_setup_pipeline(bufnr, opts)
         :add_task(create_file.from_input)
         :add_task(function(refactor)
             extract_setup(refactor)
@@ -143,9 +142,9 @@ M.extract_to_file = function(bufnr)
         :run()
 end
 
-M.extract = function(bufnr)
+M.extract = function(bufnr, opts)
     bufnr = bufnr or vim.fn.bufnr()
-    get_extract_setup_pipeline(bufnr)
+    get_extract_setup_pipeline(bufnr, opts)
         :add_task(function(refactor)
             extract_setup(refactor)
             return true, refactor

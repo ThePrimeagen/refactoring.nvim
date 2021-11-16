@@ -1,8 +1,5 @@
 local function format(refactor)
-    local format_cmd =
-        refactor.options.get_formatting_for(
-            refactor.filetype
-        ).cmd
+    local format_cmd = refactor.config:get_formatting_for(refactor.filetype).cmd
     if format_cmd then
         for _, bufnr in pairs(refactor.buffers) do
             -- This makes it locally much more predictable

@@ -6,13 +6,12 @@ local Pipeline = require("refactoring.pipeline")
 local selection_setup = require("refactoring.tasks.selection_setup")
 local refactor_setup = require("refactoring.tasks.refactor_setup")
 local post_refactor = require("refactoring.tasks.post_refactor")
-local Config = require("refactoring.config")
 
 local M = {}
 
-function M.extract_var(bufnr)
+function M.extract_var(bufnr, config)
     Pipeline
-        :from_task(refactor_setup(bufnr, Config.get_config()))
+        :from_task(refactor_setup(bufnr, config))
         :add_task(selection_setup)
         :add_task(function(refactor)
             local extract_node = refactor.root:named_descendant_for_range(

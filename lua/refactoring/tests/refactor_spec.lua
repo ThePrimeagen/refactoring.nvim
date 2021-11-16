@@ -86,7 +86,7 @@ local function run_inputs_if_exist(filename_prefix)
     )
     if inputs_file:exists() then
         local inputs = get_contents(string.format("%s.inputs", filename_prefix))
-        Config.automate_input(inputs)
+        Config.get():automate_input(inputs)
     end
 end
 
@@ -118,7 +118,7 @@ local function test_empty_input()
         vim.api.nvim_win_set_buf(0, bufnr)
         vim.bo[bufnr].filetype = extension_to_filetype[filename_extension]
         vim.api.nvim_buf_set_lines(bufnr, 0, -1, false, get_contents(file))
-        Config.automate_input(test_case["inputs"])
+        Config.get():automate_input(test_case["inputs"])
 
         run_commands(filename_prefix)
 
@@ -130,8 +130,12 @@ local function test_empty_input()
         vim.api.nvim_buf_delete(bufnr, { force = true })
 
         eq(false, status)
+
         -- TODO: find a better way to validate errors
-        assert(string.find(err, test_case["error_message"]) > 0)
+        local has_error_message = string.find(err, test_case["error_message"])
+        if not has_error_message then
+            eq(test_case["error_message"], err)
+        end
     end
 end
 

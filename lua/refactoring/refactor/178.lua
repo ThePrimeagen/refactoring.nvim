@@ -2,13 +2,12 @@ local LspDefinition = require("refactoring.lsp")
 local Pipeline = require("refactoring.pipeline")
 local refactor_setup = require("refactoring.tasks.refactor_setup")
 local post_refactor = require("refactoring.tasks.post_refactor")
-local Config = require("refactoring.config")
 
 local M = {}
 
-function M.replace_temp_with_query(bufnr)
+function M.replace_temp_with_query(bufnr, opts)
     Pipeline
-        :from_task(refactor_setup(bufnr, Config.get_config()))
+        :from_task(refactor_setup(bufnr, opts))
         :add_task(function(refactor)
             -- TODO: I don't know if I solved this one yet or not
             local lsp_definition = LspDefinition:from_cursor(
