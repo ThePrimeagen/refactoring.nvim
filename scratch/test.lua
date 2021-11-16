@@ -10,7 +10,6 @@ local function y(offset)
 
     local another_thing = asdf(offset)
     print("yo", another_thing)
-
 end
 
 y(10)
