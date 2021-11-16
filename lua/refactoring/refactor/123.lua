@@ -3,7 +3,6 @@
 --  this will make it much less confusing. It's not really about LSP,
 --  it's just about using one of the data structures.
 
-local Config = require("refactoring.config")
 local Pipeline = require("refactoring.pipeline")
 local Query = require("refactoring.query")
 local Region = require("refactoring.region")
@@ -16,9 +15,9 @@ local ts = require("refactoring.ts")
 
 local M = {}
 
-function M.inline_var(bufnr)
+function M.inline_var(bufnr, opts)
     Pipeline
-        :from_task(refactor_setup(bufnr, Config.get_config())) -- 1. ensure LSP is available
+        :from_task(refactor_setup(bufnr, opts)) -- 1. ensure LSP is available
         :add_task(function(refactor)
             -- TODO: don't remember how to get window id
             local current_node = ts.get_node_at_cursor(0)

@@ -15,13 +15,9 @@ local function get_input(question, text)
     text = text or ""
 
     -- TODO: Extract to class
-    local a = Config.get_config()._automation
-    if a.inputs then
-        local inputs = a.inputs
-        if #inputs > a.inputs_idx then
-            a.inputs_idx = a.inputs_idx + 1
-            return a.inputs[a.inputs_idx]
-        end
+    local automation_input = Config.get():get_automated_input()
+    if automation_input ~= nil then
+        return automation_input
     end
 
     return input(question, text, nil)
