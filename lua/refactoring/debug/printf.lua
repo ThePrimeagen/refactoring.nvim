@@ -1,15 +1,17 @@
-local config = require("refactoring.config")
 local Pipeline = require("refactoring.pipeline")
 local Point = require("refactoring.point")
 local refactor_setup = require("refactoring.tasks.refactor_setup")
 local post_refactor = require("refactoring.tasks.post_refactor")
 local lsp_utils = require("refactoring.lsp_utils")
 
-local function printDebug(bufnr, opts)
+local function printDebug(bufnr, config)
     return Pipeline
-        :from_task(refactor_setup(bufnr, opts))
+        :from_task(refactor_setup(bufnr, config))
         :add_task(function(refactor)
+            local opts = config:get()
             local point = Point:from_cursor(refactor.bufnr)
+            point.col = opts.below and 100000 or 1
+
             local region = point:to_region()
             local node = point:to_ts_node(refactor.ts:get_root())
             local debug_path = refactor.ts:get_debug_path(node)
