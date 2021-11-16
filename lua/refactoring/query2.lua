@@ -5,7 +5,7 @@ local Query = require("refactoring.query")
 -- @field query Query
 -- @field types Query
 -- @field scope tsnode
--- @field region Region
+-- @field region RefactorRegion
 -- @field filter function
 -- @field region_calc_type string
 local Query2 = {}

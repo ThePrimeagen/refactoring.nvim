@@ -4,14 +4,14 @@ local function getpos()
     return vim.fn.line("."), vim.fn.col(".")
 end
 
----@class Point
+---@class RefactorPoint
 ---@field row number: The 1-based row
 ---@field col number: The 1-based col
 local Point = {}
 Point.__index = Point
 
 --- Get a Point from the current selection
----@return Point
+---@return RefactorPoint
 function Point:from_cursor()
     local row, col = getpos()
 

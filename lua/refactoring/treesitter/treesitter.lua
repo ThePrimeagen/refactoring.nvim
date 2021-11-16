@@ -5,14 +5,15 @@ local utils = require("refactoring.utils")
 local Version = require("refactoring.version")
 local Region = require("refactoring.region")
 
----@class TreeSitter
+---@class RefactorTS
 --- The following fields act similar to a cursor
 ---@field scope_names table: The 1-based row
----@field class_names list: names of nodes that are classes
+---@field class_names Array: names of nodes that are classes
 ---@field bufnr number: the bufnr to which this belongs
 ---@field filetype string: the filetype
----@field version Version: supperted operation flags
----@field query Query: the refactoring query
+---@field version RefactorVersion: supperted operation flags
+---@field query RefactorQuery: the refactoring query
+---@field debug_paths table: Debug Paths
 local TreeSitter = {}
 TreeSitter.__index = TreeSitter
 TreeSitter.version_flags = {
@@ -26,7 +27,7 @@ function TreeSitter:new(config, bufnr)
     local c = vim.tbl_extend("force", {
         scope_names = {},
         class_names = {},
-        debug_path_names = {},
+        debug_paths = {},
         bufnr = bufnr,
         version = Version:new(),
     }, config)
@@ -87,10 +88,10 @@ function TreeSitter:get_debug_path(node)
     local path = {}
 
     repeat
-        node = containing_node_by_type(node:parent(), self.debug_path_names)
+        node = containing_node_by_type(node:parent(), self.debug_paths)
 
         if node then
-            table.insert(path, node)
+            table.insert(path, self.debug_paths[node:type()](node))
         end
     until node == nil
 

@@ -8,8 +8,8 @@ local function printDebug(bufnr, config)
     return Pipeline
         :from_task(refactor_setup(bufnr, config))
         :add_task(function(refactor)
-            local opts = config:get()
-            local point = Point:from_cursor(refactor.bufnr)
+            local opts = refactor.config:get()
+            local point = Point:from_cursor()
             point.col = opts.below and 100000 or 1
 
             local region = point:to_region()
@@ -18,10 +18,10 @@ local function printDebug(bufnr, config)
 
             local path = {}
             for i = #debug_path, 1, -1 do
-                table.insert(path, refactor.ts:to_string(debug_path[i]))
+                table.insert(path, tostring(debug_path[i]))
             end
 
-            local code_gen = config:get_code_generation_for()
+            local code_gen = refactor.config:get_code_generation_for()
             if not code_gen then
                 return false,
                     string.format("No code generator for %s", vim.bo[0].ft)

@@ -4,6 +4,35 @@ local Version = require("refactoring.version")
 
 local Typescript = {}
 
+local BaseFieldNode = {}
+BaseFieldNode.__index = BaseFieldNode
+
+local FieldNode = function(fieldname)
+    return function(node)
+        return setmetatable({
+            fieldname = fieldname,
+            node = node,
+        }, {
+            __index = BaseFieldNode,
+
+            __tostring = function(self)
+                local name_node = self.node:field(self.fieldname)[1]
+                return ts_utils.get_node_text(name_node, 0)[1]
+            end,
+        })
+    end
+end
+
+local StringNode = function(text)
+    return function()
+        return setmetatable({}, {
+            __tostring = function()
+                return text
+            end,
+        })
+    end
+end
+
 function Typescript.new(bufnr, ft)
     return TreeSitter:new({
         version = Version:new(
@@ -19,19 +48,23 @@ function Typescript.new(bufnr, ft)
             arrow_function = "function",
             class_declaration = "class",
         },
-        debug_path_names = {
-            function_declaration = "function",
-            method_definition = "function",
-            class_declaration = "class",
-            arrow_function = "function",
-            if_statement = "if",
-            for_statement = "for",
-            while_statement = "while",
-            do_statement = "do",
+        debug_paths = {
+            function_declaration = FieldNode("name"),
+            method_definition = FieldNode("name"),
+            class_declaration = FieldNode("name"),
+            arrow_function = StringNode("(anon)"),
+            if_statement = StringNode("if"),
+            for_statement = StringNode("for"),
+            while_statement = StringNode("while"),
+            do_statement = StringNode("do"),
         },
         to_string = function(self, node)
+            if true then
+                return tostring(node)
+            end
+
             local type = node:type()
-            local debug_type = self.debug_path_names[type]
+            local debug_type = self.debug_paths[type]
             if debug_type == "function" then
                 local name_node = node:field("name")[1]
 
@@ -44,7 +77,8 @@ function Typescript.new(bufnr, ft)
                     return "function"
                 end
             end
-            return self.debug_path_names[node:type()] or "(unknown node)"
+
+            return tostring(self.debug_paths[node:type()]) or "(unknown node)"
         end,
     }, bufnr)
 end
