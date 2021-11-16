@@ -4,6 +4,7 @@ local Golang = require("refactoring.treesitter.golang")
 local Lua = require("refactoring.treesitter.lua")
 local Python = require("refactoring.treesitter.python")
 local JavaScript = require("refactoring.treesitter.javascript")
+local Ruby = require("refactoring.treesitter.ruby")
 
 local M = {
     TreeSitter = TreeSitter,
@@ -12,6 +13,7 @@ local M = {
     python = Python,
     go = Golang,
     lua = Lua,
+    ruby = Ruby,
 }
 
 local DefaultSitter = {}

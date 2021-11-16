@@ -15,6 +15,7 @@ local extension_to_filetype = {
     ["js"] = "javascript",
     ["go"] = "go",
     ["py"] = "python",
+    ["rb"] = "ruby",
 }
 
 local refactor_id_to_refactor = {
