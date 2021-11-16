@@ -1,4 +1,3 @@
-local config = require("refactoring.config")
 local Pipeline = require("refactoring.pipeline")
 local Point = require("refactoring.point")
 local refactor_setup = require("refactoring.tasks.refactor_setup")

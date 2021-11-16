@@ -45,12 +45,7 @@ describe("lsp_utils", function()
             "if (true) {",
             "    ",
             "}",
-        }, vim.api.nvim_buf_get_lines(
-            0,
-            0,
-            -1,
-            false
-        ))
+        }, vim.api.nvim_buf_get_lines(0, 0, -1, false))
     end)
 
     -- TODO: Genuinely think that this could be a bug within neovim.  I cannot
@@ -67,12 +62,7 @@ describe("lsp_utils", function()
             "if (true) {",
             "    hello, piqbar",
             "}",
-        }, vim.api.nvim_buf_get_lines(
-            0,
-            0,
-            -1,
-            false
-        ))
+        }, vim.api.nvim_buf_get_lines(0, 0, -1, false))
     end)
 
     it("should be able to replace a single part of code.", function()
@@ -96,11 +86,6 @@ bin, ban,]]
             "baz, buzz,",
             "bin, ban,",
             "}",
-        }, vim.api.nvim_buf_get_lines(
-            0,
-            0,
-            -1,
-            false
-        ))
+        }, vim.api.nvim_buf_get_lines(0, 0, -1, false))
     end)
 end)
