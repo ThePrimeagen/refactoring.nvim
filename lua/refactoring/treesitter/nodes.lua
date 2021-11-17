@@ -3,18 +3,30 @@ local ts_utils = require("nvim-treesitter.ts_utils")
 local BaseFieldNode = {}
 BaseFieldNode.__index = BaseFieldNode
 
-local FieldNode = function(fieldname, idx)
-    idx = idx or 1
+local FieldNode = function(...)
+    local fieldnames = {}
+    for idx = 1, select("#", ...) do
+        table.insert(fieldnames, select(idx, ...))
+    end
+
     return function(node)
         return setmetatable({
-            fieldname = fieldname,
+            fieldnames = fieldnames,
             node = node,
         }, {
             __index = BaseFieldNode,
 
             __tostring = function(self)
-                local name_node = self.node:field(self.fieldname)[idx]
-                return ts_utils.get_node_text(name_node, 0)[1]
+                local curr = self.node
+                for idx = 1, #self.fieldnames do
+                    curr = curr:field(self.fieldnames[idx])
+                    if not curr then
+                        break
+                    end
+
+                    curr = curr[1]
+                end
+                return ts_utils.get_node_text(curr, 0)[1]
             end,
         })
     end
