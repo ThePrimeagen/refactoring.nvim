@@ -9,6 +9,7 @@ local utils = require("refactoring.utils")
 ---     'Baz',          -- Takes value 11
 --- }
 
+---@class RefactorQuery
 local Query = {}
 Query.__index = Query
 

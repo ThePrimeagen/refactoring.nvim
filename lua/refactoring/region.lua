@@ -16,7 +16,7 @@ local function get_selection_range()
     return start_row, start_col, end_row, end_col
 end
 
----@class Region
+---@class RefactorRegion
 --- The following fields act similar to a cursor
 ---@field start_row number: The 1-based row
 ---@field start_col number: The 0-based col
@@ -27,7 +27,7 @@ local Region = {}
 Region.__index = Region
 
 --- Get a Region from the current selection
----@return Region
+---@return RefactorRegion
 function Region:from_current_selection()
     local start_row, start_col, end_row, end_col = get_selection_range()
 
@@ -57,7 +57,7 @@ function Region:empty(bufnr)
 end
 
 --- Get a region from a Treesitter Node
----@return Region
+---@return RefactorRegion
 function Region:from_node(node, bufnr)
     bufnr = bufnr or vim.fn.bufnr()
     local start_line, start_col, end_line, end_col = node:range()

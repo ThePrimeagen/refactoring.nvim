@@ -1,6 +1,6 @@
 local bits = require("refactoring.bits")
 
----@class Version
+---@class RefactorVersion
 ---@field version number: the flag set
 local Version = {}
 Version.__index = Version
