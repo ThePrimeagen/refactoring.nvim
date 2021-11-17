@@ -10,7 +10,7 @@ local FieldNode = function(...)
         table.insert(fieldnames, item)
     end
 
-    return function(node)
+    return function(node, fallback)
         return setmetatable({
             fieldnames = fieldnames,
             node = node,
@@ -18,16 +18,21 @@ local FieldNode = function(...)
             __index = BaseFieldNode,
 
             __tostring = function(self)
+                if not self.node then
+                    return fallback
+                end
+
                 local curr = self.node
                 for idx = 1, #self.fieldnames do
                     curr = curr:field(self.fieldnames[idx])
-                    if not curr then
-                        break
-                    end
 
+                    if not curr[1] then
+                        return fallback
+                    end
                     curr = curr[1]
                 end
-                return ts_utils.get_node_text(curr, 0)[1]
+
+                return ts_utils.get_node_text(curr, 0)[1] or fallback
             end,
         })
     end
