@@ -4,24 +4,22 @@ local BaseFieldNode = {}
 BaseFieldNode.__index = BaseFieldNode
 
 local FieldNode = function(...)
-    idx = idx or 1
     local fieldnames = {}
     for idx = 1, select("#", ...) do
         table.insert(fieldnames, select(idx, ...))
     end
 
     return function(node)
-
         return setmetatable({
-            fieldname = fieldname,
+            fieldnames = fieldnames,
             node = node,
         }, {
             __index = BaseFieldNode,
 
             __tostring = function(self)
                 local curr = self.node
-                for idx = 1, #fieldnames do
-                    curr =  curr:field(fieldnames[idx])
+                for idx = 1, #self.fieldnames do
+                    curr = curr:field(self.fieldnames[idx])
                     if not curr then
                         break
                     end

@@ -13,7 +13,11 @@ function Cpp.new(bufnr, ft)
         bufnr = bufnr,
         debug_paths = {
             class_specifier = FieldNode("name"),
-            function_definition = FieldNode("declarator", "declarator", "declarator"),
+            function_definition = FieldNode(
+                "declarator",
+                "declarator",
+                "declarator"
+            ),
             if_statement = StringNode("if"),
             for_statement = StringNode("for"),
             while_statement = StringNode("while"),
@@ -23,4 +27,3 @@ function Cpp.new(bufnr, ft)
 end
 
 return Cpp
-
