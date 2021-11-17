@@ -6,7 +6,8 @@ BaseFieldNode.__index = BaseFieldNode
 local FieldNode = function(...)
     local fieldnames = {}
     for idx = 1, select("#", ...) do
-        table.insert(fieldnames, select(idx, ...))
+        local item = select(idx, ...)
+        table.insert(fieldnames, item)
     end
 
     return function(node)
