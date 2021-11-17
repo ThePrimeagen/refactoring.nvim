@@ -146,9 +146,4 @@ function TreeSitter:get_root()
     return parser:parse()[1]:root()
 end
 
-function TreeSitter:to_string(node)
-    print("node type:", node:type())
-    error("to_string not supported for ", self.filetype)
-end
-
 return TreeSitter
