@@ -5,6 +5,13 @@ local default_formatting = {
     lua = {},
     go = {},
 
+    -- All of the cs
+    cpp = {},
+    c = {},
+    h = {},
+    hpp = {},
+    cxx = {},
+
     -- Python needs tons of work to become correct.
     python = {},
 
