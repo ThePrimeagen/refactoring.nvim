@@ -20,7 +20,9 @@ Config.__index = Config
 
 function Config:new(...)
     local c = vim.tbl_deep_extend("force", {
-        _automation = {},
+        _automation = {
+            bufnr = nil,
+        },
     }, {
         formatting = default_formatting,
         code_generation = default_code_generation,
@@ -63,6 +65,14 @@ function Config:get_automated_input()
     end
 
     return nil
+end
+
+function Config:get_test_bufnr()
+    return self.config._automation.bufnr
+end
+
+function Config:set_test_bufnr(bufnr)
+    self.config._automation.bufnr = bufnr
 end
 
 function Config:get_code_generation_for(filetype)

@@ -48,45 +48,13 @@ end
 
 local function for_each_file(cb)
     local files = scandir.scan_dir(
-        Path:new(cwd, "lua", "refactoring", "tests"):absolute()
+        Path:new(cwd, "lua", "refactoring", "tests", "refactor"):absolute()
     )
     for _, file in pairs(files) do
         file = remove_cwd(file)
         if string.match(file, "start") then
             cb(file)
         end
-    end
-end
-
-local function get_commands(filename_prefix)
-    return utils.split_string(
-        test_utils.read_file(string.format("%s.commands", filename_prefix)),
-        "\n"
-    )
-end
-
-local function get_contents(file)
-    return utils.split_string(test_utils.read_file(file), "\n")
-end
-
-local function run_commands(filename_prefix)
-    for _, command in pairs(get_commands(filename_prefix)) do
-        vim.cmd(command)
-    end
-end
-
-local function run_inputs_if_exist(filename_prefix)
-    local input_file_name = string.format("%s.inputs", filename_prefix)
-    local inputs_file = Path:new(
-        cwd,
-        "lua",
-        "refactoring",
-        "tests",
-        input_file_name
-    )
-    if inputs_file:exists() then
-        local inputs = get_contents(string.format("%s.inputs", filename_prefix))
-        Config.get():automate_input(inputs)
     end
 end
 
@@ -117,10 +85,16 @@ local function test_empty_input()
         local bufnr = vim.api.nvim_create_buf(false, true)
         vim.api.nvim_win_set_buf(0, bufnr)
         vim.bo[bufnr].filetype = extension_to_filetype[filename_extension]
-        vim.api.nvim_buf_set_lines(bufnr, 0, -1, false, get_contents(file))
+        vim.api.nvim_buf_set_lines(
+            bufnr,
+            0,
+            -1,
+            false,
+            test_utils.get_contents(file)
+        )
         Config.get():automate_input(test_case["inputs"])
 
-        run_commands(filename_prefix)
+        test_utils.run_commands(filename_prefix)
 
         local status, err = pcall(refactoring[refactor["name"]], bufnr)
 
@@ -152,7 +126,7 @@ local function validate_cursor_if_file_exists(filename_prefix)
         cursor_position_name
     )
     if cursor_position_file:exists() then
-        local cursor_position = get_contents(
+        local cursor_position = test_utils.get_contents(
             string.format("%s.cursor_position", filename_prefix)
         )
         local expected_row = tonumber(cursor_position[1])
@@ -189,7 +163,7 @@ describe("Refactoring", function()
             local refactor = get_refactor_name_from_path(filename_prefix)
 
             local bufnr = test_utils.open_test_file(file)
-            local expected = get_contents(
+            local expected = test_utils.get_contents(
                 string.format(
                     "%s.expected.%s",
                     filename_prefix,
@@ -197,8 +171,8 @@ describe("Refactoring", function()
                 )
             )
 
-            run_inputs_if_exist(filename_prefix)
-            run_commands(filename_prefix)
+            test_utils.run_inputs_if_exist(filename_prefix, cwd)
+            test_utils.run_commands(filename_prefix)
             refactoring[refactor["name"]](bufnr)
             async.util.scheduler()
             local lines = vim.api.nvim_buf_get_lines(bufnr, 0, -1, false)

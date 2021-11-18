@@ -6,11 +6,19 @@ local Point = require("refactoring.point")
 -- TODO: Move refactor into the actual init function.  Seems weird
 -- to have here.  Also make refactor object into a table instead of this
 -- monstrosity
-local function refactor_setup(bufnr, config)
+local function refactor_setup(input_bufnr, config)
+    input_bufnr = input_bufnr or vim.fn.bufnr()
     config = config or Config.get()
-    bufnr = bufnr or vim.fn.bufnr()
 
     return function()
+        -- Setting bufnr to test bufnr
+        local bufnr
+        if config:get_test_bufnr() ~= nil then
+            bufnr = config:get_test_bufnr()
+        else
+            bufnr = input_bufnr
+        end
+
         local filetype = vim.bo[bufnr].filetype
         local root = Query.get_root(bufnr, filetype)
         local win = vim.api.nvim_get_current_win()
