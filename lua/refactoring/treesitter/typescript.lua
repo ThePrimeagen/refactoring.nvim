@@ -25,7 +25,9 @@ function Typescript.new(bufnr, ft)
             function_declaration = FieldNode("name"),
             method_definition = FieldNode("name"),
             class_declaration = FieldNode("name"),
-            arrow_function = StringNode("(anon)"),
+            arrow_function = function(node)
+                return FieldNode("name")(node:parent(), "(anon)")
+            end,
             if_statement = StringNode("if"),
             for_statement = StringNode("for"),
             while_statement = StringNode("while"),
