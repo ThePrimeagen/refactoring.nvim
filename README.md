@@ -35,8 +35,8 @@ use {
 ```
 **Example Config:**
 ```lua
-local refactor = require("refactoring")
-refactor.setup({})
+local refactoring = require("refactoring")
+refactoring.setup({})
 
 -- telescope refactoring helper
 local function refactor(prompt_bufnr)
@@ -44,7 +44,7 @@ local function refactor(prompt_bufnr)
         prompt_bufnr
     )
     require("telescope.actions").close(prompt_bufnr)
-    require("refactoring").refactor(content.value)
+    require("refactoring").refactor(content.value, {})
 end
 -- NOTE: M is a global object
 -- for the sake of simplicity in this example
