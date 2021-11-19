@@ -26,6 +26,7 @@ function Cpp.new(bufnr, ft)
                 QueryNode(
                     "(function_declarator (destructor_name) @tmp_capture)"
                 ),
+                QueryNode("(function_declarator (identifier) @tmp_capture)"),
                 StringNode("function")
             ),
 
