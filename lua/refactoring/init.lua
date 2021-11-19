@@ -8,6 +8,10 @@ function M.setup(config)
 end
 
 function M.refactor(name, opts)
+    if opts == nil then
+        opts = {}
+    end
+
     local refactor = refactors.refactor_names[name]
     if not refactor then
         error(
