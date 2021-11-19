@@ -1,5 +1,7 @@
 local TreeSitter = require("refactoring.treesitter.treesitter")
 local Version = require("refactoring.version")
+local Nodes = require("refactoring.treesitter.nodes")
+local FieldNode = Nodes.FieldNode
 
 local Golang = {}
 
@@ -18,6 +20,10 @@ function Golang.new(bufnr, ft)
         },
         class_names = {
             method_declaration = 0,
+        },
+        debug_paths = {
+            function_declaration = FieldNode("name"),
+            method_declaration = FieldNode("name"),
         },
     }, bufnr)
 end
