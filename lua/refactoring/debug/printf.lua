@@ -10,6 +10,12 @@ local function printDebug(bufnr, config)
         :add_task(function(refactor)
             local opts = refactor.config:get()
             local point = Point:from_cursor()
+
+            -- set default `below` behavior
+            if opts.below == nil then
+                opts.below = true
+            else
+            end
             point.col = opts.below and 100000 or 1
 
             local region = point:to_region()

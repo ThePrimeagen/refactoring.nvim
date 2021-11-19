@@ -16,8 +16,7 @@ local function remove_cwd(file)
 end
 
 -- TODO: Move this to utils
-local function for_each_file(cb, test_string)
-    print("test string!", test_string)
+local function for_each_file(cb)
     local files = scandir.scan_dir(
         Path:new(cwd, "lua", "refactoring", "tests", "debug"):absolute()
     )
@@ -49,7 +48,7 @@ describe("Debug", function()
             test_utils.run_commands(filename_prefix)
             Config.get():set_test_bufnr(bufnr)
 
-            debug.printf({ below = true })
+            debug["printf"]({})
             async.util.scheduler()
             local lines = vim.api.nvim_buf_get_lines(bufnr, 0, -1, false)
             eq(expected, lines)
