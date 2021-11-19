@@ -41,6 +41,9 @@ local function constant(opts)
 end
 
 local go = {
+    print = function(statement)
+        return string.format('fmt.Println("%s")', statement)
+    end,
     constant = function(opts)
         return constant(opts)
     end,

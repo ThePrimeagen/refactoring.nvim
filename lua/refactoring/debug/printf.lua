@@ -14,7 +14,6 @@ local function printDebug(bufnr, config)
             -- set default `below` behavior
             if opts.below == nil then
                 opts.below = true
-            else
             end
             point.col = opts.below and 100000 or 1
 
