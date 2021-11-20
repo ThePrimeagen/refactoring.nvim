@@ -69,6 +69,10 @@ function TreeSitter:class_type(scope)
 end
 
 local function containing_node_by_type(node, container_map)
+    if not node then
+        return nil
+    end
+
     -- assume that its a number / string.
     if type(container_map) ~= "table" then
         container_map = { container_map = true }
@@ -88,10 +92,11 @@ function TreeSitter:get_debug_path(node)
     local path = {}
 
     repeat
-        node = containing_node_by_type(node:parent(), self.debug_paths)
+        node = containing_node_by_type(node, self.debug_paths)
 
         if node then
-            table.insert(path, self.debug_paths[node:type()](node))
+            table.insert(path, self.debug_paths[node:type()](node, self.bufnr))
+            node = node:parent()
         end
     until node == nil
 

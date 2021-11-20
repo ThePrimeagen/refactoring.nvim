@@ -99,17 +99,17 @@ end
 function Query.find_occurrences(scope, sexpr, bufnr)
     local filetype = vim.bo[bufnr].filetype
 
-    -- TODO: Ask tj why my life is terrible
-    local sexpr_query = vim.treesitter.parse_query(
-        filetype,
-        sexpr .. " @tmp_capture"
-    )
-
-    local occurances = {}
-    for _, n in sexpr_query:iter_captures(scope, bufnr, 0, -1) do
-        table.insert(occurances, n)
+    if not sexpr:find("@") then
+        sexpr = sexpr .. " @tmp_capture"
     end
-    return occurances
+    local sexpr_query = vim.treesitter.parse_query(filetype, sexpr)
+
+    local occurrences = {}
+    for _, n in sexpr_query:iter_captures(scope, bufnr, 0, -1) do
+        table.insert(occurrences, n)
+    end
+
+    return occurrences
 end
 
 return Query

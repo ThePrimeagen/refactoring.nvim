@@ -1,6 +1,10 @@
 local utils = require("refactoring.code_generation.utils")
 
 local lua = {
+    ["print"] = function(print_string)
+        return string.format('print("%s")', print_string)
+    end,
+
     constant = function(opts)
         return string.format("local %s = %s\n", opts.name, opts.value)
     end,

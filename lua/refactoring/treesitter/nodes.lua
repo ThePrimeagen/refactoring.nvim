@@ -1,14 +1,22 @@
 local ts_utils = require("nvim-treesitter.ts_utils")
+local Query = require("refactoring.query")
 
 local BaseFieldNode = {}
 BaseFieldNode.__index = BaseFieldNode
 
-local FieldNode = function(...)
-    local fieldnames = {}
+local function to_array(...)
+    local items = {}
+
     for idx = 1, select("#", ...) do
         local item = select(idx, ...)
-        table.insert(fieldnames, item)
+        table.insert(items, item)
     end
+
+    return items
+end
+
+local FieldNode = function(...)
+    local fieldnames = to_array(...)
 
     return function(node, fallback)
         return setmetatable({
@@ -48,8 +56,43 @@ local StringNode = function(text)
     end
 end
 
+local QueryNode = function(sexpr)
+    -- The reason why this works is because __tostring method is already
+    -- implemented on string
+    return function(scope, bufnr)
+        local occurrences = Query.find_occurrences(scope, sexpr, bufnr)
+        local first = occurrences[1]
+
+        if first then
+            local res = ts_utils.get_node_text(first, 0)
+            return res and res[1] or ""
+        end
+
+        return ""
+    end
+end
+
+local function TakeFirstNode(...)
+    local nodes = to_array(...)
+    return function(...)
+        local out = ""
+
+        for _, v in ipairs(nodes) do
+            local value = v(...)
+            if value and #value > 0 then
+                out = value
+                break
+            end
+        end
+
+        return out
+    end
+end
+
 return {
     BaseFieldNode = BaseFieldNode,
+    TakeFirstNode = TakeFirstNode,
     StringNode = StringNode,
+    QueryNode = QueryNode,
     FieldNode = FieldNode,
 }
