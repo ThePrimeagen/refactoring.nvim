@@ -41,6 +41,12 @@ local function constant(opts)
 end
 
 local go = {
+    print_var = function(prefix, var)
+        return string.format(
+            "fmt.Println(fmt.Sprintf(\"%s %%v\", %s))",
+            prefix,
+            var)
+    end,
     print = function(statement)
         return string.format('fmt.Println("%s")', statement)
     end,
