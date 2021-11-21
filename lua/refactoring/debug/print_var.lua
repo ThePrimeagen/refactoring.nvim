@@ -25,11 +25,9 @@ local function printDebug(bufnr, config)
             -- Get variable text
             local variable = get_variable()
 
-            -- TODO: Breakout getting path into common util
             local debug_path = debug_utils.get_debug_path(refactor, point)
             local prefix = string.format("%s %s:", debug_path, variable)
 
-            -- TODO: Break this out into common utils and throw error
             local code_gen = debug_utils.get_code_gen(refactor, bufnr)
             local print_statement = code_gen.print_var(prefix, variable)
 
