@@ -43,9 +43,10 @@ end
 local go = {
     print_var = function(prefix, var)
         return string.format(
-            "fmt.Println(fmt.Sprintf(\"%s %%v\", %s))",
+            'fmt.Println(fmt.Sprintf("%s %%v", %s))',
             prefix,
-            var)
+            var
+        )
     end,
     print = function(statement)
         return string.format('fmt.Println("%s")', statement)

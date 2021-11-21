@@ -32,8 +32,8 @@ local function get_debug_operation(path)
     local temp = {}
     local index = 1
     for i in string.gmatch(path, "([^/]+)") do
-       table.insert(temp, index, i)
-       index = index + 1
+        table.insert(temp, index, i)
+        index = index + 1
     end
     return temp[#temp]
 end
