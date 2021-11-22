@@ -1,5 +1,3 @@
-local Region = require("refactoring.region")
-
 local function getpos()
     return vim.fn.line("."), vim.fn.col(".")
 end
@@ -41,10 +39,6 @@ function Point:to_vim()
     return self.row, self.col
 end
 
-function Point:to_region()
-    return Region:from_values(0, self.row, self.col, self.row, self.col)
-end
-
 --- Convert a point to a tree sitter point
 function Point:to_ts()
     return self.row - 1, self.col
@@ -64,8 +58,33 @@ function Point:clone()
     return clone
 end
 
-function Point:within_node(node)
-    return Region:from_node(node, 0):contains_point(self) -- buffer doesn't matter in this case
+--- TODO add documentation
+function Point:compareTo(point)
+    if point.row == self.row and point.col == self.col then
+        return 0
+    end
+
+    if point.row == self.row then
+        return point.col < self.col and 1 or -1
+    end
+
+    return point.row < self.row and 1 or -1
+end
+
+function Point:lt(point)
+    return self:compareTo(point) == -1
+end
+
+function Point:gt(point)
+    return self:compareTo(point) == 1
+end
+
+function Point:leq(point)
+    return not self:gt(point)
+end
+
+function Point:geq(point)
+    return not self:lt(point)
 end
 
 return Point

@@ -132,8 +132,10 @@ function TreeSitter:local_declarations_under_cursor()
     local point = Point:from_cursor()
     local scope = self:get_scope(point:to_ts_node(self:get_root()))
     return vim.tbl_filter(function(node)
-        return point:within_node(node)
-    end, self:local_declarations(scope))[1]
+        return Region:from_node(node, 0):contains_point(point)
+    end, self:local_declarations(
+        scope
+    ))[1]
 end
 
 function TreeSitter:get_scope(node)

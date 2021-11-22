@@ -1,5 +1,6 @@
 local Pipeline = require("refactoring.pipeline")
 local Point = require("refactoring.point")
+local Region = require("refactoring.region")
 local refactor_setup = require("refactoring.tasks.refactor_setup")
 local post_refactor = require("refactoring.tasks.post_refactor")
 local lsp_utils = require("refactoring.lsp_utils")
@@ -17,7 +18,6 @@ local function printDebug(bufnr, config)
             end
             point.col = opts.below and 100000 or 1
 
-            local region = point:to_region()
             local node = point:to_ts_node(refactor.ts:get_root())
             local debug_path = refactor.ts:get_debug_path(node)
 
@@ -36,7 +36,11 @@ local function printDebug(bufnr, config)
             local print_statement = code_gen.print(debug_path_concat)
 
             refactor.text_edits = {
-                lsp_utils.insert_new_line_text(region, print_statement, opts),
+                lsp_utils.insert_new_line_text(
+                    Region:from_point(point),
+                    print_statement,
+                    opts
+                ),
             }
 
             return true, refactor

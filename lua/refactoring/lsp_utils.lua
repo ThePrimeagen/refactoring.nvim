@@ -1,4 +1,5 @@
 local code = require("refactoring.code_generation")
+local Region = require("refactoring.region")
 
 local M = {}
 
@@ -16,7 +17,7 @@ end
 
 local function to_region(pointOrRegion)
     if not pointOrRegion.end_row then
-        return pointOrRegion:to_region()
+        return Region:from_point(pointOrRegion)
     end
     return pointOrRegion
 end

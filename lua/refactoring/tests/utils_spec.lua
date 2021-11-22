@@ -36,7 +36,10 @@ describe("Utils", function()
         assert.are.same({
             bar = 69,
             baz = 420,
-        }, utils.table_key_intersect(a, b))
+        }, utils.table_key_intersect(
+            a,
+            b
+        ))
     end)
 
     it("node intersection & complement", function()
