@@ -1,6 +1,4 @@
-local function calculate_row_col_score(row, col)
-    return row * 100000 + col
-end
+local Point = require("refactoring.point")
 
 local function get_selection_range()
     -- local _, end_row, _, _ = unpack(vim.fn.getpos("'>"))
@@ -72,6 +70,23 @@ function Region:from_node(node, bufnr)
     }, self)
 end
 
+--- Get a region from a given point.
+---@param point    the point to use as start- and endpoint
+---@param {bufnr}  the bufnr for the region
+---@return region
+function Region:from_point(point, bufnr)
+    -- maybe should set this to zero
+    bufnr = bufnr or vim.fn.bufnr()
+
+    return setmetatable({
+        bufnr = vim.fn.bufnr(bufnr),
+        start_row = point.row,
+        start_col = point.col,
+        end_row = point.row,
+        end_col = point.col,
+    }, self)
+end
+
 function Region:from_lsp_range(lsp_range, bufnr)
     bufnr = bufnr or vim.fn.bufnr()
 
@@ -100,6 +115,7 @@ function Region:to_ts()
         self.end_col - 2
 end
 
+--- Get the lines contained in the region
 function Region:get_lines()
     local text = vim.api.nvim_buf_get_lines(
         self.bufnr,
@@ -108,6 +124,16 @@ function Region:get_lines()
         false
     )
     return text
+end
+
+--- Get the left boundary of the region
+function Region:get_start_point()
+    return Point:from_values(self.start_row, self.start_col)
+end
+
+--- Get the right boundary of the region
+function Region:get_end_point()
+    return Point:from_values(self.end_row, self.end_col)
 end
 
 function Region:get_text()
@@ -161,42 +187,24 @@ function Region:clone()
     return clone
 end
 
-function Region:contains(other_range)
-    if self.bufnr ~= other_range.bufnr then
+--- Returns true if self contains region.
+function Region:contains(region)
+    if region.bufnr ~= self.bufnr then
         return false
     end
 
-    local start_score = calculate_row_col_score(self.start_row, self.start_col)
-    local end_score = calculate_row_col_score(self.end_row, self.end_col)
-
-    local other_start_score = calculate_row_col_score(
-        other_range.start_row,
-        other_range.start_col
-    )
-    local other_end_score = calculate_row_col_score(
-        other_range.end_row,
-        other_range.end_col
-    )
-
-    return start_score <= other_start_score and end_score >= other_end_score
+    return self:get_start_point():leq(region:get_start_point())
+        and self:get_end_point():geq(region:get_end_point())
 end
 
+--- Returns true if self contains point.
 function Region:contains_point(point)
-    local start_score = calculate_row_col_score(self.start_row, self.start_col)
-    local end_score = calculate_row_col_score(self.end_row, self.end_col)
-    local point_score = calculate_row_col_score(point.row, point.col)
-
-    return start_score <= point_score and end_score >= point_score
+    return self:get_start_point():leq(point) and self:get_end_point():geq(point)
 end
 
+--- Return true if the position of self lies after the position of region
 function Region:is_after(region)
-    local end_score = calculate_row_col_score(self.end_row, self.end_col)
-    local n_start_score = calculate_row_col_score(
-        region.start_row,
-        region.start_col
-    )
-
-    return end_score < n_start_score
+    return self:get_start_point():gt(region:get_end_point())
 end
 
 return Region
