@@ -22,9 +22,15 @@ local function refactor_setup(input_bufnr, config)
         local filetype = vim.bo[bufnr].filetype
         local root = Query.get_root(bufnr, filetype)
         local win = vim.api.nvim_get_current_win()
+        local cursor = Point:from_cursor()
 
         local refactor = {
-            cursor = Point:from_cursor(),
+            whitespace = {
+                cursor = vim.fn.indent(cursor.row),
+                expandtab = vim.bo[bufnr].expandtab, -- are we whitespace?
+                tabstop = vim.bo[bufnr].tabstop, -- are we whitespace?
+            },
+            cursor = cursor,
             highlight_start_col = vim.fn.col("'<"),
             code = config:get_code_generation_for(filetype),
             ts = TreeSitter.get_treesitter(),

@@ -25,12 +25,50 @@ local function get_scope(ts, line, col)
     return get_parent_scope(ts, node, 1)
 end
 
+local function get_indent_scope(ts, line, col)
+    set_position(line, col)
+    local cursor = Point:from_cursor():to_ts_node(ts:get_root())
+    return ts:indent_scope(cursor)
+end
+
 local function init()
     vim.cmd("e lua/refactoring/tests/treesitter/get_scope.ts")
     return TreeSitter.get_treesitter()
 end
 
-describe("Typescript", function()
+describe("TreeSitter", function()
+    it("should get indent count between two scopes", function()
+        local ts = init()
+        local indent_scope = get_indent_scope(ts, 39)
+        local parent = get_scope(ts, 33)
+
+        local indent_count = ts:indent_scope_difference(parent, indent_scope)
+        assert.are.same(indent_count, 2)
+    end)
+
+    it("should indent 0 because child == ancestor", function()
+        local ts = init()
+        local indent_scope = get_indent_scope(ts, 39)
+
+        local indent_count = ts:indent_scope_difference(
+            indent_scope,
+            indent_scope
+        )
+        assert.are.same(indent_count, 0)
+    end)
+
+    it("should throw error because of two different trees.", function()
+        local ts = init()
+        local indent_scope = get_indent_scope(ts, 39)
+        local other_scope = get_indent_scope(ts, 43)
+
+        -- throw error
+        local ok = pcall(function()
+            ts:indent_scope_difference(indent_scope, other_scope)
+        end)
+        assert.are.same(ok, false)
+    end)
+
     -- This will be hard since we do not test every
     it("get_scope", function()
         local ts = init()

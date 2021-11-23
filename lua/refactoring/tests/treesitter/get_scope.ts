@@ -35,6 +35,13 @@ function local_var_test() {
     function inner() {
         let baz = 5;
         return 5;
+        if (true) {
+            let fazz = 7;
+        }
+
+        if (true) {
+            let buzzzbaszz = 69;
+        }
     }
 
     return inner() * foo * bar;
