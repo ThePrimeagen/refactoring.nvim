@@ -63,26 +63,26 @@ end
 -- return -1 if pos_1 < pos_2, 0 if pos_1 == pos_2 and 1 otherwise.
 -- @params point   the second point to compare to.
 -- @return int     either -1, 0 or 1
-function Point:compareTo(point)
-    if point.row == self.row and point.col == self.col then
-        return 0
+function Point:compare_to(point)
+    if self.row ~= point.row then
+        return self.row < point.row and -1 or 1
     end
 
-    if point.row == self.row then
-        return point.col < self.col and 1 or -1
+    if self.col ~= point.col then
+        return self.col < point.col and -1 or 1
     end
 
-    return point.row < self.row and 1 or -1
+    return 0
 end
 
 --- Returns true if position of self < position of point
 function Point:lt(point)
-    return self:compareTo(point) == -1
+    return self:compare_to(point) == -1
 end
 
 --- Returns true if position of self > position of point
 function Point:gt(point)
-    return self:compareTo(point) == 1
+    return self:compare_to(point) == 1
 end
 
 --- Returns true if position of self <= position of point
