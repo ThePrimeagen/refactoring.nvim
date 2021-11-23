@@ -7,6 +7,9 @@ local function selection_setup(refactor)
     refactor.region = region
     refactor.scope = scope
 
+    refactor.whitespace.highlight_start = vim.fn.indent(region.start_row)
+    refactor.whitespace.highlight_end = vim.fn.indent(region.end_row)
+
     if refactor.scope == nil then
         return false, "Scope is nil"
     end
