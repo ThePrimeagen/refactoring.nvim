@@ -5,6 +5,7 @@ local refactor_setup = require("refactoring.tasks.refactor_setup")
 local post_refactor = require("refactoring.tasks.post_refactor")
 local lsp_utils = require("refactoring.lsp_utils")
 local debug_utils = require("refactoring.debug.debug_utils")
+local ensure_code_gen = require("refactoring.tasks.ensure_code_gen")
 
 local function get_variable()
     local variable_region = Region:from_current_selection()
@@ -14,6 +15,9 @@ end
 local function printDebug(bufnr, config)
     return Pipeline
         :from_task(refactor_setup(bufnr, config))
+        :add_task(function(refactor)
+            return ensure_code_gen(refactor, { "print_var" })
+        end)
         :add_task(function(refactor)
             local opts = refactor.config:get()
             local point = Point:from_cursor()
@@ -28,8 +32,7 @@ local function printDebug(bufnr, config)
             local debug_path = debug_utils.get_debug_path(refactor, point)
             local prefix = string.format("%s %s:", debug_path, variable)
 
-            local code_gen = debug_utils.get_code_gen(refactor, bufnr)
-            local print_statement = code_gen.print_var(prefix, variable)
+            local print_statement = refactor.code.print_var(prefix, variable)
 
             refactor.text_edits = {
                 lsp_utils.insert_new_line_text(region, print_statement, opts),
