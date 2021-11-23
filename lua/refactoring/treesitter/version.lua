@@ -3,7 +3,7 @@ local bits = require("refactoring.bits")
 local Version = {
     Scopes = 0x1,
     Locals = 0x2,
-    Classes = 0x3,
+    Classes = 0x4,
 }
 
 function Version.ensure_version(version, ...)
