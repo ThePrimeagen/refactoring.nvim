@@ -15,5 +15,4 @@ jobs:
                   sudo luarocks install luacheck
 
             - name: Lint
-              run: luacheck lua --globals vim --exclude-files lua/refactoring/tests/refactor/ --no-max-line-length
-
+              run: make lint

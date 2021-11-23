@@ -28,12 +28,23 @@ local function for_each_file(cb)
     end
 end
 
+local function get_debug_operation(path)
+    local temp = {}
+    local index = 1
+    for i in string.gmatch(path, "([^/]+)") do
+        table.insert(temp, index, i)
+        index = index + 1
+    end
+    return temp[#temp]
+end
+
 describe("Debug", function()
     for_each_file(function(file)
         a.it(string.format("printf: %s", file), function()
             local parts = utils.split_string(file, "%.")
             local filename_prefix = parts[1]
             local filename_extension = parts[3]
+            local debug_operation = get_debug_operation(filename_prefix)
 
             local bufnr = test_utils.open_test_file(file)
             local expected = test_utils.get_contents(
@@ -48,7 +59,7 @@ describe("Debug", function()
             test_utils.run_commands(filename_prefix)
             Config.get():set_test_bufnr(bufnr)
 
-            debug["printf"]({})
+            debug[debug_operation]({})
             async.util.scheduler()
             local lines = vim.api.nvim_buf_get_lines(bufnr, 0, -1, false)
             eq(expected, lines)
