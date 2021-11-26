@@ -22,6 +22,12 @@ function Typescript.new(bufnr, ft)
             arrow_function = "function",
             class_declaration = "class",
         },
+        block_scope = {
+            statement_block = true,
+        },
+        variable_scope = {
+            lexical_declaration = true,
+        },
 
         indent_scopes = {
             program = true,

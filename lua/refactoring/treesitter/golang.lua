@@ -14,6 +14,12 @@ function Golang.new(bufnr, ft)
         ),
         filetype = ft,
         bufnr = bufnr,
+        block_scope = {
+            block = true,
+        },
+        variable_scope = {
+            short_var_declaration = true,
+        },
         scope_names = {
             function_declaration = "function",
             method_declaration = "function",

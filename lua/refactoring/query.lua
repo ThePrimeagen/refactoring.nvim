@@ -1,6 +1,4 @@
 local parsers = require("nvim-treesitter.parsers")
-local ts_utils = require("nvim-treesitter.ts_utils")
-local utils = require("refactoring.utils")
 
 --- local myEnum = Enum {
 ---     'Foo',          -- Takes value 1
@@ -43,39 +41,6 @@ function Query:new(bufnr, filetype, query)
         filetype = filetype,
         root = Query.get_root(bufnr, filetype),
     }, self)
-end
-
-function Query:get_scope_over_region(region, capture_name)
-    capture_name = capture_name or Query.query_type.Scope
-    local start_row, start_col, end_row, end_col = region:to_ts()
-    local start_scope = self:get_scope_by_position(
-        start_row,
-        start_col,
-        capture_name
-    )
-    local end_scope = self:get_scope_by_position(end_row, end_col, capture_name)
-
-    if start_scope ~= end_scope then
-        error("Selection spans over two scopes, cannot determine scope")
-    end
-
-    return start_scope
-end
-
-function Query:get_scope_by_position(line, col, capture_name)
-    capture_name = capture_name or Query.query_type.Scope
-    local out = nil
-    for id, n, _ in self.query:iter_captures(self.root, self.bufnr, 0, -1) do
-        if
-            self.query.captures[id] == capture_name
-            and ts_utils.is_in_node_range(n, line, col)
-            and (out == nil or utils.node_contains(out, n))
-        then
-            out = n
-        end
-    end
-
-    return out
 end
 
 function Query:pluck_by_capture(scope, captures)

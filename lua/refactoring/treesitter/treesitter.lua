@@ -171,6 +171,10 @@ function TreeSitter:local_declarations_under_cursor()
     end, self:local_declarations(scope))[1]
 end
 
+function TreeSitter.get_container(node, container_list)
+    return containing_node_by_type(node, container_list)
+end
+
 function TreeSitter:get_scope(node)
     self.version:ensure_version(TreeSitter.version_flags.Scopes)
     return containing_node_by_type(node, self.scope_names)

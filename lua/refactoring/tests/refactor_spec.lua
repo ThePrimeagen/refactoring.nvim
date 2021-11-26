@@ -2,7 +2,7 @@ local a = require("plenary.async").tests
 local describe = a.describe
 local Path = require("plenary.path")
 local scandir = require("plenary.scandir")
-local refactoring = require("refactoring.refactor")
+local refactoring = require("refactoring")
 local Config = require("refactoring.config")
 local test_utils = require("refactoring.tests.utils")
 local utils = require("refactoring.utils")
@@ -96,7 +96,7 @@ local function test_empty_input()
 
         test_utils.run_commands(filename_prefix)
 
-        local status, err = pcall(refactoring[refactor["name"]], bufnr)
+        local status, err = pcall(refactoring.refactor, refactor["name"])
 
         -- waits for the next frame for formatting to work.
         async.util.scheduler()
@@ -173,7 +173,7 @@ describe("Refactoring", function()
 
             test_utils.run_inputs_if_exist(filename_prefix, cwd)
             test_utils.run_commands(filename_prefix)
-            refactoring[refactor["name"]](bufnr)
+            refactoring.refactor(refactor["name"])
             async.util.scheduler()
             local lines = vim.api.nvim_buf_get_lines(bufnr, 0, -1, false)
             eq(expected, lines)

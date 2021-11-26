@@ -2,7 +2,6 @@
 -- You should remove lsp_utils and change it to: text_edits.*
 --  this will make it much less confusing. It's not really about LSP,
 --  it's just about using one of the data structures.
-
 local Pipeline = require("refactoring.pipeline")
 local Query = require("refactoring.query")
 local Region = require("refactoring.region")
@@ -32,9 +31,9 @@ function M.inline_var(bufnr, opts)
 
             local ts_query = refactor.query
 
-            local declarator_node = ts_query:get_scope_over_region(
-                Region:from_node(definition),
-                Query.query_type.Declarator
+            local declarator_node = refactor.ts.get_container(
+                definition,
+                refactor.ts.variable_scope
             )
 
             local value_node = ts_query:pluck_by_capture(
