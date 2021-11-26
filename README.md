@@ -18,6 +18,12 @@ The Refactoring library based off the Refactoring book by Martin Fowler
 ## Setup
 
 **Requirements**:
+
+**NEOVIM NIGHTLY**
+The plugin is tested on neovim nightly, please make sure you are on nightly
+before submitting an issue with the plugin.
+
+Plugins:
 - Treesitter
 - Lsp
 - Plenary
