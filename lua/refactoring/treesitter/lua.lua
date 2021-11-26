@@ -27,6 +27,9 @@ function Lua.new(bufnr, ft)
             class_specifier = FieldNode("name"),
             function_definition = StringNode("function"),
             ["function"] = QueryNode("(function (function_name) @name)"),
+            ["local_function"] = QueryNode(
+                "(local_function (identifier) @name)"
+            ),
             if_statement = StringNode("if"),
             repeat_statement = StringNode("repeat"),
             for_in_statement = StringNode("for"),

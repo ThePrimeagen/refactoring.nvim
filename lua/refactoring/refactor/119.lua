@@ -14,13 +14,13 @@ function M.extract_var(bufnr, config)
         :from_task(refactor_setup(bufnr, config))
         :add_task(selection_setup)
         :add_task(function(refactor)
-            local extract_node = refactor.root:named_descendant_for_range(
-                refactor.region:to_ts()
-            )
+            local extract_node = refactor.region_node
+
             local extract_node_text = table.concat(
                 utils.get_node_text(extract_node),
                 ""
             )
+
             local sexpr = extract_node:sexpr()
             local occurrences = Query.find_occurrences(
                 refactor.scope,
@@ -53,11 +53,12 @@ function M.extract_var(bufnr, config)
                 })
             end
 
-            local block_scope = refactor.query:get_scope_over_region(
-                refactor.region,
-                Query.query_type.Block
+            local block_scope = refactor.ts.get_container(
+                refactor.region_node,
+                refactor.ts.block_scope
             )
 
+            -- TODO: Create inline node for TS stuff.
             local unfiltered_statements = refactor.query:pluck_by_capture(
                 block_scope,
                 Query.query_type.Statement
