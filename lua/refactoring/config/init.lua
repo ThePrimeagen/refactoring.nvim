@@ -100,6 +100,7 @@ function M.get()
 end
 
 function M.setup(c)
+    c = c or {}
     config = Config:new(c)
 end
 
