@@ -1,12 +1,16 @@
 ;; Grabs all the local variable declarations.  This is useful for scope
 ;; variable passing.  Which variables do we need to pass to the extracted
 ;; function?
-((short_var_declaration
- (expression_list
-   (identifier) @definition.local_name)))
-((var_declaration
- (var_spec
-   (identifier) @definition.local_name)))
+(short_var_declaration
+ left: (expression_list
+   (identifier) @definition.local_name)
+ right: (expression_list
+   (_) @definition.local_value)) @definition.local_declarator
+(var_declaration
+  (var_spec
+    name: (identifier) @definition.local_name
+    value: (expression_list
+      (_) @definition.local_value))) @definition.local_declarator
 
 ;; grabs all the arguments that are passed into the function.  Needed for
 ;; function extraction, 106

@@ -58,9 +58,11 @@ local function extract_setup(refactor)
     assert(function_name ~= "", "Error: Must provide function name")
     local function_body = refactor.region:get_text()
     local args = vim.fn.sort(vim.tbl_keys(get_selected_locals(refactor)))
+    local is_class = refactor.ts:is_class_function(refactor.scope)
 
     local return_vals = get_return_vals(refactor)
-    if #return_vals > 0 then
+    local has_return_vals = #return_vals > 0
+    if has_return_vals then
         table.insert(
             function_body,
             refactor.code["return"](refactor.code.pack(return_vals))
@@ -68,9 +70,15 @@ local function extract_setup(refactor)
     end
 
     local function_code
-    local is_class = refactor.ts:is_class_function(refactor.scope)
-    if is_class then
-        function_code = refactor.code["class_function"]({
+    if is_class and has_return_vals then
+        function_code = refactor.code.class_function_return({
+            name = function_name,
+            args = args,
+            body = function_body,
+            className = refactor.ts:class_name(refactor.scope),
+        })
+    elseif is_class then
+        function_code = refactor.code.class_function({
             name = function_name,
             args = args,
             body = function_body,
@@ -106,7 +114,7 @@ local function extract_setup(refactor)
         }
     end
 
-    if #return_vals > 0 then
+    if has_return_vals then
         value = {
             region = refactor.region,
             text = refactor.code.constant({
