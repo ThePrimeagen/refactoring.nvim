@@ -20,6 +20,7 @@ TreeSitter.version_flags = {
     Scopes = 0x1,
     Locals = 0x2,
     Classes = 0x4,
+    Indents = 0x8,
 }
 
 ---@return TreeSitter
@@ -28,6 +29,7 @@ function TreeSitter:new(config, bufnr)
         scope_names = {},
         class_names = {},
         debug_paths = {},
+        indent_scopes = {},
         bufnr = bufnr,
         version = Version:new(),
     }, config)
@@ -88,6 +90,39 @@ local function containing_node_by_type(node, container_map)
     return node
 end
 
+function TreeSitter:indent_scope(node)
+    return containing_node_by_type(node:parent(), self.indent_scopes)
+end
+
+function TreeSitter:indent_scope_difference(ancestor, child)
+    self.version:ensure_version(TreeSitter.version_flags.Indents)
+
+    if ancestor == child then
+        return 0
+    end
+
+    local indent_count = 0
+    local ancestor_container = containing_node_by_type(
+        ancestor,
+        self.indent_scopes
+    )
+    if ancestor_container ~= ancestor then
+        error("Ancestor is not a indent scope container.")
+    end
+
+    local curr = child
+    repeat
+        curr = containing_node_by_type(curr:parent(), self.indent_scopes)
+        indent_count = indent_count + 1
+    until curr == ancestor or curr == nil
+
+    if curr == nil then
+        error("child and ancestor are not in the same tree")
+    end
+
+    return indent_count
+end
+
 function TreeSitter:get_debug_path(node)
     local path = {}
 
@@ -134,6 +169,10 @@ function TreeSitter:local_declarations_under_cursor()
     return vim.tbl_filter(function(node)
         return Region:from_node(node, 0):contains_point(point)
     end, self:local_declarations(scope))[1]
+end
+
+function TreeSitter.get_container(node, container_list)
+    return containing_node_by_type(node, container_list)
 end
 
 function TreeSitter:get_scope(node)

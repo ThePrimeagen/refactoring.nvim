@@ -13,3 +13,4 @@
 
 ;; Scope
 (function_definition) @definition.scope
+(module) @definition.scope

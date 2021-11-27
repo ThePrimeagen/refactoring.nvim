@@ -10,7 +10,10 @@ ci-install-deps:
 	./scripts/find-supported-languages.sh
 
 lint:
-	luacheck lua --globals vim --exclude-files lua/refactoring/tests/refactor/ --no-max-line-length
+	luacheck lua --globals vim \
+		--exclude-files lua/refactoring/tests/refactor/ \
+		--exclude-files lua/refactoring/tests/debug/ \
+		--no-max-line-length
 
 pr-ready: fmt test lint
 

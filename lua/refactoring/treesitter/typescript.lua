@@ -10,7 +10,8 @@ function Typescript.new(bufnr, ft)
     return TreeSitter:new({
         version = Version:new(
             TreeSitter.version_flags.Scopes,
-            TreeSitter.version_flags.Locals
+            TreeSitter.version_flags.Locals,
+            TreeSitter.version_flags.Indents
         ),
         filetype = ft,
         bufnr = bufnr,
@@ -21,6 +22,25 @@ function Typescript.new(bufnr, ft)
             arrow_function = "function",
             class_declaration = "class",
         },
+        block_scope = {
+            statement_block = true,
+        },
+        variable_scope = {
+            lexical_declaration = true,
+        },
+
+        indent_scopes = {
+            program = true,
+            function_declaration = true,
+            method_definition = true,
+            arrow_function = true,
+            class_declaration = true,
+            if_statement = true,
+            for_statement = true,
+            while_statement = true,
+            do_statement = true,
+        },
+
         debug_paths = {
             function_declaration = FieldNode("name"),
             method_definition = FieldNode("name"),

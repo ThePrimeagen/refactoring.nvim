@@ -4,7 +4,9 @@ local lua = {
     ["print"] = function(print_string)
         return string.format('print("%s")', print_string)
     end,
-
+    print_var = function(prefix, var)
+        return string.format('print("%s", vim.inspect(%s))', prefix, var)
+    end,
     constant = function(opts)
         return string.format("local %s = %s\n", opts.name, opts.value)
     end,

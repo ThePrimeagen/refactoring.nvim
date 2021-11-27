@@ -13,6 +13,7 @@ function Python.new(bufnr, ft)
         bufnr = bufnr,
         scope_names = {
             function_definition = "function",
+            module = "function",
         },
     }, bufnr)
 end

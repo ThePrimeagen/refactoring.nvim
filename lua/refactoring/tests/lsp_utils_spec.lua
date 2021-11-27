@@ -39,7 +39,8 @@ describe("lsp_utils", function()
         test_utils.vim_motion("2jfbviw")
         local region = Region:from_current_selection()
         local delete_text = lsp_utils.delete_text(region)
-        vim.lsp.util.apply_text_edits({ delete_text })
+        local bufnr = vim.api.nvim_get_current_buf()
+        vim.lsp.util.apply_text_edits({ delete_text }, bufnr)
         assert.are.same({
             "foo",
             "if (true) {",
@@ -56,7 +57,8 @@ describe("lsp_utils", function()
         test_utils.vim_motion("2jfbviw")
         local region = Region:from_current_selection()
         local insert_text = lsp_utils.insert_text(region, "hello, piq")
-        vim.lsp.util.apply_text_edits({ insert_text })
+        local bufnr = vim.api.nvim_get_current_buf()
+        vim.lsp.util.apply_text_edits({ insert_text }, bufnr)
         assert.are.same({
             "foo",
             "if (true) {",
@@ -77,7 +79,8 @@ baz, buzz,
 bin, ban,]]
         )
 
-        vim.lsp.util.apply_text_edits({ insert_text, delete_text })
+        local bufnr = vim.api.nvim_get_current_buf()
+        vim.lsp.util.apply_text_edits({ insert_text, delete_text }, bufnr)
 
         assert.are.same({
             "foo",
