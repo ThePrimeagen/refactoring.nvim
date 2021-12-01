@@ -1,6 +1,6 @@
 local cpp = {
     print = function(statement)
-        return string.format('printf("%s \\n");', statement)
+        return string.format('printf("%s(%%d): \\n", __LINE__);', statement)
     end,
 }
 
