@@ -3,7 +3,7 @@ package main
 import "fmt"
 
 func foo_bar(a, test, test_other) {
-    	for idx := test - 1; idx < test_other; idx++ {
+	for idx := test - 1; idx < test_other; idx++ {
 		fmt.Println(idx, a)
 	}
 }

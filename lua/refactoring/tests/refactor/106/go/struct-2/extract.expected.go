@@ -7,7 +7,7 @@ type foobar struct {
 }
 
 func (b *foobar) foo(a, test, test_other) {
-    	for idx := test - 1; idx < test_other; idx++ {
+	for idx := test - 1; idx < test_other; idx++ {
 		fmt.Println(b.poggers, idx, a)
 	}
 }

@@ -52,45 +52,40 @@ local function get_return_vals(refactor)
     return return_vals
 end
 
---
-local function extract_setup(refactor)
-    local function_name = get_input("106: Extract Function Name > ")
-    assert(function_name ~= "", "Error: Must provide function name")
-    local function_body = refactor.region:get_text()
-    local args = vim.fn.sort(vim.tbl_keys(get_selected_locals(refactor)))
-
-    local return_vals = get_return_vals(refactor)
-    if #return_vals > 0 then
-        table.insert(
-            function_body,
-            refactor.code["return"](refactor.code.pack(return_vals))
-        )
-    end
-
+local function get_function_code(refactor, extract_params)
     local function_code
-    local is_class = refactor.ts:is_class_function(refactor.scope)
-    if is_class then
-        function_code = refactor.code["class_function"]({
-            name = function_name,
-            args = args,
-            body = function_body,
+    if extract_params.is_class and extract_params.has_return_vals then
+        function_code = refactor.code.class_function_return({
+            name = extract_params.function_name,
+            args = extract_params.args,
+            body = extract_params.function_body,
+            className = refactor.ts:class_name(refactor.scope),
+        })
+    elseif extract_params.is_class then
+        function_code = refactor.code.class_function({
+            name = extract_params.function_name,
+            args = extract_params.args,
+            body = extract_params.function_body,
             className = refactor.ts:class_name(refactor.scope),
         })
     else
         function_code = refactor.code["function"]({
-            name = function_name,
-            args = args,
-            body = function_body,
+            name = extract_params.function_name,
+            args = extract_params.args,
+            body = extract_params.function_body,
         })
     end
+    return function_code
+end
 
+local function get_value(refactor, extract_params)
     local value
-    if is_class then
+    if extract_params.is_class then
         value = {
             region = refactor.region,
             text = refactor.code.call_class_function({
-                name = function_name,
-                args = args,
+                name = extract_params.function_name,
+                args = extract_params.args,
                 class_type = refactor.ts:class_type(refactor.scope),
             }),
             add_newline = false,
@@ -99,18 +94,18 @@ local function extract_setup(refactor)
         value = {
             region = refactor.region,
             text = refactor.code.call_function({
-                name = function_name,
-                args = args,
+                name = extract_params.function_name,
+                args = extract_params.args,
             }),
             add_newline = false,
         }
     end
 
-    if #return_vals > 0 then
+    if extract_params.has_return_vals then
         value = {
             region = refactor.region,
             text = refactor.code.constant({
-                name = return_vals,
+                name = extract_params.return_vals,
                 value = value.text,
             }),
             add_newline = false,
@@ -119,8 +114,38 @@ local function extract_setup(refactor)
         value.text = refactor.code.terminate(value.text)
     end
 
+    return value
+end
+
+--
+local function extract_setup(refactor)
+    local function_name = get_input("106: Extract Function Name > ")
+    assert(function_name ~= "", "Error: Must provide function name")
+    local function_body = refactor.region:get_text()
+    local args = vim.fn.sort(vim.tbl_keys(get_selected_locals(refactor)))
+    local is_class = refactor.ts:is_class_function(refactor.scope)
+
+    local return_vals = get_return_vals(refactor)
+    local has_return_vals = #return_vals > 0
+    if has_return_vals then
+        table.insert(
+            function_body,
+            refactor.code["return"](refactor.code.pack(return_vals))
+        )
+    end
+
+    local extract_params = {
+        return_vals = return_vals,
+        has_return_vals = has_return_vals,
+        is_class = is_class,
+        args = args,
+        function_name = function_name,
+        function_body = function_body,
+    }
+    local function_code = get_function_code(refactor, extract_params)
+    local value = get_value(refactor, extract_params)
+
     refactor.text_edits = {
-        -- TODO: First text edit is causing cursor issues
         {
             region = utils.region_above_node(refactor.scope),
             text = function_code,
