@@ -1,5 +1,5 @@
 int main() {
     return 0;
-printf("main \n");
+printf("main(%d): \n", __LINE__);
 }
 

@@ -5,7 +5,7 @@ class Test {
         ~Test() { }
         void foo() {
 
-printf("Test#foo \n");
+printf("Test#foo(%d): \n", __LINE__);
         }
 };
 
