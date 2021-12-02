@@ -21,7 +21,7 @@ local function printDebug(bufnr, config)
         :add_task(function(refactor)
             local opts = refactor.config:get()
             local point = Point:from_cursor()
-            local region = point:to_region()
+
             -- always go below for text
             opts.below = true
             point.col = opts.below and 100000 or 1
@@ -35,7 +35,11 @@ local function printDebug(bufnr, config)
             local print_statement = refactor.code.print_var(prefix, variable)
 
             refactor.text_edits = {
-                lsp_utils.insert_new_line_text(region, print_statement, opts),
+                lsp_utils.insert_new_line_text(
+                    Region:from_point(point),
+                    print_statement,
+                    opts
+                ),
             }
 
             return true, refactor

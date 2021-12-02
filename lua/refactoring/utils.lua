@@ -179,7 +179,7 @@ end
 
 M.after_region = function(nodes, region)
     return vim.tbl_filter(function(node)
-        return region:is_after(Region:from_node(node))
+        return Region:from_node(node):is_after(region)
     end, nodes)
 end
 

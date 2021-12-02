@@ -1,5 +1,3 @@
-local Region = require("refactoring.region")
-
 local function getpos()
     return vim.fn.line("."), vim.fn.col(".")
 end
@@ -41,10 +39,6 @@ function Point:to_vim()
     return self.row, self.col
 end
 
-function Point:to_region()
-    return Region:from_values(0, self.row, self.col, self.row, self.col)
-end
-
 --- Convert a point to a tree sitter point
 function Point:to_ts()
     return self.row - 1, self.col
@@ -64,8 +58,41 @@ function Point:clone()
     return clone
 end
 
-function Point:within_node(node)
-    return Region:from_node(node, 0):contains_point(self) -- buffer doesn't matter in this case
+--- Compare the position of two points.
+-- Given two points with positions pos_1 and pos_2
+-- return -1 if pos_1 < pos_2, 0 if pos_1 == pos_2 and 1 otherwise.
+-- @params point   the second point to compare to.
+-- @return int     either -1, 0 or 1
+function Point:compare_to(point)
+    if self.row ~= point.row then
+        return self.row < point.row and -1 or 1
+    end
+
+    if self.col ~= point.col then
+        return self.col < point.col and -1 or 1
+    end
+
+    return 0
+end
+
+--- Returns true if position of self < position of point
+function Point:lt(point)
+    return self:compare_to(point) == -1
+end
+
+--- Returns true if position of self > position of point
+function Point:gt(point)
+    return self:compare_to(point) == 1
+end
+
+--- Returns true if position of self <= position of point
+function Point:leq(point)
+    return not self:gt(point)
+end
+
+--- Returns true if position of self >= position of point
+function Point:geq(point)
+    return not self:lt(point)
 end
 
 return Point

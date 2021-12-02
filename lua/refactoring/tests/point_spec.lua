@@ -1,0 +1,40 @@
+local Point = require("refactoring.point")
+local eq = assert.are.same
+
+describe("Point:", function()
+    it("comparing points on different rows", function()
+        local top = Point:from_values(7, 3)
+        local bottom = Point:from_values(15, 1)
+
+        eq(top:compare_to(bottom), -1)
+        eq(bottom:compare_to(top), 1)
+        eq(top:leq(bottom), true)
+        eq(top:lt(bottom), true)
+        eq(top:gt(bottom), false)
+        eq(top:geq(bottom), false)
+    end)
+
+    it("comparing points on same row but different cols", function()
+        local first = Point:from_values(7, 3)
+        local last = Point:from_values(7, 20)
+
+        eq(first:compare_to(last), -1)
+        eq(last:compare_to(first), 1)
+        eq(first:leq(last), true)
+        eq(first:lt(last), true)
+        eq(first:gt(last), false)
+        eq(first:geq(last), false)
+    end)
+
+    it("comparing points on same row and same col", function()
+        local point = Point:from_values(7, 3)
+        local same_point = Point:from_values(7, 3)
+
+        eq(point:compare_to(same_point), 0)
+        eq(same_point:compare_to(point), 0)
+        eq(point:leq(same_point), true)
+        eq(point:lt(same_point), false)
+        eq(point:gt(same_point), false)
+        eq(point:geq(same_point), true)
+    end)
+end)

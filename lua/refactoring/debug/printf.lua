@@ -1,5 +1,6 @@
 local Pipeline = require("refactoring.pipeline")
 local Point = require("refactoring.point")
+local Region = require("refactoring.region")
 local refactor_setup = require("refactoring.tasks.refactor_setup")
 local post_refactor = require("refactoring.tasks.post_refactor")
 local lsp_utils = require("refactoring.lsp_utils")
@@ -15,7 +16,6 @@ local function printDebug(bufnr, config)
         :add_task(function(refactor)
             local opts = refactor.config:get()
             local point = Point:from_cursor()
-            local region = point:to_region()
 
             -- set default `below` behavior
             if opts.below == nil then
@@ -27,7 +27,11 @@ local function printDebug(bufnr, config)
             local print_statement = refactor.code.print(debug_path)
 
             refactor.text_edits = {
-                lsp_utils.insert_new_line_text(region, print_statement, opts),
+                lsp_utils.insert_new_line_text(
+                    Region:from_point(point),
+                    print_statement,
+                    opts
+                ),
             }
 
             return true, refactor
