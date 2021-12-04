@@ -2,6 +2,7 @@ local get_selected_locals = require("refactoring.refactor.get_selected_locals")
 local utils = require("refactoring.utils")
 local Pipeline = require("refactoring.pipeline")
 local selection_setup = require("refactoring.tasks.selection_setup")
+local ensure_code_gen = require("refactoring.tasks.ensure_code_gen")
 
 local refactor_setup = require("refactoring.tasks.refactor_setup")
 local get_input = require("refactoring.get_input")
@@ -155,9 +156,24 @@ local function extract_setup(refactor)
     }
 end
 
+local ensure_code_gen_list = {
+    "return",
+    "pack",
+    "call_function",
+    "constant",
+    "function",
+    "terminate",
+    -- TODO: Should we require these?
+    -- "class_function",
+    -- "class_function_return",
+}
+
 M.extract_to_file = function(bufnr, opts)
     bufnr = bufnr or vim.fn.bufnr(vim.fn.bufname())
     get_extract_setup_pipeline(bufnr, opts)
+        :add_task(function(refactor)
+            return ensure_code_gen(refactor, ensure_code_gen_list)
+        end)
         :add_task(create_file.from_input)
         :add_task(function(refactor)
             extract_setup(refactor)
@@ -170,6 +186,9 @@ end
 M.extract = function(bufnr, opts)
     bufnr = bufnr or vim.fn.bufnr()
     get_extract_setup_pipeline(bufnr, opts)
+        :add_task(function(refactor)
+            return ensure_code_gen(refactor, ensure_code_gen_list)
+        end)
         :add_task(function(refactor)
             extract_setup(refactor)
             return true, refactor

@@ -6,12 +6,16 @@ local Pipeline = require("refactoring.pipeline")
 local selection_setup = require("refactoring.tasks.selection_setup")
 local refactor_setup = require("refactoring.tasks.refactor_setup")
 local post_refactor = require("refactoring.tasks.post_refactor")
+local ensure_code_gen = require("refactoring.tasks.ensure_code_gen")
 
 local M = {}
 
 function M.extract_var(bufnr, config)
     Pipeline
         :from_task(refactor_setup(bufnr, config))
+        :add_task(function(refactor)
+            return ensure_code_gen(refactor, { "constant" })
+        end)
         :add_task(selection_setup)
         :add_task(function(refactor)
             local extract_node = refactor.region_node
