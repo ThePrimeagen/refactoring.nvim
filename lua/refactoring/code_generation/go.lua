@@ -56,7 +56,8 @@ local function constant(opts)
     return string.format(
         "%s := %s\n",
         code_utils.returnify(opts.name, string_pattern),
-        opts.value)
+        opts.value
+    )
 end
 
 local go = {
