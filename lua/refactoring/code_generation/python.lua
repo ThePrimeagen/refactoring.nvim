@@ -1,22 +1,5 @@
 local code_utils = require("refactoring.code_generation.utils")
 
-local function returnify(args)
-    if type(args) == "string" then
-        return args
-    end
-
-    if #args == 1 then
-        return args[1]
-    end
-
-    local codes = {}
-    for _, value in pairs(args) do
-        table.insert(codes, code_utils.stringify_code(value))
-    end
-
-    return string.format("%s", table.concat(codes, ", "))
-end
-
 local python = {
     constant = function(opts)
         return string.format("%s = %s\n", opts.name, opts.value)
@@ -45,7 +28,7 @@ def %s(%s):
         return code .. "\n"
     end,
     pack = function(opts)
-        return returnify(opts)
+        return code_utils.returnify(opts, "%s")
     end,
 }
 return python

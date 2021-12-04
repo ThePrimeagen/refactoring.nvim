@@ -1,22 +1,5 @@
 local code_utils = require("refactoring.code_generation.utils")
 
-local function returnify(args)
-    if type(args) == "string" then
-        return args
-    end
-
-    if #args == 1 then
-        return args[1]
-    end
-
-    local codes = {}
-    for _, value in pairs(args) do
-        table.insert(codes, code_utils.stringify_code(value))
-    end
-
-    return string.format("%s", table.concat(codes, ", "))
-end
-
 local lua = {
     ["print"] = function(print_string)
         return string.format('print("%s")', print_string)
@@ -51,7 +34,7 @@ end
         return code .. "\n"
     end,
     pack = function(opts)
-        return returnify(opts)
+        return code_utils.returnify(opts, "%s")
     end,
 }
 return lua

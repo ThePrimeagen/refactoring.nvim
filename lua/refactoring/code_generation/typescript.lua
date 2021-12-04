@@ -1,21 +1,6 @@
 local code_utils = require("refactoring.code_generation.utils")
 
-local function returnify(args)
-    if type(args) == "string" then
-        return args
-    end
-
-    if #args == 1 then
-        return args[1]
-    end
-
-    local codes = {}
-    for _, value in pairs(args) do
-        table.insert(codes, code_utils.stringify_code(value))
-    end
-
-    return string.format("{%s}", table.concat(codes, ", "))
-end
+local string_pattern = "{%s}"
 
 local typescript = {
     print = function(statement)
@@ -26,7 +11,7 @@ local typescript = {
     constant = function(opts)
         return string.format(
             "const %s = %s;\n",
-            returnify(opts.name),
+            code_utils.returnify(opts.name, string_pattern),
             opts.value
         )
     end,
@@ -34,13 +19,13 @@ local typescript = {
     -- This is for returing multiple arguments from a function
     -- @param names string|table
     pack = function(names)
-        return returnify(names)
+        return code_utils.returnify(names, string_pattern)
     end,
 
     -- this is for consuming one or more arguments from a function call.
     -- @param names string|table
     unpack = function(names)
-        return returnify(names)
+        return code_utils.returnify(names, string_pattern)
     end,
 
     ["return"] = function(code)
