@@ -31,6 +31,8 @@ function Golang.new(bufnr, ft)
             function_declaration = FieldNode("name"),
             method_declaration = FieldNode("name"),
         },
+        require_class_name = true,
+        require_class_type = true,
     }, bufnr)
 end
 
