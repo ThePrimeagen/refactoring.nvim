@@ -1,5 +1,7 @@
 local TreeSitter = require("refactoring.treesitter.treesitter")
 local Version = require("refactoring.version")
+local Nodes = require("refactoring.treesitter.nodes")
+local FieldNode = Nodes.FieldNode
 
 local Python = {}
 
@@ -18,6 +20,10 @@ function Python.new(bufnr, ft)
         },
         class_names = {
             class_definition = 0,
+        },
+        debug_paths = {
+            class_definition = FieldNode("name"),
+            function_definition = FieldNode("name"),
         },
     }, bufnr)
 end
