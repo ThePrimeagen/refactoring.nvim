@@ -40,7 +40,6 @@ function Typescript.new(bufnr, ft)
             while_statement = true,
             do_statement = true,
         },
-
         debug_paths = {
             function_declaration = FieldNode("name"),
             method_definition = FieldNode("name"),
