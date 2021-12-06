@@ -1,0 +1,2 @@
+:6
+:execute "norm! Vj\<Esc>"

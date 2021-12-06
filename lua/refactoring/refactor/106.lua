@@ -126,6 +126,11 @@ local function extract_setup(refactor)
     local args = vim.fn.sort(vim.tbl_keys(get_selected_locals(refactor)))
     local is_class = refactor.ts:is_class_function(refactor.scope)
 
+    -- TODO Check if class required functions are there
+    -- if is_class then
+    -- print("Is class!")
+    -- end
+
     local return_vals = get_return_vals(refactor)
     local has_return_vals = #return_vals > 0
     if has_return_vals then

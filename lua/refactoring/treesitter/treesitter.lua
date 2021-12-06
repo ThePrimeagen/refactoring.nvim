@@ -31,6 +31,8 @@ function TreeSitter:new(config, bufnr)
         debug_paths = {},
         indent_scopes = {},
         bufnr = bufnr,
+        require_class_name = false,
+        require_class_type = false,
         version = Version:new(),
     }, config)
 
@@ -44,30 +46,45 @@ function TreeSitter:new(config, bufnr)
 end
 
 function TreeSitter:is_class_function(scope)
-    if self.class_names[scope:type()] ~= nil then
-        return true
+    local node = scope
+    while node ~= nil do
+        if self.class_names[node:type()] ~= nil then
+            return true
+        end
+        if node:parent() == nil then
+            break
+        end
+        node = node:parent()
     end
     return false
 end
 
 function TreeSitter:class_name(scope)
     self.version:ensure_version(TreeSitter.version_flags.Classes)
-    local class_name_node = self.query:pluck_by_capture(
-        scope,
-        Query.query_type.ClassName
-    )[1]
-    local region = Region:from_node(class_name_node)
-    return region:get_text()[1]
+    if self.require_class_name then
+        local class_name_node = self.query:pluck_by_capture(
+            scope,
+            Query.query_type.ClassName
+        )[1]
+        local region = Region:from_node(class_name_node)
+        return region:get_text()[1]
+    else
+        return nil
+    end
 end
 
 function TreeSitter:class_type(scope)
     self.version:ensure_version(TreeSitter.version_flags.Classes)
-    local class_type_node = self.query:pluck_by_capture(
-        scope,
-        Query.query_type.ClassType
-    )[1]
-    local region = Region:from_node(class_type_node)
-    return region:get_text()[1]
+    if self.require_class_type then
+        local class_type_node = self.query:pluck_by_capture(
+            scope,
+            Query.query_type.ClassType
+        )[1]
+        local region = Region:from_node(class_type_node)
+        return region:get_text()[1]
+    else
+        return nil
+    end
 end
 
 local function containing_node_by_type(node, container_map)
