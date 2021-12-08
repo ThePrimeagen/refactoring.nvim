@@ -58,6 +58,9 @@ local python = {
     pack = function(opts)
         return code_utils.returnify(opts, "%s")
     end,
+    print = function(statement)
+        return string.format('print(f"%s")', statement)
+    end,
     print_var = function(prefix, var)
         return string.format('print(f"%s {str(%s)}")', prefix, var)
     end,
