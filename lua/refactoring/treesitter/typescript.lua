@@ -28,7 +28,6 @@ function Typescript.new(bufnr, ft)
         variable_scope = {
             lexical_declaration = true,
         },
-
         indent_scopes = {
             program = true,
             function_declaration = true,
