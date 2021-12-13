@@ -18,12 +18,6 @@
 (for_in_statement
   left: (identifier) @definition.function_argument)
 
-(program) @definition.scope
-(function_declaration) @definition.scope
-(method_definition) @definition.scope
-(class_declaration) @definition.scope
-(arrow_function) @definition.scope
-
 (program) @definition.block
 (statement_block) @definition.block
 

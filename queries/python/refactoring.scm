@@ -10,7 +10,3 @@
 ((function_definition
   (parameters
     (identifier)@definition.function_argument)))
-
-;; Scope
-(function_definition) @definition.scope
-(module) @definition.scope

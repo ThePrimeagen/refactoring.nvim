@@ -16,10 +16,6 @@
 (formal_parameters
     (identifier) @definition.function_argument)
 
-(program) @definition.scope
-(function_declaration) @definition.scope
-(arrow_function) @definition.scope
-
 ; (program) @definition.block
 ; (statement_block) @definition.block
 
