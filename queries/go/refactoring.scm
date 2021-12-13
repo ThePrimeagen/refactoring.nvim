@@ -23,9 +23,6 @@
    (parameter_declaration
    name: (identifier) @definition.function_argument)))
 
-(function_declaration) @definition.scope
-(method_declaration) @definition.scope
-
 (block) @definition.block
 
 (short_var_declaration) @definition.statement
