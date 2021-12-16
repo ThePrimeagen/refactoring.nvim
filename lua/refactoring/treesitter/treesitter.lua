@@ -102,6 +102,10 @@ local function containing_node_by_type(node, container_map)
             break
         end
         node = node:parent()
+    -- This statement can be uncommented to print all the parent nodes of the
+    -- current node until there are no more. Useful in finding certain nodes
+    -- like the global scope node, which doesn't show up in playground.
+    -- print(node:type())
     until node == nil
 
     return node
