@@ -45,6 +45,21 @@ function TreeSitter:new(config, bufnr)
     return setmetatable(c, self)
 end
 
+-- TODO: Should be moved to node
+function TreeSitter:local_var_names(node)
+    return self.query:pluck_by_capture(node, Query.query_type.LocalVarName)[1]
+end
+
+-- TODO: Should be moved to node
+function TreeSitter:local_var_values(node)
+    return self.query:pluck_by_capture(node, Query.query_type.LocalVarValue)[1]
+end
+
+-- TODO: Create inline node for TS stuff.
+function TreeSitter:statements(scope)
+    return self.query:pluck_by_capture(scope, Query.query_type.Statement)
+end
+
 function TreeSitter:is_class_function(scope)
     local node = scope
     while node ~= nil do
@@ -62,6 +77,7 @@ end
 function TreeSitter:class_name(scope)
     self.version:ensure_version(TreeSitter.version_flags.Classes)
     if self.require_class_name then
+        -- TODO: change to Node
         local class_name_node = self.query:pluck_by_capture(
             scope,
             Query.query_type.ClassName
@@ -76,6 +92,7 @@ end
 function TreeSitter:class_type(scope)
     self.version:ensure_version(TreeSitter.version_flags.Classes)
     if self.require_class_type then
+        -- TODO: change to Node
         local class_type_node = self.query:pluck_by_capture(
             scope,
             Query.query_type.ClassType

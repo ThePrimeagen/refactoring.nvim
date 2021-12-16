@@ -3,7 +3,6 @@
 --  this will make it much less confusing. It's not really about LSP,
 --  it's just about using one of the data structures.
 local Pipeline = require("refactoring.pipeline")
-local Query = require("refactoring.query")
 local Region = require("refactoring.region")
 local post_refactor = require("refactoring.tasks.post_refactor")
 local refactor_setup = require("refactoring.tasks.refactor_setup")
@@ -29,17 +28,12 @@ function M.inline_var(bufnr, opts)
                 definition
             )
 
-            local ts_query = refactor.query
-
             local declarator_node = refactor.ts.get_container(
                 definition,
                 refactor.ts.variable_scope
             )
 
-            local value_node = ts_query:pluck_by_capture(
-                declarator_node,
-                Query.query_type.LocalVarValue
-            )[1]
+            local value_node = refactor.ts:local_var_values(declarator_node)
 
             local text_edits = {}
             table.insert(
