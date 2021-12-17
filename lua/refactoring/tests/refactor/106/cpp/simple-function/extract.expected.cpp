@@ -1,6 +1,6 @@
 #include <iostream>
 
-INPUT_RETURN_TYPE foo_bar(a, test, test_other) {
+void foo_bar(a, test, test_other) {
       for (int idx = test - 1; idx < test_other; idx++) {
     std::cout << idx << " " << a << std::endl;
   }

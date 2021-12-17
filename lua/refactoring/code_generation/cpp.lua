@@ -10,6 +10,19 @@ local cpp = {
     ["function"] = function(opts)
         return string.format(
             [[
+void %s(%s) {
+    %s
+}
+
+]],
+            opts.name,
+            table.concat(opts.args, ", "),
+            code_utils.stringify_code(opts.body)
+        )
+    end,
+    function_return = function(opts)
+        return string.format(
+            [[
 INPUT_RETURN_TYPE %s(%s) {
     %s
 }
