@@ -2,7 +2,7 @@
 
 class Coconut {
 
-INPUT_RETURN_TYPE foo(a, test, test_other) {
+void foo(a, test, test_other) {
         for (int x = 0; x < test_other + test; x++) {
       std::cout << x << " " << a << std::endl;
     }
