@@ -11,9 +11,33 @@ local Cpp = {}
 
 function Cpp.new(bufnr, ft)
     return TreeSitter:new({
-        version = Version:new(0),
+        version = Version:new(
+            TreeSitter.version_flags.Scopes,
+            TreeSitter.version_flags.Indents,
+            TreeSitter.version_flags.Locals
+        ),
         filetype = ft,
         bufnr = bufnr,
+        scope_names = {
+            translation_unit = "program",
+            function_definition = "function",
+            class_specifier = "class",
+        },
+        block_scope = {
+            function_definition = true,
+            compound_statement = true,
+        },
+        variable_scope = {
+            declaration = true,
+        },
+        indent_scopes = {
+            function_definition = true,
+            class_specifier = true,
+            if_statement = true,
+            for_statement = true,
+            while_statement = true,
+            do_statement = true,
+        },
         debug_paths = {
             class_specifier = FieldNode("name"),
             function_definition = TakeFirstNode(
