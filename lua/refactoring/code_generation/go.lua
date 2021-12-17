@@ -2,6 +2,14 @@ local code_utils = require("refactoring.code_generation.utils")
 
 local string_pattern = "%s"
 
+local function go_func_args(args)
+    local new_args = {}
+    for _, arg in ipairs(args) do
+       table.insert(new_args, string.format("%s INSERT_VAR_TYPE", arg))
+    end
+    return new_args
+end
+
 local function go_function(opts)
     return string.format(
         [[
@@ -10,7 +18,7 @@ func %s(%s) {
 }
 ]],
         opts.name,
-        table.concat(opts.args, ", "),
+        table.concat(go_func_args(opts.args), ", "),
         code_utils.stringify_code(opts.body)
     )
 end
@@ -24,7 +32,7 @@ func %s %s(%s) {
 ]],
         opts.className,
         opts.name,
-        table.concat(opts.args, ", "),
+        table.concat(go_func_args(opts.args), ", "),
         code_utils.stringify_code(opts.body)
     )
 end
@@ -38,7 +46,7 @@ func %s %s(%s) INPUT_RETURN_TYPE {
 ]],
         opts.className,
         opts.name,
-        table.concat(opts.args, ", "),
+        table.concat(go_func_args(opts.args), ", "),
         code_utils.stringify_code(opts.body)
     )
 end
