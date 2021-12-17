@@ -43,6 +43,10 @@ function M.inline_var(bufnr, opts)
 
             local value_text = ts.get_node_text(value_node, bufnr)
 
+            if current_node:type() ~= "identifier" then
+                error("Error: node under cursor is not an identifier")
+            end
+
             for _, ref in pairs(references) do
                 -- TODO: In my mind, if nothing is left on the line when you remove, it should get deleted.
                 -- Could be done via opts into replace_text.
