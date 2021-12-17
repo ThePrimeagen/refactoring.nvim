@@ -2,6 +2,20 @@ local code_utils = require("refactoring.code_generation.utils")
 
 local string_pattern = "{%s}"
 
+local function typescript_function(opts)
+    return string.format(
+        [[
+function %s(%s) {
+    %s
+}
+
+]],
+        opts.name,
+        table.concat(opts.args, ", "),
+        code_utils.stringify_code(opts.body)
+    )
+end
+
 local typescript = {
     print = function(statement)
         return string.format('console.log("%s");', statement)
@@ -31,21 +45,12 @@ local typescript = {
     ["return"] = function(code)
         return string.format("return %s;", code)
     end,
-
     ["function"] = function(opts)
-        return string.format(
-            [[
-function %s(%s) {
-    %s
-}
-
-]],
-            opts.name,
-            table.concat(opts.args, ", "),
-            code_utils.stringify_code(opts.body)
-        )
+        return typescript_function(opts)
     end,
-
+    function_return = function(opts)
+        return typescript_function(opts)
+    end,
     call_function = function(opts)
         return string.format("%s(%s)", opts.name, table.concat(opts.args, ", "))
     end,

@@ -38,6 +38,9 @@ local python = {
     ["function"] = function(opts)
         return python_function(opts)
     end,
+    function_return = function(opts)
+        return python_function(opts)
+    end,
     call_function = function(opts)
         return string.format("%s(%s)", opts.name, table.concat(opts.args, ", "))
     end,

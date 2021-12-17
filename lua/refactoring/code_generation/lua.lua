@@ -1,5 +1,19 @@
 local code_utils = require("refactoring.code_generation.utils")
 
+local function lua_function(opts)
+    return string.format(
+        [[
+local function %s(%s)
+    %s
+end
+
+]],
+        opts.name,
+        table.concat(opts.args, ", "),
+        code_utils.stringify_code(opts.body)
+    )
+end
+
 local lua = {
     ["print"] = function(print_string)
         return string.format('print("%s")', print_string)
@@ -11,17 +25,10 @@ local lua = {
         return string.format("local %s = %s\n", opts.name, opts.value)
     end,
     ["function"] = function(opts)
-        return string.format(
-            [[
-local function %s(%s)
-    %s
-end
-
-]],
-            opts.name,
-            table.concat(opts.args, ", "),
-            code_utils.stringify_code(opts.body)
-        )
+        return lua_function(opts)
+    end,
+    function_return = function(opts)
+        return lua_function(opts)
     end,
     ["return"] = function(code)
         return string.format("return %s", code_utils.stringify_code(code))
