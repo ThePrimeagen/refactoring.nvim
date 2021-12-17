@@ -65,6 +65,12 @@ local function get_function_code(refactor, extract_params)
             body = extract_params.function_body,
             className = refactor.ts:class_name(refactor.scope),
         })
+    elseif extract_params.has_return_vals then
+        function_code = refactor.code.function_return({
+            name = extract_params.function_name,
+            args = extract_params.args,
+            body = extract_params.function_body,
+        })
     else
         function_code = refactor.code["function"]({
             name = extract_params.function_name,
@@ -122,11 +128,6 @@ local function extract_setup(refactor)
     local args = vim.fn.sort(vim.tbl_keys(get_selected_locals(refactor)))
     local is_class = refactor.ts:is_class_function(refactor.scope)
 
-    -- TODO Check if class required functions are there
-    -- if is_class then
-    -- print("Is class!")
-    -- end
-
     local return_vals = get_return_vals(refactor)
     local has_return_vals = #return_vals > 0
     if has_return_vals then
@@ -163,6 +164,7 @@ local ensure_code_gen_list = {
     "call_function",
     "constant",
     "function",
+    "function_return",
     "terminate",
     -- TODO: Should we require these?
     -- "class_function",
