@@ -25,12 +25,6 @@
 
 (block) @definition.block
 
-(short_var_declaration) @definition.statement
-(return_statement) @definition.statement
-(if_statement) @definition.statement
-(for_statement) @definition.statement
-(call_expression) @definition.statement
-
 (method_declaration
    receiver: (parameter_list) @definition.class_name)
 (method_declaration

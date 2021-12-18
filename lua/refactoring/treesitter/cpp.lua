@@ -6,6 +6,7 @@ local FieldNode = Nodes.FieldNode
 local StringNode = Nodes.StringNode
 local TakeFirstNode = Nodes.TakeFirstNode
 local QueryNode = Nodes.QueryNode
+local InlineNode = Nodes.InlineNode
 
 local Cpp = {}
 
@@ -58,6 +59,15 @@ function Cpp.new(bufnr, ft)
             for_statement = StringNode("for"),
             while_statement = StringNode("while"),
             do_statement = StringNode("do"),
+        },
+        statements = {
+            InlineNode("(expression_statement) @tmp_capture"),
+            InlineNode("(return_statement) @tmp_capture"),
+            InlineNode("(if_statement) @tmp_capture"),
+            InlineNode("(for_statement) @tmp_capture"),
+            InlineNode("(do_statement) @tmp_capture"),
+            InlineNode("(while_statement) @tmp_capture"),
+            InlineNode("(declaration) @tmp_capture"),
         },
     }, bufnr)
 end

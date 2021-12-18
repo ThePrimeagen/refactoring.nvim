@@ -56,6 +56,17 @@ local StringNode = function(text)
     end
 end
 
+local InlineNode = function(sexpr)
+    return function(scope, bufnr, filetype)
+        local query = vim.treesitter.parse_query(filetype, sexpr)
+        local out = {}
+        for _, node, _ in query:iter_captures(scope, bufnr, 0, -1) do
+            table.insert(out, node)
+        end
+        return out
+    end
+end
+
 local QueryNode = function(sexpr)
     -- The reason why this works is because __tostring method is already
     -- implemented on string
@@ -95,4 +106,5 @@ return {
     StringNode = StringNode,
     QueryNode = QueryNode,
     FieldNode = FieldNode,
+    InlineNode = InlineNode,
 }

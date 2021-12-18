@@ -20,11 +20,3 @@
 
 (program) @definition.block
 (statement_block) @definition.block
-
-(expression_statement) @definition.statement
-(return_statement) @definition.statement
-(if_statement) @definition.statement
-(for_statement) @definition.statement
-(do_statement) @definition.statement
-(while_statement) @definition.statement
-(lexical_declaration) @definition.statement

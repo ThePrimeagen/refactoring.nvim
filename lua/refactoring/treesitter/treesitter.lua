@@ -29,11 +29,13 @@ function TreeSitter:new(config, bufnr)
         scope_names = {},
         class_names = {},
         debug_paths = {},
+        statements = {},
         indent_scopes = {},
         bufnr = bufnr,
         require_class_name = false,
         require_class_type = false,
         version = Version:new(),
+        filetype = config.filetype,
     }, config)
 
     c.query = Query.from_query_name(
@@ -56,8 +58,15 @@ function TreeSitter:local_var_values(node)
 end
 
 -- TODO: Create inline node for TS stuff.
-function TreeSitter:statements(scope)
-    return self.query:pluck_by_capture(scope, Query.query_type.Statement)
+function TreeSitter:get_statements(scope)
+    local out = {}
+    for _, statement in ipairs(self.statements) do
+        local temp = statement(scope, self.bufnr, self.filetype)
+        for _, node in ipairs(temp) do
+            table.insert(out, node)
+        end
+    end
+    return out
 end
 
 function TreeSitter:is_class_function(scope)
