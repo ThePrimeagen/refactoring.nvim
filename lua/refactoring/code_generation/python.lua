@@ -61,6 +61,9 @@ local python = {
     pack = function(opts)
         return code_utils.returnify(opts, "%s")
     end,
+    comment = function(statement)
+        return string.format("# %s", statement)
+    end,
     print = function(statement)
         return string.format('print(f"%s")', statement)
     end,
