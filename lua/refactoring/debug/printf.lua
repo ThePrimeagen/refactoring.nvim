@@ -11,7 +11,7 @@ local function printDebug(bufnr, config)
     return Pipeline
         :from_task(refactor_setup(bufnr, config))
         :add_task(function(refactor)
-            return ensure_code_gen(refactor, { "print" })
+            return ensure_code_gen(refactor, { "print", "comment" })
         end)
         :add_task(function(refactor)
             local opts = refactor.config:get()
@@ -25,6 +25,7 @@ local function printDebug(bufnr, config)
 
             local debug_path = debug_utils.get_debug_path(refactor, point)
             local print_statement = refactor.code.print(debug_path)
+                .. refactor.code.comment("__AUTO_GENERATED_PRINTF__")
 
             refactor.text_edits = {
                 lsp_utils.insert_new_line_text(

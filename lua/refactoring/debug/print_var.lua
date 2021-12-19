@@ -16,7 +16,7 @@ local function printDebug(bufnr, config)
     return Pipeline
         :from_task(refactor_setup(bufnr, config))
         :add_task(function(refactor)
-            return ensure_code_gen(refactor, { "print_var" })
+            return ensure_code_gen(refactor, { "print_var", "comment" })
         end)
         :add_task(function(refactor)
             local opts = refactor.config:get()
@@ -33,6 +33,7 @@ local function printDebug(bufnr, config)
             local prefix = string.format("%s %s:", debug_path, variable)
 
             local print_statement = refactor.code.print_var(prefix, variable)
+                .. refactor.code.comment("__AUTO_GENERATED_PRINT_VAR__")
 
             refactor.text_edits = {
                 lsp_utils.insert_new_line_text(
