@@ -2,6 +2,7 @@ local TreeSitter = require("refactoring.treesitter.treesitter")
 local Version = require("refactoring.version")
 local Nodes = require("refactoring.treesitter.nodes")
 local FieldNode = Nodes.FieldNode
+local InlineNode = Nodes.InlineNode
 
 local Golang = {}
 
@@ -30,6 +31,13 @@ function Golang.new(bufnr, ft)
         debug_paths = {
             function_declaration = FieldNode("name"),
             method_declaration = FieldNode("name"),
+        },
+        statements = {
+            InlineNode("(short_var_declaration) @tmp_capture"),
+            InlineNode("(return_statement) @tmp_capture"),
+            InlineNode("(if_statement) @tmp_capture"),
+            InlineNode("(for_statement) @tmp_capture"),
+            InlineNode("(call_expression) @tmp_capture"),
         },
         require_class_name = true,
         require_class_type = true,

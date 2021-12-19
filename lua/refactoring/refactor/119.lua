@@ -62,7 +62,9 @@ function M.extract_var(bufnr, config)
                 refactor.ts.block_scope
             )
 
-            local unfiltered_statements = refactor.ts:statements(block_scope)
+            local unfiltered_statements = refactor.ts:get_statements(
+                block_scope
+            )
 
             local statements = vim.tbl_filter(function(node)
                 return node:parent():id() == block_scope:id()

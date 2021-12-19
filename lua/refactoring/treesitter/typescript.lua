@@ -3,6 +3,7 @@ local Version = require("refactoring.version")
 local Nodes = require("refactoring.treesitter.nodes")
 local FieldNode = Nodes.FieldNode
 local StringNode = Nodes.StringNode
+local InlineNode = Nodes.InlineNode
 
 local Typescript = {}
 
@@ -50,6 +51,15 @@ function Typescript.new(bufnr, ft)
             for_statement = StringNode("for"),
             while_statement = StringNode("while"),
             do_statement = StringNode("do"),
+        },
+        statements = {
+            InlineNode("(expression_statement) @tmp_capture"),
+            InlineNode("(return_statement) @tmp_capture"),
+            InlineNode("(if_statement) @tmp_capture"),
+            InlineNode("(for_statement) @tmp_capture"),
+            InlineNode("(do_statement) @tmp_capture"),
+            InlineNode("(while_statement) @tmp_capture"),
+            InlineNode("(lexical_declaration) @tmp_capture"),
         },
     }, bufnr)
 end
