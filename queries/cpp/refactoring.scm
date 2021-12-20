@@ -3,13 +3,10 @@
 ;; function?
 (declaration
   declarator: (init_declarator
-    declarator: (_) @definition.local_name)) @definition.local_declaration
+    declarator: (_) @definition.local_name))
 
 ;; grabs all the arguments that are passed into the function. Needed for
 ;; function extraction, 106.
 ((parameter_list
     (parameter_declaration
         declarator: (_) @definition.function_argument)))
-
-(function_definition) @definition.block
-(compound_statement) @definition.block
