@@ -3,8 +3,7 @@
 ;; function?
 (declaration
   declarator: (init_declarator
-    declarator: (_) @definition.local_name
-    value: (_) @definition.local_value)) @definition.local_declaration
+    declarator: (_) @definition.local_name)) @definition.local_declaration
 
 ;; grabs all the arguments that are passed into the function. Needed for
 ;; function extraction, 106.

@@ -18,7 +18,7 @@ function Python.new(bufnr, ft)
             function_definition = "function",
             module = "function",
         },
-        class_names = {
+        valid_class_nodes = {
             class_definition = 0,
         },
         debug_paths = {

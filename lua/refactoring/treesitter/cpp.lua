@@ -31,6 +31,11 @@ function Cpp.new(bufnr, ft)
         variable_scope = {
             declaration = true,
         },
+        local_var_values = {
+            InlineNode(
+                "(declaration declarator: (init_declarator value: (_) @tmp_capture))"
+            ),
+        },
         indent_scopes = {
             function_definition = true,
             class_specifier = true,
