@@ -40,6 +40,19 @@ function Typescript.new(bufnr, ft)
             while_statement = true,
             do_statement = true,
         },
+        local_var_names = {
+            InlineNode(
+                "(lexical_declaration (variable_declarator name: (_) @tmp_capture))"
+            ),
+        },
+        local_var_values = {
+            InlineNode(
+                "(lexical_declaration (variable_declarator value: (_) @tmp_capture))"
+            ),
+        },
+        local_declarations = {
+            InlineNode("(lexical_declaration) @definition.local_declarator"),
+        },
         debug_paths = {
             function_declaration = FieldNode("name"),
             method_definition = FieldNode("name"),

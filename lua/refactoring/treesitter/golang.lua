@@ -25,8 +25,35 @@ function Golang.new(bufnr, ft)
             function_declaration = "function",
             method_declaration = "function",
         },
-        class_names = {
+        valid_class_nodes = {
             method_declaration = 0,
+        },
+        class_names = {
+            InlineNode(
+                "(method_declaration receiver: (parameter_list) @tmp_capture)"
+            ),
+        },
+        class_type = {
+            InlineNode(
+                "(method_declaration receiver: (parameter_list (parameter_declaration name: (identifier) @tmp_capture)))"
+            ),
+        },
+        local_var_names = {
+            InlineNode(
+                "(short_var_declaration left: (expression_list (identifier) @tmp_capture))"
+            ),
+            InlineNode(
+                "(var_declaration (var_spec name: (identifier) @tmp_capture))"
+            ),
+        },
+        local_declarations = {
+            InlineNode("(short_var_declaration) @tmp_capture"),
+            InlineNode("(var_declaration) @tmp_capture"),
+        },
+        local_var_values = {
+            InlineNode(
+                "(var_declaration (var_spec value: (expression_list (_) @tmp_capture)))"
+            ),
         },
         debug_paths = {
             function_declaration = FieldNode("name"),

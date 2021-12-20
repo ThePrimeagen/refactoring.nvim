@@ -1,17 +1,22 @@
 local parsers = require("nvim-treesitter.parsers")
-local Query = require("refactoring.query")
 local Point = require("refactoring.point")
 local utils = require("refactoring.utils")
 local Version = require("refactoring.version")
 local Region = require("refactoring.region")
 
+-- TODO: Update class comments
 ---@class RefactorTS
 --- The following fields act similar to a cursor
 ---@field scope_names table: The 1-based row
----@field class_names Array: names of nodes that are classes
+---@field valid_class_nodes table: list of valie class nodes
+---@field class_names table: list of inline nodes for class name
+---@field class_type table: list of inline nodes for class type
+---@field local_var_names table: list of inline nodes for local variable names
+---@field local_var_values table: list of inline nodes for local variable values
+---@field local_declarations table: list of inline nodes for local declarations
 ---@field bufnr number: the bufnr to which this belongs
----@field filetype string: the filetype
 ---@field version RefactorVersion: supperted operation flags
+---@field filetype string: the filetype
 ---@field query RefactorQuery: the refactoring query
 ---@field debug_paths table: Debug Paths
 local TreeSitter = {}
@@ -27,7 +32,12 @@ TreeSitter.version_flags = {
 function TreeSitter:new(config, bufnr)
     local c = vim.tbl_extend("force", {
         scope_names = {},
+        valid_class_nodes = {},
         class_names = {},
+        class_type = {},
+        local_var_names = {},
+        local_var_values = {},
+        local_declarations = {},
         debug_paths = {},
         statements = {},
         indent_scopes = {},
@@ -38,29 +48,12 @@ function TreeSitter:new(config, bufnr)
         filetype = config.filetype,
     }, config)
 
-    c.query = Query.from_query_name(
-        config.bufnr,
-        config.filetype,
-        "refactoring"
-    )
-
     return setmetatable(c, self)
 end
 
--- TODO: Should be moved to node
-function TreeSitter:local_var_names(node)
-    return self.query:pluck_by_capture(node, Query.query_type.LocalVarName)[1]
-end
-
--- TODO: Should be moved to node
-function TreeSitter:local_var_values(node)
-    return self.query:pluck_by_capture(node, Query.query_type.LocalVarValue)[1]
-end
-
--- TODO: Create inline node for TS stuff.
-function TreeSitter:get_statements(scope)
+function TreeSitter:loop_thru_nodes(scope, inline_nodes)
     local out = {}
-    for _, statement in ipairs(self.statements) do
+    for _, statement in ipairs(inline_nodes) do
         local temp = statement(scope, self.bufnr, self.filetype)
         for _, node in ipairs(temp) do
             table.insert(out, node)
@@ -69,10 +62,24 @@ function TreeSitter:get_statements(scope)
     return out
 end
 
+-- TODO: Should be moved to node
+function TreeSitter:get_local_var_names(node)
+    return self:loop_thru_nodes(node, self.local_var_names)[1]
+end
+
+-- TODO: Should be moved to node
+function TreeSitter:get_local_var_values(node)
+    return self:loop_thru_nodes(node, self.local_var_values)[1]
+end
+
+function TreeSitter:get_statements(scope)
+    return self:loop_thru_nodes(scope, self.statements)
+end
+
 function TreeSitter:is_class_function(scope)
     local node = scope
     while node ~= nil do
-        if self.class_names[node:type()] ~= nil then
+        if self.valid_class_nodes[node:type()] ~= nil then
             return true
         end
         if node:parent() == nil then
@@ -83,34 +90,24 @@ function TreeSitter:is_class_function(scope)
     return false
 end
 
-function TreeSitter:class_name(scope)
+function TreeSitter:get_class_name(scope)
     self.version:ensure_version(TreeSitter.version_flags.Classes)
     if self.require_class_name then
-        -- TODO: change to Node
-        local class_name_node = self.query:pluck_by_capture(
-            scope,
-            Query.query_type.ClassName
-        )[1]
+        local class_name_node = self:loop_thru_nodes(scope, self.class_names)[1]
         local region = Region:from_node(class_name_node)
         return region:get_text()[1]
-    else
-        return nil
     end
+    return nil
 end
 
-function TreeSitter:class_type(scope)
+function TreeSitter:get_class_type(scope)
     self.version:ensure_version(TreeSitter.version_flags.Classes)
     if self.require_class_type then
-        -- TODO: change to Node
-        local class_type_node = self.query:pluck_by_capture(
-            scope,
-            Query.query_type.ClassType
-        )[1]
+        local class_type_node = self:loop_thru_nodes(scope, self.class_type)[1]
         local region = Region:from_node(class_type_node)
         return region:get_text()[1]
-    else
-        return nil
     end
+    return nil
 end
 
 local function containing_node_by_type(node, container_map)
@@ -186,12 +183,9 @@ function TreeSitter:get_debug_path(node)
 end
 
 -- Will walk through the top level statements of the
-function TreeSitter:local_declarations(scope)
+function TreeSitter:get_local_declarations(scope)
     self.version:ensure_version(TreeSitter.version_flags.Scopes)
-    local all_defs = self.query:pluck_by_capture(
-        scope,
-        Query.query_type.Declarator
-    )
+    local all_defs = self:loop_thru_nodes(scope, self.local_declarations)
     local defs = {}
 
     -- this ensures they are all on the same level
@@ -206,7 +200,7 @@ end
 
 function TreeSitter:local_declarations_in_region(scope, region)
     self.version:ensure_version(TreeSitter.version_flags.Locals)
-    return utils.region_intersect(self:local_declarations(scope), region)
+    return utils.region_intersect(self:get_local_declarations(scope), region)
 end
 
 function TreeSitter:local_declarations_under_cursor()
@@ -215,7 +209,7 @@ function TreeSitter:local_declarations_under_cursor()
     local scope = self:get_scope(point:to_ts_node(self:get_root()))
     return vim.tbl_filter(function(node)
         return Region:from_node(node, 0):contains_point(point)
-    end, self:local_declarations(scope))[1]
+    end, self:get_local_declarations(scope))[1]
 end
 
 function TreeSitter.get_container(node, container_list)

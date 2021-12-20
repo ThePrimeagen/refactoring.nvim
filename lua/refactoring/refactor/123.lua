@@ -33,7 +33,7 @@ function M.inline_var(bufnr, opts)
                 refactor.ts.variable_scope
             )
 
-            local value_node = refactor.ts:local_var_values(declarator_node)
+            local value_node = refactor.ts:get_local_var_values(declarator_node)
 
             local text_edits = {}
             table.insert(

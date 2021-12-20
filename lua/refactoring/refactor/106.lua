@@ -24,12 +24,12 @@ end
 
 local function get_return_vals(refactor)
     local region_vars = utils.region_intersect(
-        refactor.ts:local_declarations(refactor.scope),
+        refactor.ts:get_local_declarations(refactor.scope),
         refactor.region
     )
 
     region_vars = vim.tbl_map(function(node)
-        return refactor.ts:local_var_names(node)
+        return refactor.ts:get_local_var_names(node)
     end, region_vars)
 
     region_vars = vim.tbl_filter(function(node)
@@ -51,19 +51,20 @@ end
 
 local function get_function_code(refactor, extract_params)
     local function_code
+    -- TODO: move params to map used by all
     if extract_params.is_class and extract_params.has_return_vals then
         function_code = refactor.code.class_function_return({
             name = extract_params.function_name,
             args = extract_params.args,
             body = extract_params.function_body,
-            className = refactor.ts:class_name(refactor.scope),
+            className = refactor.ts:get_class_name(refactor.scope),
         })
     elseif extract_params.is_class then
         function_code = refactor.code.class_function({
             name = extract_params.function_name,
             args = extract_params.args,
             body = extract_params.function_body,
-            className = refactor.ts:class_name(refactor.scope),
+            className = refactor.ts:get_class_name(refactor.scope),
         })
     elseif extract_params.has_return_vals then
         function_code = refactor.code.function_return({
@@ -89,7 +90,7 @@ local function get_value(refactor, extract_params)
             text = refactor.code.call_class_function({
                 name = extract_params.function_name,
                 args = extract_params.args,
-                class_type = refactor.ts:class_type(refactor.scope),
+                class_type = refactor.ts:get_class_type(refactor.scope),
             }),
             add_newline = false,
         }

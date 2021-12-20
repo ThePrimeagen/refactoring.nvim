@@ -103,7 +103,7 @@ describe("TreeSitter", function()
         local ts = init()
 
         local scope = get_scope(ts, 33)
-        local local_vars = ts:local_declarations(scope)
+        local local_vars = ts:get_local_declarations(scope)
 
         assert.are.same(#local_vars, 2)
         assert.are.same(
