@@ -51,33 +51,25 @@ end
 
 local function get_function_code(refactor, extract_params)
     local function_code
-    -- TODO: move params to map used by all
+    local function_params = {
+        name = extract_params.function_name,
+        args = extract_params.args,
+        body = extract_params.function_body,
+    }
     if extract_params.is_class and extract_params.has_return_vals then
-        function_code = refactor.code.class_function_return({
-            name = extract_params.function_name,
-            args = extract_params.args,
-            body = extract_params.function_body,
-            className = refactor.ts:get_class_name(refactor.scope),
-        })
+        function_params["className"] = refactor.ts:get_class_name(
+            refactor.scope
+        )
+        function_code = refactor.code.class_function_return(function_params)
     elseif extract_params.is_class then
-        function_code = refactor.code.class_function({
-            name = extract_params.function_name,
-            args = extract_params.args,
-            body = extract_params.function_body,
-            className = refactor.ts:get_class_name(refactor.scope),
-        })
+        function_params["className"] = refactor.ts:get_class_name(
+            refactor.scope
+        )
+        function_code = refactor.code.class_function(function_params)
     elseif extract_params.has_return_vals then
-        function_code = refactor.code.function_return({
-            name = extract_params.function_name,
-            args = extract_params.args,
-            body = extract_params.function_body,
-        })
+        function_code = refactor.code.function_return(function_params)
     else
-        function_code = refactor.code["function"]({
-            name = extract_params.function_name,
-            args = extract_params.args,
-            body = extract_params.function_body,
-        })
+        function_code = refactor.code["function"](function_params)
     end
     return function_code
 end
