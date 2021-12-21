@@ -90,6 +90,18 @@ function TreeSitter:is_class_function(scope)
     return false
 end
 
+function TreeSitter:get_references(scope)
+    local query = vim.treesitter.get_query(self.filetype, "locals")
+    local out = {}
+    for id, node, _ in query:iter_captures(scope, self.bufnr, 0, -1) do
+        local n_capture = query.captures[id]
+        if n_capture == "reference" then
+            table.insert(out, node)
+        end
+    end
+    return out
+end
+
 function TreeSitter:get_class_name(scope)
     self.version:ensure_version(TreeSitter.version_flags.Classes)
     if self.require_class_name then
