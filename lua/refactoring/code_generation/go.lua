@@ -82,6 +82,9 @@ local function constant(opts)
 end
 
 local go = {
+    comment = function(statement)
+        return string.format("// %s", statement)
+    end,
     print_var = function(prefix, var)
         return string.format(
             'fmt.Println(fmt.Sprintf("%s %%v", %s))',

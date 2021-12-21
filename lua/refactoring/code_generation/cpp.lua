@@ -1,6 +1,9 @@
 local code_utils = require("refactoring.code_generation.utils")
 
 local cpp = {
+    comment = function(statement)
+        return string.format("// %s", statement)
+    end,
     print = function(statement)
         return string.format('printf("%s(%%d): \\n", __LINE__);', statement)
     end,

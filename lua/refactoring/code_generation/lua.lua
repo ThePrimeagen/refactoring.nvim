@@ -15,6 +15,9 @@ end
 end
 
 local lua = {
+    comment = function(statement)
+        return string.format("-- %s", statement)
+    end,
     ["print"] = function(print_string)
         return string.format('print("%s")', print_string)
     end,

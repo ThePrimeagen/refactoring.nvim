@@ -20,7 +20,9 @@ local typescript = {
     print = function(statement)
         return string.format('console.log("%s");', statement)
     end,
-
+    comment = function(statement)
+        return string.format("// %s", statement)
+    end,
     -- The constant can be destructured
     constant = function(opts)
         return string.format(
