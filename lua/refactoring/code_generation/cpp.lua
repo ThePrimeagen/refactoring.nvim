@@ -1,5 +1,13 @@
 local code_utils = require("refactoring.code_generation.utils")
 
+local function cpp_func_args(args)
+    local new_args = {}
+    for _, arg in ipairs(args) do
+        table.insert(new_args, string.format("INSERT_VAR_TYPE %s", arg))
+    end
+    return new_args
+end
+
 local cpp = {
     comment = function(statement)
         return string.format("// %s", statement)
@@ -19,7 +27,7 @@ void %s(%s) {
 
 ]],
             opts.name,
-            table.concat(opts.args, ", "),
+            table.concat(cpp_func_args(opts.args), ", "),
             code_utils.stringify_code(opts.body)
         )
     end,
