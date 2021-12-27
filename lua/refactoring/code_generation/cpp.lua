@@ -15,6 +15,9 @@ local cpp = {
     print = function(statement)
         return string.format('printf("%s(%%d): \\n", __LINE__);', statement)
     end,
+    print_var = function(prefix, var)
+        return string.format('printf("%s %%s \\n", %s);', prefix, var)
+    end,
     ["return"] = function(code)
         return string.format("return %s;", code)
     end,
