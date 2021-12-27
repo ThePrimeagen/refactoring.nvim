@@ -8,7 +8,7 @@ struct Order {
 
 double orderCalculation(Order order, int a, int b) {
   float temp = a * b;
-INSERT_TYPE_HERE basePrice = order.quantity*order.itemPrice;
+auto basePrice = order.quantity*order.itemPrice;
  float blah = (basePrice) - 7;
 
   std::cout << temp << " " << blah << std::endl;

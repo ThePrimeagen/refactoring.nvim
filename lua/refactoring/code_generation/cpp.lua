@@ -34,7 +34,7 @@ void %s(%s) {
     function_return = function(opts)
         return string.format(
             [[
-INPUT_RETURN_TYPE %s(%s) {
+auto %s(%s) {
     %s
 }
 
@@ -45,11 +45,7 @@ INPUT_RETURN_TYPE %s(%s) {
         )
     end,
     constant = function(opts)
-        return string.format(
-            "INSERT_TYPE_HERE %s = %s;\n",
-            opts.name,
-            opts.value
-        )
+        return string.format("auto %s = %s;\n", opts.name, opts.value)
     end,
     call_function = function(opts)
         return string.format("%s(%s)", opts.name, table.concat(opts.args, ", "))
