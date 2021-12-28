@@ -5,6 +5,7 @@ local cpp = require("refactoring.code_generation.cpp")
 local c = {
     comment = cpp.comment,
     print = cpp.print,
+    print_var = cpp.print_var,
     ["return"] = cpp["return"],
     ["function"] = cpp["function"],
     function_return = function(opts)
