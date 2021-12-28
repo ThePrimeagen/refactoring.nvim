@@ -64,6 +64,12 @@ function Config:merge(opts)
     return Config:new(self.config, opts)
 end
 
+function Config:reset()
+    self.config.formatting = default_formatting
+    self.config.code_generation = default_code_generation
+    self.config.prompt_func_return_type = default_prompt_func_return_type
+end
+
 function Config:automate_input(inputs)
     if type(inputs) ~= "table" then
         inputs = { inputs }
@@ -81,9 +87,7 @@ function Config:get_prompt_func_return_type(filetype)
 end
 
 function Config:set_prompt_func_return_type(override_map)
-    for k, v in pairs(override_map) do
-        self.config.prompt_func_return_type[k] = v
-    end
+    self.config.prompt_func_return_type = override_map
 end
 
 function Config:get_automated_input()

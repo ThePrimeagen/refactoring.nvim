@@ -3,6 +3,7 @@ local utils = require("refactoring.utils")
 local Pipeline = require("refactoring.pipeline")
 local selection_setup = require("refactoring.tasks.selection_setup")
 local ensure_code_gen = require("refactoring.tasks.ensure_code_gen")
+local code_utils = require("refactoring.code_generation.utils")
 
 local refactor_setup = require("refactoring.tasks.refactor_setup")
 local get_input = require("refactoring.get_input")
@@ -48,6 +49,16 @@ local function get_return_vals(refactor)
     return return_vals
 end
 
+local function get_function_return_type()
+    local function_return_type = get_input(
+        "106: Extract Function return type > "
+    )
+    if function_return_type == "" then
+        function_return_type = code_utils.default_func_return_type()
+    end
+    return function_return_type
+end
+
 local function get_function_code(refactor, extract_params)
     local function_code
     local function_params = {
@@ -55,6 +66,11 @@ local function get_function_code(refactor, extract_params)
         args = extract_params.args,
         body = extract_params.function_body,
     }
+
+    if refactor.config:get_prompt_func_return_type(refactor.filetype) then
+        function_params.return_type = get_function_return_type()
+    end
+
     if extract_params.is_class and extract_params.has_return_vals then
         function_params["className"] = refactor.ts:get_class_name(
             refactor.scope

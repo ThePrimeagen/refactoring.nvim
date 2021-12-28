@@ -154,6 +154,29 @@ local function validate_cursor_if_file_exists(filename_prefix)
     end
 end
 
+-- TODO: make this better for more complex config options
+-- assuming first line is for prompt_func_return_type flag
+local function set_config_options(filename_prefix, filename_extension)
+    local config_file_name = string.format("%s.config", filename_prefix)
+    local config_file = Path:new(
+        cwd,
+        "lua",
+        "refactoring",
+        "tests",
+        config_file_name
+    )
+    if config_file:exists() then
+        local config_values = test_utils.get_contents(
+            string.format("%s.config", filename_prefix)
+        )
+        local prompt_func_return_type = {}
+        local str_to_bool = { ["true"] = true, ["false"] = false }
+        prompt_func_return_type[filename_extension] =
+            str_to_bool[config_values[1]]
+        Config.get():set_prompt_func_return_type(prompt_func_return_type)
+    end
+end
+
 describe("Refactoring", function()
     for_each_file(function(file)
         a.it(string.format("Refactoring: %s", file), function()
@@ -171,8 +194,11 @@ describe("Refactoring", function()
                 )
             )
 
+            Config.get():reset()
             test_utils.run_inputs_if_exist(filename_prefix, cwd)
             test_utils.run_commands(filename_prefix)
+            -- TODO: How to get this dynamically?
+            set_config_options(filename_prefix, filename_extension)
             refactoring.refactor(refactor["name"])
             async.util.scheduler()
             local lines = vim.api.nvim_buf_get_lines(bufnr, 0, -1, false)
