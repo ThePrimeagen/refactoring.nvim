@@ -58,9 +58,23 @@ end
 
 local InlineNode = function(sexpr)
     return function(scope, bufnr, filetype)
-        local query = vim.treesitter.parse_query(filetype, sexpr)
+        local ok, result_object = pcall(
+            vim.treesitter.parse_query,
+            filetype,
+            sexpr
+        )
+        if not ok then
+            error(
+                string.format(
+                    "Invalid query: '%s'\n error: %s",
+                    sexpr,
+                    result_object
+                )
+            )
+        end
+
         local out = {}
-        for _, node, _ in query:iter_captures(scope, bufnr, 0, -1) do
+        for _, node, _ in result_object:iter_captures(scope, bufnr, 0, -1) do
             table.insert(out, node)
         end
         return out

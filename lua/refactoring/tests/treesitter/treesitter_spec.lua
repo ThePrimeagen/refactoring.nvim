@@ -209,4 +209,22 @@ describe("TreeSitter", function()
             ts_utils.get_node_text(inline_node_result[9])[1]
         )
     end)
+
+    it("Inline Node Tests Failing query", function()
+        local ts = init()
+        local scope = get_scope(ts, 3)
+        local failingInlineNode = Nodes.InlineNode("This should fail")
+
+        local status, err = pcall(
+            failingInlineNode,
+            scope,
+            ts.bufnr,
+            ts.filetype
+        )
+        assert.are.same(false, status)
+        local user_error = string.find(err, "Invalid query: 'This should fail'")
+        assert(user_error ~= nil)
+        local query_error = string.find(err, "invalid syntax at position 0")
+        assert(query_error ~= nil)
+    end)
 end)
