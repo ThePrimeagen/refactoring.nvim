@@ -20,6 +20,17 @@ local default_formatting = {
     },
 }
 
+local default_prompt_func_return_type = {
+    go = false,
+
+    -- All of the cs
+    cpp = false,
+    c = false,
+    h = false,
+    hpp = false,
+    cxx = false,
+}
+
 ---@class Config
 ---@field config table
 local Config = {}
@@ -33,6 +44,7 @@ function Config:new(...)
     }, {
         formatting = default_formatting,
         code_generation = default_code_generation,
+        prompt_func_return_type = default_prompt_func_return_type,
     })
 
     for idx = 1, select("#", ...) do
@@ -59,6 +71,19 @@ function Config:automate_input(inputs)
 
     self.config._automation.inputs = inputs
     self.config._automation.inputs_idx = 0
+end
+
+function Config:get_prompt_func_return_type(filetype)
+    if self.config.prompt_func_return_type[filetype] == nil then
+        return false
+    end
+    return self.config.prompt_func_return_type[filetype]
+end
+
+function Config:set_prompt_func_return_type(override_map)
+    for k, v in pairs(override_map) do
+        self.config.prompt_func_return_type[k] = v
+    end
 end
 
 function Config:get_automated_input()
