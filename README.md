@@ -11,13 +11,13 @@
 ## WIP
 
 Although this plugin is usable, it is very much a work in progress, meaning that
-the API can change very rapidly.
+the API will inevitably change very rapidly over time.
 
 ## Table of Contents
 
 - [Installation](#installation)
   - [Requirements](#requirements)
-  - [Packer](#packer)
+  - [Setup Using Packer](#packer)
 - [Features](#features)
   - [Supported Languages](#supported-languages)
   - [Refactoring Features](#refactoring-features)
@@ -112,47 +112,19 @@ the command. As of now, these are both necessary for the plugin to work.
 #### Using Telescope<a name="config-refactoring-telescope"></a>
 
 If you would prefer to use Telescope to choose a refactor when you're in visual mode,
-you can use a configuration like this instead:
+you can do so use using the **Telescope extension.** Here is an example config
+for this setup:
 
 ```lua
-local refactoring = require("refactoring")
-
--- telescope refactoring helper
-local function refactor(prompt_bufnr)
-    local content = require("telescope.actions.state").get_selected_entry(
-        prompt_bufnr
-    )
-    require("telescope.actions").close(prompt_bufnr)
-    refactoring.refactor(content.value)
-end
-
-M = {}
-
-M.refactors = function()
-    -- this gets the cursor theme, but you can set any custom options you want
-    -- for Telescope here
-    local opts = require("telescope.themes").get_cursor()
-
-    require("telescope.pickers").new(opts, {
-        prompt_title = "refactors",
-        finder = require("telescope.finders").new_table({
-            results = refactoring.get_refactors(),
-        }),
-        sorter = require("telescope.config").values.generic_sorter(opts),
-        attach_mappings = function(_, map)
-            map("i", "<CR>", refactor)
-            map("n", "<CR>", refactor)
-            return true
-        end,
-    }):find()
-end
-
 -- Remap to open the Telescope refactoring menu in visual mode
+require("telescope").load_extension("refactoring")
+
+-- remap to open the Telescope refactoring menu in visual mode
 vim.api.nvim_set_keymap(
-    "v",
-    "<Leader>rt",
-    [[ <Esc><Cmd>lua M.refactors()<CR>]],
-    { noremap = true, silent = true, expr = false }
+	"v",
+	"<leader>rr",
+	"<Esc><cmd>lua require('telescope').extensions.refactoring.refactors()<CR>",
+	{ noremap = true }
 )
 ```
 
