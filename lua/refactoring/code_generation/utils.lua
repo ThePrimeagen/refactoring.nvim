@@ -21,4 +21,8 @@ function M.returnify(args, string_pattern)
     return string.format(string_pattern, table.concat(codes, ", "))
 end
 
+M.default_func_return_type = function()
+    return "INPUT_RETURN_TYPE"
+end
+
 return M

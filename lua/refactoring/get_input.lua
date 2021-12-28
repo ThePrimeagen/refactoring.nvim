@@ -11,6 +11,7 @@ local input = async.wrap(function(prompt, text, completion, callback)
         completion = completion,
     }, callback)
 end, 4)
+
 local function get_input(question, text)
     text = text or ""
 

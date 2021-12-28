@@ -20,6 +20,17 @@ local default_formatting = {
     },
 }
 
+local default_prompt_func_return_type = {
+    go = false,
+
+    -- All of the cs
+    cpp = false,
+    c = false,
+    h = false,
+    hpp = false,
+    cxx = false,
+}
+
 ---@class Config
 ---@field config table
 local Config = {}
@@ -33,6 +44,7 @@ function Config:new(...)
     }, {
         formatting = default_formatting,
         code_generation = default_code_generation,
+        prompt_func_return_type = default_prompt_func_return_type,
     })
 
     for idx = 1, select("#", ...) do
@@ -52,6 +64,12 @@ function Config:merge(opts)
     return Config:new(self.config, opts)
 end
 
+function Config:reset()
+    self.config.formatting = default_formatting
+    self.config.code_generation = default_code_generation
+    self.config.prompt_func_return_type = default_prompt_func_return_type
+end
+
 function Config:automate_input(inputs)
     if type(inputs) ~= "table" then
         inputs = { inputs }
@@ -59,6 +77,17 @@ function Config:automate_input(inputs)
 
     self.config._automation.inputs = inputs
     self.config._automation.inputs_idx = 0
+end
+
+function Config:get_prompt_func_return_type(filetype)
+    if self.config.prompt_func_return_type[filetype] == nil then
+        return false
+    end
+    return self.config.prompt_func_return_type[filetype]
+end
+
+function Config:set_prompt_func_return_type(override_map)
+    self.config.prompt_func_return_type = override_map
 end
 
 function Config:get_automated_input()
