@@ -6,7 +6,7 @@ type foobar struct {
    poggers int
 }
 
-func (f *foobar) foo(a INSERT_VAR_TYPE, test INSERT_VAR_TYPE) INPUT_RETURN_TYPE {
+func (f *foobar) foo(a INSERT_PARAM_TYPE, test INSERT_PARAM_TYPE) INPUT_RETURN_TYPE {
 	test_other := 1
 	for idx := test - 1; idx < test_other; idx++ {
 		fmt.Println(f.poggers, idx, a)

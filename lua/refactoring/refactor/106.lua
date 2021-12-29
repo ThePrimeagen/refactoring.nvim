@@ -59,13 +59,38 @@ local function get_function_return_type()
     return function_return_type
 end
 
+-- TODO: update this if you can find some of the variable values
+local function get_function_param_types(args)
+    local args_types = {}
+    for _, arg in pairs(args) do
+        local function_param_type = get_input(
+            string.format("106: Extract Function param type for %s > ", arg)
+        )
+
+        if function_param_type == "" then
+            function_param_type = code_utils.default_func_param_type()
+        end
+        args_types[arg] = function_param_type
+    end
+
+    return args_types
+end
+
 local function get_function_code(refactor, extract_params)
     local function_code
+    -- TODO: Make this an object with getters/setters so that it's better
+    -- documented
     local function_params = {
         name = extract_params.function_name,
         args = extract_params.args,
         body = extract_params.function_body,
     }
+
+    if refactor.config:get_prompt_func_param_type(refactor.filetype) then
+        function_params.args_types = get_function_param_types(
+            function_params.args
+        )
+    end
 
     if refactor.config:get_prompt_func_return_type(refactor.filetype) then
         function_params.return_type = get_function_return_type()

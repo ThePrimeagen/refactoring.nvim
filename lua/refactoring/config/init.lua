@@ -20,7 +20,7 @@ local default_formatting = {
     },
 }
 
-local default_prompt_func_return_type = {
+local default_prompt_func_param_type = {
     go = false,
 
     -- All of the cs
@@ -29,6 +29,10 @@ local default_prompt_func_return_type = {
     h = false,
     hpp = false,
     cxx = false,
+}
+
+local default_prompt_func_return_type = {
+    go = false,
 }
 
 ---@class Config
@@ -45,6 +49,7 @@ function Config:new(...)
         formatting = default_formatting,
         code_generation = default_code_generation,
         prompt_func_return_type = default_prompt_func_return_type,
+        prompt_func_param_type = default_prompt_func_param_type,
     })
 
     for idx = 1, select("#", ...) do
@@ -77,6 +82,17 @@ function Config:automate_input(inputs)
 
     self.config._automation.inputs = inputs
     self.config._automation.inputs_idx = 0
+end
+
+function Config:get_prompt_func_param_type(filetype)
+    if self.config.prompt_func_param_type[filetype] == nil then
+        return false
+    end
+    return self.config.prompt_func_param_type[filetype]
+end
+
+function Config:set_prompt_func_param_type(override_map)
+    self.config.prompt_func_param_type = override_map
 end
 
 function Config:get_prompt_func_return_type(filetype)

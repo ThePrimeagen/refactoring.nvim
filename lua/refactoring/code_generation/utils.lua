@@ -25,4 +25,8 @@ M.default_func_return_type = function()
     return "INPUT_RETURN_TYPE"
 end
 
+M.default_func_param_type = function()
+    return "INSERT_PARAM_TYPE"
+end
+
 return M
