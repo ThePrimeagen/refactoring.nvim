@@ -92,7 +92,10 @@ local function get_function_code(refactor, extract_params)
         )
     end
 
-    if refactor.config:get_prompt_func_return_type(refactor.filetype) then
+    if
+        extract_params.has_return_vals
+        and refactor.config:get_prompt_func_return_type(refactor.filetype)
+    then
         function_params.return_type = get_function_return_type()
     end
 
