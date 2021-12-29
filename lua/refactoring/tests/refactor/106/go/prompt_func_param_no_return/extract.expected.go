@@ -2,7 +2,7 @@ package main
 
 import "fmt"
 
-func foo_bar(a INSERT_PARAM_TYPE, test INSERT_PARAM_TYPE, test_other INSERT_PARAM_TYPE) {
+func foo_bar(a int, test int, test_other int) {
 	for idx := test - 1; idx < test_other; idx++ {
 		fmt.Println(idx, a)
 	}
