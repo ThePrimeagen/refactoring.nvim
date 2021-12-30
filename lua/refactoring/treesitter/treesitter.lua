@@ -41,9 +41,12 @@ function TreeSitter:new(config, bufnr)
         debug_paths = {},
         statements = {},
         indent_scopes = {},
+        parameter_list = {},
+        function_scopes = {},
         bufnr = bufnr,
         require_class_name = false,
         require_class_type = false,
+        require_param_types = false,
         version = Version:new(),
         filetype = config.filetype,
     }, config)
@@ -62,12 +65,10 @@ function TreeSitter:loop_thru_nodes(scope, inline_nodes)
     return out
 end
 
--- TODO: Should be moved to node
 function TreeSitter:get_local_var_names(node)
     return self:loop_thru_nodes(node, self.local_var_names)[1]
 end
 
--- TODO: Should be moved to node
 function TreeSitter:get_local_var_values(node)
     return self:loop_thru_nodes(node, self.local_var_values)[1]
 end
@@ -144,6 +145,26 @@ local function containing_node_by_type(node, container_map)
     until node == nil
 
     return node
+end
+
+function TreeSitter:get_local_parameter_types(scope)
+    local parameter_types = {}
+    local function_node = containing_node_by_type(scope, self.function_scopes)
+
+    -- Get parameter list
+    local parameter_list_nodes = self:loop_thru_nodes(
+        function_node,
+        self.parameter_list
+    )
+
+    -- Only if we find something, else empty
+    if #parameter_list_nodes > 0 then
+        local region = Region:from_node(parameter_list_nodes[1])
+        local parameter_list = region:get_text()
+        local parameter_split = utils.split_string(parameter_list[1], " ")
+        parameter_types[parameter_split[1]] = parameter_split[2]
+    end
+    return parameter_types
 end
 
 function TreeSitter:indent_scope(node)

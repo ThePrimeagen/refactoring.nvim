@@ -60,19 +60,31 @@ local function get_function_return_type()
 end
 
 -- TODO: update this if you can find some of the variable values
-local function get_function_param_types(args)
+-- Next to find local defintion var values
+local function get_function_param_types(refactor, args)
     local args_types = {}
+    local parameter_arg_types = refactor.ts:get_local_parameter_types(
+        refactor.scope
+    )
     for _, arg in pairs(args) do
-        local function_param_type = get_input(
-            string.format("106: Extract Function param type for %s > ", arg)
-        )
+        local function_param_type
+        if parameter_arg_types[arg] ~= nil then
+            function_param_type = parameter_arg_types[arg]
+        elseif
+            refactor.config:get_prompt_func_param_type(refactor.filetype)
+        then
+            function_param_type = get_input(
+                string.format("106: Extract Function param type for %s > ", arg)
+            )
 
-        if function_param_type == "" then
+            if function_param_type == "" then
+                function_param_type = code_utils.default_func_param_type()
+            end
+        else
             function_param_type = code_utils.default_func_param_type()
         end
         args_types[arg] = function_param_type
     end
-
     return args_types
 end
 
@@ -86,8 +98,9 @@ local function get_function_code(refactor, extract_params)
         body = extract_params.function_body,
     }
 
-    if refactor.config:get_prompt_func_param_type(refactor.filetype) then
+    if refactor.ts.require_param_types then
         function_params.args_types = get_function_param_types(
+            refactor,
             function_params.args
         )
     end
