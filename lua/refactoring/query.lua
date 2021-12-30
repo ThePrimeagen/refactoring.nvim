@@ -60,7 +60,13 @@ function Query.find_occurrences(scope, sexpr, bufnr)
     if not sexpr:find("@") then
         sexpr = sexpr .. " @tmp_capture"
     end
-    local sexpr_query = vim.treesitter.parse_query(filetype, sexpr)
+
+    local ok, sexpr_query = pcall(vim.treesitter.parse_query, filetype, sexpr)
+    if not ok then
+        error(
+            string.format("Invalid query: '%s'\n error: %s", sexpr, sexpr_query)
+        )
+    end
 
     local occurrences = {}
     for _, n in sexpr_query:iter_captures(scope, bufnr, 0, -1) do
