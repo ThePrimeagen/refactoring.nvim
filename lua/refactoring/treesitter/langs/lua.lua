@@ -5,6 +5,7 @@ local Nodes = require("refactoring.treesitter.nodes")
 local FieldNode = Nodes.FieldNode
 local StringNode = Nodes.StringNode
 local QueryNode = Nodes.QueryNode
+local InlineNode = Nodes.InlineNode
 
 local Lua = {}
 
@@ -22,7 +23,20 @@ function Lua.new(bufnr, ft)
             ["function"] = "function",
             function_definition = "function",
         },
-
+        block_scope = {
+            local_function = true,
+            function_definition = true,
+            ["function"] = true,
+        },
+        variable_scope = {
+            variable_declaration = true,
+            local_variable_declaration = true,
+        },
+        local_var_values = {
+            InlineNode(
+                "(local_variable_declaration (variable_declarator) (_) @tmp_capture)"
+            ),
+        },
         debug_paths = {
             class_specifier = FieldNode("name"),
             function_definition = StringNode("function"),
@@ -35,6 +49,16 @@ function Lua.new(bufnr, ft)
             for_in_statement = StringNode("for"),
             for_statement = StringNode("for"),
             while_statement = StringNode("while"),
+        },
+        statements = {
+            InlineNode("(return_statement) @tmp_capture"),
+            InlineNode("(if_statement) @tmp_capture"),
+            InlineNode("(for_statement) @tmp_capture"),
+            InlineNode("(do_statement) @tmp_capture"),
+            InlineNode("(repeat_statement) @tmp_capture"),
+            InlineNode("(while_statement) @tmp_capture"),
+            InlineNode("(local_variable_declaration) @tmp_capture"),
+            InlineNode("(variable_declaration) @tmp_capture"),
         },
     }, bufnr)
 end
