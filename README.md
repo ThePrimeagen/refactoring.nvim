@@ -1,17 +1,14 @@
 <div align="center">
 
-<h1>refactoring.nvim</h1>
-<h5>The Refactoring library based off the Refactoring book by Martin Fowler</h5>
+  <h1>refactoring.nvim</h1>
+  <h5>The Refactoring library based off the Refactoring book by Martin Fowler</h5>
+  <h6>'If I use an environment that has good automated refactorings, I can trust those refactorings' - Martin Fowler</h6>
 
-[![Lua](https://img.shields.io/badge/Lua-blue.svg?style=for-the-badge&logo=lua)](http://www.lua.org)
-[![Neovim](https://img.shields.io/badge/Neovim%20Nightly-green.svg?style=for-the-badge&logo=neovim)](https://neovim.io)
+  [![Lua](https://img.shields.io/badge/Lua-blue.svg?style=for-the-badge&logo=lua)](http://www.lua.org)
+  [![Neovim Nightly](https://img.shields.io/badge/Neovim%20Nightly-green.svg?style=for-the-badge&logo=neovim)](https://neovim.io)
+  ![Work In Progress](https://img.shields.io/badge/Work%20In%20Progress-orange?style=for-the-badge)
 
 </div>
-
-## WIP
-
-Although this plugin is usable, it is very much a work in progress, meaning that
-the API will inevitably change very rapidly over time.
 
 ## Table of Contents
 
@@ -172,5 +169,3 @@ require('refactoring').setup({
     },
 })
 ```
-
-
