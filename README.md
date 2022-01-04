@@ -52,7 +52,7 @@ use {
 
 Given that this is a work in progress, the languages supported for the
 operations listed below is **constantly changing**. As of now, these languages are
-supported (with individual support for each function varying):
+supported (with individual support for each function may vary):
 
 - TypeScript
 - JavaScript
@@ -60,6 +60,7 @@ supported (with individual support for each function varying):
 - C/C++
 - Golang
 - Python
+- PHP
 
 ### Refactoring Features<a name="refactoring-features"></a>
 
