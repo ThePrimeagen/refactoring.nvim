@@ -74,6 +74,7 @@ function Cpp.new(bufnr, ft)
             InlineNode("(while_statement) @tmp_capture"),
             InlineNode("(declaration) @tmp_capture"),
         },
+        require_param_types = true,
     }, bufnr)
 end
 

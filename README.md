@@ -24,7 +24,7 @@
     - [Using Direct Remaps](#config-refactoring-direct)
     - [Using Telescope](#config-refactoring-telescope)
   - [Configuration for Debug Operations](#config-debug)
-  - [Configuration for prompting for types](#config-prompt)
+  - [Configuration for Prompt Type Operations](#config-prompt)
 
 ## Installation<a name="installation"></a>
 
@@ -147,25 +147,28 @@ vim.api.nvim_set_keymap("v", "<leader>rv", ":lua require('refactoring').debug.pr
 vim.api.nvim_set_keymap("n", "<leader>rc", ":lua require('refactoring').debug.cleanup({})<CR>", { noremap = true })
 ```
 
-### Configuration for Prompt type Operations<a name="config-prompt"></a>
+### Configuration for Prompt Type Operations<a name="config-prompt"></a>
 
 For certain languages like Golang, types are required for functions that return
-an object(s) and parameters of functions. Unfortunately, for some parameters and functions there is no way to
-automatically find their type. In those instances, we want to provide a way to
-input a type instead of insertting a placeholder value.
-
+an object(s) and parameters of functions. Unfortunately, for some parameters
+and functions there is no way to automatically find their type. In those
+instances, we want to provide a way to input a type instead of inserting a
+placeholder value.
 
 By default all prompts are turned off. The configuration below shows how to
-enable both for Golang. To enable it for your specific language, input
-something similar to below into the correct map.
-```lua
+enable prompts for all the languages currently supported.
 
+```lua
 require('refactoring').setup({
+    -- prompt for return type
     prompt_func_return_type = {
-        go = true
+        go = true,
     },
+    -- prompt for function parameters
     prompt_func_param_type = {
-        go = true
+        go = true,
+        cpp = true,
+        c = true,
     },
 })
 ```
