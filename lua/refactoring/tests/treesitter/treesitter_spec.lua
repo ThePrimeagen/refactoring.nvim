@@ -227,4 +227,25 @@ describe("TreeSitter", function()
         local query_error = string.find(err, "invalid syntax at position 0")
         assert(query_error ~= nil)
     end)
+
+    it("Query Node Failure query", function()
+        local ts = init()
+        local scope = get_scope(ts, 3)
+        local failingQueryNode = Nodes.QueryNode("This should fail")
+
+        local status, err = pcall(
+            failingQueryNode,
+            scope,
+            ts.bufnr,
+            ts.filetype
+        )
+        assert.are.same(false, status)
+        local user_error = string.find(
+            err,
+            "Invalid query: 'This should fail @tmp_capture'"
+        )
+        assert(user_error ~= nil)
+        local query_error = string.find(err, "invalid syntax at position 0")
+        assert(query_error ~= nil)
+    end)
 end)

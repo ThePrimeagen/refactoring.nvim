@@ -1,11 +1,33 @@
 local code_utils = require("refactoring.code_generation.utils")
 
-local function cpp_func_args(args)
+local function cpp_func_args_default_types(args)
     local new_args = {}
     for _, arg in ipairs(args) do
-        table.insert(new_args, string.format("INSERT_VAR_TYPE %s", arg))
+        table.insert(
+            new_args,
+            string.format("%s %s", code_utils.default_func_param_type(), arg)
+        )
     end
     return new_args
+end
+
+local function cpp_func_args_with_types(args, args_types)
+    local args_with_types = {}
+    for _, arg in ipairs(args) do
+        table.insert(
+            args_with_types,
+            string.format("%s %s", args_types[arg], arg)
+        )
+    end
+    return table.concat(args_with_types, ", ")
+end
+
+local function cpp_func_args(opts)
+    if opts.args_types ~= nil then
+        return cpp_func_args_with_types(opts.args, opts.args_types)
+    else
+        return table.concat(cpp_func_args_default_types(opts.args), ", ")
+    end
 end
 
 local cpp = {
@@ -14,6 +36,9 @@ local cpp = {
     end,
     print = function(statement)
         return string.format('printf("%s(%%d): \\n", __LINE__);', statement)
+    end,
+    print_var = function(prefix, var)
+        return string.format('printf("%s %%s \\n", %s);', prefix, var)
     end,
     ["return"] = function(code)
         return string.format("return %s;", code)
@@ -27,20 +52,21 @@ void %s(%s) {
 
 ]],
             opts.name,
-            table.concat(cpp_func_args(opts.args), ", "),
+            cpp_func_args(opts),
             code_utils.stringify_code(opts.body)
         )
     end,
     function_return = function(opts)
         return string.format(
             [[
-auto %s(%s) {
+%s %s(%s) {
     %s
 }
 
 ]],
+            opts.return_type,
             opts.name,
-            table.concat(opts.args, ", "),
+            cpp_func_args(opts),
             code_utils.stringify_code(opts.body)
         )
     end,

@@ -20,6 +20,9 @@ local typescript = {
     print = function(statement)
         return string.format('console.log("%s");', statement)
     end,
+    print_var = function(prefix, var)
+        return string.format('console.log("%s %%s", %s);', prefix, var)
+    end,
     comment = function(statement)
         return string.format("// %s", statement)
     end,

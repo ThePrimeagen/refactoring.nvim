@@ -1,0 +1,10 @@
+#include <stdio.h>
+
+void simple_function(int a) {
+  int test = 1;
+  int test_other = 1;
+
+  for (int idx = 0; idx < test_other; idx++) {
+    printf("%d %d", idx, a);
+  }
+}

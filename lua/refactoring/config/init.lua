@@ -73,6 +73,7 @@ function Config:reset()
     self.config.formatting = default_formatting
     self.config.code_generation = default_code_generation
     self.config.prompt_func_return_type = default_prompt_func_return_type
+    self.config.prompt_func_param_type = default_prompt_func_param_type
 end
 
 function Config:automate_input(inputs)

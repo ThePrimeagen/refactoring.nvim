@@ -66,8 +66,21 @@ function Golang.new(bufnr, ft)
             InlineNode("(for_statement) @tmp_capture"),
             InlineNode("(call_expression) @tmp_capture"),
         },
+        parameter_list = {
+            InlineNode(
+                "(function_declaration parameters: (parameter_list ((parameter_declaration) @tmp_capture)))"
+            ),
+            InlineNode(
+                "(method_declaration parameters: (parameter_list ((parameter_declaration) @tmp_capture)))"
+            ),
+        },
+        function_scopes = {
+            function_declaration = "function",
+            method_declaration = "function",
+        },
         require_class_name = true,
         require_class_type = true,
+        require_param_types = true,
     }, bufnr)
 end
 
