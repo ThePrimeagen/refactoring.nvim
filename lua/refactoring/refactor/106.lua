@@ -169,6 +169,20 @@ local function get_value(refactor, extract_params)
     return value
 end
 
+local function get_region_above_node(refactor)
+    local prev_sibling = refactor.scope:prev_sibling()
+    if prev_sibling == nil then
+        return utils.region_above_node(refactor.scope)
+    end
+
+    local start_row, _, _, _ = prev_sibling:range()
+    if prev_sibling:type() == "comment" and start_row > 0 then
+        return utils.region_above_node(prev_sibling)
+    else
+        return utils.region_above_node(refactor.scope)
+    end
+end
+
 --
 local function extract_setup(refactor)
     local function_name = get_input("106: Extract Function Name > ")
@@ -199,7 +213,7 @@ local function extract_setup(refactor)
 
     refactor.text_edits = {
         {
-            region = utils.region_above_node(refactor.scope),
+            region = get_region_above_node(refactor),
             text = function_code,
             bufnr = refactor.buffers[2],
         },
