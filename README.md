@@ -4,9 +4,9 @@
   <h5>The Refactoring library based off the Refactoring book by Martin Fowler</h5>
   <h6>'If I use an environment that has good automated refactorings, I can trust those refactorings' - Martin Fowler</h6>
 
-  [![Lua](https://img.shields.io/badge/Lua-blue.svg?style=for-the-badge&logo=lua)](http://www.lua.org)
-  [![Neovim Nightly](https://img.shields.io/badge/Neovim%20Nightly-green.svg?style=for-the-badge&logo=neovim)](https://neovim.io)
-  ![Work In Progress](https://img.shields.io/badge/Work%20In%20Progress-orange?style=for-the-badge)
+[![Lua](https://img.shields.io/badge/Lua-blue.svg?style=for-the-badge&logo=lua)](http://www.lua.org)
+[![Neovim Nightly](https://img.shields.io/badge/Neovim%20Nightly-green.svg?style=for-the-badge&logo=neovim)](https://neovim.io)
+![Work In Progress](https://img.shields.io/badge/Work%20In%20Progress-orange?style=for-the-badge)
 
 </div>
 
@@ -52,7 +52,7 @@ use {
 
 Given that this is a work in progress, the languages supported for the
 operations listed below is **constantly changing**. As of now, these languages are
-supported (with individual support for each function varying):
+supported (with individual support for each function may vary):
 
 - TypeScript
 - JavaScript
@@ -60,14 +60,21 @@ supported (with individual support for each function varying):
 - C/C++
 - Golang
 - Python
+- PHP
 
 ### Refactoring Features<a name="refactoring-features"></a>
 
 - Support for various common refactoring operations
   - **106: Extract Function**
-    - Also possible to extract to file
+    - In visual mode, extracts the selected code to a separate function
+    - Optionally prompts for function param types and return types (see [configuration for prompt type operations](#config-prompt))
+    - Also possible to extract to a separate file
   - **119: Extract Variable**
+    - In visual mode, extracts occurences of a selected expression to its own variable, replacing occurences of that expression with the variable
   - **123: Inline Variable**
+    - Inverse of extract variable
+    - Replaces all occurences of a variable with its value
+    - Cursor must be on an identifier for this function to work
 
 ### Debug Features<a name="debug-features"></a>
 
