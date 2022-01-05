@@ -169,15 +169,36 @@ local function get_value(refactor, extract_params)
     return value
 end
 
-local function get_region_above_node(refactor)
+local function get_non_comment_region_above_node(refactor)
     local prev_sibling = refactor.scope:prev_sibling()
     if prev_sibling == nil then
         return utils.region_above_node(refactor.scope)
     end
 
-    local start_row, _, _, _ = prev_sibling:range()
-    if prev_sibling:type() == "comment" and start_row > 0 then
-        return utils.region_above_node(prev_sibling)
+    if prev_sibling:type() == "comment" then
+        local start_row
+        while true do
+            -- Only want first value
+            start_row = prev_sibling:range()
+            local temp = prev_sibling:prev_sibling()
+            if temp ~= nil and temp:type() == "comment" then
+                -- Only want first value
+                local temp_row = temp:range()
+                if start_row - temp_row == 1 then
+                    prev_sibling = temp
+                else
+                    break
+                end
+            else
+                break
+            end
+        end
+
+        if start_row > 0 then
+            return utils.region_above_node(prev_sibling)
+        else
+            return utils.region_above_node(refactor.scope)
+        end
     else
         return utils.region_above_node(refactor.scope)
     end
@@ -213,7 +234,7 @@ local function extract_setup(refactor)
 
     refactor.text_edits = {
         {
-            region = get_region_above_node(refactor),
+            region = get_non_comment_region_above_node(refactor),
             text = function_code,
             bufnr = refactor.buffers[2],
         },
