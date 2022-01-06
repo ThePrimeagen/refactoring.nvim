@@ -121,7 +121,7 @@ you can do so use using the **Telescope extension.** Here is an example config
 for this setup:
 
 ```lua
--- Remap to open the Telescope refactoring menu in visual mode
+-- load refactoring Telescope extension
 require("telescope").load_extension("refactoring")
 
 -- remap to open the Telescope refactoring menu in visual mode
