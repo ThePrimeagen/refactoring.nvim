@@ -33,10 +33,14 @@ function Lua.new(bufnr, ft)
             local_variable_declaration = true,
         },
         local_var_names = {
-            InlineNode("((variable_declarator (identifier)) @tmp_capture)"),
+            InlineNode("((variable_declarator (identifier) @tmp_capture))"),
         },
         local_var_values = {
             InlineNode("((variable_declarator) (_) @tmp_capture)"),
+        },
+        local_declarations = {
+            InlineNode("(local_variable_declaration) @tmp_capture"),
+            InlineNode("(variable_declaration) @tmp_capture"),
         },
         debug_paths = {
             class_specifier = FieldNode("name"),
