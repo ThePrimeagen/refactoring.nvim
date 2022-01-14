@@ -29,7 +29,7 @@ local function get_return_vals(refactor)
     )
 
     region_vars = vim.tbl_map(function(node)
-        return refactor.ts:get_first_local_var_name(node)
+        return refactor.ts:get_local_var_names(node)[1]
     end, region_vars)
 
     region_vars = vim.tbl_filter(function(node)

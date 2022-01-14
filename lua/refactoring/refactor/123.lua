@@ -49,7 +49,7 @@ local function determine_identifier_position(identifiers, node)
     end
 end
 
-local function determine_node_to_inline(identifiers, bufnr)
+local function get_node_to_inline(identifiers, bufnr)
     local node_to_inline, identifier_num
 
     if #identifiers == 0 then
@@ -57,6 +57,7 @@ local function determine_node_to_inline(identifiers, bufnr)
     elseif #identifiers == 1 then
         identifier_num = 1
     else
+        -- TODO: at some point, change this to use an async wrapper around vim.ui.select()
         print("Please select the variable to inline: ")
 
         for i, identifier in pairs(identifiers) do
@@ -79,15 +80,16 @@ end
 function M.inline_var(bufnr, opts)
     get_inline_setup_pipeline(bufnr, opts)
         :add_task(function(refactor)
+            -- figure out if we're dealing with a visual selection or a cursor node
             local declarator_node, node_on_cursor = determine_declarator_node(
                 refactor,
                 bufnr
             )
 
-            local identifiers = refactor.ts:get_all_local_var_names(
-                declarator_node
-            )
+            -- get all identifiers in the declarator node (for either situation)
+            local identifiers = refactor.ts:get_local_var_names(declarator_node)
 
+            -- these three vars are determined based on the situation
             local node_to_inline, identifier_num, definition
 
             if node_on_cursor then
@@ -98,7 +100,7 @@ function M.inline_var(bufnr, opts)
                     definition
                 )
             else
-                node_to_inline, identifier_num = determine_node_to_inline(
+                node_to_inline, identifier_num = get_node_to_inline(
                     identifiers,
                     bufnr
                 )
@@ -112,12 +114,14 @@ function M.inline_var(bufnr, opts)
                 definition
             )
 
-            local value_node = refactor.ts:get_all_local_var_values(
-                declarator_node
-            )[identifier_num]
+            local value_node =
+                refactor.ts:get_local_var_values(
+                    declarator_node
+                )[identifier_num]
 
             local text_edits = {}
 
+            -- only _emove declarator node if there is one declaration
             if #identifiers == 1 then
                 table.insert(
                     text_edits,
@@ -126,9 +130,10 @@ function M.inline_var(bufnr, opts)
                     )
                 )
             else
+                -- TODO: there has to be a better way for this to look good
                 print(" ")
                 print(
-                    "123: Declaration was not removed due to multiple variables. Please remove the inlined variable manually. Fix coming soon!"
+                    "123: Removing initial variable declaration on multi-declaration statments is not yet supported. Please remove the inlined variable manually."
                 )
             end
 
