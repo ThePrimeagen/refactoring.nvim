@@ -4,6 +4,7 @@ local selection_setup = require("refactoring.tasks.selection_setup")
 local ensure_code_gen = require("refactoring.tasks.ensure_code_gen")
 local code_utils = require("refactoring.code_generation.utils")
 local Region = require("refactoring.region")
+local lsp_utils = require("refactoring.lsp_utils")
 
 local refactor_setup = require("refactoring.tasks.refactor_setup")
 local get_input = require("refactoring.get_input")
@@ -247,7 +248,8 @@ local function get_func_call(refactor, extract_params)
 end
 
 local function get_non_comment_region_above_node(refactor)
-    local prev_sibling = refactor.scope:prev_sibling()
+    local prev_sibling = refactor.scope:prev_named_sibling()
+
     if prev_sibling == nil then
         return utils.region_above_node(refactor.scope)
     end
@@ -305,7 +307,11 @@ local function extract_setup(refactor)
     local function_name = get_input("106: Extract Function Name > ")
     assert(function_name ~= "", "Error: Must provide function name")
     local function_body = refactor.region:get_text()
+
+    -- NOTE: How do we think about this if we have to pass through multiple
+    -- functions (method extraction)
     local args = vim.fn.sort(vim.tbl_keys(get_selected_locals(refactor)))
+
     local is_class = refactor.ts:is_class_function(refactor.scope)
     local first_line = function_body[1]
 
@@ -333,12 +339,26 @@ local function extract_setup(refactor)
     local function_code = get_function_code(refactor, extract_params)
     local func_call = get_func_call(refactor, extract_params)
 
-    refactor.text_edits = {
-        {
+    local region_above_scope = get_non_comment_region_above_node(refactor)
+    local extract_function
+    if is_class then
+        extract_function = lsp_utils.insert_new_line_text(
+            region_above_scope,
+            function_code,
+            { below = true }
+        )
+    else
+        extract_function = {
             region = get_non_comment_region_above_node(refactor),
             text = function_code,
             bufnr = refactor.buffers[2],
-        },
+        }
+    end
+
+    -- NOTE: there is going tno be a bunch of edge cases we haven't thought
+    -- about
+    refactor.text_edits = {
+        extract_function,
         func_call,
     }
 end

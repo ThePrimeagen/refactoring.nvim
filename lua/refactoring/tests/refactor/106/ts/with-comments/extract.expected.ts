@@ -7,9 +7,9 @@ function foo_bar(a, test, test_other) {
 
 
 /*
- * This is a comment
- * wow!
- */
+    * This is a comment
+    * wow!
+*/
 function simple_function(a: number) {
     let test = 1;
     let test_other = 11

@@ -17,11 +17,12 @@ local default_formatting = {
     hpp = {},
     cxx = {},
 
+    php = {},
     -- Python needs tons of work to become correct.
     python = {},
 
     default = {
-        cmd = [[ :silent norm! mzgg=G`z ]],
+        cmd = nil, -- format.lua checks to see if the command is nil or not
     },
 }
 
