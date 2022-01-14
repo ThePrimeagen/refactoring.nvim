@@ -34,7 +34,7 @@ local function refactor_apply_text_edits(refactor)
     end
 
     for bufnr, edit_set in pairs(edits) do
-        vim.lsp.util.apply_text_edits(edit_set, bufnr)
+        vim.lsp.util.apply_text_edits(edit_set, bufnr, "utf-16")
     end
 
     return true, refactor
