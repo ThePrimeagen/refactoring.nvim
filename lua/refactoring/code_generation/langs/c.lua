@@ -1,6 +1,6 @@
 -- c mostly == cpp
 local code_utils = require("refactoring.code_generation.utils")
-local cpp = require("refactoring.code_generation.cpp")
+local cpp = require("refactoring.code_generation.langs.cpp")
 
 local function c_func_args_default_types(args)
     local new_args = {}
