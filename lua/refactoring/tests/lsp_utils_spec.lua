@@ -40,7 +40,7 @@ describe("lsp_utils", function()
         local region = Region:from_current_selection()
         local delete_text = lsp_utils.delete_text(region)
         local bufnr = vim.api.nvim_get_current_buf()
-        vim.lsp.util.apply_text_edits({ delete_text }, bufnr)
+        vim.lsp.util.apply_text_edits({ delete_text }, bufnr, "utf-16")
         assert.are.same({
             "foo",
             "if (true) {",
@@ -58,7 +58,7 @@ describe("lsp_utils", function()
         local region = Region:from_current_selection()
         local insert_text = lsp_utils.insert_text(region, "hello, piq")
         local bufnr = vim.api.nvim_get_current_buf()
-        vim.lsp.util.apply_text_edits({ insert_text }, bufnr)
+        vim.lsp.util.apply_text_edits({ insert_text }, bufnr, "utf-16")
         assert.are.same({
             "foo",
             "if (true) {",
@@ -80,7 +80,11 @@ bin, ban,]]
         )
 
         local bufnr = vim.api.nvim_get_current_buf()
-        vim.lsp.util.apply_text_edits({ insert_text, delete_text }, bufnr)
+        vim.lsp.util.apply_text_edits(
+            { insert_text, delete_text },
+            bufnr,
+            "utf-16"
+        )
 
         assert.are.same({
             "foo",
