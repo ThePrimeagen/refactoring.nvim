@@ -1,11 +1,11 @@
-local javascript = require("refactoring.code_generation.javascript")
-local typescript = require("refactoring.code_generation.typescript")
-local lua = require("refactoring.code_generation.lua")
-local go = require("refactoring.code_generation.go")
-local cpp = require("refactoring.code_generation.cpp")
-local c = require("refactoring.code_generation.c")
-local python = require("refactoring.code_generation.python")
-local php = require("refactoring.code_generation.php")
+local javascript = require("refactoring.code_generation.langs.javascript")
+local typescript = require("refactoring.code_generation.langs.typescript")
+local lua = require("refactoring.code_generation.langs.lua")
+local go = require("refactoring.code_generation.langs.go")
+local cpp = require("refactoring.code_generation.langs.cpp")
+local c = require("refactoring.code_generation.langs.c")
+local python = require("refactoring.code_generation.langs.python")
+local php = require("refactoring.code_generation.langs.php")
 
 local M = {
     javascript = javascript,
