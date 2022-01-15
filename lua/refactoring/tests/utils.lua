@@ -25,6 +25,7 @@ function M.run_inputs_if_exist(filename_prefix, cwd)
         input_file_name
     )
     if inputs_file:exists() then
+        print("M.run_inputs_if_exist#if") -- __AUTO_GENERATED_PRINTF__
         local inputs = M.get_contents(
             string.format("%s.inputs", filename_prefix)
         )

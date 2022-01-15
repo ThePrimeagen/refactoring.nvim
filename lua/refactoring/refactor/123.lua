@@ -7,7 +7,7 @@ local Region = require("refactoring.region")
 local post_refactor = require("refactoring.tasks.post_refactor")
 local refactor_setup = require("refactoring.tasks.refactor_setup")
 local selection_setup = require("refactoring.tasks.selection_setup")
-local get_input = require("refactoring.get_input")
+local get_select_input = require("refactoring.get_select_input")
 
 local lsp_utils = require("refactoring.lsp_utils")
 
@@ -50,31 +50,23 @@ local function determine_identifier_position(identifiers, node)
 end
 
 local function get_node_to_inline(identifiers, bufnr)
-    local node_to_inline, identifier_num
+    local node_to_inline, identifier_pos
 
     if #identifiers == 0 then
         error("No declarations in selected area")
     elseif #identifiers == 1 then
-        identifier_num = 1
+        identifier_pos = 1
     else
-        -- TODO: at some point, change this to use an async wrapper around vim.ui.select()
-        print("Please select the variable to inline: ")
-
-        for i, identifier in pairs(identifiers) do
-            print(
-                string.format("%d. %s", i, ts.get_node_text(identifier, bufnr))
-            )
-        end
-
-        identifier_num = get_input(
-            "123: Enter the number of the variable to inline > "
+        node_to_inline, identifier_pos = get_select_input(
+            identifiers,
+            "123: Select an identifier to inline:",
+            function(node)
+                return ts.get_node_text(node, bufnr)
+            end
         )
-        identifier_num = tonumber(identifier_num)
     end
 
-    node_to_inline = identifiers[identifier_num]
-
-    return node_to_inline, identifier_num
+    return node_to_inline, identifier_pos
 end
 
 function M.inline_var(bufnr, opts)
@@ -90,17 +82,17 @@ function M.inline_var(bufnr, opts)
             local identifiers = refactor.ts:get_local_var_names(declarator_node)
 
             -- these three vars are determined based on the situation
-            local node_to_inline, identifier_num, definition
+            local node_to_inline, identifier_pos, definition
 
             if node_on_cursor then
                 node_to_inline = ts.get_node_at_cursor(0)
                 definition = ts.find_definition(node_to_inline, bufnr)
-                identifier_num = determine_identifier_position(
+                identifier_pos = determine_identifier_position(
                     identifiers,
                     definition
                 )
             else
-                node_to_inline, identifier_num = get_node_to_inline(
+                node_to_inline, identifier_pos = get_node_to_inline(
                     identifiers,
                     bufnr
                 )
@@ -117,7 +109,7 @@ function M.inline_var(bufnr, opts)
             local value_node =
                 refactor.ts:get_local_var_values(
                     declarator_node
-                )[identifier_num]
+                )[identifier_pos]
 
             local text_edits = {}
 

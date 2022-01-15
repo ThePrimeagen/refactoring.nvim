@@ -40,7 +40,6 @@ function M.insert_new_line_text(pointOrRegion, text, opts)
         text = code.new_line() .. text
     else
         region.start_col = 1
-        print("M.insert_new_line_text#if") -- __AUTO_GENERATED_PRINTF__
         region.end_col = 0
         text = text .. code.new_line()
     end
