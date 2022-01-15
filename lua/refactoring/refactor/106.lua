@@ -12,7 +12,7 @@ local post_refactor = require("refactoring.tasks.post_refactor")
 
 local M = {}
 
--- 1.  We need definition set of potential captpokiWured variables
+-- 1.  We need definition set of potential captured variables
 
 local function get_extract_setup_pipeline(bufnr, opts)
     return Pipeline
@@ -29,7 +29,7 @@ local function get_return_vals(refactor)
     )
 
     region_vars = vim.tbl_map(function(node)
-        return refactor.ts:get_local_var_names(node)
+        return refactor.ts:get_local_var_names(node)[1]
     end, region_vars)
 
     region_vars = vim.tbl_filter(function(node)

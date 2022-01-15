@@ -66,11 +66,11 @@ function TreeSitter:loop_thru_nodes(scope, inline_nodes)
 end
 
 function TreeSitter:get_local_var_names(node)
-    return self:loop_thru_nodes(node, self.local_var_names)[1]
+    return self:loop_thru_nodes(node, self.local_var_names)
 end
 
 function TreeSitter:get_local_var_values(node)
-    return self:loop_thru_nodes(node, self.local_var_values)[1]
+    return self:loop_thru_nodes(node, self.local_var_values)
 end
 
 function TreeSitter:get_statements(scope)

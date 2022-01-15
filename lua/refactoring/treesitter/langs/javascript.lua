@@ -36,6 +36,9 @@ function JavaScript.new(bufnr, ft)
         local_var_values = {
             InlineNode("(variable_declarator value: (_) @tmp_capture)"),
         },
+        local_declarations = {
+            InlineNode("(lexical_declaration) @definition.local_declarator"),
+        },
         debug_paths = {
             function_declaration = FieldNode("name"),
             method_definition = FieldNode("name"),
