@@ -78,15 +78,20 @@ func %s %s(%s) {
 end
 
 local function go_class_function_return(opts)
+    if opts["return_type"] == nil then
+        opts["return_type"] = code_utils.default_func_return_type()
+    end
+
     return string.format(
         [[
-func %s %s(%s) INPUT_RETURN_TYPE {
+func %s %s(%s) %s {
 %s
 }
 ]],
         opts.className,
         opts.name,
         go_func_args(opts),
+        opts.return_type,
         code_utils.stringify_code(opts.body)
     )
 end
