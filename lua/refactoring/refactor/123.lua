@@ -70,6 +70,24 @@ local function get_node_to_inline(identifiers, bufnr)
     return node_to_inline, identifier_pos
 end
 
+local function construct_new_declaration(
+    identifiers,
+    values,
+    identifer_to_exclude,
+    bufnr
+)
+    local new_identifiers, new_values = {}, {}
+
+    for idx, identifier in pairs(identifiers) do
+        if identifier ~= identifer_to_exclude then
+            table.insert(new_identifiers, ts.get_node_text(identifier, bufnr))
+            table.insert(new_values, ts.get_node_text(values[idx], bufnr))
+        end
+    end
+
+    return new_identifiers, new_values
+end
+
 function M.inline_var(bufnr, opts)
     get_inline_setup_pipeline(bufnr, opts)
         :add_task(function(refactor)
@@ -107,10 +125,8 @@ function M.inline_var(bufnr, opts)
                 definition
             )
 
-            local value_node =
-                refactor.ts:get_local_var_values(
-                    declarator_node
-                )[identifier_pos]
+            local all_values = refactor.ts:get_local_var_values(declarator_node)
+            local value_node_to_inline = all_values[identifier_pos]
 
             local text_edits = {}
 
@@ -123,14 +139,28 @@ function M.inline_var(bufnr, opts)
                     )
                 )
             else
-                -- TODO: there has to be a better way for this to look good
-                print(" ")
-                print(
-                    "123: Removing initial variable declaration on multi-declaration statments is not yet supported. Please remove the inlined variable manually."
+                local new_identifiers_text, new_values_text =
+                    construct_new_declaration(
+                        identifiers,
+                        all_values,
+                        node_to_inline,
+                        bufnr
+                    )
+
+                local insert_text, delete_text = lsp_utils.replace_text(
+                    Region:from_node(declarator_node, bufnr),
+                    refactor.code.constant({
+                        multiple = true,
+                        identifiers = new_identifiers_text,
+                        values = new_values_text,
+                    })
                 )
+
+                table.insert(text_edits, insert_text)
+                table.insert(text_edits, delete_text)
             end
 
-            local value_text = ts.get_node_text(value_node, bufnr)
+            local value_text = ts.get_node_text(value_node_to_inline, bufnr)
 
             for _, ref in pairs(references) do
                 -- TODO: In my mind, if nothing is left on the line when you remove, it should get deleted.
