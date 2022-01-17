@@ -28,9 +28,29 @@ def %s(self, %s):
     )
 end
 
+local function python_constant(opts)
+    local constant_string_pattern
+
+    if opts.multiple then
+        constant_string_pattern = string.format(
+            "%s = %s\n",
+            table.concat(opts.identifiers, ", "),
+            table.concat(opts.values, ", ")
+        )
+    else
+        constant_string_pattern = string.format(
+            "%s = %s\n",
+            opts.name,
+            opts.value
+        )
+    end
+
+    return constant_string_pattern
+end
+
 local python = {
     constant = function(opts)
-        return string.format("%s = %s\n", opts.name, opts.value)
+        return python_constant(opts)
     end,
     ["return"] = function(code)
         return string.format("return %s", code_utils.stringify_code(code))

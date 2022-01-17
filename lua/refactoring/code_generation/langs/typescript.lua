@@ -16,6 +16,34 @@ function %s(%s) {
     )
 end
 
+local function typescript_constant(opts)
+    local constant_string_pattern
+
+    if opts.multiple then
+        constant_string_pattern = "const "
+
+        for idx, identifier in pairs(opts.identifiers) do
+            if idx == #opts.identifiers then
+                constant_string_pattern = constant_string_pattern
+                    .. string.format("%s = %s", identifier, opts.values[idx])
+            else
+                constant_string_pattern = constant_string_pattern
+                    .. string.format("%s = %s,", identifier, opts.values[idx])
+            end
+        end
+
+        constant_string_pattern = constant_string_pattern .. ";\n"
+    else
+        constant_string_pattern = string.format(
+            "const %s = %s;\n",
+            code_utils.returnify(opts.name, string_pattern),
+            opts.value
+        )
+    end
+
+    return constant_string_pattern
+end
+
 local typescript = {
     print = function(statement)
         return string.format('console.log("%s");', statement)
@@ -28,11 +56,7 @@ local typescript = {
     end,
     -- The constant can be destructured
     constant = function(opts)
-        return string.format(
-            "const %s = %s;\n",
-            code_utils.returnify(opts.name, string_pattern),
-            opts.value
-        )
+        return typescript_constant(opts)
     end,
 
     -- This is for returing multiple arguments from a function

@@ -106,11 +106,23 @@ local function go_call_class_func(opts)
 end
 
 local function constant(opts)
-    return string.format(
-        "%s := %s\n",
-        code_utils.returnify(opts.name, string_pattern),
-        opts.value
-    )
+    local constant_string_pattern
+
+    if opts.multiple then
+        constant_string_pattern = string.format(
+            "%s := %s\n",
+            table.concat(opts.identifiers, ", "),
+            table.concat(opts.values, ", ")
+        )
+    else
+        constant_string_pattern = string.format(
+            "%s := %s\n",
+            code_utils.returnify(opts.name, string_pattern),
+            opts.value
+        )
+    end
+
+    return constant_string_pattern
 end
 
 local go = {

@@ -32,6 +32,34 @@ local function c_func_args(opts)
     end
 end
 
+local function c_constant(opts)
+    local constant_string_pattern
+
+    if opts.multiple then
+        constant_string_pattern = "INSERT_TYPE_HERE "
+
+        for idx, identifier in pairs(opts.identifiers) do
+            if idx == #opts.identifiers then
+                constant_string_pattern = constant_string_pattern
+                    .. string.format("%s = %s", identifier, opts.values[idx])
+            else
+                constant_string_pattern = constant_string_pattern
+                    .. string.format("%s = %s,", identifier, opts.values[idx])
+            end
+        end
+
+        constant_string_pattern = constant_string_pattern .. ";\n"
+    else
+        constant_string_pattern = string.format(
+            "INSERT_TYPE_HERE %s = %s;\n",
+            opts.name,
+            opts.value
+        )
+    end
+
+    return constant_string_pattern
+end
+
 local c = {
     comment = cpp.comment,
     print = cpp.print,
@@ -53,11 +81,7 @@ local c = {
         )
     end,
     constant = function(opts)
-        return string.format(
-            "INSERT_TYPE_HERE %s = %s;\n",
-            opts.name,
-            opts.value
-        )
+        return c_constant(opts)
     end,
     call_function = cpp.call_function,
     pack = cpp.pack,

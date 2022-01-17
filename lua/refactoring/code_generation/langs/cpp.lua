@@ -30,6 +30,34 @@ local function cpp_func_args(opts)
     end
 end
 
+local function cpp_constant(opts)
+    local constant_string_pattern
+
+    if opts.multiple then
+        constant_string_pattern = "auto "
+
+        for idx, identifier in pairs(opts.identifiers) do
+            if idx == #opts.identifiers then
+                constant_string_pattern = constant_string_pattern
+                    .. string.format("%s = %s", identifier, opts.values[idx])
+            else
+                constant_string_pattern = constant_string_pattern
+                    .. string.format("%s = %s,", identifier, opts.values[idx])
+            end
+        end
+
+        constant_string_pattern = constant_string_pattern .. ";\n"
+    else
+        constant_string_pattern = string.format(
+            "auto %s = %s;\n",
+            opts.name,
+            opts.value
+        )
+    end
+
+    return constant_string_pattern
+end
+
 local cpp = {
     comment = function(statement)
         return string.format("// %s", statement)
@@ -71,7 +99,7 @@ void %s(%s) {
         )
     end,
     constant = function(opts)
-        return string.format("auto %s = %s;\n", opts.name, opts.value)
+        return cpp_constant(opts)
     end,
     call_function = function(opts)
         return string.format("%s(%s)", opts.name, table.concat(opts.args, ", "))
