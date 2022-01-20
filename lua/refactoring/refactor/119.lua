@@ -62,14 +62,29 @@ function M.extract_var(bufnr, config)
                 refactor.ts.block_scope
             )
 
+            -- TODO: Add test for block_scope being nil
+            if block_scope == nil then
+                error("block_scope is nil! Something went wrong")
+            end
+
             local unfiltered_statements = refactor.ts:get_statements(
                 block_scope
             )
+
+            -- TODO: Add test for unfiltered_statements being nil
+            if #unfiltered_statements < 1 then
+                error("unfiltered_statements is nil! Something went wrong")
+            end
 
             local statements = vim.tbl_filter(function(node)
                 return node:parent():id() == block_scope:id()
             end, unfiltered_statements)
             utils.sort_in_appearance_order(statements)
+
+            -- TODO: Add test for statements being nil
+            if #statements < 1 then
+                error("statements is nil! Something went wrong")
+            end
 
             local contained = nil
             local top_occurrence = actual_occurrences[1]

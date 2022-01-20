@@ -20,31 +20,35 @@ function Lua.new(bufnr, ft)
         scope_names = {
             program = "program",
             local_function = "function",
-            ["function"] = "function",
+            ["function_declaration"] = "function",
             function_definition = "function",
         },
         block_scope = {
-            local_function = true,
-            function_definition = true,
-            ["function"] = true,
+            block = true,
         },
         variable_scope = {
             variable_declaration = true,
             local_variable_declaration = true,
         },
         local_var_names = {
-            InlineNode("((variable_declarator (identifier) @tmp_capture))"),
+            InlineNode(
+                "( variable_declaration ( assignment_statement ( variable_list name:((identifier) @definition.local_name)))) "
+            ),
         },
         local_var_values = {
-            InlineNode("((variable_declarator) (_) @tmp_capture)"),
+            InlineNode(
+                " ( variable_declaration ( assignment_statement ( expression_list value:((_) @definition.local_name)))) "
+            ),
         },
         local_declarations = {
-            InlineNode("(local_variable_declaration) @tmp_capture"),
             InlineNode("(variable_declaration) @tmp_capture"),
         },
         debug_paths = {
             class_specifier = FieldNode("name"),
             function_definition = StringNode("function"),
+            function_declaration = QueryNode(
+                "(function_declaration name: (identifier) @name)"
+            ),
             ["function"] = QueryNode("(function (function_name) @name)"),
             ["local_function"] = QueryNode(
                 "(local_function (identifier) @name)"
@@ -62,7 +66,6 @@ function Lua.new(bufnr, ft)
             InlineNode("(do_statement) @tmp_capture"),
             InlineNode("(repeat_statement) @tmp_capture"),
             InlineNode("(while_statement) @tmp_capture"),
-            InlineNode("(local_variable_declaration) @tmp_capture"),
             InlineNode("(variable_declaration) @tmp_capture"),
         },
     }, bufnr)
