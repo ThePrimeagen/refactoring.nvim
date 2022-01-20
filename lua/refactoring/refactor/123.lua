@@ -56,6 +56,7 @@ local function get_node_to_inline(identifiers, bufnr)
         error("No declarations in selected area")
     elseif #identifiers == 1 then
         identifier_pos = 1
+        node_to_inline = identifiers[identifier_pos]
     else
         node_to_inline, identifier_pos = get_select_input(
             identifiers,
