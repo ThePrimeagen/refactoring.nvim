@@ -5,7 +5,8 @@ type Order = {
 
 // This the straight from the book (slight modifications)
 function orderCalculation(order: Order) {
-    const basePrice = order.quantity*order.itemPrice, i = 3;
+    const i = 3;
+
     order.quantity*order.itemPrice;
     return order.quantity*order.itemPrice -
         Math.max(0, order.quantity - 500) * order.itemPrice * 0.05 +
