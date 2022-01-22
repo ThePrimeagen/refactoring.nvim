@@ -7,6 +7,7 @@ local Lua = require("refactoring.treesitter.langs.lua")
 local Python = require("refactoring.treesitter.langs.python")
 local JavaScript = require("refactoring.treesitter.langs.javascript")
 local php = require("refactoring.treesitter.langs.php")
+local java = require("refactoring.treesitter.langs.java")
 
 local M = {
     TreeSitter = TreeSitter,
@@ -16,6 +17,7 @@ local M = {
     go = go,
     lua = Lua,
     php = php,
+    java = java,
 
     -- Why so many...
     cc = Cpp,
