@@ -176,6 +176,7 @@ require('refactoring').setup({
         go = true,
         cpp = true,
         c = true,
+        java = true,
     },
 })
 ```
