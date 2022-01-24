@@ -54,7 +54,7 @@ function Golang.new(bufnr, ft)
             InlineNode(
                 "(var_declaration (var_spec value: (expression_list (_) @tmp_capture)))"
             ),
-            InlineNode("(short_var_declaration right: (_) @tmp_capture)"),
+            InlineNode("(short_var_declaration right: (_ (_) @tmp_capture))"),
         },
         debug_paths = {
             function_declaration = FieldNode("name"),

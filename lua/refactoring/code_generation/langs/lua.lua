@@ -14,6 +14,26 @@ end
     )
 end
 
+local function lua_constant(opts)
+    local constant_string_pattern
+
+    if opts.multiple then
+        constant_string_pattern = string.format(
+            "local %s = %s\n",
+            table.concat(opts.identifiers, ", "),
+            table.concat(opts.values, ", ")
+        )
+    else
+        constant_string_pattern = string.format(
+            "local %s = %s\n",
+            opts.name,
+            opts.value
+        )
+    end
+
+    return constant_string_pattern
+end
+
 local lua = {
     comment = function(statement)
         return string.format("-- %s", statement)
@@ -25,7 +45,7 @@ local lua = {
         return string.format('print("%s", vim.inspect(%s))', prefix, var)
     end,
     constant = function(opts)
-        return string.format("local %s = %s\n", opts.name, opts.value)
+        return lua_constant(opts)
     end,
     ["function"] = function(opts)
         return lua_function(opts)
