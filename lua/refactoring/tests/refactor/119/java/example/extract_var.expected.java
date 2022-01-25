@@ -6,7 +6,7 @@ class Order {
 class ExtractVar {
     public static double orderCalculation(Order order, int a, int b) {
         double temp = a * b;
-        INSERT_TYPE_HERE basePrice = order.quantity*order.itemPrice;
+        var basePrice = order.quantity*order.itemPrice;
         double blah = (basePrice) - 7;
 
         System.out.printf("%d %d", temp, blah);
