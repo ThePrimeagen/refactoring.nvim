@@ -60,6 +60,7 @@ supported (with individual support for each function may vary):
 - C/C++
 - Golang
 - Python
+- Java
 - PHP
 
 ### Refactoring Features<a name="refactoring-features"></a>
