@@ -1,0 +1,2 @@
+:4
+:execute "norm! 2wv\<Esc>"
