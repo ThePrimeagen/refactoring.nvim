@@ -9,7 +9,7 @@
     # languages+=(${lang_array[0]})
 # done
 
-lang_files=(go python php lua cpp typescript javascript)
+lang_files=(go python php lua cpp typescript javascript java)
 
 for lang in "${languages[@]}"
 do

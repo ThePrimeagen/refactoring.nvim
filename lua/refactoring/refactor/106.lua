@@ -175,13 +175,19 @@ local function get_non_comment_region_above_node(refactor)
         return utils.region_above_node(refactor.scope)
     end
 
-    if prev_sibling:type() == "comment" then
+    if
+        prev_sibling:type() == "comment"
+        or prev_sibling:type() == "block_comment"
+    then
         local start_row
         while true do
             -- Only want first value
             start_row = prev_sibling:range()
             local temp = prev_sibling:prev_sibling()
-            if temp ~= nil and temp:type() == "comment" then
+            if
+                temp ~= nil
+                and (temp:type() == "comment" or temp:type() == "block_comment")
+            then
                 -- Only want first value
                 local temp_row = temp:range()
                 if start_row - temp_row == 1 then
