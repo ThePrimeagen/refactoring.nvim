@@ -11,7 +11,8 @@ function Golang.new(bufnr, ft)
         version = Version:new(
             TreeSitter.version_flags.Scopes,
             TreeSitter.version_flags.Locals,
-            TreeSitter.version_flags.Classes
+            TreeSitter.version_flags.Classes,
+            TreeSitter.version_flags.Indents
         ),
         filetype = ft,
         bufnr = bufnr,
@@ -20,6 +21,10 @@ function Golang.new(bufnr, ft)
         },
         variable_scope = {
             short_var_declaration = true,
+        },
+        indent_scopes = {
+            function_declaration = true,
+            method_declaration = true,
         },
         scope_names = {
             function_declaration = "function",
@@ -82,6 +87,7 @@ function Golang.new(bufnr, ft)
         require_class_name = true,
         require_class_type = true,
         require_param_types = true,
+        allow_indenting_task = true,
     }, bufnr)
 end
 

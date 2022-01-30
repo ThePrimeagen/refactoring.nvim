@@ -246,6 +246,9 @@ local function extract_setup(refactor)
         },
         value,
     }
+
+    -- HACK: Should find a better way of doing this
+    refactor.operation = 106
 end
 
 local ensure_code_gen_list = {

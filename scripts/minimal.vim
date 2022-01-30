@@ -21,7 +21,6 @@ set rtp+=~/.local/share/lunarvim/site/pack/packer/start/nvim-treesitter
 " TODO, support NvChad because we are chad gigathundercock
 
 set autoindent
-set smartindent
 set tabstop=4
 set expandtab
 set shiftwidth=4

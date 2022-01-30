@@ -37,8 +37,12 @@ local function adjust_cursor(refactor)
     local add_rows = get_rows(cursor)
     local r, _ = cursor:to_vim_win()
     local result_row = r + add_rows
+    -- HACK: storing these value to be used by indent
+    refactor.result_cursor_row = result_row
+    local _, col = cursor:to_vim()
+    refactor.result_cursor_col = col
+    -- TODO: have to adjust cursor after indent?
     vim.schedule(function()
-        local _, col = cursor:to_vim()
         vim.api.nvim_win_set_cursor(win, {
             result_row,
             col,

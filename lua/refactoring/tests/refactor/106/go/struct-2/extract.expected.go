@@ -15,6 +15,6 @@ func (b *foobar) foo(a int, test INSERT_PARAM_TYPE, test_other INSERT_PARAM_TYPE
 func (b *foobar) simple_function(a int) {
 	var test int = 1
 	test_other := 1
-b.foo(a, test, test_other)
+	b.foo(a, test, test_other)
 
 }

@@ -12,7 +12,7 @@ return test_other
 
 func simple_function(a int) (int, int) {
 	var test int = 1
-test_other := foo(a, test)
+	test_other := foo(a, test)
 
 
 	return test, test_other

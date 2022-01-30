@@ -16,7 +16,7 @@ return test_other
 
 func (f *foobar) simple_function(a int) (int, int) {
 	var test int = 1
-test_other := f.foo(a, test)
+	test_other := f.foo(a, test)
 
 
 	return test, test_other
