@@ -1,5 +1,7 @@
 local code_utils = require("refactoring.code_generation.utils")
 
+local string_pattern = "%s"
+
 local function cpp_func_args_default_types(args)
     local new_args = {}
     for _, arg in ipairs(args) do
@@ -50,7 +52,7 @@ local function cpp_constant(opts)
     else
         constant_string_pattern = string.format(
             "auto %s = %s;\n",
-            opts.name,
+            code_utils.returnify(opts.name, string_pattern),
             opts.value
         )
     end
