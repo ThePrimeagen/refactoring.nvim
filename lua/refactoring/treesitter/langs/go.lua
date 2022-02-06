@@ -29,6 +29,7 @@ function Golang.new(bufnr, ft)
         scope_names = {
             function_declaration = "function",
             method_declaration = "function",
+            method = "program",
         },
         valid_class_nodes = {
             method_declaration = 0,

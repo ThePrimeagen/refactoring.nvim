@@ -7,5 +7,5 @@ def foo_bar(a, test, test_other):
 def simple_function(a):
     test = 1
     test_other = 11
-foo_bar(a, test, test_other)
+    foo_bar(a, test, test_other)
 

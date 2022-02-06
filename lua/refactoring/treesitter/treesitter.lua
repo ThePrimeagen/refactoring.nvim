@@ -55,9 +55,15 @@ function TreeSitter:new(config, bufnr)
     return setmetatable(c, self)
 end
 
--- TODO: Do I need a func for this?
 function TreeSitter:allows_indenting_task()
     return self.allow_indenting_task
+end
+
+function TreeSitter:is_indent_scope(scope)
+    if self.indent_scopes[scope:type()] == nil then
+        return false
+    end
+    return true
 end
 
 function TreeSitter:loop_thru_nodes(scope, inline_nodes)

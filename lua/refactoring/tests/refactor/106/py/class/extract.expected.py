@@ -9,5 +9,5 @@ def foo(self, a, test, test_other):
     def simple_function(self, a):
         test = 1
         test_other = 11
-self.foo(a, test, test_other)
+        self.foo(a, test, test_other)
 

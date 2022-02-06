@@ -57,7 +57,6 @@ local function for_each_file(cb)
     )
     for _, file in pairs(files) do
         file = remove_cwd(file)
-        -- if string.match(file, "start") and string.match(file, "go") then
         if string.match(file, "start") then
             cb(file)
         end
@@ -135,20 +134,20 @@ local function validate_cursor_if_file_exists(filename_prefix)
         local cursor_position = test_utils.get_contents(
             string.format("%s.cursor_position", filename_prefix)
         )
-        -- local expected_row = tonumber(cursor_position[1])
+        local expected_row = tonumber(cursor_position[1])
         local expected_col = tonumber(cursor_position[2])
 
         local cursor = vim.api.nvim_win_get_cursor(0)
-        -- local result_row = cursor[1]
+        local result_row = cursor[1]
         local result_col = cursor[2]
-        -- assert(
-        -- expected_row == result_row,
-        -- string.format(
-        -- "cursor row invalid, expected %s got %s",
-        -- expected_row,
-        -- result_row
-        -- )
-        -- )
+        assert(
+            expected_row == result_row,
+            string.format(
+                "cursor row invalid, expected %s got %s",
+                expected_row,
+                result_row
+            )
+        )
         assert(
             expected_col == result_col,
             string.format(

@@ -11,7 +11,8 @@ function Python.new(bufnr, ft)
         version = Version:new(
             TreeSitter.version_flags.Scopes,
             TreeSitter.version_flags.Locals,
-            TreeSitter.version_flags.Classes
+            TreeSitter.version_flags.Classes,
+            TreeSitter.version_flags.Indents
         ),
         filetype = ft,
         bufnr = bufnr,
@@ -51,6 +52,11 @@ function Python.new(bufnr, ft)
             InlineNode("(for_statement) @tmp_capture"),
             InlineNode("(while_statement) @tmp_capture"),
             InlineNode("(assignment) @tmp_capture"),
+        },
+        allow_indenting_task = true,
+        indent_scopes = {
+            function_definition = true,
+            for_statement = true,
         },
     }, bufnr)
 end
