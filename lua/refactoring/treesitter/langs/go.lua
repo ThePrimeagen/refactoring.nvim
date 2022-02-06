@@ -84,6 +84,7 @@ function Golang.new(bufnr, ft)
         function_scopes = {
             function_declaration = "function",
             method_declaration = "function",
+            if_statement = true,
         },
         require_class_name = true,
         require_class_type = true,

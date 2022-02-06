@@ -57,6 +57,7 @@ function Python.new(bufnr, ft)
         indent_scopes = {
             function_definition = true,
             for_statement = true,
+            if_statement = true,
         },
     }, bufnr)
 end
