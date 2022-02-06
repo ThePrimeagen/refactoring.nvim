@@ -4,6 +4,7 @@ local Pipeline = require("refactoring.pipeline")
 local selection_setup = require("refactoring.tasks.selection_setup")
 local ensure_code_gen = require("refactoring.tasks.ensure_code_gen")
 local code_utils = require("refactoring.code_generation.utils")
+local Region = require("refactoring.region")
 
 local refactor_setup = require("refactoring.tasks.refactor_setup")
 local get_input = require("refactoring.get_input")
@@ -130,6 +131,22 @@ local function get_function_code(refactor, extract_params)
     return function_code
 end
 
+local function get_indent_prefix(refactor)
+    local bufnr_shiftwidth = vim.bo.shiftwidth
+    local scope_region = Region:from_node(refactor.scope, refactor.bufnr)
+    local _, scope_start_col, _, _ = scope_region:to_vim()
+    local baseline_indent = math.floor(scope_start_col / bufnr_shiftwidth)
+    -- One for one indent under scope
+    local total_indents = baseline_indent + 1
+    refactor.cursor_col_adjustment = total_indents * bufnr_shiftwidth
+    local opts = {
+        indent_width = bufnr_shiftwidth,
+        indent_amount = total_indents,
+    }
+    return refactor.code.indent(opts)
+end
+
+-- TODO: Update func name to func value something
 local function get_value(refactor, extract_params)
     local value
     if extract_params.is_class then
@@ -164,6 +181,17 @@ local function get_value(refactor, extract_params)
         }
     else
         value.text = refactor.code.terminate(value.text)
+    end
+
+    if
+        refactor.ts:allows_indenting_task()
+        and refactor.ts:is_indent_scope(refactor.scope)
+    then
+        local indent_whitespace = get_indent_prefix(refactor)
+        local value_with_indent = {}
+        value_with_indent[1] = indent_whitespace
+        value_with_indent[2] = value.text
+        value.text = table.concat(value_with_indent, "")
     end
 
     return value
@@ -246,9 +274,6 @@ local function extract_setup(refactor)
         },
         value,
     }
-
-    -- HACK: Should find a better way of doing this
-    refactor.operation = 106
 end
 
 local ensure_code_gen_list = {

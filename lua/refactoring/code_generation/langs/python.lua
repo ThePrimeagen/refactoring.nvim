@@ -52,6 +52,27 @@ local python = {
     constant = function(opts)
         return python_constant(opts)
     end,
+    indent = function(opts)
+        local indent = {}
+
+        local single_indent_table = {}
+        local i = 1
+        -- lua loops are weird, adding 1 for correct value
+        while i < opts.indent_width + 1 do
+            single_indent_table[i] = " "
+            i = i + 1
+        end
+        local single_indent = table.concat(single_indent_table, "")
+
+        i = 1
+        -- lua loops are weird, adding 1 for correct value
+        while i < opts.indent_amount + 1 do
+            indent[i] = single_indent
+            i = i + 1
+        end
+
+        return table.concat(indent, "")
+    end,
     ["return"] = function(code)
         return string.format("return %s", code_utils.stringify_code(code))
     end,

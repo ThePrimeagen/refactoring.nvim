@@ -24,10 +24,6 @@ local refactor_id_to_refactor = {
     ["123"] = { name = "inline_var" },
 }
 
-local no_expand_tab = {
-    ["go"] = true,
-}
-
 local cwd = vim.loop.cwd()
 vim.cmd("set rtp+=" .. cwd)
 
@@ -206,13 +202,6 @@ describe("Refactoring", function()
             )
 
             Config.get():reset()
-
-            -- Needed for indenting tests with certain languages
-            if no_expand_tab[filename_extension] then
-                vim.bo.expandtab = false
-            else
-                vim.bo.expandtab = true
-            end
 
             set_config_options(filename_prefix, filename_extension)
             test_utils.run_inputs_if_exist(filename_prefix, cwd)
