@@ -15,6 +15,7 @@ local extension_to_filetype = {
     ["js"] = "javascript",
     ["go"] = "go",
     ["py"] = "python",
+    ["java"] = "java",
 }
 
 local refactor_id_to_refactor = {
@@ -201,13 +202,14 @@ describe("Refactoring", function()
             )
 
             Config.get():reset()
-            -- TODO: How to get this dynamically?
+
             set_config_options(filename_prefix, filename_extension)
             test_utils.run_inputs_if_exist(filename_prefix, cwd)
             test_utils.run_commands(filename_prefix)
             refactoring.refactor(refactor["name"])
             async.util.scheduler()
             local lines = vim.api.nvim_buf_get_lines(bufnr, 0, -1, false)
+
             eq(expected, lines)
             validate_cursor_if_file_exists(filename_prefix)
         end)

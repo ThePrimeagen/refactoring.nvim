@@ -1,20 +1,20 @@
 package main
 
 type Slicer struct {
-    s []int
+	s []int
 }
 
 func (s Slicer) sumSlice() int {
-    sum := 0
-    for _, val := range s.s {
-        sum += val
-    }
+	sum := 0
+	for _, val := range s.s {
+		sum += val
+	}
 return sum
 }
 
 func (s Slicer) Sum() int {
-sum := s.sumSlice()
+	sum := s.sumSlice()
 
 
-    return sum
+	return sum
 }

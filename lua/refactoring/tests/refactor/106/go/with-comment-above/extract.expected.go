@@ -14,6 +14,6 @@ I like comments as much as I like coconut oil */
 func simple_function(a int) {
 	var test int = 1
 	test_other := 1
-foo_bar(a, test, test_other)
+	foo_bar(a, test, test_other)
 
 }

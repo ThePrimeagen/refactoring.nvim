@@ -129,6 +129,16 @@ local go = {
     comment = function(statement)
         return string.format("// %s", statement)
     end,
+    indent = function(opts)
+        local indent = {}
+        local i = 1
+        -- lua loops are weird, adding 1 for correct value
+        while i < opts.indent_amount + 1 do
+            indent[i] = "\t"
+            i = i + 1
+        end
+        return table.concat(indent, "")
+    end,
     print_var = function(prefix, var)
         return string.format(
             'fmt.Println(fmt.Sprintf("%s %%v", %s))',

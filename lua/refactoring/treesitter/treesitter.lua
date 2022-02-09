@@ -47,11 +47,23 @@ function TreeSitter:new(config, bufnr)
         require_class_name = false,
         require_class_type = false,
         require_param_types = false,
+        allow_indenting_task = false,
         version = Version:new(),
         filetype = config.filetype,
     }, config)
 
     return setmetatable(c, self)
+end
+
+function TreeSitter:allows_indenting_task()
+    return self.allow_indenting_task
+end
+
+function TreeSitter:is_indent_scope(scope)
+    if self.indent_scopes[scope:type()] == nil then
+        return false
+    end
+    return true
 end
 
 function TreeSitter:loop_thru_nodes(scope, inline_nodes)
