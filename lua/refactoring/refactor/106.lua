@@ -102,11 +102,7 @@ local function get_indent_prefix(refactor)
     local scope_region = Region:from_node(refactor.scope, refactor.bufnr)
     local _, scope_start_col, _, _ = scope_region:to_vim()
     local baseline_indent = math.floor(scope_start_col / bufnr_shiftwidth)
-    -- One for one indent under scope
-    -- TODO: This is a bug, what happens if inside a loop,
-    -- should check the first indent func body prior to edits
     local total_indents = baseline_indent + 1
-    print("total_indents:", total_indents)
     refactor.cursor_col_adjustment = total_indents * bufnr_shiftwidth
     local opts = {
         indent_width = bufnr_shiftwidth,
@@ -122,9 +118,6 @@ local function indent_func_code(function_params, has_return_vals, refactor)
         function_params.func_header = func_header_indent
     end
 
-    local first_line = function_params.body[1]
-    local indent_chars = refactor.code.indent_char_length(first_line)
-
     -- Removing indent_chars up to initial indent
     -- Not removing indent for return statement like rest of func body
     local loop_len = #function_params.body + 1
@@ -135,7 +128,7 @@ local function indent_func_code(function_params, has_return_vals, refactor)
     while i < loop_len do
         function_params.body[i] = string.sub(
             function_params.body[i],
-            indent_chars + 1,
+            refactor.indent_chars + 1,
             #function_params.body[i]
         )
         i = i + 1
@@ -152,6 +145,7 @@ local function indent_func_code(function_params, has_return_vals, refactor)
     end
 end
 
+-- TODO: Change name of this, misleading
 local function get_func_parms(extract_params, refactor)
     local func_params = {
         name = extract_params.function_name,
@@ -198,6 +192,16 @@ local function get_function_code(refactor, extract_params)
     return function_code
 end
 
+local function get_indent_func_call(refactor)
+    local temp = {}
+    local i = 0
+    while i < refactor.indent_chars + 1 do
+        temp[i] = refactor.code.indent_char()
+        i = i + 1
+    end
+    return table.concat(temp, "")
+end
+
 local function get_func_call(refactor, extract_params)
     local func_call
     if extract_params.is_class then
@@ -234,7 +238,7 @@ local function get_func_call(refactor, extract_params)
         refactor.ts:allows_indenting_task()
         and refactor.ts:is_indent_scope(refactor.scope)
     then
-        local indent_whitespace = get_indent_prefix(refactor)
+        local indent_whitespace = get_indent_func_call(refactor)
         local func_call_with_indent = {}
         func_call_with_indent[1] = indent_whitespace
         func_call_with_indent[2] = func_call.text
@@ -291,6 +295,11 @@ local function extract_setup(refactor)
     local function_body = refactor.region:get_text()
     local args = vim.fn.sort(vim.tbl_keys(get_selected_locals(refactor)))
     local is_class = refactor.ts:is_class_function(refactor.scope)
+    local first_line = function_body[1]
+
+    if refactor.ts:allows_indenting_task() then
+        refactor.indent_chars = refactor.code.indent_char_length(first_line)
+    end
 
     local return_vals = get_return_vals(refactor)
     local has_return_vals = #return_vals > 0

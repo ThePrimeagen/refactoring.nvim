@@ -70,6 +70,9 @@ local python = {
         end
         return whitespace
     end,
+    indent_char = function()
+        return " "
+    end,
     indent = function(opts)
         local indent = {}
 
