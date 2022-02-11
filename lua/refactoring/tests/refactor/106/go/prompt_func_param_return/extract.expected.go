@@ -7,7 +7,7 @@ func foo(a int, test int) int {
 	for idx := test - 1; idx < test_other; idx++ {
 		fmt.Println(idx, a)
 	}
-return test_other
+	return test_other
 }
 
 func simple_function(a int) (int, int) {

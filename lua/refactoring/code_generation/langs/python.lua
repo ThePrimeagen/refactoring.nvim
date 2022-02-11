@@ -1,13 +1,17 @@
 local code_utils = require("refactoring.code_generation.utils")
 
 local function python_function(opts)
+    if opts.func_header == nil then
+        opts.func_header = ""
+    end
     return string.format(
         [[
-def %s(%s):
-    %s
+%sdef %s(%s):
+%s
 
 
 ]],
+        opts.func_header,
         opts.name,
         table.concat(opts.args, ", "),
         code_utils.stringify_code(opts.body)
@@ -15,13 +19,17 @@ def %s(%s):
 end
 
 local function python_class_function(opts)
+    if opts.func_header == nil then
+        opts.func_header = ""
+    end
     return string.format(
         [[
-def %s(self, %s):
-    %s
+%sdef %s(self, %s):
+%s
 
 
 ]],
+        opts.func_header,
         opts.name,
         table.concat(opts.args, ", "),
         code_utils.stringify_code(opts.body)
@@ -51,6 +59,16 @@ end
 local python = {
     constant = function(opts)
         return python_constant(opts)
+    end,
+    indent_char_length = function(first_line)
+        local whitespace = 0
+        for char in first_line:gmatch(".") do
+            if char ~= " " then
+                break
+            end
+            whitespace = whitespace + 1
+        end
+        return whitespace
     end,
     indent = function(opts)
         local indent = {}
