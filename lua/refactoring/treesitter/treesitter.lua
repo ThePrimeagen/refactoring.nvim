@@ -43,6 +43,7 @@ function TreeSitter:new(config, bufnr)
         indent_scopes = {},
         parameter_list = {},
         function_scopes = {},
+        function_args = {},
         bufnr = bufnr,
         require_class_name = false,
         require_class_type = false,
@@ -75,6 +76,18 @@ function TreeSitter:loop_thru_nodes(scope, inline_nodes)
         end
     end
     return out
+end
+
+function TreeSitter:get_local_defs(scope, region)
+    local nodes = self:loop_thru_nodes(scope, self.function_args)
+    local local_var_names = self:get_local_var_names(scope)
+    local i = #nodes + 1
+    for _, v in ipairs(local_var_names) do
+        nodes[i] = v
+        i = i + 1
+    end
+    nodes = utils.region_complement(nodes, region)
+    return nodes
 end
 
 function TreeSitter:get_local_var_names(node)
@@ -113,6 +126,12 @@ function TreeSitter:get_references(scope)
         end
     end
     return out
+end
+
+function TreeSitter:get_region_refs(scope, region)
+    local nodes = self:get_references(scope)
+    nodes = utils.region_intersect(nodes, region)
+    return nodes
 end
 
 function TreeSitter:get_class_name(scope)

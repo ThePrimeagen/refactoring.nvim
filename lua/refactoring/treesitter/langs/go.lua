@@ -86,6 +86,14 @@ function Golang.new(bufnr, ft)
             method_declaration = "function",
             if_statement = true,
         },
+        function_args = {
+            InlineNode(
+                "(function_declaration parameters: (parameter_list (parameter_declaration (identifier) @tmp_capture)))"
+            ),
+            InlineNode(
+                "(method_declaration parameters: (parameter_list (parameter_declaration name: (identifier) @definition.function_argument)))"
+            ),
+        },
         require_class_name = true,
         require_class_type = true,
         require_param_types = true,

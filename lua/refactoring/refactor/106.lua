@@ -1,4 +1,3 @@
-local get_selected_locals = require("refactoring.refactor.get_selected_locals")
 local utils = require("refactoring.utils")
 local Pipeline = require("refactoring.pipeline")
 local selection_setup = require("refactoring.tasks.selection_setup")
@@ -288,7 +287,20 @@ local function get_non_comment_region_above_node(refactor)
     end
 end
 
---
+local function get_selected_locals(refactor)
+    local local_defs = refactor.ts:get_local_defs(
+        refactor.scope,
+        refactor.region
+    )
+    local region_refs = refactor.ts:get_region_refs(
+        refactor.scope,
+        refactor.region
+    )
+    local local_def_map = utils.node_text_to_set(local_defs)
+    local region_refs_map = utils.node_text_to_set(region_refs)
+    return utils.table_key_intersect(local_def_map, region_refs_map)
+end
+
 local function extract_setup(refactor)
     local function_name = get_input("106: Extract Function Name > ")
     assert(function_name ~= "", "Error: Must provide function name")
