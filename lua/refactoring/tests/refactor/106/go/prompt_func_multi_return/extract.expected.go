@@ -8,7 +8,7 @@ func foo(a int) (int, int) {
 	for idx := test - 1; idx < test_other; idx++ {
 		fmt.Println(idx, a)
 	}
-return test, test_other
+	return test, test_other
 }
 
 func simple_function(a int) (int, int) {

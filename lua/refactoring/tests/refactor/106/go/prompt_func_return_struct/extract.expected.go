@@ -9,7 +9,7 @@ func (s Slicer) sumSlice() int {
 	for _, val := range s.s {
 		sum += val
 	}
-return sum
+	return sum
 }
 
 func (s Slicer) Sum() int {

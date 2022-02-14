@@ -1,6 +1,6 @@
 
 def foo_bar(a, test, test_other):
-        for x in range(test_other + test):
+    for x in range(test_other + test):
         print(x, a)
 
 

@@ -129,6 +129,19 @@ local go = {
     comment = function(statement)
         return string.format("// %s", statement)
     end,
+    indent_char_length = function(first_line)
+        local indent_chars = 0
+        for char in first_line:gmatch(".") do
+            if char ~= "\t" then
+                break
+            end
+            indent_chars = indent_chars + 1
+        end
+        return indent_chars
+    end,
+    indent_char = function()
+        return "\t"
+    end,
     indent = function(opts)
         local indent = {}
         local i = 1

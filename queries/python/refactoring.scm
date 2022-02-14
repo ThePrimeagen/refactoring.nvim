@@ -4,6 +4,7 @@
 ((expression_statement
   (assignment
     (identifier) @definition.local_name)))
+(for_statement left: (identifier) @definition.local_name)
 
 ;; grabs all the arguments that are passed into the function.  Needed for
 ;; function extraction, 106

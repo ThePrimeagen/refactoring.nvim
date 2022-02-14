@@ -1,7 +1,7 @@
 class Poggers:
 
-def foo(self, a, test, test_other):
-            for x in range(test_other + test):
+    def foo(self, a, test, test_other):
+        for x in range(test_other + test):
             print(x, a)
 
 

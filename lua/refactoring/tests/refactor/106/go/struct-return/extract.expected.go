@@ -11,7 +11,7 @@ func (f *foobar) foo(a int, test INSERT_PARAM_TYPE) INPUT_RETURN_TYPE {
 	for idx := test - 1; idx < test_other; idx++ {
 		fmt.Println(f.poggers, idx, a)
 	}
-return test_other
+	return test_other
 }
 
 func (f *foobar) simple_function(a int) (int, int) {
