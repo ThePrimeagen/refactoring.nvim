@@ -15,6 +15,7 @@ function JavaScript.new(bufnr, ft)
         ),
         filetype = ft,
         bufnr = bufnr,
+        allow_indenting_task = true,
         scope_names = {
             program = "program",
             function_declaration = "function",
@@ -51,6 +52,18 @@ function JavaScript.new(bufnr, ft)
             for_in_statement = StringNode("for_in"),
             while_statement = StringNode("while"),
             do_statement = StringNode("do"),
+        },
+        indent_scopes = {
+            program = true,
+            function_declaration = true,
+            method_definition = true,
+            arrow_function = true,
+            class_declaration = true,
+            if_statement = true,
+            for_statement = true,
+            for_in_statement = true,
+            while_statement = true,
+            do_statement = true,
         },
         statements = {
             InlineNode("(expression_statement) @tmp_capture"),
