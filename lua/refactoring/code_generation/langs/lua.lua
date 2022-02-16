@@ -24,9 +24,15 @@ local function lua_constant(opts)
             table.concat(opts.values, ", ")
         )
     else
+        local name
+        if opts.name[1] ~= nil then
+            name = opts.name[1]
+        else
+            name = opts.name
+        end
         constant_string_pattern = string.format(
             "local %s = %s\n",
-            opts.name,
+            name,
             opts.value
         )
     end
