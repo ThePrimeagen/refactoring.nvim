@@ -59,6 +59,13 @@ function Lua.new(bufnr, ft)
             for_statement = StringNode("for"),
             while_statement = StringNode("while"),
         },
+        allow_indenting_task = true,
+        indent_scopes = {
+            for_statement = true,
+            if_statement = true,
+            while_statement = true,
+            function_declaration = true,
+        },
         statements = {
             InlineNode("(return_statement) @tmp_capture"),
             InlineNode("(if_statement) @tmp_capture"),
