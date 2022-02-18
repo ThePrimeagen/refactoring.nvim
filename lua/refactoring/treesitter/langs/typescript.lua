@@ -47,6 +47,15 @@ function Typescript.new(bufnr, ft)
                 "(lexical_declaration (variable_declarator name: (_) @tmp_capture))"
             ),
         },
+        function_args = {
+            InlineNode(
+                "((formal_parameters (required_parameter (identifier) @tmp_capture)))"
+            ),
+            InlineNode(
+                "((formal_parameters (optional_parameter (identifier) @tmp_capture)))"
+            ),
+            InlineNode("(for_in_statement left: (identifier) @tmp_capture)"),
+        },
         local_var_values = {
             InlineNode(
                 "(lexical_declaration (variable_declarator value: (_) @tmp_capture))"

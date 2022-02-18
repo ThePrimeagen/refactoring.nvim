@@ -31,6 +31,14 @@ function Python.new(bufnr, ft)
         local_var_names = {
             InlineNode("(assignment left: (_ (_) @tmp_capture))"),
             InlineNode("(assignment left: (_) @tmp_capture)"),
+            InlineNode(
+                "(for_statement left: (identifier) @definition.local_name)"
+            ),
+        },
+        function_args = {
+            InlineNode(
+                "((function_definition (parameters (identifier) @tmp_capture)))"
+            ),
         },
         local_var_values = {
             InlineNode("(assignment right: (_) @tmp_capture)"),

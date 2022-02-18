@@ -34,6 +34,11 @@ function JavaScript.new(bufnr, ft)
         local_var_names = {
             InlineNode("(variable_declarator name: (_) @tmp_capture)"),
         },
+        function_args = {
+            InlineNode(
+                "(formal_parameters (identifier) @definition.function_argument)"
+            ),
+        },
         local_var_values = {
             InlineNode("(variable_declarator value: (_) @tmp_capture)"),
         },

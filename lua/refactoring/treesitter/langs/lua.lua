@@ -35,6 +35,9 @@ function Lua.new(bufnr, ft)
                 "( variable_declaration ( assignment_statement ( variable_list name:((identifier) @definition.local_name)))) "
             ),
         },
+        function_args = {
+            InlineNode("((parameters (identifier) @tmp_capture))"),
+        },
         local_var_values = {
             InlineNode(
                 " ( variable_declaration ( assignment_statement ( expression_list value:((_) @definition.local_name)))) "
