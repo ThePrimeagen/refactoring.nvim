@@ -12,7 +12,7 @@ type Order struct {
 
 func orderCalculation(order Order, a int, b int) (total float64) {
 	temp := a * b
-basePrice := order.quantity*order.itemPrice
+	basePrice := order.quantity*order.itemPrice
 blah := (basePrice) - 7
 	fmt.Println(blah, temp)
 	return basePrice -
