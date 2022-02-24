@@ -10,6 +10,39 @@ local ensure_code_gen = require("refactoring.tasks.ensure_code_gen")
 
 local M = {}
 
+local function get_func_call_prefix(refactor)
+    local bufnr_shiftwidth = vim.bo.shiftwidth
+    local scope_region = Region:from_node(refactor.scope, refactor.bufnr)
+    local _, scope_start_col, _, _ = scope_region:to_vim()
+    local baseline_indent = math.floor(scope_start_col / bufnr_shiftwidth)
+    local total_indent = baseline_indent + 1
+    local opts = {
+        indent_width = bufnr_shiftwidth,
+        indent_amount = total_indent,
+    }
+    return refactor.code.indent(opts)
+end
+
+local function get_new_var_text(extract_node_text, refactor, var_name)
+    local base_text = refactor.code.constant({
+        name = var_name,
+        value = extract_node_text,
+    })
+
+    if
+        refactor.ts:is_indent_scope(refactor.scope)
+        and refactor.ts:allows_indenting_task()
+    then
+        local indent_whitespace = get_func_call_prefix(refactor)
+        local indented_text = {}
+        indented_text[1] = indent_whitespace
+        indented_text[2] = base_text
+        return table.concat(indented_text, "")
+    end
+
+    return base_text
+end
+
 local function extract_var_setup(refactor)
     local extract_node = refactor.region_node
 
@@ -90,15 +123,11 @@ local function extract_var_setup(refactor)
             "Extract var unable to determine its containing statement within the block scope, please post issue with exact highlight + code!  Thanks"
         )
     end
-    local code = refactor.code.constant({
-        name = var_name,
-        value = extract_node_text,
-    })
 
     table.insert(refactor.text_edits, {
         add_newline = false,
         region = utils.region_one_line_up_from_node(contained),
-        text = code,
+        text = get_new_var_text(extract_node_text, refactor, var_name),
     })
 end
 
