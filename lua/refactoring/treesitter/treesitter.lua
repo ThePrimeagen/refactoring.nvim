@@ -134,6 +134,13 @@ function TreeSitter:get_region_refs(scope, region)
     return nodes
 end
 
+function TreeSitter:class_support()
+    for _ in pairs(self.valid_class_nodes) do
+        return true
+    end
+    return false
+end
+
 function TreeSitter:get_class_name(scope)
     self.version:ensure_version(TreeSitter.version_flags.Classes)
     if self.require_class_name then
