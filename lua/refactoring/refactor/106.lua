@@ -356,11 +356,30 @@ local ensure_code_gen_list = {
     -- "class_function_return",
 }
 
+local class_code_gen_list = {
+    "class_function",
+    "class_function_return",
+    "call_class_function",
+}
+
+local function ensure_code_gen_106(refactor)
+    local list = {}
+    for _, func in ipairs(ensure_code_gen_list) do
+        table.insert(list, func)
+    end
+    if refactor.ts:class_support() then
+        for _, func in ipairs(class_code_gen_list) do
+            table.insert(list, func)
+        end
+    end
+    return ensure_code_gen(refactor, list)
+end
+
 M.extract_to_file = function(bufnr, opts)
     bufnr = bufnr or vim.fn.bufnr(vim.fn.bufname())
     get_extract_setup_pipeline(bufnr, opts)
         :add_task(function(refactor)
-            return ensure_code_gen(refactor, ensure_code_gen_list)
+            return ensure_code_gen_106(refactor)
         end)
         :add_task(create_file.from_input)
         :add_task(function(refactor)
@@ -375,7 +394,7 @@ M.extract = function(bufnr, opts)
     bufnr = bufnr or vim.fn.bufnr()
     get_extract_setup_pipeline(bufnr, opts)
         :add_task(function(refactor)
-            return ensure_code_gen(refactor, ensure_code_gen_list)
+            return ensure_code_gen_106(refactor)
         end)
         :add_task(function(refactor)
             extract_setup(refactor)

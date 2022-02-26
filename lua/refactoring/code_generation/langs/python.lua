@@ -46,11 +46,13 @@ local function python_constant(opts)
             table.concat(opts.values, ", ")
         )
     else
-        constant_string_pattern = string.format(
-            "%s = %s\n",
-            opts.name,
-            opts.value
-        )
+        local name
+        if opts.name[1] ~= nil then
+            name = opts.name[1]
+        else
+            name = opts.name
+        end
+        constant_string_pattern = string.format("%s = %s\n", name, opts.value)
     end
 
     return constant_string_pattern
@@ -109,6 +111,9 @@ local python = {
     class_function = function(opts)
         return python_class_function(opts)
     end,
+    class_function_return = function(opts)
+        return python_class_function(opts)
+    end,
     call_class_function = function(opts)
         return string.format(
             "self.%s(%s)",
@@ -116,7 +121,6 @@ local python = {
             table.concat(opts.args, ", ")
         )
     end,
-
     terminate = function(code)
         return code .. "\n"
     end,
