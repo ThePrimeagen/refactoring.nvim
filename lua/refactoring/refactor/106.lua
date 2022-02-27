@@ -86,7 +86,6 @@ end
 
 local function get_func_header_prefix(refactor)
     local bufnr_shiftwidth = vim.bo.shiftwidth
-    print("bufnr_shiftwidth:", bufnr_shiftwidth)
     local scope_region = Region:from_node(refactor.scope, refactor.bufnr)
     local _, scope_start_col, _, _ = scope_region:to_vim()
     local baseline_indent = math.floor(scope_start_col / bufnr_shiftwidth)
@@ -118,23 +117,20 @@ local function indent_func_code(function_params, has_return_vals, refactor)
         function_params.func_header = func_header_indent
     end
 
-    local i
     -- Removing indent_chars up to initial indent
     -- Not removing indent for return statement like rest of func body
-    if refactor.indent_chars > 0 then
-        local loop_len = #function_params.body + 1
-        if has_return_vals then
-            loop_len = loop_len - 1
-        end
-        i = 1
-        while i < loop_len do
-            function_params.body[i] = string.sub(
-                function_params.body[i],
-                refactor.indent_chars + 1,
-                #function_params.body[i]
-            )
-            i = i + 1
-        end
+    local loop_len = #function_params.body + 1
+    if has_return_vals then
+        loop_len = loop_len - 1
+    end
+    local i = 1
+    while i < loop_len do
+        function_params.body[i] = string.sub(
+            function_params.body[i],
+            refactor.indent_chars + 1,
+            #function_params.body[i]
+        )
+        i = i + 1
     end
 
     local indent_prefix = get_indent_prefix(refactor)

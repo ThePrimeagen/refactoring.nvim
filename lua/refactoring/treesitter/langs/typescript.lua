@@ -16,7 +16,6 @@ function Typescript.new(bufnr, ft)
         ),
         filetype = ft,
         bufnr = bufnr,
-        allow_indenting_task = true,
         scope_names = {
             program = "program",
             function_declaration = "function",

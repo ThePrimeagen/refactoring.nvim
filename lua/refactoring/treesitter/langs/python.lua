@@ -61,7 +61,6 @@ function Python.new(bufnr, ft)
             InlineNode("(while_statement) @tmp_capture"),
             InlineNode("(assignment) @tmp_capture"),
         },
-        allow_indenting_task = true,
         indent_scopes = {
             function_definition = true,
             for_statement = true,
