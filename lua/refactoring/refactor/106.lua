@@ -117,23 +117,20 @@ local function indent_func_code(function_params, has_return_vals, refactor)
         function_params.func_header = func_header_indent
     end
 
-    local i
     -- Removing indent_chars up to initial indent
     -- Not removing indent for return statement like rest of func body
-    if refactor.indent_chars > 0 then
-        local loop_len = #function_params.body + 1
-        if has_return_vals then
-            loop_len = loop_len - 1
-        end
-        i = 1
-        while i < loop_len do
-            function_params.body[i] = string.sub(
-                function_params.body[i],
-                refactor.indent_chars + 1,
-                #function_params.body[i]
-            )
-            i = i + 1
-        end
+    local loop_len = #function_params.body + 1
+    if has_return_vals then
+        loop_len = loop_len - 1
+    end
+    local i = 1
+    while i < loop_len do
+        function_params.body[i] = string.sub(
+            function_params.body[i],
+            refactor.indent_chars + 1,
+            #function_params.body[i]
+        )
+        i = i + 1
     end
 
     local indent_prefix = get_indent_prefix(refactor)
