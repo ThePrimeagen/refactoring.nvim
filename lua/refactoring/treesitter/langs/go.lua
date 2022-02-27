@@ -97,7 +97,6 @@ function Golang.new(bufnr, ft)
         require_class_name = true,
         require_class_type = true,
         require_param_types = true,
-        allow_indenting_task = true,
     }, bufnr)
 end
 
