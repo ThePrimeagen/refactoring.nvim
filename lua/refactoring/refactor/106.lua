@@ -86,7 +86,6 @@ end
 
 local function get_func_header_prefix(refactor)
     local bufnr_shiftwidth = vim.bo.shiftwidth
-    print("bufnr_shiftwidth:", bufnr_shiftwidth)
     local scope_region = Region:from_node(refactor.scope, refactor.bufnr)
     local _, scope_start_col, _, _ = scope_region:to_vim()
     local baseline_indent = math.floor(scope_start_col / bufnr_shiftwidth)
