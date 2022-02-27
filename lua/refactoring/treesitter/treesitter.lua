@@ -56,8 +56,15 @@ function TreeSitter:new(config, bufnr)
     return setmetatable(c, self)
 end
 
+local function validate_setting(setting)
+    for _ in pairs(setting) do
+        return true
+    end
+    return false
+end
+
 function TreeSitter:allows_indenting_task()
-    return self.allow_indenting_task
+    return validate_setting(self.indent_scopes)
 end
 
 function TreeSitter:is_indent_scope(scope)
@@ -135,10 +142,7 @@ function TreeSitter:get_region_refs(scope, region)
 end
 
 function TreeSitter:class_support()
-    for _ in pairs(self.valid_class_nodes) do
-        return true
-    end
-    return false
+    return validate_setting(self.valid_class_nodes)
 end
 
 function TreeSitter:get_class_name(scope)

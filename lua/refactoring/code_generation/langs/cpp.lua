@@ -77,7 +77,7 @@ local cpp = {
         return string.format(
             [[
 void %s(%s) {
-    %s
+%s
 }
 
 ]],
@@ -90,7 +90,7 @@ void %s(%s) {
         return string.format(
             [[
 %s %s(%s) {
-    %s
+%s
 }
 
 ]],
@@ -111,6 +111,40 @@ void %s(%s) {
     end,
     terminate = function(code)
         return code .. ";\n"
+    end,
+    indent_char_length = function(first_line)
+        local whitespace = 0
+        for char in first_line:gmatch(".") do
+            if char ~= " " then
+                break
+            end
+            whitespace = whitespace + 1
+        end
+        return whitespace
+    end,
+    indent_char = function()
+        return " "
+    end,
+    indent = function(opts)
+        local indent = {}
+
+        local single_indent_table = {}
+        local i = 1
+        -- lua loops are weird, adding 1 for correct value
+        while i < opts.indent_width + 1 do
+            single_indent_table[i] = " "
+            i = i + 1
+        end
+        local single_indent = table.concat(single_indent_table, "")
+
+        i = 1
+        -- lua loops are weird, adding 1 for correct value
+        while i < opts.indent_amount + 1 do
+            indent[i] = single_indent
+            i = i + 1
+        end
+
+        return table.concat(indent, "")
     end,
 }
 
