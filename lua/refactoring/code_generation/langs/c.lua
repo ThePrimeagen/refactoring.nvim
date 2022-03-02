@@ -1,6 +1,7 @@
 -- c mostly == cpp
 local code_utils = require("refactoring.code_generation.utils")
 local cpp = require("refactoring.code_generation.langs.cpp")
+local code_gen_indent = require("refactoring.code_generation.indent")
 
 local string_pattern = "%s"
 
@@ -62,6 +63,8 @@ local function c_constant(opts)
     return constant_string_pattern
 end
 
+local indent_char = " "
+
 local c = {
     comment = cpp.comment,
     print = cpp.print,
@@ -89,38 +92,13 @@ local c = {
     pack = cpp.pack,
     terminate = cpp.terminate,
     indent_char_length = function(first_line)
-        local whitespace = 0
-        for char in first_line:gmatch(".") do
-            if char ~= " " then
-                break
-            end
-            whitespace = whitespace + 1
-        end
-        return whitespace
+        return code_gen_indent.indent_char_length(first_line, indent_char)
     end,
     indent_char = function()
-        return " "
+        return indent_char
     end,
     indent = function(opts)
-        local indent = {}
-
-        local single_indent_table = {}
-        local i = 1
-        -- lua loops are weird, adding 1 for correct value
-        while i < opts.indent_width + 1 do
-            single_indent_table[i] = " "
-            i = i + 1
-        end
-        local single_indent = table.concat(single_indent_table, "")
-
-        i = 1
-        -- lua loops are weird, adding 1 for correct value
-        while i < opts.indent_amount + 1 do
-            indent[i] = single_indent
-            i = i + 1
-        end
-
-        return table.concat(indent, "")
+        return code_gen_indent.indent(opts, indent_char)
     end,
 }
 

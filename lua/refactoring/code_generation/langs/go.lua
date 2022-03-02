@@ -1,4 +1,5 @@
 local code_utils = require("refactoring.code_generation.utils")
+local code_gen_indent = require("refactoring.code_generation.indent")
 
 local string_pattern = "%s"
 
@@ -125,29 +126,24 @@ local function constant(opts)
     return constant_string_pattern
 end
 
+local indent_char = "\t"
+
 local go = {
     comment = function(statement)
         return string.format("// %s", statement)
     end,
     indent_char_length = function(first_line)
-        local indent_chars = 0
-        for char in first_line:gmatch(".") do
-            if char ~= "\t" then
-                break
-            end
-            indent_chars = indent_chars + 1
-        end
-        return indent_chars
+        return code_gen_indent.indent_char_length(first_line, indent_char)
     end,
     indent_char = function()
-        return "\t"
+        return indent_char
     end,
     indent = function(opts)
         local indent = {}
         local i = 1
         -- lua loops are weird, adding 1 for correct value
         while i < opts.indent_amount + 1 do
-            indent[i] = "\t"
+            indent[i] = indent_char
             i = i + 1
         end
         return table.concat(indent, "")
