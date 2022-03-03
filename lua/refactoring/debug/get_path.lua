@@ -3,18 +3,24 @@ local Point = require("refactoring.point")
 local refactor_setup = require("refactoring.tasks.refactor_setup")
 local debug_utils = require("refactoring.debug.debug_utils")
 
-local function print_in_editor(bufnr, config)
-    return Pipeline
+local function get_path(bufnr, config)
+    local out = nil
+    Pipeline
         :from_task(refactor_setup(bufnr, config))
         :add_task(function(refactor)
             local point = Point:from_cursor()
             local debug_path = debug_utils.get_debug_path(refactor, point)
-
-            print(vim.inspect(debug_path))
+            refactor.return_value = debug_path
 
             return true, refactor
         end)
-        :run()
+        :run(function(ok, res)
+            if ok then
+                out = res.return_value
+            end
+        end)
+
+    return out
 end
 
-return print_in_editor
+return get_path
