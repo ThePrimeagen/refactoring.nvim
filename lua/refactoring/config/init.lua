@@ -66,7 +66,7 @@ function Config:get()
 end
 
 function Config:merge(opts)
-    return Config:new(self.config, opts)
+    return Config:new(self.config, opts or {})
 end
 
 function Config:reset()
