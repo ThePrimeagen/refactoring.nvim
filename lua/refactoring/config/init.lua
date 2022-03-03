@@ -2,6 +2,11 @@ local default_code_generation = require("refactoring.code_generation")
 
 -- There is no formatting that we should do
 local default_formatting = {
+    -- TODO: should we change default to be nothing?
+    -- I realize this is almost never a good idea.
+    ts = {},
+    js = {},
+
     lua = {},
     go = {},
 

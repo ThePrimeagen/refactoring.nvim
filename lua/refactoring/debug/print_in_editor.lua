@@ -1,7 +1,6 @@
 local Pipeline = require("refactoring.pipeline")
 local Point = require("refactoring.point")
 local refactor_setup = require("refactoring.tasks.refactor_setup")
-local post_refactor = require("refactoring.tasks.post_refactor")
 local debug_utils = require("refactoring.debug.debug_utils")
 
 local function print_in_editor(bufnr, config)
@@ -15,7 +14,6 @@ local function print_in_editor(bufnr, config)
 
             return true, refactor
         end)
-        :after(post_refactor)
         :run()
 end
 
