@@ -68,6 +68,7 @@ function Typescript.new(bufnr, ft)
             function_declaration = FieldNode("name"),
             method_definition = FieldNode("name"),
             class_declaration = FieldNode("name"),
+            abstract_class_declaration = FieldNode("name"),
             arrow_function = function(node)
                 return FieldNode("name")(node:parent(), "(anon)")
             end,
