@@ -184,6 +184,16 @@ local function set_config_options(filename_prefix, filename_extension)
     end
 end
 
+local function set_bufnr_shiftwidth(filename_extension)
+    if filename_extension == "java" then
+        vim.cmd([[setlocal shiftwidth=4]])
+    end
+
+    if filename_extension == "cpp" or filename_extension == "c" then
+        vim.cmd([[setlocal shiftwidth=2]])
+    end
+end
+
 describe("Refactoring", function()
     for_each_file(function(file)
         a.it(string.format("Refactoring: %s", file), function()
@@ -205,6 +215,10 @@ describe("Refactoring", function()
 
             set_config_options(filename_prefix, filename_extension)
             test_utils.run_inputs_if_exist(filename_prefix, cwd)
+
+            -- Needed for local testing
+            set_bufnr_shiftwidth(filename_extension)
+
             test_utils.run_commands(filename_prefix)
             refactoring.refactor(refactor["name"])
             async.util.scheduler()

@@ -136,10 +136,12 @@ local function indent_func_code(function_params, has_return_vals, refactor)
     local indent_prefix = get_indent_prefix(refactor)
     i = 1
     while i < #function_params.body + 1 do
-        local temp = {}
-        temp[1] = indent_prefix
-        temp[2] = function_params.body[i]
-        function_params.body[i] = table.concat(temp, "")
+        if function_params.body[i] ~= "" then
+            local temp = {}
+            temp[1] = indent_prefix
+            temp[2] = function_params.body[i]
+            function_params.body[i] = table.concat(temp, "")
+        end
         i = i + 1
     end
 end
@@ -166,6 +168,7 @@ local function get_func_parms(extract_params, refactor)
         func_params.return_type = get_function_return_type()
     end
 
+    -- TODO: Move this to main get_function_code function
     if refactor.ts:allows_indenting_task() then
         indent_func_code(func_params, extract_params.has_return_vals, refactor)
     end
@@ -362,13 +365,26 @@ local class_code_gen_list = {
     "call_class_function",
 }
 
+local indent_code_gen_list = {
+    "indent_char_length",
+    "indent",
+    "indent_char",
+}
+
 local function ensure_code_gen_106(refactor)
     local list = {}
     for _, func in ipairs(ensure_code_gen_list) do
         table.insert(list, func)
     end
+
     if refactor.ts:class_support() then
         for _, func in ipairs(class_code_gen_list) do
+            table.insert(list, func)
+        end
+    end
+
+    if refactor.ts:allows_indenting_task() then
+        for _, func in ipairs(indent_code_gen_list) do
             table.insert(list, func)
         end
     end

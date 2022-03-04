@@ -131,11 +131,20 @@ local function extract_var_setup(refactor)
     })
 end
 
+local function ensure_code_gen_119(refactor)
+    local list = { "constant" }
+
+    if refactor.ts:allows_indenting_task() then
+        table.insert(list, "indent")
+    end
+    return ensure_code_gen(refactor, list)
+end
+
 function M.extract_var(bufnr, config)
     Pipeline
         :from_task(refactor_setup(bufnr, config))
         :add_task(function(refactor)
-            return ensure_code_gen(refactor, { "constant" })
+            return ensure_code_gen_119(refactor)
         end)
         :add_task(selection_setup)
         :add_task(function(refactor)

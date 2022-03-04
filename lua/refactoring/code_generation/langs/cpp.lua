@@ -1,4 +1,5 @@
 local code_utils = require("refactoring.code_generation.utils")
+local code_gen_indent = require("refactoring.code_generation.indent")
 
 local string_pattern = "%s"
 
@@ -60,6 +61,8 @@ local function cpp_constant(opts)
     return constant_string_pattern
 end
 
+local indent_char = " "
+
 local cpp = {
     comment = function(statement)
         return string.format("// %s", statement)
@@ -77,7 +80,7 @@ local cpp = {
         return string.format(
             [[
 void %s(%s) {
-    %s
+%s
 }
 
 ]],
@@ -90,7 +93,7 @@ void %s(%s) {
         return string.format(
             [[
 %s %s(%s) {
-    %s
+%s
 }
 
 ]],
@@ -111,6 +114,15 @@ void %s(%s) {
     end,
     terminate = function(code)
         return code .. ";\n"
+    end,
+    indent_char_length = function(first_line)
+        return code_gen_indent.indent_char_length(first_line, indent_char)
+    end,
+    indent_char = function()
+        return indent_char
+    end,
+    indent = function(opts)
+        return code_gen_indent.indent(opts, indent_char)
     end,
 }
 

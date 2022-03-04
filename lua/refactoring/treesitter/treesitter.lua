@@ -4,21 +4,28 @@ local utils = require("refactoring.utils")
 local Version = require("refactoring.version")
 local Region = require("refactoring.region")
 
--- TODO: Update class comments
----@class RefactorTS
+---@class TreeSitter
 --- The following fields act similar to a cursor
----@field scope_names table: The 1-based row
----@field valid_class_nodes table: list of valie class nodes
----@field class_names table: list of inline nodes for class name
----@field class_type table: list of inline nodes for class type
+---@field scope_names table: nodes that are scopes in current buffer
+---@field valid_class_nodes table: nodes that mean scope is a class function
+---@field class_names table: nodes to get class names
+---@field class_type table: nodes to get types for classes
 ---@field local_var_names table: list of inline nodes for local variable names
 ---@field local_var_values table: list of inline nodes for local variable values
 ---@field local_declarations table: list of inline nodes for local declarations
+---@field debug_paths table: nodes to know path for debug strings
+---@field statements table: statements in current scope
+---@field indent_scopes table: nodes where code has addition indent inside
+---@field parameter_list table: nodes to get list of parameters for a function
+---@field function_scopes table: nodes to find a function declaration
+---@field function_args table: nodes to find args for a function
 ---@field bufnr number: the bufnr to which this belongs
+---@field require_class_name boolean: flag to require class name for codegen
+---@field require_class_type boolean: flag to require class type for codegen
+---@field require_param_types boolean: flag to require parameter types for codegen
 ---@field version RefactorVersion: supperted operation flags
 ---@field filetype string: the filetype
 ---@field query RefactorQuery: the refactoring query
----@field debug_paths table: Debug Paths
 local TreeSitter = {}
 TreeSitter.__index = TreeSitter
 TreeSitter.version_flags = {
@@ -48,7 +55,6 @@ function TreeSitter:new(config, bufnr)
         require_class_name = false,
         require_class_type = false,
         require_param_types = false,
-        allow_indenting_task = false,
         version = Version:new(),
         filetype = config.filetype,
     }, config)
@@ -56,8 +62,16 @@ function TreeSitter:new(config, bufnr)
     return setmetatable(c, self)
 end
 
+local function validate_setting(setting)
+    for _ in pairs(setting) do
+        return true
+    end
+    return false
+end
+
+---@return boolean: whether to allow indenting operations
 function TreeSitter:allows_indenting_task()
-    return self.allow_indenting_task
+    return validate_setting(self.indent_scopes)
 end
 
 function TreeSitter:is_indent_scope(scope)
@@ -135,10 +149,7 @@ function TreeSitter:get_region_refs(scope, region)
 end
 
 function TreeSitter:class_support()
-    for _ in pairs(self.valid_class_nodes) do
-        return true
-    end
-    return false
+    return validate_setting(self.valid_class_nodes)
 end
 
 function TreeSitter:get_class_name(scope)
