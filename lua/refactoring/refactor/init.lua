@@ -12,7 +12,7 @@ M.extract_to_file = extract.extract_to_file
 M.extract_var = extract_var.extract_var
 M.inline_var = inline_var.inline_var
 
-M[106] = extract.extract_to_file
+M[106] = extract.extract
 M[119] = extract_var.extract_var
 M[123] = inline_var.inline_var
 

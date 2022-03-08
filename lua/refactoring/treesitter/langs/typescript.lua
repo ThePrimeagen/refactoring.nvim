@@ -10,6 +10,7 @@ local Typescript = {}
 function Typescript.new(bufnr, ft)
     return TreeSitter:new({
         version = Version:new(
+            TreeSitter.version_flags.Classes,
             TreeSitter.version_flags.Scopes,
             TreeSitter.version_flags.Locals,
             TreeSitter.version_flags.Indents
@@ -40,6 +41,10 @@ function Typescript.new(bufnr, ft)
             for_in_statement = true,
             while_statement = true,
             do_statement = true,
+        },
+        valid_class_nodes = {
+            class_declaration = true,
+            abstract_class_declaration = true,
         },
         local_var_names = {
             InlineNode(

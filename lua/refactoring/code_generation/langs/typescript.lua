@@ -3,11 +3,27 @@ local code_gen_indent = require("refactoring.code_generation.indent")
 
 local string_pattern = "{%s}"
 
+local function typescript_class_function(opts)
+    if opts.func_header == nil then
+        opts.func_header = ""
+    end
+    return string.format(
+        [[
+%s(%s) {
+%s
+}
+]],
+        opts.name,
+        table.concat(opts.args, ", "),
+        code_utils.stringify_code(opts.body)
+    )
+end
+
 local function typescript_function(opts)
     return string.format(
         [[
 function %s(%s) {
-    %s
+%s
 }
 
 ]],
@@ -97,6 +113,22 @@ local typescript = {
     end,
     indent = function(opts)
         return code_gen_indent.indent(opts, indent_char)
+    end,
+
+    class_function = function(opts)
+        return typescript_class_function(opts)
+    end,
+
+    class_function_return = function(opts)
+        return typescript_class_function(opts)
+    end,
+
+    call_class_function = function(opts)
+        return string.format(
+            "this.%s(%s)",
+            opts.name,
+            table.concat(opts.args, ", ")
+        )
     end,
 }
 
