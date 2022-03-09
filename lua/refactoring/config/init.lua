@@ -42,6 +42,8 @@ local default_prompt_func_return_type = {
 
 local default_printf_statements = {}
 
+local default_print_var_statements = {}
+
 ---@class Config
 ---@field config table
 local Config = {}
@@ -58,6 +60,7 @@ function Config:new(...)
         prompt_func_return_type = default_prompt_func_return_type,
         prompt_func_param_type = default_prompt_func_param_type,
         printf_statements = default_printf_statements,
+        print_var_statements = default_print_var_statements,
     })
 
     for idx = 1, select("#", ...) do
@@ -113,6 +116,28 @@ end
 
 function Config:set_prompt_func_return_type(override_map)
     self.config.prompt_func_return_type = override_map
+end
+
+function Config:get_printf_statements(filetype)
+    if self.config.printf_statements[filetype] == nil then
+        return false
+    end
+    return self.config.prompt_func_return_type[filetype]
+end
+
+function Config:set_printf_statements(override_map)
+    self.config.printf_statements = override_map
+end
+
+function Config:get_print_var_statements(filetype)
+    if self.config.print_var_statements[filetype] == nil then
+        return false
+    end
+    return self.config.prompt_func_return_type[filetype]
+end
+
+function Config:set_print_var_statements(override_map)
+    self.config.print_var_statements = override_map
 end
 
 function Config:get_automated_input()

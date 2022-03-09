@@ -2,12 +2,12 @@ local php = {
     comment = function(statement)
         return string.format("// %s", statement)
     end,
-    default_print_var_statement = function ()
-      return { '%s %%s' }
+    default_print_var_statement = function()
+        return { "printf('%s %%s'.%s, %s);" }
     end,
     print_var = function(opts)
         return string.format(
-            "printf('%s %%s'.%s, %s);",
+            opts.statement,
             opts.prefix,
             '"\\n"', -- this feels really ugly..
             opts.var

@@ -74,11 +74,7 @@ local typescript = {
         return { 'console.log("%s %%s", %s);' }
     end,
     print_var = function(opts)
-        return string.format(
-            'console.log("%s %%s", %s);',
-            opts.prefix,
-            opts.var
-        )
+        return string.format(opts.statement, opts.prefix, opts.var)
     end,
     comment = function(statement)
         return string.format("// %s", statement)

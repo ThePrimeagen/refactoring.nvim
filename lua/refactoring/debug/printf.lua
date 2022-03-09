@@ -32,7 +32,7 @@ local function printDebug(bufnr, config)
             local custom_printf_statements =
                 opts.printf_statements[refactor.filetype]
 
-            local print_statement
+            local printf_statement
 
             -- if there's a set of statements given for this one
             if custom_printf_statements then
@@ -40,23 +40,23 @@ local function printDebug(bufnr, config)
                     default_printf_statement,
                     custom_printf_statements
                 )
-                print_statement = get_select_input(
+                printf_statement = get_select_input(
                     all_statements,
-                    "Printf: Select a statement to insert:",
+                    "printf: Select a statement to insert:",
                     function(item)
                         return item
                     end
                 )
             else
-                print_statement = default_printf_statement[1]
+                printf_statement = default_printf_statement[1]
             end
 
-            local print_opts = {
-                statement = print_statement,
+            local printf_opts = {
+                statement = printf_statement,
                 content = debug_path,
             }
 
-            local full_print_statement = refactor.code.print(print_opts)
+            local full_print_statement = refactor.code.print(printf_opts)
                 .. refactor.code.comment("__AUTO_GENERATED_PRINTF__")
 
             refactor.text_edits = {

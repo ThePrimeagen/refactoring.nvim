@@ -53,15 +53,11 @@ local lua = {
     print = function(opts)
         return string.format(opts.statement, opts.content)
     end,
-    default_print_var_statement = function ()
-      return { 'print("%s")' }
+    default_print_var_statement = function()
+        return { 'print("%s", vim.inspect(%s))' }
     end,
     print_var = function(opts)
-        return string.format(
-            'print("%s", vim.inspect(%s))',
-            opts.prefix,
-            opts.var
-        )
+        return string.format(opts.statement, opts.prefix, opts.var)
     end,
     constant = function(opts)
         return lua_constant(opts)
