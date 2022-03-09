@@ -53,6 +53,9 @@ local lua = {
     print = function(opts)
         return string.format(opts.statement, opts.content)
     end,
+    default_print_var_statement = function ()
+      return { 'print("%s")' }
+    end,
     print_var = function(opts)
         return string.format(
             'print("%s", vim.inspect(%s))',

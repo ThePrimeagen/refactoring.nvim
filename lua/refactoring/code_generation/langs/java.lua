@@ -73,6 +73,9 @@ local java = {
     print = function(opts)
         return string.format(opts.statement, opts.content)
     end,
+    default_print_var_statement = function ()
+      return { 'System.out.printf("%s %%s \\n", %s);' }
+    end,
     print_var = function(opts)
         return string.format(
             'System.out.printf("%s %%s \\n", %s);',

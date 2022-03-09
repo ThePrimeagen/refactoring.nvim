@@ -73,6 +73,9 @@ local cpp = {
     print = function(opts)
         return string.format(opts.statement, opts.content)
     end,
+    default_print_var_statement = function ()
+      return { 'printf("%s %%s \\n", %s);' }
+    end,
     print_var = function(opts)
         return string.format('printf("%s %%s \\n", %s);', opts.prefix, opts.var)
     end,
