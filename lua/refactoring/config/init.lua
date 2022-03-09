@@ -21,7 +21,7 @@ local default_formatting = {
     python = {},
 
     default = {
-        cmd = nil, -- format.lua checks to see if the command is nil or not
+        cmd = [[ :silent norm! mzgg=G`z ]],
     },
 }
 
