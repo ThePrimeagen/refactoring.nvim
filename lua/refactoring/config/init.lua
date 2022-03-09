@@ -40,6 +40,8 @@ local default_prompt_func_return_type = {
     go = false,
 }
 
+local default_printf_statements = {}
+
 ---@class Config
 ---@field config table
 local Config = {}
@@ -55,6 +57,7 @@ function Config:new(...)
         code_generation = default_code_generation,
         prompt_func_return_type = default_prompt_func_return_type,
         prompt_func_param_type = default_prompt_func_param_type,
+        printf_statements = default_printf_statements,
     })
 
     for idx = 1, select("#", ...) do

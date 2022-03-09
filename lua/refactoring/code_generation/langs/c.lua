@@ -67,6 +67,7 @@ local indent_char = " "
 
 local c = {
     comment = cpp.comment,
+    default_printf_statement = cpp.default_printf_statement,
     print = cpp.print,
     print_var = cpp.print_var,
     ["return"] = cpp["return"],

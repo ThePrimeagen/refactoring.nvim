@@ -64,8 +64,11 @@ end
 local indent_char = " "
 
 local typescript = {
+    default_printf_statement = function()
+        return { 'console.log("%s");' }
+    end,
     print = function(opts)
-        return string.format('console.log("%s");', opts.content)
+        return string.format(opts.statement, opts.content)
     end,
     print_var = function(opts)
         return string.format(

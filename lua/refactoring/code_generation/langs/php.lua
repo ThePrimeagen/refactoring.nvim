@@ -10,8 +10,11 @@ local php = {
             opts.var
         )
     end,
+    default_printf_statement = function()
+        return { 'printf("%s\\n");' }
+    end,
     print = function(opts)
-        return string.format('printf("%s\\n");', opts.content)
+        return string.format(opts.statement, opts.content)
     end,
 }
 return php

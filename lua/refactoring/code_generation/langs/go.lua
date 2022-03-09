@@ -155,8 +155,11 @@ local go = {
             opts.var
         )
     end,
+    default_printf_statement = function()
+        return { 'fmt.Println("%s")' }
+    end,
     print = function(opts)
-        return string.format('fmt.Println("%s")', opts.content)
+        return string.format(opts.statement, opts.content)
     end,
     constant = function(opts)
         return constant(opts)

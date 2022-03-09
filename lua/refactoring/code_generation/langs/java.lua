@@ -67,8 +67,11 @@ local java = {
     comment = function(statement)
         return string.format("// %s", statement)
     end,
+    default_printf_statement = function()
+        return { 'System.out.println("%s");' }
+    end,
     print = function(opts)
-        return string.format('System.out.println("%s");', opts.content)
+        return string.format(opts.statement, opts.content)
     end,
     print_var = function(opts)
         return string.format(

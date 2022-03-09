@@ -108,8 +108,11 @@ local python = {
     comment = function(statement)
         return string.format("# %s", statement)
     end,
+    default_printf_statement = function()
+        return { 'print(f"%s")' }
+    end,
     print = function(opts)
-        return string.format('print(f"%s")', opts.content)
+        return string.format(opts.statement, opts.content)
     end,
     print_var = function(opts)
         return string.format('print(f"%s {str(%s)}")', opts.prefix, opts.var)

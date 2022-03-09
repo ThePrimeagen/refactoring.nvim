@@ -47,8 +47,11 @@ local lua = {
     comment = function(statement)
         return string.format("-- %s", statement)
     end,
-    ["print"] = function(opts)
-        return string.format('print("%s")', opts.content)
+    default_printf_statement = function()
+        return { 'print("%s")' }
+    end,
+    print = function(opts)
+        return string.format(opts.statement, opts.content)
     end,
     print_var = function(opts)
         return string.format(
