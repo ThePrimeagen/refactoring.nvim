@@ -24,7 +24,12 @@ local function printDebug(bufnr, config)
             point.col = opts.below and 100000 or 1
 
             local debug_path = debug_utils.get_debug_path(refactor, point)
-            local print_statement = refactor.code.print(debug_path)
+
+            local print_opts = {
+                content = debug_path,
+            }
+
+            local print_statement = refactor.code.print(print_opts)
                 .. refactor.code.comment("__AUTO_GENERATED_PRINTF__")
 
             refactor.text_edits = {

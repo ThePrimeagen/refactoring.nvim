@@ -2,16 +2,16 @@ local php = {
     comment = function(statement)
         return string.format("// %s", statement)
     end,
-    print_var = function(prefix, var)
+    print_var = function(opts)
         return string.format(
             "printf('%s %%s'.%s, %s);",
-            prefix,
+            opts.prefix,
             '"\\n"', -- this feels really ugly..
-            var
+            opts.var
         )
     end,
-    print = function(statement)
-        return string.format('printf("%s\\n");', statement)
+    print = function(opts)
+        return string.format('printf("%s\\n");', opts.content)
     end,
 }
 return php

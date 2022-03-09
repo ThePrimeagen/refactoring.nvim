@@ -67,11 +67,11 @@ local cpp = {
     comment = function(statement)
         return string.format("// %s", statement)
     end,
-    print = function(statement)
-        return string.format('printf("%s(%%d): \\n", __LINE__);', statement)
+    print = function(opts)
+        return string.format('printf("%s(%%d): \\n", __LINE__);', opts.content)
     end,
-    print_var = function(prefix, var)
-        return string.format('printf("%s %%s \\n", %s);', prefix, var)
+    print_var = function(opts)
+        return string.format('printf("%s %%s \\n", %s);', opts.prefix, opts.var)
     end,
     ["return"] = function(code)
         return string.format("return %s;", code)

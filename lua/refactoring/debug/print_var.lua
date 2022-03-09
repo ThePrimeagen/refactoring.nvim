@@ -32,7 +32,12 @@ local function printDebug(bufnr, config)
             local debug_path = debug_utils.get_debug_path(refactor, point)
             local prefix = string.format("%s %s:", debug_path, variable)
 
-            local print_statement = refactor.code.print_var(prefix, variable)
+            local print_var_opts = {
+                prefix = prefix,
+                var = variable,
+            }
+
+            local print_statement = refactor.code.print_var(print_var_opts)
                 .. refactor.code.comment("__AUTO_GENERATED_PRINT_VAR__")
 
             refactor.text_edits = {

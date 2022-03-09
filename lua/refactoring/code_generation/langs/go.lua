@@ -148,15 +148,15 @@ local go = {
         end
         return table.concat(indent, "")
     end,
-    print_var = function(prefix, var)
+    print_var = function(opts)
         return string.format(
             'fmt.Println(fmt.Sprintf("%s %%v", %s))',
-            prefix,
-            var
+            opts.prefix,
+            opts.var
         )
     end,
-    print = function(statement)
-        return string.format('fmt.Println("%s")', statement)
+    print = function(opts)
+        return string.format('fmt.Println("%s")', opts.content)
     end,
     constant = function(opts)
         return constant(opts)

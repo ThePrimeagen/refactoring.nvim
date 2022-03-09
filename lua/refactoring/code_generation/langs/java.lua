@@ -67,14 +67,14 @@ local java = {
     comment = function(statement)
         return string.format("// %s", statement)
     end,
-    print = function(statement)
-        return string.format('System.out.println("%s");', statement)
+    print = function(opts)
+        return string.format('System.out.println("%s");', opts.content)
     end,
-    print_var = function(prefix, var)
+    print_var = function(opts)
         return string.format(
             'System.out.printf("%s %%s \\n", %s);',
-            prefix,
-            var
+            opts.prefix,
+            opts.var
         )
     end,
     ["return"] = function(code)
