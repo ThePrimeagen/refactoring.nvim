@@ -1,6 +1,6 @@
 
 function foobar(foo, key) {
-        let localAmount = 0;
+    let localAmount = 0;
     switch (key) {
     case "foo":
         localAmount += 500;
