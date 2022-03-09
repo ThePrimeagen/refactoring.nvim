@@ -6,6 +6,8 @@ local default_formatting = {
     -- I realize this is almost never a good idea.
     ts = {},
     js = {},
+    typescript = {},
+    javascript = {},
 
     lua = {},
     go = {},
@@ -21,7 +23,7 @@ local default_formatting = {
     python = {},
 
     default = {
-        cmd = [[ :silent norm! mzgg=G`z ]],
+        cmd = nil, -- format.lua checks to see if the command is nil or not
     },
 }
 
