@@ -2,14 +2,14 @@
 function foobar(foo, key) {
     let localAmount = 0;
     switch (key) {
-        case "foo":
-            localAmount += 500;
+    case "foo":
+        localAmount += 500;
         break;
-        case "bar":
-            localAmount += 700 * foo[key];
+    case "bar":
+        localAmount += 700 * foo[key];
         break;
-        case "bazz":
-            localAmount += Math.max(900 - foo[key] * 69, 420);
+    case "bazz":
+        localAmount += Math.max(900 - foo[key] * 69, 420);
         break;
     }
     return localAmount;
