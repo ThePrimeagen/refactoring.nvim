@@ -96,6 +96,10 @@ local function inline_var_setup(refactor, bufnr)
     )
 
     -- get all identifiers in the declarator node (for either situation)
+    -- TODO: Should limit to current scope
+    print("Declarator node:", declarator_node:range())
+    print("Scope type:", refactor.scope:type())
+    print("Scope range:", refactor.scope:range())
     local identifiers = refactor.ts:get_local_var_names(declarator_node)
 
     -- these three vars are determined based on the situation (cursor node or selected declaration)
@@ -116,6 +120,13 @@ local function inline_var_setup(refactor, bufnr)
         bufnr,
         definition
     )
+    -- TODO: Remove debug loop for references
+    for _, ref in pairs(references) do
+        -- print(vim.inspect(getmetatable(ref)))
+        print(ref:type())
+        print(ref:range())
+        print("==================================================")
+    end
 
     local all_values = refactor.ts:get_local_var_values(declarator_node)
     local value_node_to_inline = all_values[identifier_pos]
