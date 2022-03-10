@@ -24,7 +24,7 @@
     - [Using Direct Remaps](#config-refactoring-direct)
     - [Using Telescope](#config-refactoring-telescope)
   - [Configuration for Debug Operations](#config-debug)
-  - [Configuration for Prompt Type Operations](#config-prompt)
+  - [Configuration for Type Prompt Operations](#config-prompt)
 
 ## Installation<a name="installation"></a>
 
@@ -156,7 +156,7 @@ vim.api.nvim_set_keymap("v", "<leader>rv", ":lua require('refactoring').debug.pr
 vim.api.nvim_set_keymap("n", "<leader>rc", ":lua require('refactoring').debug.cleanup({})<CR>", { noremap = true })
 ```
 
-### Configuration for Prompt Type Operations<a name="config-prompt"></a>
+### Configuration for Type Prompt Operations<a name="config-prompt"></a>
 
 For certain languages like Golang, types are required for functions that return
 an object(s) and parameters of functions. Unfortunately, for some parameters
@@ -185,3 +185,54 @@ require('refactoring').setup({
     },
 })
 ```
+
+### Configuration for Custom Printf and Print Var Statements<a name="config-stringification"></a>
+
+It is possible to override the statements used in the printf and print var
+functionalities.
+
+#### Customizing Printf<a name="config-printf"></a>
+
+You can add to the printf statements for any language by adding something like the below to your configuration:
+
+```lua
+require('refactoring').setup({
+  -- overriding printf statement for cpp
+  printf_statements = {
+      -- add a custom printf statement for cpp
+      cpp = {
+          'std::cout << "%s" << std::endl;'
+      }
+  }
+})
+```
+
+In any custom printf statement, it is possible to optionally add a max of
+**one %s** pattern, which is where the debug path will go.
+
+#### Customizing Print Var<a name="config-print-var"></a>
+
+The print var functionality can also be extended for any given language,
+as shown below:
+
+```lua
+require('refactoring').setup({
+  -- overriding printf statement for cpp
+  print_var_statements = {
+      -- add a custom print var statement for cpp
+      cpp = {
+          'printf("a custom statement %%s %s", %s)'
+      }
+  }
+})
+```
+
+In any custom print var statement, it is possible to optionally add a max of
+**two %s** patterns, which is where the debug path and the actual variable
+reference will go, respectively. It is recommended to make the statement itself
+a printf statement within the language you are using (a statement that is capable of
+printing out a string with the value of a variable in it). To add a literal "%s" to
+the string, escape the sequence like this: `%%s`.
+
+**Note:** for either of these functions, if you have multiple statements
+(including the default), the plugin will prompt for which one should be inserted.
