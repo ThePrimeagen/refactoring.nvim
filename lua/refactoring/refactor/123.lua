@@ -110,7 +110,12 @@ local function inline_var_setup(refactor, bufnr)
         definition = ts.find_definition(node_to_inline, bufnr)
     end
 
-    local references = ts.find_references(definition, nil, bufnr, definition)
+    local references = ts.find_references(
+        definition,
+        refactor.scope,
+        bufnr,
+        definition
+    )
 
     local all_values = refactor.ts:get_local_var_values(declarator_node)
     local value_node_to_inline = all_values[identifier_pos]
