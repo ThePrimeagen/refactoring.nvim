@@ -105,16 +105,19 @@ If you want to make remaps for a specific refactoring operation, you can do so
 by configuring the plugin like this:
 
 ```lua
--- Remaps for each of the four debug operations currently offered by the plugin
+-- Remaps for each of the four refactoring operations currently offered by the plugin
 vim.api.nvim_set_keymap("v", "<Leader>re", [[ <Esc><Cmd>lua require('refactoring').refactor('Extract Function')<CR>]], {noremap = true, silent = true, expr = false})
 vim.api.nvim_set_keymap("v", "<Leader>rf", [[ <Esc><Cmd>lua require('refactoring').refactor('Extract Function To File')<CR>]], {noremap = true, silent = true, expr = false})
 vim.api.nvim_set_keymap("v", "<Leader>rv", [[ <Esc><Cmd>lua require('refactoring').refactor('Extract Variable')<CR>]], {noremap = true, silent = true, expr = false})
 vim.api.nvim_set_keymap("v", "<Leader>ri", [[ <Esc><Cmd>lua require('refactoring').refactor('Inline Variable')<CR>]], {noremap = true, silent = true, expr = false})
-vim.api.nvim_set_keymap("n", "<Leader>ri", [[ <Esc><Cmd>lua require('refactoring').refactor('Inline Variable')<CR>]], {noremap = true, silent = true, expr = false})
+
+-- Inline variable can also pick up the identifier currently under the cursor without visual mode
+vim.api.nvim_set_keymap("n", "<Leader>ri", [[ <Cmd>lua require('refactoring').refactor('Inline Variable')<CR>]], {noremap = true, silent = true, expr = false})
 ```
 
-Notice that these maps are **visual mode** remaps, and that ESC is pressed before executing
-the command. As of now, these are both necessary for the plugin to work.
+Notice that these maps (except the last one) are **visual mode** remaps, and 
+that ESC is pressed before executing the command. As of now, these are both 
+necessary for the plugin to work.
 
 #### Using Telescope<a name="config-refactoring-telescope"></a>
 
