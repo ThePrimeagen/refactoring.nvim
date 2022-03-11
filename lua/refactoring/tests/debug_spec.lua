@@ -34,24 +34,22 @@ local function set_config_options(filename_prefix, filename_extension)
             string.format("%s.config", filename_prefix)
         )
 
+        local filetypes = {
+            ["ts"] = "typescript",
+            ["js"] = "javascript",
+            ["py"] = "python",
+        }
+
+        -- get the real filetype from the above table if possible
+        local real_filetype = filetypes[filename_extension]
+            or filename_extension
+
         local printf_statements = {}
-
-        -- TODO: ts and js have different filetypes than extensions, so this is
-        -- necessary for tests to work. If we're going to make more thing
-        -- customizable for all langs we need to figure this out
-        -- on the plugin level
-        if filename_extension == "ts" then
-            printf_statements["typescript"] = { config_values[1] }
-        elseif filename_extension == "js" then
-            printf_statements["javascript"] = { config_values[1] }
-        else
-            printf_statements[filename_extension] = { config_values[1] }
-        end
-
+        printf_statements[real_filetype] = { config_values[1] }
         Config:get():set_printf_statements(printf_statements)
 
         local print_var_statements = {}
-        print_var_statements[filename_extension] = { config_values[1] }
+        print_var_statements[real_filetype] = { config_values[1] }
         Config:get():set_print_var_statements(print_var_statements)
     end
 end

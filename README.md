@@ -68,7 +68,7 @@ supported (with individual support for each function may vary):
 - Support for various common refactoring operations
   - **106: Extract Function**
     - In visual mode, extracts the selected code to a separate function
-    - Optionally prompts for function param types and return types (see [configuration for prompt type operations](#config-prompt))
+    - Optionally prompts for function param types and return types (see [configuration for type prompt operations](#config-prompt))
     - Also possible to extract to a separate file
   - **119: Extract Variable**
     - In visual mode, extracts occurences of a selected expression to its own variable, replacing occurences of that expression with the variable
@@ -208,7 +208,9 @@ require('refactoring').setup({
 ```
 
 In any custom printf statement, it is possible to optionally add a max of
-**one %s** pattern, which is where the debug path will go.
+**one %s** pattern, which is where the debug path will go. For an example custom
+printf statement, go to [this folder](lua/refactoring/tests/debug/printf),
+select your language, and click on `multiple-statements/printf.config`.
 
 #### Customizing Print Var<a name="config-print-var"></a>
 
@@ -229,10 +231,10 @@ require('refactoring').setup({
 
 In any custom print var statement, it is possible to optionally add a max of
 **two %s** patterns, which is where the debug path and the actual variable
-reference will go, respectively. It is recommended to make the statement itself
-a printf statement within the language you are using (a statement that is capable of
-printing out a string with the value of a variable in it). To add a literal "%s" to
-the string, escape the sequence like this: `%%s`.
+reference will go, respectively. To add a literal "%s" to the string, escape the
+sequence like this: `%%s`. For an example custom print var statement, go to
+[this folder](lua/refactoring/tests/debug/print_var), select your language, and
+view `multiple-statements/print_var.config`.
 
 **Note:** for either of these functions, if you have multiple statements
 (including the default), the plugin will prompt for which one should be inserted.

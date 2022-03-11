@@ -1,5 +1,3 @@
--- stylua: ignore start
-
 function simple_function(a)
     local test = 1
     local test_other = 11
