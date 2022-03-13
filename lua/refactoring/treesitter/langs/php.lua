@@ -5,9 +5,9 @@ local FieldNode = Nodes.FieldNode
 local StringNode = Nodes.StringNode
 local InlineNode = Nodes.InlineNode
 
-local php = {}
+local Php = {}
 
-function php.new(bufnr, ft)
+function Php.new(bufnr, ft)
     return TreeSitter:new({
         version = Version:new(
             TreeSitter.version_flags.Scopes,
@@ -18,50 +18,55 @@ function php.new(bufnr, ft)
         bufnr = bufnr,
         scope_names = {
             program = "program",
-            function_declaration = "function",
-            function_definition = "function",
-            arrow_function = "function",
+            method_declaration = "function",
             class_declaration = "class",
         },
         block_scope = {
-            statement_block = true,
+            compound_statement = true,
         },
         variable_scope = {
-            expression_statement = true,
+            assignment_expression = true,
         },
         indent_scopes = {
             program = true,
             function_declaration = true,
-            function_definition = true,
+            expression_statement = true,
+            method_declaration = true,
             arrow_function = true,
             class_declaration = true,
             if_statement = true,
             for_statement = true,
+            for_in_statement = true,
             while_statement = true,
             do_statement = true,
         },
         local_var_names = {
             InlineNode(
-                "(expression_statement (assignment_expression (variable_name) @tmp_capture))"
+                "(expression_statement (assignment_expression left: (_) @tmp_capture))"
+            ),
+        },
+        function_args = {
+            InlineNode(
+                "(formal_parameters (simple_parameter (variable_name) @tmp_capture))"
             ),
         },
         local_var_values = {
             InlineNode(
-                "(expression_statement (assignment_expression (encapsed_string) @tmp_capture))"
+                "(expression_statement (assignment_expression (binary_expression) @tmp_capture))"
             ),
         },
         local_declarations = {
-            InlineNode("(expression_statement) @definition.local_declarator"),
+            InlineNode(
+                "(expression_statement (assignment_expression)) @definition.local_declarator"
+            ),
         },
         debug_paths = {
-            function_declaration = FieldNode("name"),
             function_definition = FieldNode("name"),
             class_declaration = FieldNode("name"),
-            arrow_function = function(node)
-                return FieldNode("name")(node:parent(), "(anon)")
-            end,
+            method_declaration = FieldNode("name"),
             if_statement = StringNode("if"),
             for_statement = StringNode("for"),
+            for_in_statement = StringNode("for_in"),
             while_statement = StringNode("while"),
             do_statement = StringNode("do"),
         },
@@ -71,10 +76,9 @@ function php.new(bufnr, ft)
             InlineNode("(if_statement) @tmp_capture"),
             InlineNode("(for_statement) @tmp_capture"),
             InlineNode("(do_statement) @tmp_capture"),
-            InlineNode("(while_statement) @tmp_capture"),
-            InlineNode("(expression_statement) @tmp_capture"),
+            InlineNode("(assignment_expression) @tmp_capture"),
         },
     }, bufnr)
 end
 
-return php
+return Php
