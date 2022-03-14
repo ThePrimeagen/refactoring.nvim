@@ -15,6 +15,45 @@ local function remove_cwd(file)
     return file:sub(#cwd + 2 + #"lua/refactoring/tests/")
 end
 
+-- TODO: make this better for more complex config options
+-- assuming first line is for a custom printf statement
+-- and second line is for a custom print var statement
+local function set_config_options(filename_prefix, filename_extension)
+    local config_file_name = string.format("%s.config", filename_prefix)
+
+    local config_file = Path:new(
+        cwd,
+        "lua",
+        "refactoring",
+        "tests",
+        config_file_name
+    )
+
+    if config_file:exists() then
+        local config_values = test_utils.get_contents(
+            string.format("%s.config", filename_prefix)
+        )
+
+        local filetypes = {
+            ["ts"] = "typescript",
+            ["js"] = "javascript",
+            ["py"] = "python",
+        }
+
+        -- get the real filetype from the above table if possible
+        local real_filetype = filetypes[filename_extension]
+            or filename_extension
+
+        local printf_statements = {}
+        printf_statements[real_filetype] = { config_values[1] }
+        Config:get():set_printf_statements(printf_statements)
+
+        local print_var_statements = {}
+        print_var_statements[real_filetype] = { config_values[1] }
+        Config:get():set_print_var_statements(print_var_statements)
+    end
+end
+
 -- TODO: Move this to utils
 local function for_each_file(cb)
     local files = scandir.scan_dir(
@@ -54,6 +93,10 @@ describe("Debug", function()
                     filename_extension
                 )
             )
+
+            Config:get():reset()
+
+            set_config_options(filename_prefix, filename_extension)
 
             test_utils.run_inputs_if_exist(filename_prefix, cwd)
             test_utils.run_commands(filename_prefix)

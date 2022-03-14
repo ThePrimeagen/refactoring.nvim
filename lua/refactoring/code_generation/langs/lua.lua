@@ -47,11 +47,17 @@ local lua = {
     comment = function(statement)
         return string.format("-- %s", statement)
     end,
-    ["print"] = function(print_string)
-        return string.format('print("%s")', print_string)
+    default_printf_statement = function()
+        return { 'print("%s")' }
     end,
-    print_var = function(prefix, var)
-        return string.format('print("%s", vim.inspect(%s))', prefix, var)
+    print = function(opts)
+        return string.format(opts.statement, opts.content)
+    end,
+    default_print_var_statement = function()
+        return { 'print("%s", vim.inspect(%s))' }
+    end,
+    print_var = function(opts)
+        return string.format(opts.statement, opts.prefix, opts.var)
     end,
     constant = function(opts)
         return lua_constant(opts)

@@ -24,7 +24,7 @@
     - [Using Direct Remaps](#config-refactoring-direct)
     - [Using Telescope](#config-refactoring-telescope)
   - [Configuration for Debug Operations](#config-debug)
-  - [Configuration for Prompt Type Operations](#config-prompt)
+  - [Configuration for Type Prompt Operations](#config-prompt)
 
 ## Installation<a name="installation"></a>
 
@@ -68,7 +68,7 @@ supported (with individual support for each function may vary):
 - Support for various common refactoring operations
   - **106: Extract Function**
     - In visual mode, extracts the selected code to a separate function
-    - Optionally prompts for function param types and return types (see [configuration for prompt type operations](#config-prompt))
+    - Optionally prompts for function param types and return types (see [configuration for type prompt operations](#config-prompt))
     - Also possible to extract to a separate file
   - **119: Extract Variable**
     - In visual mode, extracts occurences of a selected expression to its own variable, replacing occurences of that expression with the variable
@@ -159,7 +159,7 @@ vim.api.nvim_set_keymap("v", "<leader>rv", ":lua require('refactoring').debug.pr
 vim.api.nvim_set_keymap("n", "<leader>rc", ":lua require('refactoring').debug.cleanup({})<CR>", { noremap = true })
 ```
 
-### Configuration for Prompt Type Operations<a name="config-prompt"></a>
+### Configuration for Type Prompt Operations<a name="config-prompt"></a>
 
 For certain languages like Golang, types are required for functions that return
 an object(s) and parameters of functions. Unfortunately, for some parameters
@@ -188,3 +188,56 @@ require('refactoring').setup({
     },
 })
 ```
+
+### Configuration for Custom Printf and Print Var Statements<a name="config-stringification"></a>
+
+It is possible to override the statements used in the printf and print var
+functionalities.
+
+#### Customizing Printf<a name="config-printf"></a>
+
+You can add to the printf statements for any language by adding something like the below to your configuration:
+
+```lua
+require('refactoring').setup({
+  -- overriding printf statement for cpp
+  printf_statements = {
+      -- add a custom printf statement for cpp
+      cpp = {
+          'std::cout << "%s" << std::endl;'
+      }
+  }
+})
+```
+
+In any custom printf statement, it is possible to optionally add a max of
+**one %s** pattern, which is where the debug path will go. For an example custom
+printf statement, go to [this folder](lua/refactoring/tests/debug/printf),
+select your language, and click on `multiple-statements/printf.config`.
+
+#### Customizing Print Var<a name="config-print-var"></a>
+
+The print var functionality can also be extended for any given language,
+as shown below:
+
+```lua
+require('refactoring').setup({
+  -- overriding printf statement for cpp
+  print_var_statements = {
+      -- add a custom print var statement for cpp
+      cpp = {
+          'printf("a custom statement %%s %s", %s)'
+      }
+  }
+})
+```
+
+In any custom print var statement, it is possible to optionally add a max of
+**two %s** patterns, which is where the debug path and the actual variable
+reference will go, respectively. To add a literal "%s" to the string, escape the
+sequence like this: `%%s`. For an example custom print var statement, go to
+[this folder](lua/refactoring/tests/debug/print_var), select your language, and
+view `multiple-statements/print_var.config`.
+
+**Note:** for either of these functions, if you have multiple statements
+(including the default), the plugin will prompt for which one should be inserted.

@@ -64,11 +64,17 @@ end
 local indent_char = " "
 
 local typescript = {
-    print = function(statement)
-        return string.format('console.log("%s");', statement)
+    default_printf_statement = function()
+        return { 'console.log("%s");' }
     end,
-    print_var = function(prefix, var)
-        return string.format('console.log("%s %%s", %s);', prefix, var)
+    print = function(opts)
+        return string.format(opts.statement, opts.content)
+    end,
+    default_print_var_statement = function()
+        return { 'console.log("%s %%s", %s);' }
+    end,
+    print_var = function(opts)
+        return string.format(opts.statement, opts.prefix, opts.var)
     end,
     comment = function(statement)
         return string.format("// %s", statement)
