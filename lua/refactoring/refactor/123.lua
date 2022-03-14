@@ -98,6 +98,13 @@ local function inline_var_setup(refactor, bufnr)
     -- get all identifiers in the declarator node (for either situation)
     local identifiers = refactor.ts:get_local_var_names(declarator_node)
 
+    -- in the event of multiple identifiers, python gives one extra result
+    -- due to multiple queries (all of which are necessary for this to work)
+    if #identifiers > 1 and refactor.filetype == "python" then
+        -- get rid of the last item
+        identifiers[#identifiers] = nil
+    end
+
     -- these three vars are determined based on the situation (cursor node or selected declaration)
     local node_to_inline, identifier_pos, definition
 
@@ -118,6 +125,16 @@ local function inline_var_setup(refactor, bufnr)
     )
 
     local all_values = refactor.ts:get_local_var_values(declarator_node)
+
+    -- account for python giving multiple results for the values query
+    if refactor.filetype == "python" then
+        if #identifiers > 1 then
+            all_values[#all_values] = nil
+        else
+            all_values = { all_values[#all_values] }
+        end
+    end
+
     local value_node_to_inline = all_values[identifier_pos]
 
     local text_edits = {}
