@@ -41,6 +41,7 @@ function Python.new(bufnr, ft)
             ),
         },
         local_var_values = {
+            InlineNode("(assignment right: (_ (_) @tmp_capture))"),
             InlineNode("(assignment right: (_) @tmp_capture)"),
         },
         local_declarations = {

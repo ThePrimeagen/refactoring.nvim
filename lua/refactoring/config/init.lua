@@ -9,6 +9,7 @@ local default_formatting = {
 
     lua = {},
     go = {},
+    php = {},
 
     -- All of the cs
     cpp = {},
