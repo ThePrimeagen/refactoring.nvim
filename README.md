@@ -22,11 +22,12 @@
 - [Configuration](#configuration)
   - [Configuration for Refactoring Operations](#config-refactoring)
     - [Using Direct Remaps](#config-refactoring-direct)
+    - [Using Built-In Neovim Selection](#config-refactoring-builtin)
     - [Using Telescope](#config-refactoring-telescope)
   - [Configuration for Debug Operations](#config-debug)
-    - [Configuration for Custom Printf and Print Var Statements](#config-stringification)
-      - [Configuring Printf](#config-printf)
-      - [Configuring Print Var](#config-print-var)
+    - [Customizing Printf and Print Var Statements](#config-debug-stringification)
+      - [Customizing Printf Statements](#config-debug-stringification-printf)
+      - [Customizing Print Var Statements](#config-debug-stringification-print-var)
   - [Configuration for Type Prompt Operations](#config-prompt)
 
 ## Installation<a name="installation"></a>
@@ -109,18 +110,36 @@ by configuring the plugin like this:
 
 ```lua
 -- Remaps for each of the four refactoring operations currently offered by the plugin
-vim.api.nvim_set_keymap("v", "<Leader>re", [[ <Esc><Cmd>lua require('refactoring').refactor('Extract Function')<CR>]], {noremap = true, silent = true, expr = false})
-vim.api.nvim_set_keymap("v", "<Leader>rf", [[ <Esc><Cmd>lua require('refactoring').refactor('Extract Function To File')<CR>]], {noremap = true, silent = true, expr = false})
-vim.api.nvim_set_keymap("v", "<Leader>rv", [[ <Esc><Cmd>lua require('refactoring').refactor('Extract Variable')<CR>]], {noremap = true, silent = true, expr = false})
-vim.api.nvim_set_keymap("v", "<Leader>ri", [[ <Esc><Cmd>lua require('refactoring').refactor('Inline Variable')<CR>]], {noremap = true, silent = true, expr = false})
+vim.api.nvim_set_keymap("v", "<leader>re", [[ <Esc><Cmd>lua require('refactoring').refactor('Extract Function')<CR>]], {noremap = true, silent = true, expr = false})
+vim.api.nvim_set_keymap("v", "<leader>rf", [[ <Esc><Cmd>lua require('refactoring').refactor('Extract Function To File')<CR>]], {noremap = true, silent = true, expr = false})
+vim.api.nvim_set_keymap("v", "<leader>rv", [[ <Esc><Cmd>lua require('refactoring').refactor('Extract Variable')<CR>]], {noremap = true, silent = true, expr = false})
+vim.api.nvim_set_keymap("v", "<leader>ri", [[ <Esc><Cmd>lua require('refactoring').refactor('Inline Variable')<CR>]], {noremap = true, silent = true, expr = false})
 
 -- Inline variable can also pick up the identifier currently under the cursor without visual mode
-vim.api.nvim_set_keymap("n", "<Leader>ri", [[ <Cmd>lua require('refactoring').refactor('Inline Variable')<CR>]], {noremap = true, silent = true, expr = false})
+vim.api.nvim_set_keymap("n", "<leader>ri", [[ <Cmd>lua require('refactoring').refactor('Inline Variable')<CR>]], {noremap = true, silent = true, expr = false})
 ```
 
 Notice that these maps (except the last one) are **visual mode** remaps, and
 that ESC is pressed before executing the command. As of now, these are both
 necessary for the plugin to work.
+
+#### Using Built-In Neovim Selection<a name="config-refactoring-builtin"></a>
+
+You can also set up the plugin to prompt for a refactoring operation to apply
+using Neovim's built in selection API. Here is an example remap to demonstrate
+this functionality:
+
+```lua
+-- prompt for a refactor to apply when the remap is triggered
+vim.api.nvim_set_keymap(
+    "v",
+    "<leader>rr",
+    ":lua require('refactoring').select_refactor()<CR>",
+    { noremap = true, silent = true, expr = false }
+)
+```
+
+This remap should also be made in **visual mode**, or functionality for some refactors will not work properly.
 
 #### Using Telescope<a name="config-refactoring-telescope"></a>
 
@@ -162,12 +181,12 @@ vim.api.nvim_set_keymap("v", "<leader>rv", ":lua require('refactoring').debug.pr
 vim.api.nvim_set_keymap("n", "<leader>rc", ":lua require('refactoring').debug.cleanup({})<CR>", { noremap = true })
 ```
 
-#### Configuration for Custom Printf and Print Var Statements<a name="config-stringification"></a>
+#### Customizing Printf and Print Var Statements<a name="config-debug-stringification"></a>
 
 It is possible to override the statements used in the printf and print var
 functionalities.
 
-##### Customizing Printf<a name="config-printf"></a>
+##### Customizing Printf Statements<a name="config-debug-stringification-printf"></a>
 
 You can add to the printf statements for any language by adding something like the below to your configuration:
 
@@ -188,7 +207,7 @@ In any custom printf statement, it is possible to optionally add a max of
 printf statement, go to [this folder](lua/refactoring/tests/debug/printf),
 select your language, and click on `multiple-statements/printf.config`.
 
-##### Customizing Print Var<a name="config-print-var"></a>
+##### Customizing Print Var Statements<a name="config-debug-stringification-print-var"></a>
 
 The print var functionality can also be extended for any given language,
 as shown below:
