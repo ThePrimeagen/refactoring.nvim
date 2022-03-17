@@ -45,7 +45,9 @@ function M.select_refactor(opts)
         )
     end)
 
-    M.refactor(selected_refactor, opts)
+    if selected_refactor then
+        M.refactor(selected_refactor, opts)
+    end
 end
 
 M.debug = require("refactoring.debug")
