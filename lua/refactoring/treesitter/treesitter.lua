@@ -62,16 +62,36 @@ function TreeSitter:new(config, bufnr)
     return setmetatable(c, self)
 end
 
-local function validate_setting(setting)
+local function setting_present(setting)
     for _ in pairs(setting) do
         return true
     end
     return false
 end
 
+function TreeSitter:validate_setting(setting)
+    if self[setting] == nil then
+        error(
+            string.format(
+                "%s setting does not exist on treesitter class",
+                setting
+            )
+        )
+    end
+
+    if not setting_present(self[setting]) then
+        error(
+            string.format(
+                "%s setting is empty in treesitter for this language",
+                setting
+            )
+        )
+    end
+end
+
 ---@return boolean: whether to allow indenting operations
 function TreeSitter:allows_indenting_task()
-    return validate_setting(self.indent_scopes)
+    return setting_present(self.indent_scopes)
 end
 
 function TreeSitter:is_indent_scope(scope)
@@ -149,7 +169,7 @@ function TreeSitter:get_region_refs(scope, region)
 end
 
 function TreeSitter:class_support()
-    return validate_setting(self.valid_class_nodes)
+    return setting_present(self.valid_class_nodes)
 end
 
 function TreeSitter:get_class_name(scope)
