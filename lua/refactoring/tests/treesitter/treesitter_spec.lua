@@ -37,6 +37,7 @@ local function init()
     return TreeSitter.get_treesitter()
 end
 
+-- HACK: pcall with lua class functions are weird, having this as a wrapper
 local function ts_valid(ts, setting)
     ts:validate_setting(setting)
 end
@@ -253,7 +254,6 @@ describe("TreeSitter", function()
         assert(query_error ~= nil)
     end)
 
-    -- TODO: Add nil test
     it("Validate setting is on treesitter success", function()
         local ts = init()
 
@@ -284,7 +284,7 @@ describe("TreeSitter", function()
         assert(query_error ~= nil)
     end)
 
-    it("Validate setting is on treesitter empty setting", function()
+    it("Validate setting is does not exist on treesitter", function()
         local ts = init()
         local setting = "doesNotExist"
 

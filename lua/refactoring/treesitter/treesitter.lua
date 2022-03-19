@@ -1,7 +1,6 @@
 local parsers = require("nvim-treesitter.parsers")
 local Point = require("refactoring.point")
 local utils = require("refactoring.utils")
-local Version = require("refactoring.version")
 local Region = require("refactoring.region")
 
 ---@class TreeSitter
@@ -23,17 +22,10 @@ local Region = require("refactoring.region")
 ---@field require_class_name boolean: flag to require class name for codegen
 ---@field require_class_type boolean: flag to require class type for codegen
 ---@field require_param_types boolean: flag to require parameter types for codegen
----@field version RefactorVersion: supperted operation flags
 ---@field filetype string: the filetype
 ---@field query RefactorQuery: the refactoring query
 local TreeSitter = {}
 TreeSitter.__index = TreeSitter
-TreeSitter.version_flags = {
-    Scopes = 0x1,
-    Locals = 0x2,
-    Classes = 0x4,
-    Indents = 0x8,
-}
 
 ---@return TreeSitter
 function TreeSitter:new(config, bufnr)
@@ -55,7 +47,6 @@ function TreeSitter:new(config, bufnr)
         require_class_name = false,
         require_class_type = false,
         require_param_types = false,
-        version = Version:new(),
         filetype = config.filetype,
     }, config)
 
@@ -113,6 +104,7 @@ function TreeSitter:loop_thru_nodes(scope, inline_nodes)
 end
 
 function TreeSitter:get_local_defs(scope, region)
+    self:validate_setting("function_args")
     local nodes = self:loop_thru_nodes(scope, self.function_args)
     local local_var_names = self:get_local_var_names(scope)
     local i = #nodes + 1
@@ -125,14 +117,17 @@ function TreeSitter:get_local_defs(scope, region)
 end
 
 function TreeSitter:get_local_var_names(node)
+    self:validate_setting("local_var_names")
     return self:loop_thru_nodes(node, self.local_var_names)
 end
 
 function TreeSitter:get_local_var_values(node)
+    self:validate_setting("local_var_values")
     return self:loop_thru_nodes(node, self.local_var_values)
 end
 
 function TreeSitter:get_statements(scope)
+    self:validate_setting("statements")
     return self:loop_thru_nodes(scope, self.statements)
 end
 
@@ -173,8 +168,8 @@ function TreeSitter:class_support()
 end
 
 function TreeSitter:get_class_name(scope)
-    self.version:ensure_version(TreeSitter.version_flags.Classes)
     if self.require_class_name then
+        self:validate_setting("class_names")
         local class_name_node = self:loop_thru_nodes(scope, self.class_names)[1]
         local region = Region:from_node(class_name_node)
         return region:get_text()[1]
@@ -183,8 +178,8 @@ function TreeSitter:get_class_name(scope)
 end
 
 function TreeSitter:get_class_type(scope)
-    self.version:ensure_version(TreeSitter.version_flags.Classes)
     if self.require_class_type then
+        self:validate_setting("class_type")
         local class_type_node = self:loop_thru_nodes(scope, self.class_type)[1]
         local region = Region:from_node(class_type_node)
         return region:get_text()[1]
@@ -216,6 +211,7 @@ local function containing_node_by_type(node, container_map)
     return node
 end
 
+-- TODO: Can we validate settings here without breaking things?
 function TreeSitter:get_local_parameter_types(scope)
     local parameter_types = {}
     local function_node = containing_node_by_type(scope, self.function_scopes)
@@ -237,11 +233,12 @@ function TreeSitter:get_local_parameter_types(scope)
 end
 
 function TreeSitter:indent_scope(node)
+    self:validate_setting("indent_scopes")
     return containing_node_by_type(node:parent(), self.indent_scopes)
 end
 
 function TreeSitter:indent_scope_difference(ancestor, child)
-    self.version:ensure_version(TreeSitter.version_flags.Indents)
+    self:validate_setting("indent_scopes")
 
     if ancestor == child then
         return 0
@@ -270,6 +267,7 @@ function TreeSitter:indent_scope_difference(ancestor, child)
 end
 
 function TreeSitter:get_debug_path(node)
+    self:validate_setting("debug_paths")
     local path = {}
 
     repeat
@@ -286,7 +284,7 @@ end
 
 -- Will walk through the top level statements of the
 function TreeSitter:get_local_declarations(scope)
-    self.version:ensure_version(TreeSitter.version_flags.Scopes)
+    self:validate_setting("local_declarations")
     local all_defs = self:loop_thru_nodes(scope, self.local_declarations)
     local defs = {}
 
@@ -301,12 +299,11 @@ function TreeSitter:get_local_declarations(scope)
 end
 
 function TreeSitter:local_declarations_in_region(scope, region)
-    self.version:ensure_version(TreeSitter.version_flags.Locals)
     return utils.region_intersect(self:get_local_declarations(scope), region)
 end
 
 function TreeSitter:local_declarations_under_cursor()
-    self.version:ensure_version(TreeSitter.version_flags.Locals)
+    self:validate_setting("local_declarations")
     local point = Point:from_cursor()
     local scope = self:get_scope(point:to_ts_node(self:get_root()))
     return vim.tbl_filter(function(node)
@@ -319,12 +316,12 @@ function TreeSitter.get_container(node, container_list)
 end
 
 function TreeSitter:get_scope(node)
-    self.version:ensure_version(TreeSitter.version_flags.Scopes)
+    self:validate_setting("scope_names")
     return containing_node_by_type(node, self.scope_names)
 end
 
 function TreeSitter:get_parent_scope(node)
-    self.version:ensure_version(TreeSitter.version_flags.Scopes)
+    self:validate_setting("scope_names")
     return containing_node_by_type(node:parent(), self.scope_names)
 end
 
