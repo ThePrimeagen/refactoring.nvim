@@ -1,0 +1,43 @@
+name: Bug Report
+description: File a bug report
+title: "[Bug]: "
+labels: ["bug", "triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to fill out this bug report!
+  - type: textarea
+    id: Code Before refactor/debug operation
+    attributes:
+      label: Code Before refactor/debug operation
+      description: Show us what happened before operation
+      placeholder: Tell us what you see!
+    validations:
+      required: true
+  - type: textarea
+    id: What refactor operation did you perform?
+    attributes:
+      label: Code operation befored
+      description: Code operation performed by plugin
+      placeholder: Examples are -> extract func, extract var, etc
+    validations:
+      required: true
+  - type: textarea
+    id: Code After refactor/debug operation
+    attributes:
+      label: Code After refactor/debug operation
+      description: Show us what happened after operation
+      placeholder: Tell us what you see!
+    validations:
+      required: true
+  - type: textarea
+    id: What did you expected?
+    attributes:
+      label: what did you expect from operation
+      description: What did you expect to happen?
+  - type: textarea
+    id: Comments
+    attributes:
+      label: Other comments about issue
+      description: Any other comments about issue
