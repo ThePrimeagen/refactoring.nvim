@@ -1,7 +1,21 @@
 local code_utils = require("refactoring.code_generation.utils")
 local code_gen_indent = require("refactoring.code_generation.indent")
 
+local function build_args(args, arg_types)
+    local final_args = {}
+    for i, arg in pairs(args) do
+        local arg_key = arg .. ":"
+        if arg_types[arg_key] ~= code_utils.default_func_param_type() then
+            final_args[i] = arg .. ": " .. arg_types[arg_key]
+        else
+            final_args[i] = arg
+        end
+    end
+    return final_args
+end
+
 local function python_function(opts)
+    local args = build_args(opts.args, opts.args_types)
     if opts.func_header == nil then
         opts.func_header = ""
     end
@@ -14,12 +28,13 @@ local function python_function(opts)
 ]],
         opts.func_header,
         opts.name,
-        table.concat(opts.args, ", "),
+        table.concat(args, ", "),
         code_utils.stringify_code(opts.body)
     )
 end
 
 local function python_class_function(opts)
+    local args = build_args(opts.args, opts.args_types)
     if opts.func_header == nil then
         opts.func_header = ""
     end
@@ -32,7 +47,7 @@ local function python_class_function(opts)
 ]],
         opts.func_header,
         opts.name,
-        table.concat(opts.args, ", "),
+        table.concat(args, ", "),
         code_utils.stringify_code(opts.body)
     )
 end
