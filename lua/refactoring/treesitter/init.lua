@@ -32,7 +32,6 @@ local DefaultSitter = {}
 
 function DefaultSitter.new(bufnr, ft)
     return TreeSitter:new({
-        version = 0,
         filetype = ft,
         bufnr = bufnr,
     }, bufnr)

@@ -1,5 +1,4 @@
 local TreeSitter = require("refactoring.treesitter.treesitter")
-local Version = require("refactoring.version")
 local Nodes = require("refactoring.treesitter.nodes")
 local FieldNode = Nodes.FieldNode
 local InlineNode = Nodes.InlineNode
@@ -8,12 +7,6 @@ local Python = {}
 
 function Python.new(bufnr, ft)
     return TreeSitter:new({
-        version = Version:new(
-            TreeSitter.version_flags.Scopes,
-            TreeSitter.version_flags.Locals,
-            TreeSitter.version_flags.Classes,
-            TreeSitter.version_flags.Indents
-        ),
         filetype = ft,
         bufnr = bufnr,
         scope_names = {
