@@ -1,5 +1,5 @@
 
-def foo_bar(a, b, c, d, test, test_other):
+def foo_bar(a, b: int, c, d: int, test, test_other):
     for x in range(test_other + test):
         print(x, a, b, c, d)
 

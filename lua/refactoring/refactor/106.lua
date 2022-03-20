@@ -65,8 +65,10 @@ local function get_function_param_types(refactor, args)
     )
     for _, arg in pairs(args) do
         local function_param_type
-        if parameter_arg_types[arg] ~= nil then
-            function_param_type = parameter_arg_types[arg]
+        local curr_arg = refactor.ts.get_arg_type_key(arg)
+
+        if parameter_arg_types[curr_arg] ~= nil then
+            function_param_type = parameter_arg_types[curr_arg]
         elseif
             refactor.config:get_prompt_func_param_type(refactor.filetype)
         then
@@ -80,8 +82,9 @@ local function get_function_param_types(refactor, args)
         else
             function_param_type = code_utils.default_func_param_type()
         end
-        args_types[arg] = function_param_type
+        args_types[curr_arg] = function_param_type
     end
+
     return args_types
 end
 

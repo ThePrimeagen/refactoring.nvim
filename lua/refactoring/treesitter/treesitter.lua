@@ -80,6 +80,10 @@ function TreeSitter:validate_setting(setting)
     end
 end
 
+function TreeSitter.get_arg_type_key(arg)
+    return arg
+end
+
 ---@return boolean: whether to allow indenting operations
 function TreeSitter:allows_indenting_task()
     return setting_present(self.indent_scopes)
@@ -216,6 +220,13 @@ function TreeSitter:get_local_parameter_types(scope)
     local parameter_types = {}
     local function_node = containing_node_by_type(scope, self.function_scopes)
 
+    -- TODO: Uncomment this error once validate settings in this func
+    -- if function_node == nil then
+    -- error(
+    -- "Failed to get function_node in get_local_parameter_types, check `function_scopes` queries"
+    -- )
+    -- end
+
     -- Get parameter list
     local parameter_list_nodes = self:loop_thru_nodes(
         function_node,
@@ -224,11 +235,14 @@ function TreeSitter:get_local_parameter_types(scope)
 
     -- Only if we find something, else empty
     if #parameter_list_nodes > 0 then
-        local region = Region:from_node(parameter_list_nodes[1])
-        local parameter_list = region:get_text()
-        local parameter_split = utils.split_string(parameter_list[1], " ")
-        parameter_types[parameter_split[1]] = parameter_split[2]
+        for _, node in pairs(parameter_list_nodes) do
+            local region = Region:from_node(node)
+            local parameter_list = region:get_text()
+            local parameter_split = utils.split_string(parameter_list[1], " ")
+            parameter_types[parameter_split[1]] = parameter_split[2]
+        end
     end
+
     return parameter_types
 end
 

@@ -6,9 +6,10 @@ local InlineNode = Nodes.InlineNode
 local Python = {}
 
 function Python.new(bufnr, ft)
-    return TreeSitter:new({
+    local ts = TreeSitter:new({
         filetype = ft,
         bufnr = bufnr,
+        require_param_types = true,
         scope_names = {
             function_definition = "function",
             module = "program",
@@ -69,7 +70,27 @@ function Python.new(bufnr, ft)
             for_statement = true,
             if_statement = true,
         },
+        function_scopes = {
+            function_definition = true,
+            if_statement = true,
+            module = true,
+        },
+        parameter_list = {
+            InlineNode(
+                "(function_definition parameters: (parameters((typed_parameter) @capture)))"
+            ),
+            InlineNode(
+                "(function_definition parameters: (parameters((typed_default_parameter) @capture)))"
+            ),
+        },
     }, bufnr)
+
+    -- overriding function
+    function ts.get_arg_type_key(arg)
+        return arg .. ":"
+    end
+
+    return ts
 end
 
 return Python
