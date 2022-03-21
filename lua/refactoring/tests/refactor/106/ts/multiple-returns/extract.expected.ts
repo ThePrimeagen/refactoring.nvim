@@ -1,5 +1,5 @@
 
-function return_me(a) {
+function return_me(a: number) {
     let test = 1;
     let test_other = 11
     for (let idx = test - 1; idx < test_other; ++idx) {

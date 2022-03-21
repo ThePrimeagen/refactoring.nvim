@@ -1,5 +1,5 @@
 class RefuctorPlease {
-    return_me(a, test) {
+    return_me(a: number, test) {
         let test_other = 11
         for (let idx = test - 1; idx < test_other; ++idx) {
             console.log(idx, a)
