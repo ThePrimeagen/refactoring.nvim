@@ -9,27 +9,31 @@ local function typescript_class_function(opts)
     end
     return string.format(
         [[
-%s(%s) {
+%s%s(%s) {
 %s
-}
+%s}
 ]],
+        opts.func_header,
         opts.name,
         table.concat(opts.args, ", "),
-        code_utils.stringify_code(opts.body)
+        code_utils.stringify_code(opts.body),
+        opts.func_header
     )
 end
 
 local function typescript_function(opts)
     return string.format(
         [[
-function %s(%s) {
+%sfunction %s(%s) {
 %s
-}
+%s}
 
 ]],
+        opts.func_header,
         opts.name,
         table.concat(opts.args, ", "),
-        code_utils.stringify_code(opts.body)
+        code_utils.stringify_code(opts.body),
+        opts.func_header
     )
 end
 
