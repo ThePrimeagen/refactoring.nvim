@@ -7,9 +7,10 @@ local InlineNode = Nodes.InlineNode
 local Typescript = {}
 
 function Typescript.new(bufnr, ft)
-    return TreeSitter:new({
+    local ts = TreeSitter:new({
         filetype = ft,
         bufnr = bufnr,
+        require_param_types = true,
         scope_names = {
             program = "program",
             function_declaration = "function",
@@ -85,7 +86,22 @@ function Typescript.new(bufnr, ft)
             InlineNode("(while_statement) @tmp_capture"),
             InlineNode("(lexical_declaration) @tmp_capture"),
         },
+        function_scopes = {
+            method_definition = true,
+            function_declaration = true,
+            arrow_function = true,
+        },
+        parameter_list = {
+            InlineNode("(formal_parameters (required_parameter) @capture)"),
+        },
     }, bufnr)
+
+    -- overriding function
+    function ts.get_arg_type_key(arg)
+        return arg .. ":"
+    end
+
+    return ts
 end
 
 return Typescript
