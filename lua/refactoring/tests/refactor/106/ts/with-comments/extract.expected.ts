@@ -14,5 +14,4 @@ function simple_function(a: number) {
     let test = 1;
     let test_other = 11
     foo_bar(a, test, test_other);
-
 }

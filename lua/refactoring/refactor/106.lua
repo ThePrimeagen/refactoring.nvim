@@ -250,6 +250,8 @@ local function get_func_call(refactor, extract_params)
         func_call_with_indent[2] = func_call.text
         func_call.text = table.concat(func_call_with_indent, "")
     end
+
+    func_call.add_newline = false
     return func_call
 end
 

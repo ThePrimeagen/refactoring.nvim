@@ -7,4 +7,3 @@ def foo():
 
 
 foo()
-

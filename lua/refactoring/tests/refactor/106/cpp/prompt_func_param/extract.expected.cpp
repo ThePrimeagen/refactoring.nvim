@@ -13,6 +13,5 @@ int simple_function(int a) {
   int test = 1;
   foo(a);
 
-
   return test;
 }

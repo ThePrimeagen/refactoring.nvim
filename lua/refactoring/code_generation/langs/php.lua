@@ -76,7 +76,7 @@ local php = {
         )
     end,
     terminate = function(code)
-        return code .. ";\n"
+        return code .. ";"
     end,
     indent_char_length = function(first_line)
         return code_gen_indent.indent_char_length(first_line, indent_char)

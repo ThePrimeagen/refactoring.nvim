@@ -11,5 +11,4 @@ void simple_function(int a) {
   int test = 1, test_other = 1;
 
   foo_bar(a, test, test_other);
-
 }

@@ -12,5 +12,4 @@ void foo(int a) {
 void simple_function(int a) {
   int test = 1;
   foo(a);
-
 }

@@ -115,7 +115,7 @@ local python = {
         )
     end,
     terminate = function(code)
-        return code .. "\n"
+        return code
     end,
     pack = function(opts)
         return code_utils.returnify(opts, "%s")
