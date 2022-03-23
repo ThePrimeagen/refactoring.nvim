@@ -76,7 +76,7 @@ local lua = {
         return string.format("%s(%s)", opts.name, table.concat(opts.args, ", "))
     end,
     terminate = function(code)
-        return code .. "\n"
+        return code
     end,
     pack = function(opts)
         return code_utils.returnify(opts, "%s")

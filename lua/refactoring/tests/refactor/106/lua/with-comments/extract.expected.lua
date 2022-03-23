@@ -14,5 +14,4 @@ function simple_function(a)
     local test = 1
     local test_other = 11
     foo_bar(a, test, test_other)
-
 end

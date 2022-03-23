@@ -8,4 +8,3 @@ def simple_function(a, b: int, c=1, d: int = 2):
     test = 1
     test_other = 11
     foo_bar(a, b, c, d, test, test_other)
-

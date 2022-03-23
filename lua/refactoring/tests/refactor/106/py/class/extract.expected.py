@@ -10,4 +10,3 @@ class Poggers:
         test = 1
         test_other = 11
         self.foo(a, test, test_other)
-

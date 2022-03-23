@@ -16,5 +16,4 @@ func (f *foobar) simple_function(a int) {
 	var test int = 1
 	test_other := 1
 	f.foo(a, test, test_other)
-
 }

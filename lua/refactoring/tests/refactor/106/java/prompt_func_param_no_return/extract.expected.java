@@ -12,6 +12,5 @@ public static void foo(int a) {
   public static void simpleFunction(int a) {
     int test = 1;
     foo(a);
-
   }
 }

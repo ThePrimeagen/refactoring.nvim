@@ -13,7 +13,6 @@ public static void foo(int a) {
     int test = 1;
     foo(a);
 
-
     return test;
   }
 }

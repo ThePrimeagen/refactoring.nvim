@@ -188,7 +188,7 @@ local go = {
         return go_call_class_func(opts)
     end,
     terminate = function(code)
-        return code .. "\n"
+        return code
     end,
 }
 return go
