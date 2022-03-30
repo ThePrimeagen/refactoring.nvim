@@ -9,6 +9,7 @@ local M = {}
 -- object... not sure if I like that.
 M.extract = extract.extract
 M.extract_to_file = extract.extract_to_file
+M.extract_block = extract.extract_block
 M.extract_var = extract_var.extract_var
 M.inline_var = inline_var.inline_var
 
@@ -18,12 +19,13 @@ M[123] = inline_var.inline_var
 
 -- TODO: Perhaps I am really out thinking myself on this one.  But it seems way
 -- nicer if we can query all the names of refactors that allow us to use fzf or
--- telescope for nice intergration with refactor picking
+-- telescope for nice integration with refactor picking
 M.refactor_names = {
     ["Inline Variable"] = "inline_var",
     ["Extract Variable"] = "extract_var",
     ["Extract Function"] = "extract",
     ["Extract Function To File"] = "extract_to_file",
+    ["Extract Block"] = "extract_block",
 }
 
 return M

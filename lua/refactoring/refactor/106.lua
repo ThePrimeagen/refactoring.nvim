@@ -4,6 +4,7 @@ local selection_setup = require("refactoring.tasks.selection_setup")
 local ensure_code_gen = require("refactoring.tasks.ensure_code_gen")
 local code_utils = require("refactoring.code_generation.utils")
 local Region = require("refactoring.region")
+local Point = require("refactoring.point")
 local lsp_utils = require("refactoring.lsp_utils")
 
 local refactor_setup = require("refactoring.tasks.refactor_setup")
@@ -311,6 +312,44 @@ local function get_selected_locals(refactor)
     return utils.table_key_intersect(local_def_map, region_refs_map)
 end
 
+local function extract_block_setup(refactor)
+    local initial_region = Region:from_point(
+        Point:from_cursor(),
+        refactor.bufnr
+    )
+
+    local initial_region_node = initial_region:to_ts_node(
+        refactor.ts:get_root()
+    )
+    local scope = refactor.ts:get_scope(initial_region_node)
+
+    local function_body = refactor.ts:get_function_body(scope)
+
+    local first_line_region = Region:from_node(function_body[1])
+    local last_line_region = Region:from_node(function_body[#function_body])
+
+    local final_region = Region:from_values(
+        refactor.bufnr,
+        first_line_region.start_row,
+        first_line_region.start_col,
+        last_line_region.end_row + 1,
+        last_line_region.end_col
+    )
+    local final_region_node = final_region:to_ts_node(refactor.ts:get_root())
+
+    refactor.region = final_region
+    refactor.region_node = final_region_node
+    refactor.scope = scope
+    refactor.whitespace.highlight_start = vim.fn.indent(final_region.start_row)
+    refactor.whitespace.highlight_end = vim.fn.indent(final_region.end_row)
+
+    if refactor.scope == nil then
+        return false, "Scope is nil"
+    end
+
+    return true, refactor
+end
+
 local function extract_setup(refactor)
     local function_name = get_input("106: Extract Function Name > ")
     assert(function_name ~= "", "Error: Must provide function name")
@@ -349,6 +388,7 @@ local function extract_setup(refactor)
 
     local region_above_scope = get_non_comment_region_above_node(refactor)
     local extract_function
+
     if is_class then
         extract_function = lsp_utils.insert_new_line_text(
             region_above_scope,
@@ -363,7 +403,7 @@ local function extract_setup(refactor)
         }
     end
 
-    -- NOTE: there is going tno be a bunch of edge cases we haven't thought
+    -- NOTE: there is going to be a bunch of edge cases we haven't thought
     -- about
     refactor.text_edits = {
         extract_function,
@@ -436,6 +476,24 @@ M.extract = function(bufnr, opts)
     get_extract_setup_pipeline(bufnr, opts)
         :add_task(function(refactor)
             return ensure_code_gen_106(refactor)
+        end)
+        :add_task(function(refactor)
+            extract_setup(refactor)
+            return true, refactor
+        end)
+        :after(post_refactor)
+        :run()
+end
+
+M.extract_block = function(bufnr, opts)
+    bufnr = bufnr or vim.fn.bufnr()
+    Pipeline
+        :from_task(refactor_setup(bufnr, opts))
+        :add_task(function(refactor)
+            return ensure_code_gen_106(refactor)
+        end)
+        :add_task(function(refactor)
+            return extract_block_setup(refactor)
         end)
         :add_task(function(refactor)
             extract_setup(refactor)
