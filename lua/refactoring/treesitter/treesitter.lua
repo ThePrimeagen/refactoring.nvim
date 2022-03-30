@@ -18,6 +18,7 @@ local Region = require("refactoring.region")
 ---@field parameter_list table: nodes to get list of parameters for a function
 ---@field function_scopes table: nodes to find a function declaration
 ---@field function_args table: nodes to find args for a function
+---@field function_body table: nodes to find body for a function
 ---@field bufnr number: the bufnr to which this belongs
 ---@field require_class_name boolean: flag to require class name for codegen
 ---@field require_class_type boolean: flag to require class type for codegen
@@ -43,6 +44,7 @@ function TreeSitter:new(config, bufnr)
         parameter_list = {},
         function_scopes = {},
         function_args = {},
+        function_body = {},
         bufnr = bufnr,
         require_class_name = false,
         require_class_type = false,
@@ -133,6 +135,11 @@ end
 function TreeSitter:get_statements(scope)
     self:validate_setting("statements")
     return self:loop_thru_nodes(scope, self.statements)
+end
+
+function TreeSitter:get_function_body(scope)
+    self:validate_setting("function_body")
+    return self:loop_thru_nodes(scope, self.function_body)
 end
 
 function TreeSitter:is_class_function(scope)
