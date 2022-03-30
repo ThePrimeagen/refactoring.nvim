@@ -83,6 +83,9 @@ function Python.new(bufnr, ft)
                 "(function_definition parameters: (parameters((typed_default_parameter) @capture)))"
             ),
         },
+        function_body = {
+            InlineNode("(block (_) @tmp_capture)"),
+        },
     }, bufnr)
 
     -- overriding function
