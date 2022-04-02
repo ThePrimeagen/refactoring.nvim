@@ -18,12 +18,6 @@ local extension_to_filetype = {
     ["java"] = "java",
 }
 
-local refactor_id_to_refactor = {
-    ["119"] = { name = "extract_var" },
-    ["106"] = { name = "extract" },
-    ["123"] = { name = "inline_var" },
-}
-
 local cwd = vim.loop.cwd()
 vim.cmd("set rtp+=" .. cwd)
 
@@ -31,20 +25,6 @@ local eq = assert.are.same
 
 local function remove_cwd(file)
     return file:sub(#cwd + 2 + #"lua/refactoring/tests/")
-end
-
-local function get_refactor_name_from_path(path)
-    local refactor_id = path:match("%d+")
-    local refactor = refactor_id_to_refactor[tostring(refactor_id)]
-    if not refactor then
-        error(
-            string.format(
-                "malformed test structure: expected %s to contain a valid refactor id",
-                path
-            )
-        )
-    end
-    return refactor
 end
 
 local function for_each_file(cb)
@@ -81,7 +61,8 @@ local function test_empty_input()
         local parts = utils.split_string(file, "%.")
         local filename_prefix = parts[1]
         local filename_extension = parts[3]
-        local refactor = get_refactor_name_from_path(filename_prefix)
+        local path_split = utils.split_string(parts[1], "/")
+        local refactor = path_split[#path_split]
 
         local bufnr = vim.api.nvim_create_buf(false, true)
         vim.api.nvim_win_set_buf(0, bufnr)
@@ -97,7 +78,7 @@ local function test_empty_input()
 
         test_utils.run_commands(filename_prefix)
 
-        local status, err = pcall(refactoring.refactor, refactor["name"])
+        local status, err = pcall(refactoring.refactor, refactor)
 
         -- waits for the next frame for formatting to work.
         async.util.scheduler()
@@ -200,7 +181,8 @@ describe("Refactoring", function()
             local parts = utils.split_string(file, "%.")
             local filename_prefix = parts[1]
             local filename_extension = parts[3]
-            local refactor = get_refactor_name_from_path(filename_prefix)
+            local path_split = utils.split_string(parts[1], "/")
+            local refactor = path_split[#path_split]
 
             local bufnr = test_utils.open_test_file(file)
             local expected = test_utils.get_contents(
@@ -220,7 +202,7 @@ describe("Refactoring", function()
             set_bufnr_shiftwidth(filename_extension)
 
             test_utils.run_commands(filename_prefix)
-            refactoring.refactor(refactor["name"])
+            refactoring.refactor(refactor)
             async.util.scheduler()
             local lines = vim.api.nvim_buf_get_lines(bufnr, 0, -1, false)
 
