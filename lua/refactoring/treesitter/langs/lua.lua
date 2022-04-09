@@ -72,6 +72,9 @@ function Lua.new(bufnr, ft)
             InlineNode("(while_statement) @tmp_capture"),
             InlineNode("(variable_declaration) @tmp_capture"),
         },
+        function_body = {
+            InlineNode("(block (_) @tmp_capture)"),
+        },
     }, bufnr)
 end
 

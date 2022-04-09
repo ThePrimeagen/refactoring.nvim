@@ -87,6 +87,9 @@ function Golang.new(bufnr, ft)
                 "(method_declaration parameters: (parameter_list (parameter_declaration name: (identifier) @definition.function_argument)))"
             ),
         },
+        function_body = {
+            InlineNode("(block (_) @tmp_capture)"),
+        },
         require_class_name = true,
         require_class_type = true,
         require_param_types = true,
