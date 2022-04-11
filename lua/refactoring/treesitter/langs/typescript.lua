@@ -94,6 +94,9 @@ function Typescript.new(bufnr, ft)
         parameter_list = {
             InlineNode("(formal_parameters (required_parameter) @capture)"),
         },
+        function_body = {
+            InlineNode("(statement_block (_) @tmp_capture)"),
+        },
     }, bufnr)
 
     -- overriding function

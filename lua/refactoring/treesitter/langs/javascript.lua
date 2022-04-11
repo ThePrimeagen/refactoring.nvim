@@ -75,6 +75,9 @@ function JavaScript.new(bufnr, ft)
             InlineNode("(lexical_declaration) @tmp_capture"),
             InlineNode("(variable_declaration) @tmp_capture"),
         },
+        function_body = {
+            InlineNode("(statement_block (_) @tmp_capture)"),
+        },
     }, bufnr)
 end
 
