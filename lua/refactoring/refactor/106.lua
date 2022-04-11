@@ -152,7 +152,7 @@ local function indent_func_code(function_params, has_return_vals, refactor)
 end
 
 -- TODO: Change name of this, misleading
-local function get_func_parms(extract_params, refactor)
+local function get_func_params(extract_params, refactor)
     local func_params = {
         name = extract_params.function_name,
         args = extract_params.args,
@@ -182,7 +182,7 @@ end
 
 local function get_function_code(refactor, extract_params)
     local function_code
-    local func_params = get_func_parms(extract_params, refactor)
+    local func_params = get_func_params(extract_params, refactor)
 
     if extract_params.is_class then
         func_params.className = refactor.ts:get_class_name(refactor.scope)
@@ -321,6 +321,7 @@ local function extract_block_setup(refactor)
     local initial_region_node = initial_region:to_ts_node(
         refactor.ts:get_root()
     )
+
     local scope = refactor.ts:get_scope(initial_region_node)
 
     local function_body = refactor.ts:get_function_body(scope)
@@ -467,7 +468,7 @@ M.extract_to_file = function(bufnr, opts)
             extract_setup(refactor)
             return true, refactor
         end)
-        :after(post_refactor)
+        :after(post_refactor.no_cursor_post_refactor)
         :run()
 end
 
@@ -481,7 +482,7 @@ M.extract = function(bufnr, opts)
             extract_setup(refactor)
             return true, refactor
         end)
-        :after(post_refactor)
+        :after(post_refactor.post_refactor)
         :run()
 end
 
@@ -499,7 +500,26 @@ M.extract_block = function(bufnr, opts)
             extract_setup(refactor)
             return true, refactor
         end)
-        :after(post_refactor)
+        :after(post_refactor.post_refactor)
+        :run()
+end
+
+M.extract_block_to_file = function(bufnr, opts)
+    bufnr = bufnr or vim.fn.bufnr(vim.fn.bufname())
+    Pipeline
+        :from_task(refactor_setup(bufnr, opts))
+        :add_task(function(refactor)
+            return ensure_code_gen_106(refactor)
+        end)
+        :add_task(function(refactor)
+            return extract_block_setup(refactor)
+        end)
+        :add_task(create_file.from_input)
+        :add_task(function(refactor)
+            extract_setup(refactor)
+            return true, refactor
+        end)
+        :after(post_refactor.no_cursor_post_refactor)
         :run()
 end
 

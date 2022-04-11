@@ -151,7 +151,7 @@ function M.extract_var(bufnr, config)
             extract_var_setup(refactor)
             return true, refactor
         end)
-        :after(post_refactor)
+        :after(post_refactor.post_refactor)
         :run()
 end
 
