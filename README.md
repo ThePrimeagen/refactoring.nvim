@@ -73,7 +73,8 @@ supported (with individual support for each function may vary):
   - **106: Extract Function**
     - In visual mode, extracts the selected code to a separate function
     - Optionally prompts for function param types and return types (see [configuration for type prompt operations](#config-prompt))
-    - Also possible to extract to a separate file, or extract the current block (no visual mode required)
+    - Also possible to Extract Block.
+    - Both Extract Function and Extract Block have the capability to extract to a separate file.
   - **119: Extract Variable**
     - In visual mode, extracts occurences of a selected expression to its own variable, replacing occurences of that expression with the variable
   - **123: Inline Variable**
@@ -116,7 +117,8 @@ vim.api.nvim_set_keymap("v", "<leader>rv", [[ <Esc><Cmd>lua require('refactoring
 vim.api.nvim_set_keymap("v", "<leader>ri", [[ <Esc><Cmd>lua require('refactoring').refactor('Inline Variable')<CR>]], {noremap = true, silent = true, expr = false})
 
 -- Extract block doesn't need visual mode
-vim.api.nvim_set_keymap("n", "<leader>ri", [[ <Cmd>lua require('refactoring').refactor('Extract Block')<CR>]], {noremap = true, silent = true, expr = false})
+vim.api.nvim_set_keymap("n", "<leader>rb", [[ <Cmd>lua require('refactoring').refactor('Extract Block')<CR>]], {noremap = true, silent = true, expr = false})
+vim.api.nvim_set_keymap("n", "<leader>rbf", [[ <Cmd>lua require('refactoring').refactor('Extract Block To File')<CR>]], {noremap = true, silent = true, expr = false})
 
 -- Inline variable can also pick up the identifier currently under the cursor without visual mode
 vim.api.nvim_set_keymap("n", "<leader>ri", [[ <Cmd>lua require('refactoring').refactor('Inline Variable')<CR>]], {noremap = true, silent = true, expr = false})
