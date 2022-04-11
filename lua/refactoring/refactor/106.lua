@@ -321,6 +321,7 @@ local function extract_block_setup(refactor)
     local initial_region_node = initial_region:to_ts_node(
         refactor.ts:get_root()
     )
+
     local scope = refactor.ts:get_scope(initial_region_node)
 
     local function_body = refactor.ts:get_function_body(scope)
@@ -499,7 +500,26 @@ M.extract_block = function(bufnr, opts)
             extract_setup(refactor)
             return true, refactor
         end)
-        :after(post_refactor)
+        :after(post_refactor.post_refactor)
+        :run()
+end
+
+M.extract_block_to_file = function(bufnr, opts)
+    bufnr = bufnr or vim.fn.bufnr(vim.fn.bufname())
+    Pipeline
+        :from_task(refactor_setup(bufnr, opts))
+        :add_task(function(refactor)
+            return ensure_code_gen_106(refactor)
+        end)
+        :add_task(function(refactor)
+            return extract_block_setup(refactor)
+        end)
+        :add_task(create_file.from_input)
+        :add_task(function(refactor)
+            extract_setup(refactor)
+            return true, refactor
+        end)
+        :after(post_refactor.no_cursor_post_refactor)
         :run()
 end
 
