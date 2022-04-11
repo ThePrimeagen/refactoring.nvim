@@ -17,7 +17,7 @@ function M.replace_temp_with_query(bufnr, opts)
 
             return true, refactor, lsp_definition
         end)
-        :after(post_refactor)
+        :after(post_refactor.post_refactor)
         :run()
 end
 

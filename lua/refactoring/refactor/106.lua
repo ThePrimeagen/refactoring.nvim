@@ -152,7 +152,7 @@ local function indent_func_code(function_params, has_return_vals, refactor)
 end
 
 -- TODO: Change name of this, misleading
-local function get_func_parms(extract_params, refactor)
+local function get_func_params(extract_params, refactor)
     local func_params = {
         name = extract_params.function_name,
         args = extract_params.args,
@@ -182,7 +182,7 @@ end
 
 local function get_function_code(refactor, extract_params)
     local function_code
-    local func_params = get_func_parms(extract_params, refactor)
+    local func_params = get_func_params(extract_params, refactor)
 
     if extract_params.is_class then
         func_params.className = refactor.ts:get_class_name(refactor.scope)
@@ -467,7 +467,7 @@ M.extract_to_file = function(bufnr, opts)
             extract_setup(refactor)
             return true, refactor
         end)
-        :after(post_refactor)
+        :after(post_refactor.no_cursor_post_refactor)
         :run()
 end
 
@@ -481,7 +481,7 @@ M.extract = function(bufnr, opts)
             extract_setup(refactor)
             return true, refactor
         end)
-        :after(post_refactor)
+        :after(post_refactor.post_refactor)
         :run()
 end
 
