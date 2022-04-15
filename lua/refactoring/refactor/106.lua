@@ -101,9 +101,27 @@ local function get_func_header_prefix(refactor)
     return refactor.code.indent(opts)
 end
 
+local function get_first_node_row(node)
+    local start_row, _, _, _ = node:range()
+    local first = node
+    while true do
+        local parent = first:parent()
+        if parent == nil then
+            break
+        end
+        local parent_row, _, _, _ = parent:range()
+        if parent_row ~= start_row then
+            break
+        end
+        first = parent
+    end
+    return first, start_row
+end
+
 local function get_indent_prefix(refactor)
     local bufnr_shiftwidth = vim.bo.shiftwidth
-    local scope_region = Region:from_node(refactor.scope, refactor.bufnr)
+    local first_node_row, _ = get_first_node_row(refactor.scope)
+    local scope_region = Region:from_node(first_node_row, refactor.bufnr)
     local _, scope_start_col, _, _ = scope_region:to_vim()
     local baseline_indent = math.floor(scope_start_col / bufnr_shiftwidth)
     local total_indents = baseline_indent + 1
@@ -253,11 +271,14 @@ local function get_func_call(refactor, extract_params)
     end
 
     func_call.add_newline = false
+
     return func_call
 end
 
 local function get_non_comment_region_above_node(refactor)
-    local prev_sibling = refactor.scope:prev_named_sibling()
+    local scope = get_first_node_row(refactor.scope)
+
+    local prev_sibling = scope:prev_named_sibling()
 
     if prev_sibling == nil then
         return utils.region_above_node(refactor.scope)
