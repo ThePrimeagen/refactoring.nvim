@@ -72,7 +72,9 @@ function M.get_node_text(node, out)
     local count = node:child_count()
 
     if count == 0 then
-        table.insert(out, ts_utils.get_node_text(node)[1])
+        local cur_bufnr = vim.api.nvim_get_current_buf()
+        local text = vim.treesitter.query.get_node_text(node, cur_bufnr)
+        table.insert(out, text)
         return out
     end
 
@@ -153,10 +155,11 @@ function M.node_text_to_set(...)
     local out = {}
     for i = 1, select("#", ...) do
         local nodes = select(i, ...)
+        local cur_bufnr = vim.api.nvim_get_current_buf()
         for _, node in pairs(nodes) do
-            local text = ts_utils.get_node_text(node)
-            if text and text[1] ~= nil then
-                out[text[1]] = true
+            local text = vim.treesitter.query.get_node_text(node, cur_bufnr)
+            if text ~= nil then
+                out[text] = true
             end
         end
     end
