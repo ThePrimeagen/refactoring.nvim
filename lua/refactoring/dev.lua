@@ -1,4 +1,3 @@
-local ts_utils = require("nvim-treesitter.ts_utils")
 local Query = require("refactoring.query")
 local TreeSitter = require("refactoring.treesitter")
 local Region = require("refactoring.region")
@@ -44,7 +43,10 @@ function M.debug_current_selection()
 
     print("Debugging for", bufnr)
     print("Region", vim.inspect(region))
-    print("Selection:Scope", vim.inspect(ts_utils.get_node_text(scope)))
+    print(
+        "Selection:Scope",
+        vim.inspect(vim.treesitter.query.get_node_text(scope, bufnr))
+    )
 end
 
 function M.print_selections_sexpr()
@@ -62,7 +64,9 @@ function M.print_local_def()
     print(def)
     print(vim.inspect(def))
     print(def[1]:type())
-    print(ts_utils.get_node_text(def))
+    print(
+        vim.treesitter.query.get_node_text(def, vim.api.nvim_get_current_buf())
+    )
 end
 
 function M.get_current_node()
@@ -71,7 +75,14 @@ function M.get_current_node()
 end
 
 function M.print_scope(scope)
-    print(vim.inspect(ts_utils.get_node_text(scope)))
+    print(
+        vim.inspect(
+            vim.treesitter.query.get_node_text(
+                scope,
+                vim.api.nvim_get_current_buf()
+            )
+        )
+    )
 end
 
 return M

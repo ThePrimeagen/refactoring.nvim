@@ -1,4 +1,3 @@
-local ts_utils = require("nvim-treesitter.ts_utils")
 local TreeSitter = require("refactoring.treesitter")
 local Point = require("refactoring.point")
 local Nodes = require("refactoring.treesitter.nodes")
@@ -111,13 +110,14 @@ describe("TreeSitter", function()
         local local_vars = ts:get_local_declarations(scope)
 
         assert.are.same(#local_vars, 2)
+        local cur_bufnr = vim.api.nvim_get_current_buf()
         assert.are.same(
             "let foo = 5;",
-            ts_utils.get_node_text(local_vars[1])[1]
+            vim.treesitter.query.get_node_text(local_vars[1], cur_bufnr)
         )
         assert.are.same(
             "const bar = 5;",
-            ts_utils.get_node_text(local_vars[2])[1]
+            vim.treesitter.query.get_node_text(local_vars[2], cur_bufnr)
         )
     end)
 
@@ -127,7 +127,7 @@ describe("TreeSitter", function()
         set_position(33, 10)
         local node = ts:local_declarations_under_cursor()
 
-        assert.are.same("const bar = 5;", ts_utils.get_node_text(node)[1])
+        assert.are.same("const bar = 5;", vim.treesitter.query.get_node_text(node, vim.api.nvim_get_current_buf()))
     end)
 
     it("Inline Node basic test root scope", function()
@@ -137,21 +137,22 @@ describe("TreeSitter", function()
         local bufnr = vim.api.nvim_get_current_buf()
         local inline_node_result = inline_node(scope, bufnr, ts.filetype)
         assert.are.same(#inline_node_result, 4)
+        local cur_bufnr = vim.api.nvim_get_current_buf()
         assert.are.same(
             "return test;",
-            ts_utils.get_node_text(inline_node_result[1])[1]
+            vim.treesitter.query.get_node_text(inline_node_result[1], cur_bufnr)
         )
         assert.are.same(
             "return 5;",
-            ts_utils.get_node_text(inline_node_result[2])[1]
+            vim.treesitter.query.get_node_text(inline_node_result[2], cur_bufnr)
         )
         assert.are.same(
             "return 5;",
-            ts_utils.get_node_text(inline_node_result[3])[1]
+            vim.treesitter.query.get_node_text(inline_node_result[3], cur_bufnr)
         )
         assert.are.same(
             "return inner() * foo * bar;",
-            ts_utils.get_node_text(inline_node_result[4])[1]
+            vim.treesitter.query.get_node_text(inline_node_result[4], cur_bufnr)
         )
     end)
 
@@ -162,13 +163,15 @@ describe("TreeSitter", function()
         local bufnr = vim.api.nvim_get_current_buf()
         local inline_node_result = inline_node(scope, bufnr, ts.filetype)
         assert.are.same(#inline_node_result, 2)
+
+        local cur_bufnr = vim.api.nvim_get_current_buf()
         assert.are.same(
             "return 5;",
-            ts_utils.get_node_text(inline_node_result[1])[1]
+            vim.treesitter.query.get_node_text(inline_node_result[1], cur_bufnr)
         )
         assert.are.same(
             "return inner() * foo * bar;",
-            ts_utils.get_node_text(inline_node_result[2])[1]
+            vim.treesitter.query.get_node_text(inline_node_result[2], cur_bufnr)
         )
     end)
 
@@ -177,41 +180,43 @@ describe("TreeSitter", function()
         local scope = get_scope(ts, 31)
         local inline_node_result = ts:get_statements(scope)
         assert.are.same(#inline_node_result, 9)
+
+        local cur_bufnr = vim.api.nvim_get_current_buf()
         assert.are.same(
             "return 5;",
-            ts_utils.get_node_text(inline_node_result[1])[1]
+            vim.treesitter.query.get_node_text(inline_node_result[1], cur_bufnr)
         )
         assert.are.same(
             "return inner() * foo * bar;",
-            ts_utils.get_node_text(inline_node_result[2])[1]
+            vim.treesitter.query.get_node_text(inline_node_result[2], cur_bufnr)
         )
         assert.are.same(
-            "if (true) {",
-            ts_utils.get_node_text(inline_node_result[3])[1]
+            "if (true) {\n            let fazz = 7;\n        }",
+            vim.treesitter.query.get_node_text(inline_node_result[3], cur_bufnr)
         )
         assert.are.same(
-            "if (true) {",
-            ts_utils.get_node_text(inline_node_result[4])[1]
+            "if (true) {\n            let buzzzbaszz = 69;\n        }",
+            vim.treesitter.query.get_node_text(inline_node_result[4], cur_bufnr)
         )
         assert.are.same(
             "let foo = 5;",
-            ts_utils.get_node_text(inline_node_result[5])[1]
+            vim.treesitter.query.get_node_text(inline_node_result[5], cur_bufnr)
         )
         assert.are.same(
             "const bar = 5;",
-            ts_utils.get_node_text(inline_node_result[6])[1]
+            vim.treesitter.query.get_node_text(inline_node_result[6], cur_bufnr)
         )
         assert.are.same(
             "let baz = 5;",
-            ts_utils.get_node_text(inline_node_result[7])[1]
+            vim.treesitter.query.get_node_text(inline_node_result[7], cur_bufnr)
         )
         assert.are.same(
             "let fazz = 7;",
-            ts_utils.get_node_text(inline_node_result[8])[1]
+            vim.treesitter.query.get_node_text(inline_node_result[8], cur_bufnr)
         )
         assert.are.same(
             "let buzzzbaszz = 69;",
-            ts_utils.get_node_text(inline_node_result[9])[1]
+            vim.treesitter.query.get_node_text(inline_node_result[9], cur_bufnr)
         )
     end)
 

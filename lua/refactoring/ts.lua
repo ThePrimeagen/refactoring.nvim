@@ -26,10 +26,4 @@ M.find_references = function(node, scope, bufnr, definition)
     return references
 end
 
-M.get_node_text = function(node, bufnr, sep)
-    sep = sep or " "
-
-    return table.concat(ts_utils.get_node_text(node, bufnr), sep)
-end
-
 return M
