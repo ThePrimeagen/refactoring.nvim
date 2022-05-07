@@ -27,6 +27,7 @@ set shiftwidth=4
 set noswapfile
 
 runtime! plugin/plenary.vim
+runtime! plugin/nvim-treesitter.lua
 
 lua <<EOF
 -- lsp-config setup
@@ -45,4 +46,3 @@ if #to_install > 0 then
   vim.cmd('TSInstallSync ' .. table.concat(to_install, ' '))
 end
 EOF
-
