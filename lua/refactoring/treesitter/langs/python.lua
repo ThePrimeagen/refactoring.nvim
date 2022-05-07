@@ -86,6 +86,11 @@ function Python.new(bufnr, ft)
         function_body = {
             InlineNode("(block (_) @tmp_capture)"),
         },
+        class_vars = {
+            InlineNode(
+                "(expression_statement (assignment left: ((attribute attribute: ((identifier) @capture)))))"
+            ),
+        },
     }, bufnr)
 
     -- overriding function
