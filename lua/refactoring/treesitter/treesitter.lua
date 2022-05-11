@@ -9,6 +9,7 @@ local Region = require("refactoring.region")
 ---@field valid_class_nodes table: nodes that mean scope is a class function
 ---@field class_names table: nodes to get class names
 ---@field class_type table: nodes to get types for classes
+---@field class_vars table: nodes to get class variable assignments in a scope
 ---@field local_var_names table: list of inline nodes for local variable names
 ---@field local_var_values table: list of inline nodes for local variable values
 ---@field local_declarations table: list of inline nodes for local declarations
@@ -35,6 +36,7 @@ function TreeSitter:new(config, bufnr)
         valid_class_nodes = {},
         class_names = {},
         class_type = {},
+        class_vars = {},
         local_var_names = {},
         local_var_values = {},
         local_declarations = {},
@@ -120,6 +122,13 @@ function TreeSitter:get_local_defs(scope, region)
     end
     nodes = utils.region_complement(nodes, region)
     return nodes
+end
+
+function TreeSitter:get_class_vars(scope, region)
+    -- TODO: add validate setting
+    local class_var_nodes = self:loop_thru_nodes(scope, self.class_vars)
+    print("vim.inspect(class_var_nodes):", vim.inspect(class_var_nodes))
+    return utils.region_complement(class_var_nodes, region)
 end
 
 function TreeSitter:get_local_var_names(node)

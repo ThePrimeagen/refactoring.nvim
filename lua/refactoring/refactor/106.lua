@@ -319,7 +319,7 @@ local function get_non_comment_region_above_node(refactor)
     end
 end
 
-local function get_selected_locals(refactor)
+local function get_selected_locals(refactor, is_class)
     local local_defs = refactor.ts:get_local_defs(
         refactor.scope,
         refactor.region
@@ -328,7 +328,33 @@ local function get_selected_locals(refactor)
         refactor.scope,
         refactor.region
     )
+
+    -- Removing class variables from things being passed to extracted func
+    if is_class then
+        local class_vars = refactor.ts:get_class_vars(
+            refactor.scope,
+            refactor.region
+        )
+
+        if #class_vars > 0 then
+            for _, class_var in ipairs(class_vars) do
+                for i, node in ipairs(local_defs) do
+                    if node == class_var then
+                        table.remove(local_defs, i)
+                        break
+                    end
+                end
+            end
+        end
+    end
+
     local local_def_map = utils.node_text_to_set(local_defs)
+    -- HACK: Can't think of a better way to do this right now,
+    -- just removing `self` if captured
+    if refactor.filetype == "python" and is_class then
+        local_def_map["self"] = nil
+    end
+
     local region_refs_map = utils.node_text_to_set(region_refs)
     return utils.table_key_intersect(local_def_map, region_refs_map)
 end
@@ -379,9 +405,11 @@ local function extract_setup(refactor)
 
     -- NOTE: How do we think about this if we have to pass through multiple
     -- functions (method extraction)
-    local args = vim.fn.sort(vim.tbl_keys(get_selected_locals(refactor)))
-
     local is_class = refactor.ts:is_class_function(refactor.scope)
+    local args = vim.fn.sort(
+        vim.tbl_keys(get_selected_locals(refactor, is_class))
+    )
+
     local first_line = function_body[1]
 
     if refactor.ts:allows_indenting_task() then
