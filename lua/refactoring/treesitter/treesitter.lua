@@ -127,7 +127,6 @@ end
 function TreeSitter:get_class_vars(scope, region)
     -- TODO: add validate setting
     local class_var_nodes = self:loop_thru_nodes(scope, self.class_vars)
-    print("vim.inspect(class_var_nodes):", vim.inspect(class_var_nodes))
     return utils.region_complement(class_var_nodes, region)
 end
 
