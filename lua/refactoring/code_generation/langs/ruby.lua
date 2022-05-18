@@ -1,15 +1,13 @@
 local code_utils = require("refactoring.code_generation.utils")
 local code_gen_indent = require("refactoring.code_generation.indent")
 
-local indent_char = " "
-local string_pattern = "%s"
-
 local function ruby_function_with_params(opts)
     return string.format(
         [[
 def %s(%s)
-  %s
+%s
 end
+
 ]],
         opts.name,
         table.concat(opts.args, ", "),
@@ -21,8 +19,9 @@ local function ruby_function_no_params(opts)
     return string.format(
         [[
 def %s
-  %s
+%s
 end
+
 ]],
         opts.name,
         code_utils.stringify_code(opts.body)
@@ -37,18 +36,11 @@ local function ruby_function(opts)
     end
 end
 
+local indent_char = " "
+
 local ruby = {
     constant = function(opts)
         return string.format("%s = %s\n", opts.name, opts.value)
-    end,
-
-    -- This is for returing multiple arguments from a function
-    -- @param names string|table
-    pack = function(names)
-        return code_utils.returnify(names, string_pattern)
-    end,
-    ["return"] = function(code)
-        return string.format("%s", code)
     end,
     ["function"] = function(opts)
         return ruby_function(opts)
@@ -56,20 +48,19 @@ local ruby = {
     function_return = function(opts)
         return ruby_function(opts)
     end,
-    call_function = function(opts)
-        if not next(opts.args) then
-            return string.format("%s", opts.name)
-        else
-            return string.format(
-                "%s(%s)",
-                opts.name,
-                table.concat(opts.args, ", ")
-            )
-        end
+    ["return"] = function(code)
+        return string.format("%s", code_utils.stringify_code(code))
     end,
-
+    call_function = function(opts)
+        return string.format("%s(%s)", opts.name, table.concat(opts.args, ", "))
+    end,
     terminate = function(code)
-        return code .. "\n"
+        return code
+    end,
+    -- This is for returing multiple arguments from a function
+    -- @param names string|table
+    pack = function(opts)
+        return code_utils.returnify(opts, "%s")
     end,
     indent_char_length = function(first_line)
         return code_gen_indent.indent_char_length(first_line, indent_char)

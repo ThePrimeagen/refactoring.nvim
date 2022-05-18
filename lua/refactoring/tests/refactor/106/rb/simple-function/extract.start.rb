@@ -6,4 +6,3 @@ def simple_function(a)
     puts "#{a} #{v}"
   end
 end
-
