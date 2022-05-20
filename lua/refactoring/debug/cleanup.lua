@@ -22,13 +22,27 @@ local function cleanup(bufnr, config)
             end
 
             for row_num, line in ipairs(lines) do
-                local region = Region:from_values(
-                    bufnr,
-                    row_num,
-                    1,
-                    row_num,
-                    100000
-                )
+                local region
+                if row_num ~= 1 then
+                    region = Region:from_values(
+                        bufnr,
+                        row_num - 1,
+                        100000,
+                        row_num,
+                        100000
+                    )
+                else
+                    print(
+                        "NOTE! Can't delete first line of file, leaving blank"
+                    )
+                    region = Region:from_values(
+                        bufnr,
+                        row_num,
+                        1,
+                        row_num,
+                        100000
+                    )
+                end
 
                 if opts.printf then
                     if
