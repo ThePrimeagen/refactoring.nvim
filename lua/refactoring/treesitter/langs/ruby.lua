@@ -10,12 +10,12 @@ function Ruby.new(bufnr, ft)
         filetype = ft,
         bufnr = bufnr,
         scope_names = {
-            module = "program",
+            class = "class",
             method = "function",
         },
         indent_scopes = {
+            class = true,
             method = true,
-            module = true,
         },
         local_var_names = {
             InlineNode("(assignment left: (_) @tmp_capture)"),
