@@ -42,17 +42,17 @@ local function printDebug(bufnr, config)
             local print_var_statement
 
             if custom_print_var_statements then
-                local all_statements = vim.list_extend(
-                    default_print_var_statement,
-                    custom_print_var_statements
-                )
-                print_var_statement = get_select_input(
-                    all_statements,
-                    "print_var: Select a statement to insert:",
-                    function(item)
-                        return item
-                    end
-                )
+                if #custom_print_var_statements > 1 then
+                    print_var_statement = get_select_input(
+                        custom_print_var_statements,
+                        "print_var: Select a statement to insert:",
+                        function(item)
+                            return item
+                        end
+                    )
+                else
+                    print_var_statement = custom_print_var_statements[1]
+                end
             else
                 print_var_statement = default_print_var_statement[1]
             end
