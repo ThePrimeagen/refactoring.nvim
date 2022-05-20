@@ -36,6 +36,10 @@ local function ruby_function(opts)
     end
 end
 
+local function ruby_class_function(opts)
+    return ruby_function(opts)
+end
+
 local indent_char = " "
 
 local ruby = {
@@ -52,6 +56,15 @@ local ruby = {
         return string.format("%s", code_utils.stringify_code(code))
     end,
     call_function = function(opts)
+        return string.format("%s(%s)", opts.name, table.concat(opts.args, ", "))
+    end,
+    class_function = function(opts)
+        return ruby_class_function(opts)
+    end,
+    class_function_return = function(opts)
+        return ruby_class_function(opts)
+    end,
+    call_class_function = function(opts)
         return string.format("%s(%s)", opts.name, table.concat(opts.args, ", "))
     end,
     terminate = function(code)
