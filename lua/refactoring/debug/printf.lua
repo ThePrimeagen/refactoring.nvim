@@ -36,17 +36,17 @@ local function printDebug(bufnr, config)
 
             -- if there's a set of statements given for this one
             if custom_printf_statements then
-                local all_statements = vim.list_extend(
-                    default_printf_statement,
-                    custom_printf_statements
-                )
-                printf_statement = get_select_input(
-                    all_statements,
-                    "printf: Select a statement to insert:",
-                    function(item)
-                        return item
-                    end
-                )
+                if #custom_printf_statements > 1 then
+                    printf_statement = get_select_input(
+                        custom_printf_statements,
+                        "printf: Select a statement to insert:",
+                        function(item)
+                            return item
+                        end
+                    )
+                else
+                    printf_statement = custom_printf_statements[1]
+                end
             else
                 printf_statement = default_printf_statement[1]
             end
