@@ -21,13 +21,17 @@ function Ruby.new(bufnr, ft)
         local_var_values = {
             InlineNode("(assignment right: (_) @tmp_capture)"),
         },
-        function_args = {
-            InlineNode(
-                "(method parameters: (method_parameters (identifier) @tmp_capture))"
-            ),
-        },
         local_declarations = {
             InlineNode("((assignment) @tmp_capture)"),
+        },
+        function_args = {
+            InlineNode(
+                "(method parameters: (method_parameters (_) @tmp_capture))"
+            ),
+        },
+        -- FIX: Workout how to get the actual body of a ruby function
+        function_body = {
+            InlineNode("(block (_) @tmp_capture)"),
         },
         valid_class_nodes = {
             class = 1,
