@@ -39,6 +39,10 @@ local function get_variable()
             end
         end
         local node = ts_utils.get_node_at_cursor()
+        local filetype = vim.bo[bufnr].filetype
+        if filetype == "php" then
+            return "$" .. ts_utils.get_node_text(node)[1]
+        end
         return ts_utils.get_node_text(node)[1]
     end
     return variable_region:get_text()[1]
