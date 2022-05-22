@@ -13,6 +13,10 @@ local function get_variable()
     return variable_region:get_text()[1]
 end
 
+local function get_indent_amount(refactor)
+    return refactor.whitespace.cursor / refactor.whitespace.tabstop
+end
+
 local function printDebug(bufnr, config)
     return Pipeline
         :from_task(refactor_setup(bufnr, config))
@@ -29,6 +33,14 @@ local function printDebug(bufnr, config)
 
             -- Get variable text
             local variable = get_variable()
+            local indent
+            if refactor.ts.allows_indenting_task then
+                local indent_amount = get_indent_amount(refactor)
+                indent = refactor.code.indent({
+                    indent_width = refactor.whitespace.tabstop,
+                    indent_amount = indent_amount,
+                })
+            end
 
             local debug_path = debug_utils.get_debug_path(refactor, point)
             local prefix = string.format("%s %s:", debug_path, variable)
@@ -64,12 +76,22 @@ local function printDebug(bufnr, config)
             }
 
             local print_statement = refactor.code.print_var(print_var_opts)
-                .. refactor.code.comment("__AUTO_GENERATED_PRINT_VAR__")
+
+            local statement
+            if indent ~= nil then
+                local temp = {}
+                temp[1] = indent
+                temp[2] = print_statement
+                statement = table.concat(temp, "")
+            else
+                statement = print_statement
+            end
 
             refactor.text_edits = {
                 lsp_utils.insert_new_line_text(
                     Region:from_point(point),
-                    print_statement,
+                    statement
+                        .. refactor.code.comment("__AUTO_GENERATED_PRINT_VAR__"),
                     opts
                 ),
             }
