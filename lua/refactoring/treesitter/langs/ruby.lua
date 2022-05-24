@@ -31,7 +31,7 @@ function Ruby.new(bufnr, ft)
         },
         -- FIX: Workout how to get the actual body of a ruby function
         function_body = {
-            InlineNode("(block (_) @tmp_capture)"),
+            InlineNode("((method . name: (identifier) (method_parameters)? . (_) @function.inner (_)? @function.end .) (#make-range! \"function.inner\" @function.inner @function.end)) @capture"),
         },
         valid_class_nodes = {
             class = 1,
