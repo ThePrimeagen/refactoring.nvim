@@ -43,6 +43,9 @@ end
 local indent_char = " "
 
 local ruby = {
+    comment = function(statement)
+        return string.format("# %s", statement)
+    end,
     constant = function(opts)
         return string.format("%s = %s\n", opts.name, opts.value)
     end,
