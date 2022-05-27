@@ -360,36 +360,36 @@ local function get_selected_locals(refactor, is_class)
 end
 
 local function extract_block_setup(refactor)
-    local initial_region = Region:from_point(
-        Point:from_cursor(),
-        refactor.bufnr
-    )
+    local region = Region:from_point(Point:from_cursor(), refactor.bufnr)
+    local region_node = region:to_ts_node(refactor.ts:get_root())
+    local scope = refactor.ts:get_scope(region_node)
+    local block_first_child = refactor.ts:get_function_body(scope)[1]
+    local block_last_child = block_first_child -- starting off here, we're going to find it manually
 
-    local initial_region_node = initial_region:to_ts_node(
-        refactor.ts:get_root()
-    )
+    -- we have to find the last direct sibling manually because raw queries
+    -- pick up nested children nodes as well
+    while block_last_child:next_named_sibling() do
+        block_last_child = block_last_child:next_named_sibling()
+    end
 
-    local scope = refactor.ts:get_scope(initial_region_node)
+    local first_line_region = Region:from_node(block_first_child)
+    local last_line_region = Region:from_node(block_last_child)
 
-    local function_body = refactor.ts:get_function_body(scope)
-
-    local first_line_region = Region:from_node(function_body[1])
-    local last_line_region = Region:from_node(function_body[#function_body])
-
-    local final_region = Region:from_values(
+    -- update the region and its node with the block scope found
+    region = Region:from_values(
         refactor.bufnr,
         first_line_region.start_row,
         first_line_region.start_col,
-        last_line_region.end_row + 1,
+        last_line_region.end_row,
         last_line_region.end_col
     )
-    local final_region_node = final_region:to_ts_node(refactor.ts:get_root())
+    region_node = region:to_ts_node(refactor.ts:get_root())
 
-    refactor.region = final_region
-    refactor.region_node = final_region_node
+    refactor.region = region
+    refactor.region_node = region_node
     refactor.scope = scope
-    refactor.whitespace.highlight_start = vim.fn.indent(final_region.start_row)
-    refactor.whitespace.highlight_end = vim.fn.indent(final_region.end_row)
+    refactor.whitespace.highlight_start = vim.fn.indent(region.start_row)
+    refactor.whitespace.highlight_end = vim.fn.indent(region.end_row)
 
     if refactor.scope == nil then
         return false, "Scope is nil"
