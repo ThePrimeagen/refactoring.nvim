@@ -7,6 +7,6 @@ func simple_function(a int) {
 	test_other := 1
 	for idx := test - 1; idx < test_other; idx++ {
 		fmt.Println(idx, a)
-fmt.Println("simple_function")// __AUTO_GENERATED_PRINTF__
+fmt.Println("simple_function") // __AUTO_GENERATED_PRINTF__
 	}
 }

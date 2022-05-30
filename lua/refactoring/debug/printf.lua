@@ -57,6 +57,7 @@ local function printDebug(bufnr, config)
             }
 
             local full_print_statement = refactor.code.print(printf_opts)
+                .. " "
                 .. refactor.code.comment("__AUTO_GENERATED_PRINTF__")
 
             refactor.text_edits = {
