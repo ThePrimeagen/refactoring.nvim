@@ -179,8 +179,8 @@ vim.api.nvim_set_keymap(
 	{ noremap = true }
 )
 
--- Print var: this remap should be made in visual mode
-vim.api.nvim_set_keymap("v", "<leader>rv", ":lua require('refactoring').debug.print_var({})<CR>", { noremap = true })
+-- Print var: this remap should be made in normal mode. The plugin will automatically detect and print out the variable under the cursor.
+vim.api.nvim_set_keymap("n", "<leader>rv", ":lua require('refactoring').debug.print_var({})<CR>", { noremap = true })
 
 -- Cleanup function: this remap should be made in normal mode
 vim.api.nvim_set_keymap("n", "<leader>rc", ":lua require('refactoring').debug.cleanup({})<CR>", { noremap = true })
