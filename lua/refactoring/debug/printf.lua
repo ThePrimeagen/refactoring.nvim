@@ -83,6 +83,7 @@ local function printDebug(bufnr, config)
                 lsp_utils.insert_new_line_text(
                     Region:from_point(point),
                     statement
+                        .. " "
                         .. refactor.code.comment("__AUTO_GENERATED_PRINTF__"),
                     opts
                 ),
