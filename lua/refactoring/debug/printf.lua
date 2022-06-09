@@ -8,6 +8,10 @@ local debug_utils = require("refactoring.debug.debug_utils")
 local ensure_code_gen = require("refactoring.tasks.ensure_code_gen")
 local get_select_input = require("refactoring.get_select_input")
 
+local function get_indent_amount(refactor)
+    return refactor.whitespace.cursor / refactor.whitespace.tabstop
+end
+
 local function printDebug(bufnr, config)
     return Pipeline
         :from_task(refactor_setup(bufnr, config))
@@ -23,6 +27,15 @@ local function printDebug(bufnr, config)
                 opts.below = true
             end
             point.col = opts.below and 100000 or 1
+
+            local indent
+            if refactor.ts.allows_indenting_task then
+                local indent_amount = get_indent_amount(refactor)
+                indent = refactor.code.indent({
+                    indent_width = refactor.whitespace.tabstop,
+                    indent_amount = indent_amount,
+                })
+            end
 
             local debug_path = debug_utils.get_debug_path(refactor, point)
 
@@ -56,14 +69,22 @@ local function printDebug(bufnr, config)
                 content = debug_path,
             }
 
-            local full_print_statement = refactor.code.print(printf_opts)
-                .. " "
-                .. refactor.code.comment("__AUTO_GENERATED_PRINTF__")
+            local statement
+            if indent ~= nil then
+                local temp = {}
+                temp[1] = indent
+                temp[2] = refactor.code.print(printf_opts)
+                statement = table.concat(temp, "")
+            else
+                statement = refactor.code.print(printf_opts)
+            end
 
             refactor.text_edits = {
                 lsp_utils.insert_new_line_text(
                     Region:from_point(point),
-                    full_print_statement,
+                    statement
+                        .. " "
+                        .. refactor.code.comment("__AUTO_GENERATED_PRINTF__"),
                     opts
                 ),
             }

@@ -1,4 +1,4 @@
 local function poggers()
     print("this function is quite simple indeed")
-print("poggers") -- __AUTO_GENERATED_PRINTF__
+    print("poggers") -- __AUTO_GENERATED_PRINTF__
 end
