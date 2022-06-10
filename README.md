@@ -236,8 +236,10 @@ sequence like this: `%%s`. For an example custom print var statement, go to
 [this folder](lua/refactoring/tests/debug/print_var), select your language, and
 view `multiple-statements/print_var.config`.
 
-**Note:** for either of these functions, if you have multiple statements
-(including the default), the plugin will prompt for which one should be inserted.
+**Note:** for either of these functions, if you have multiple custom
+statements, the plugin will prompt for which one should be inserted. If you
+just have one custom statement in your config, it will override the default
+automatically.
 
 ### Configuration for Type Prompt Operations<a name="config-prompt"></a>
 
