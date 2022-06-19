@@ -34,23 +34,29 @@ local function set_config_options(filename_prefix, filename_extension)
             string.format("%s.config", filename_prefix)
         )
 
-        local filetypes = {
-            ["ts"] = "typescript",
-            ["js"] = "javascript",
-            ["py"] = "python",
-        }
+        if config_values[1] ~= "" then
+            local filetypes = {
+                ["ts"] = "typescript",
+                ["js"] = "javascript",
+                ["py"] = "python",
+            }
 
-        -- get the real filetype from the above table if possible
-        local real_filetype = filetypes[filename_extension]
-            or filename_extension
+            -- get the real filetype from the above table if possible
+            local real_filetype = filetypes[filename_extension]
+                or filename_extension
 
-        local printf_statements = {}
-        printf_statements[real_filetype] = { config_values[1] }
-        Config:get():set_printf_statements(printf_statements)
+            local printf_statements = {}
+            printf_statements[real_filetype] = { config_values[1] }
+            Config:get():set_printf_statements(printf_statements)
 
-        local print_var_statements = {}
-        print_var_statements[real_filetype] = { config_values[1] }
-        Config:get():set_print_var_statements(print_var_statements)
+            local print_var_statements = {}
+            print_var_statements[real_filetype] = { config_values[1] }
+            Config:get():set_print_var_statements(print_var_statements)
+        end
+
+        if config_values[2] ~= nil then
+            Config:get():set_print_var_normal_mode(true)
+        end
     end
 end
 

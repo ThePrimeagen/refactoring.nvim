@@ -62,6 +62,7 @@ function Config:new(...)
         prompt_func_param_type = default_prompt_func_param_type,
         printf_statements = default_printf_statements,
         print_var_statements = default_print_var_statements,
+        print_var_normal_mode = false,
     })
 
     for idx = 1, select("#", ...) do
@@ -88,6 +89,7 @@ function Config:reset()
     self.config.prompt_func_param_type = default_prompt_func_param_type
     self.config.printf_statements = default_printf_statements
     self.config.print_var_statements = default_print_var_statements
+    self.config.print_var_normal_mode = false
 end
 
 function Config:automate_input(inputs)
@@ -172,6 +174,14 @@ end
 function Config:get_formatting_for(filetype)
     filetype = filetype or vim.bo[0].ft
     return self.config.formatting[filetype] or self.config.formatting["default"]
+end
+
+function Config:print_var_normal_mode()
+    return self.config.print_var_normal_mode
+end
+
+function Config:set_print_var_normal_mode(setting)
+    self.config.print_var_normal_mode = setting
 end
 
 local config = Config:new()
