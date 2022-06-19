@@ -4,12 +4,47 @@ local Region = require("refactoring.region")
 local refactor_setup = require("refactoring.tasks.refactor_setup")
 local post_refactor = require("refactoring.tasks.post_refactor")
 local lsp_utils = require("refactoring.lsp_utils")
+local ts_utils = require("nvim-treesitter.ts_utils")
+local parsers = require("nvim-treesitter.parsers")
 local debug_utils = require("refactoring.debug.debug_utils")
 local ensure_code_gen = require("refactoring.tasks.ensure_code_gen")
 local get_select_input = require("refactoring.get_select_input")
 
 local function get_variable()
     local variable_region = Region:from_current_selection()
+    if
+        variable_region.start_col == 0
+        and variable_region.end_col == 0
+        and variable_region.start_row == 0
+        and variable_region.end_row == 0
+    then
+        local bufnr = 0
+        local root_lang_tree = parsers.get_parser(bufnr)
+        local current_pos = Point:from_cursor()
+        local line = current_pos.row
+        local col = current_pos.col
+        variable_region.start_row = current_pos.row
+        local lang_tree = root_lang_tree:language_for_range({
+            current_pos.row,
+            current_pos.col,
+            current_pos.row,
+            current_pos.col,
+        })
+        for _, tree in ipairs(lang_tree:trees()) do
+            local root = tree:root()
+            if
+                root and ts_utils.is_in_node_range(root, current_pos.row, col)
+            then
+                root:named_descendant_for_range(line, col, line, col)
+            end
+        end
+        local node = ts_utils.get_node_at_cursor()
+        local filetype = vim.bo[bufnr].filetype
+        if filetype == "php" then
+            return "$" .. ts_utils.get_node_text(node)[1]
+        end
+        return ts_utils.get_node_text(node)[1]
+    end
     return variable_region:get_text()[1]
 end
 
