@@ -11,7 +11,7 @@ local ensure_code_gen = require("refactoring.tasks.ensure_code_gen")
 local get_select_input = require("refactoring.get_select_input")
 
 local function get_variable(opts, point)
-    if opts.print_var_normal_mode then
+    if opts.normal then
         local bufnr = 0
         local root_lang_tree = parsers.get_parser(bufnr)
         local row = point.row
@@ -57,6 +57,10 @@ local function printDebug(bufnr, config)
             -- always go below for text
             opts.below = true
             point.col = opts.below and 100000 or 1
+
+            if opts.normal == nil then
+                opts.normal = false
+            end
 
             -- Get variable text
             local variable = get_variable(opts, point)

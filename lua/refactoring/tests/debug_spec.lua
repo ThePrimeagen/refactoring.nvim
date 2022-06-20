@@ -53,10 +53,6 @@ local function set_config_options(filename_prefix, filename_extension)
             print_var_statements[real_filetype] = { config_values[1] }
             Config:get():set_print_var_statements(print_var_statements)
         end
-
-        if config_values[2] ~= nil then
-            Config:get():set_print_var_normal_mode(true)
-        end
     end
 end
 
@@ -81,6 +77,29 @@ local function get_debug_operation(path)
         index = index + 1
     end
     return temp[#temp]
+end
+
+local function get_func_opts(filename_prefix)
+    local opts_file_name = string.format("%s.opts", filename_prefix)
+
+    local opts_file = Path:new(
+        cwd,
+        "lua",
+        "refactoring",
+        "tests",
+        opts_file_name
+    )
+
+    local opts = {}
+    if opts_file:exists() then
+        local opts_values = test_utils.get_contents(opts_file_name)
+
+        if opts_values[1] ~= nil then
+            opts["normal"] = true
+        end
+    end
+
+    return opts
 end
 
 describe("Debug", function()
@@ -108,7 +127,9 @@ describe("Debug", function()
             test_utils.run_commands(filename_prefix)
             Config.get():set_test_bufnr(bufnr)
 
-            debug[debug_operation]({})
+            local func_opts = get_func_opts(filename_prefix)
+
+            debug[debug_operation](func_opts)
             async.util.scheduler()
             local lines = vim.api.nvim_buf_get_lines(bufnr, 0, -1, false)
             eq(expected, lines)
