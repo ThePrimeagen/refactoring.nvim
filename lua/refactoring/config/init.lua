@@ -28,8 +28,8 @@ local default_formatting = {
 
 local default_prompt_func_param_type = {
     go = false,
+    java = false,
 
-    -- All of the cs
     cpp = false,
     c = false,
     h = false,
@@ -39,6 +39,13 @@ local default_prompt_func_param_type = {
 
 local default_prompt_func_return_type = {
     go = false,
+    java = false,
+
+    cpp = false,
+    c = false,
+    h = false,
+    hpp = false,
+    cxx = false,
 }
 
 local default_printf_statements = {}
