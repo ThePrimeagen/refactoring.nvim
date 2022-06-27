@@ -87,6 +87,12 @@ local ruby = {
     indent = function(opts)
         return code_gen_indent.indent(opts, indent_char)
     end,
+    default_printf_statement = function()
+        return { "puts('%s')" }
+    end,
+    print = function(opts)
+        return string.format(opts.statement, opts.content)
+    end,
 }
 
 return ruby

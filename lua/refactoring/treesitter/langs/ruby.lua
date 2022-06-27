@@ -46,6 +46,10 @@ function Ruby.new(bufnr, ft)
         valid_class_nodes = {
             class = 1,
         },
+        debug_paths = {
+            class = FieldNode("name"),
+            method = FieldNode("name"),
+        },
     }, bufnr)
 end
 
