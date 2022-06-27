@@ -6,8 +6,8 @@ def foo_bar(a)
     [test, test_other].each do |v|
       puts "#{a} #{v}"
     end
-  end
 end
 
 def simple_function(a)
   foo_bar(a)
+end
