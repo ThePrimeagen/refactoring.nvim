@@ -47,6 +47,7 @@ function Ruby.new(bufnr, ft)
             class = 1,
         },
         debug_paths = {
+            module = FieldNode("name"),
             class = FieldNode("name"),
             method = FieldNode("name"),
         },
