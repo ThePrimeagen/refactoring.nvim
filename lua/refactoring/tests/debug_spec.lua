@@ -34,23 +34,25 @@ local function set_config_options(filename_prefix, filename_extension)
             string.format("%s.config", filename_prefix)
         )
 
-        local filetypes = {
-            ["ts"] = "typescript",
-            ["js"] = "javascript",
-            ["py"] = "python",
-        }
+        if config_values[1] ~= "" then
+            local filetypes = {
+                ["ts"] = "typescript",
+                ["js"] = "javascript",
+                ["py"] = "python",
+            }
 
-        -- get the real filetype from the above table if possible
-        local real_filetype = filetypes[filename_extension]
-            or filename_extension
+            -- get the real filetype from the above table if possible
+            local real_filetype = filetypes[filename_extension]
+                or filename_extension
 
-        local printf_statements = {}
-        printf_statements[real_filetype] = { config_values[1] }
-        Config:get():set_printf_statements(printf_statements)
+            local printf_statements = {}
+            printf_statements[real_filetype] = { config_values[1] }
+            Config:get():set_printf_statements(printf_statements)
 
-        local print_var_statements = {}
-        print_var_statements[real_filetype] = { config_values[1] }
-        Config:get():set_print_var_statements(print_var_statements)
+            local print_var_statements = {}
+            print_var_statements[real_filetype] = { config_values[1] }
+            Config:get():set_print_var_statements(print_var_statements)
+        end
     end
 end
 
@@ -75,6 +77,29 @@ local function get_debug_operation(path)
         index = index + 1
     end
     return temp[#temp]
+end
+
+local function get_func_opts(filename_prefix)
+    local opts_file_name = string.format("%s.opts", filename_prefix)
+
+    local opts_file = Path:new(
+        cwd,
+        "lua",
+        "refactoring",
+        "tests",
+        opts_file_name
+    )
+
+    local opts = {}
+    if opts_file:exists() then
+        local opts_values = test_utils.get_contents(opts_file_name)
+
+        if opts_values[1] ~= nil then
+            opts["normal"] = true
+        end
+    end
+
+    return opts
 end
 
 describe("Debug", function()
@@ -102,7 +127,9 @@ describe("Debug", function()
             test_utils.run_commands(filename_prefix)
             Config.get():set_test_bufnr(bufnr)
 
-            debug[debug_operation]({})
+            local func_opts = get_func_opts(filename_prefix)
+
+            debug[debug_operation](func_opts)
             async.util.scheduler()
             local lines = vim.api.nvim_buf_get_lines(bufnr, 0, -1, false)
             eq(expected, lines)

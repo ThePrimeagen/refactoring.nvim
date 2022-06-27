@@ -1,3 +1,4 @@
+print(f"test")  # __AUTO_GENERATED_PRINTF__
 def main():
     print(f"main")  # __AUTO_GENERATED_PRINTF__
     print('poggers')

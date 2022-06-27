@@ -110,7 +110,13 @@ function M.node_contains(a, b)
         return false
     end
 
+    local _, _, _, a_end_col = a:range()
     local start_row, start_col, end_row, end_col = b:range()
+
+    if end_col == a_end_col then
+        end_col = end_col - 1
+    end
+
     return ts_utils.is_in_node_range(a, start_row, start_col)
         and ts_utils.is_in_node_range(a, end_row, end_col)
 end
