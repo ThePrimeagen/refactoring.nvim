@@ -29,9 +29,14 @@ function Ruby.new(bufnr, ft)
                 "(method parameters: (method_parameters (_) @tmp_capture))"
             ),
         },
-        -- FIX: Workout how to get the actual body of a ruby function
+        -- FIX: Doesn't quite get the whole of the body
         function_body = {
-            InlineNode("((method . name: (identifier) (method_parameters)? . (_) @function.inner (_)? @function.end .) (#make-range! \"function.inner\" @function.inner @function.end)) @capture"),
+            InlineNode(
+                "((method name: (identifier) (method_parameters)? (_)(_)? @tmp_capture))"
+            ),
+            InlineNode(
+                "(method !parameters name: (_)(_) @tmp_capture)"
+            )
         },
         valid_class_nodes = {
             class = 1,
