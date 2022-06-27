@@ -1,0 +1,3 @@
+def main
+  pass
+end
