@@ -37,12 +37,11 @@ function Ruby.new(bufnr, ft)
                 "(method parameters: (method_parameters (_) @tmp_capture))"
             ),
         },
-        -- FIX: Seems to forget "end" when extracting a block
         function_body = {
             InlineNode(
                 "((method name: (identifier) (method_parameters)? (_)(_)? @tmp_capture))"
             ),
-            InlineNode("(method !parameters name: (_)(_) @tmp_capture)"),
+            InlineNode("(method !parameters (_)(_) @tmp_capture)"),
         },
         valid_class_nodes = {
             class = 1,
