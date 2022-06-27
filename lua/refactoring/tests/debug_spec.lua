@@ -39,6 +39,7 @@ local function set_config_options(filename_prefix, filename_extension)
                 ["ts"] = "typescript",
                 ["js"] = "javascript",
                 ["py"] = "python",
+                ["rb"] = "ruby",
             }
 
             -- get the real filetype from the above table if possible
