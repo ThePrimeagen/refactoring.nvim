@@ -12,6 +12,9 @@ function Ruby.new(bufnr, ft)
         scope_names = {
             method = "function",
         },
+        block_scope = {
+            method = true,
+        },
         indent_scopes = {
             method = true,
         },
@@ -24,19 +27,22 @@ function Ruby.new(bufnr, ft)
         local_declarations = {
             InlineNode("((assignment) @tmp_capture)"),
         },
+        statements = {
+            InlineNode("(binary) @tmp_capture"),
+            InlineNode("(return) @tmp_capture"),
+            InlineNode("(assignment) @tmp_capture"),
+        },
         function_args = {
             InlineNode(
                 "(method parameters: (method_parameters (_) @tmp_capture))"
             ),
         },
-        -- FIX: Doesn't quite get the whole of the body
+        -- FIX: Seems to forget "end" when extracting a block
         function_body = {
             InlineNode(
                 "((method name: (identifier) (method_parameters)? (_)(_)? @tmp_capture))"
             ),
-            InlineNode(
-                "(method !parameters name: (_)(_) @tmp_capture)"
-            )
+            InlineNode("(method !parameters name: (_)(_) @tmp_capture)"),
         },
         valid_class_nodes = {
             class = 1,
