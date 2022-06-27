@@ -91,10 +91,10 @@ local ruby = {
         return string.format(opts.statement, opts.content)
     end,
     default_printf_statement = function()
-        return { "puts('%s')" }
+        return { 'puts "%s"' }
     end,
     default_print_var_statement = function()
-        return { 'puts("%s {str(%s)}")' }
+        return { 'puts "%s {str(%s)}"' }
     end,
     print_var = function(opts)
         return string.format(opts.statement, opts.prefix, opts.var)
