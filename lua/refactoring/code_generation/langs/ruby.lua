@@ -94,7 +94,7 @@ local ruby = {
         return { 'puts "%s"' }
     end,
     default_print_var_statement = function()
-        return { 'puts "%s {str(%s)}"' }
+        return { 'puts "%s #{%s}"' }
     end,
     print_var = function(opts)
         return string.format(opts.statement, opts.prefix, opts.var)
