@@ -18,6 +18,9 @@ function Ruby.new(bufnr, ft)
         indent_scopes = {
             method = true,
         },
+        variable_scope = {
+            assignment = true,
+        },
         local_var_names = {
             InlineNode("(assignment left: (_) @tmp_capture)"),
         },
@@ -30,6 +33,9 @@ function Ruby.new(bufnr, ft)
         statements = {
             InlineNode("(binary) @tmp_capture"),
             InlineNode("(return) @tmp_capture"),
+            InlineNode("(if) @tmp_capture"),
+            InlineNode("(for) @tmp_capture"),
+            InlineNode("(while) @tmp_capture"),
             InlineNode("(assignment) @tmp_capture"),
         },
         function_args = {
