@@ -66,6 +66,7 @@ are supported (with individual support for each function may vary):
 - Python
 - Java
 - PHP
+- Ruby
 
 ### Refactoring Features<a name="refactoring-features"></a>
 

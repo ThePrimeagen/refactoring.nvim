@@ -16,6 +16,7 @@ local extension_to_filetype = {
     ["go"] = "go",
     ["py"] = "python",
     ["java"] = "java",
+    ["ruby"] = "ruby",
 }
 
 local cwd = vim.loop.cwd()

@@ -21,6 +21,8 @@ local default_formatting = {
     -- Python needs tons of work to become correct.
     python = {},
 
+    ruby = {},
+
     default = {
         cmd = nil, -- format.lua checks to see if the command is nil or not
     },
