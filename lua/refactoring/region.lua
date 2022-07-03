@@ -54,6 +54,18 @@ function Region:empty(bufnr)
     }, self)
 end
 
+function Region:is_empty()
+    if
+        self.start_row == 0
+        and self.start_col == 0
+        and self.end_row == 0
+        and self.end_col == 0
+    then
+        return true
+    end
+    return false
+end
+
 --- Get a region from a Treesitter Node
 ---@return RefactorRegion
 function Region:from_node(node, bufnr)
