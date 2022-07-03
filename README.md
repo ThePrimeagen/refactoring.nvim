@@ -72,7 +72,7 @@ are supported (with individual support for each function may vary):
 
 - Support for various common refactoring operations
   - **106: Extract Function**
-    - In visual mode, extracts the selected code to a separate function
+    - Extracts the last highlighted code from visual mode to a separate function
     - Optionally prompts for function param types and return types (see
       [configuration for type prompt operations](#config-prompt))
     - Also possible to Extract Block.
