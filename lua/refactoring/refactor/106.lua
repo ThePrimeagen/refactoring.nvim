@@ -528,6 +528,14 @@ M.extract = function(bufnr, opts)
             return ensure_code_gen_106(refactor)
         end)
         :add_task(function(refactor)
+            if refactor.region:is_empty() then
+                error(
+                    "Current selected region is empty, have to provide a non empty region to perform a extract func operation"
+                )
+            end
+            return true, refactor
+        end)
+        :add_task(function(refactor)
             extract_setup(refactor)
             return true, refactor
         end)
