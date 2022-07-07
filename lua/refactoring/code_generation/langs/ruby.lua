@@ -1,7 +1,11 @@
 local code_utils = require("refactoring.code_generation.utils")
 local code_gen_indent = require("refactoring.code_generation.indent")
 
-local function ruby_function_with_params(opts)
+local function ruby_function(opts)
+    local singleton = opts.scope_type == "singleton_method"
+    local name = singleton and "self." .. opts.name or opts.name
+    local args = next(opts.args) and table.concat(opts.args, ", ") or ""
+
     return string.format(
         [[
 def %s(%s)
@@ -9,35 +13,10 @@ def %s(%s)
 end
 
 ]],
-        opts.name,
-        table.concat(opts.args, ", "),
+        name,
+        args,
         code_utils.stringify_code(opts.body)
     )
-end
-
-local function ruby_function_no_params(opts)
-    return string.format(
-        [[
-def %s
-%s
-end
-
-]],
-        opts.name,
-        code_utils.stringify_code(opts.body)
-    )
-end
-
-local function ruby_function(opts)
-    if not next(opts.args) then
-        return ruby_function_no_params(opts)
-    else
-        return ruby_function_with_params(opts)
-    end
-end
-
-local function ruby_class_function(opts)
-    return ruby_function(opts)
 end
 
 local indent_char = " "
@@ -49,24 +28,16 @@ local ruby = {
     constant = function(opts)
         return string.format("%s = %s\n", opts.name, opts.value)
     end,
-    ["function"] = function(opts)
-        return ruby_function(opts)
-    end,
-    function_return = function(opts)
-        return ruby_function(opts)
-    end,
+    ["function"] = ruby_function,
+    function_return = ruby_function,
     ["return"] = function(code)
         return string.format("%s", code_utils.stringify_code(code))
     end,
     call_function = function(opts)
         return string.format("%s(%s)", opts.name, table.concat(opts.args, ", "))
     end,
-    class_function = function(opts)
-        return ruby_class_function(opts)
-    end,
-    class_function_return = function(opts)
-        return ruby_class_function(opts)
-    end,
+    class_function = ruby_function,
+    class_function_return = ruby_function,
     call_class_function = function(opts)
         return string.format("%s(%s)", opts.name, table.concat(opts.args, ", "))
     end,

@@ -175,6 +175,7 @@ local function get_func_params(extract_params, refactor)
         name = extract_params.function_name,
         args = extract_params.args,
         body = extract_params.function_body,
+        scope_type = extract_params.scope_type,
     }
 
     if refactor.ts.require_param_types then
@@ -432,6 +433,7 @@ local function extract_setup(refactor)
         args = args,
         function_name = function_name,
         function_body = function_body,
+        scope_type = refactor.scope:type(),
     }
     local function_code = get_function_code(refactor, extract_params)
     local func_call = get_func_call(refactor, extract_params)
