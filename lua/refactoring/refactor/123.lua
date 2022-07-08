@@ -16,8 +16,7 @@ local ts = require("refactoring.ts")
 local M = {}
 
 local function get_inline_setup_pipeline(bufnr, opts)
-    return Pipeline
-        :from_task(refactor_setup(bufnr, opts))
+    return Pipeline:from_task(refactor_setup(bufnr, opts))
         :add_task(selection_setup)
 end
 
@@ -33,10 +32,8 @@ local function determine_declarator_node(refactor, bufnr)
     else
         local current_node = ts.get_node_at_cursor(0)
         local definition = ts.find_definition(current_node, bufnr)
-        declarator_node = refactor.ts.get_container(
-            definition,
-            refactor.ts.variable_scope
-        )
+        declarator_node =
+            refactor.ts.get_container(definition, refactor.ts.variable_scope)
         return declarator_node, true
     end
 end
@@ -96,10 +93,8 @@ end
 
 local function inline_var_setup(refactor, bufnr)
     -- figure out if we're dealing with a visual selection or a cursor node
-    local declarator_node, node_on_cursor = determine_declarator_node(
-        refactor,
-        bufnr
-    )
+    local declarator_node, node_on_cursor =
+        determine_declarator_node(refactor, bufnr)
 
     -- get all identifiers in the declarator node (for either situation)
     local identifiers = refactor.ts:get_local_var_names(declarator_node)
@@ -123,12 +118,8 @@ local function inline_var_setup(refactor, bufnr)
         definition = ts.find_definition(node_to_inline, bufnr)
     end
 
-    local references = ts.find_references(
-        definition,
-        refactor.scope,
-        bufnr,
-        definition
-    )
+    local references =
+        ts.find_references(definition, refactor.scope, bufnr, definition)
 
     local all_values = refactor.ts:get_local_var_values(declarator_node)
 
@@ -172,18 +163,14 @@ local function inline_var_setup(refactor, bufnr)
         table.insert(text_edits, delete_text)
     end
 
-    local value_text = vim.treesitter.query.get_node_text(
-        value_node_to_inline,
-        bufnr
-    )
+    local value_text =
+        vim.treesitter.query.get_node_text(value_node_to_inline, bufnr)
 
     for _, ref in pairs(references) do
         -- TODO: In my mind, if nothing is left on the line when you remove, it should get deleted.
         -- Could be done via opts into replace_text.
-        local insert_text, delete_text = lsp_utils.replace_text(
-            Region:from_node(ref),
-            value_text
-        )
+        local insert_text, delete_text =
+            lsp_utils.replace_text(Region:from_node(ref), value_text)
 
         table.insert(text_edits, insert_text)
         table.insert(text_edits, delete_text)

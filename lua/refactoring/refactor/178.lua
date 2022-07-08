@@ -6,14 +6,11 @@ local post_refactor = require("refactoring.tasks.post_refactor")
 local M = {}
 
 function M.replace_temp_with_query(bufnr, opts)
-    Pipeline
-        :from_task(refactor_setup(bufnr, opts))
+    Pipeline:from_task(refactor_setup(bufnr, opts))
         :add_task(function(refactor)
             -- TODO: I don't know if I solved this one yet or not
-            local lsp_definition = LspDefinition:from_cursor(
-                bufnr,
-                refactor.query
-            )
+            local lsp_definition =
+                LspDefinition:from_cursor(bufnr, refactor.query)
 
             return true, refactor, lsp_definition
         end)

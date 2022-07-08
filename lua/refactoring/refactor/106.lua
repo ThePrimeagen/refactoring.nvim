@@ -17,8 +17,7 @@ local M = {}
 -- 1.  We need definition set of potential captured variables
 
 local function get_extract_setup_pipeline(bufnr, opts)
-    return Pipeline
-        :from_task(refactor_setup(bufnr, opts))
+    return Pipeline:from_task(refactor_setup(bufnr, opts))
         :add_task(selection_setup)
 end
 
@@ -50,9 +49,8 @@ local function get_return_vals(refactor)
 end
 
 local function get_function_return_type()
-    local function_return_type = get_input(
-        "106: Extract Function return type > "
-    )
+    local function_return_type =
+        get_input("106: Extract Function return type > ")
     if function_return_type == "" then
         function_return_type = code_utils.default_func_return_type()
     end
@@ -61,9 +59,8 @@ end
 
 local function get_function_param_types(refactor, args)
     local args_types = {}
-    local parameter_arg_types = refactor.ts:get_local_parameter_types(
-        refactor.scope
-    )
+    local parameter_arg_types =
+        refactor.ts:get_local_parameter_types(refactor.scope)
     for _, arg in pairs(args) do
         local function_param_type
         local curr_arg = refactor.ts.get_arg_type_key(arg)
@@ -179,10 +176,8 @@ local function get_func_params(extract_params, refactor)
     }
 
     if refactor.ts.require_param_types then
-        func_params.args_types = get_function_param_types(
-            refactor,
-            func_params.args
-        )
+        func_params.args_types =
+            get_function_param_types(refactor, func_params.args)
     end
 
     if
@@ -321,21 +316,15 @@ local function get_non_comment_region_above_node(refactor)
 end
 
 local function get_selected_locals(refactor, is_class)
-    local local_defs = refactor.ts:get_local_defs(
-        refactor.scope,
-        refactor.region
-    )
-    local region_refs = refactor.ts:get_region_refs(
-        refactor.scope,
-        refactor.region
-    )
+    local local_defs =
+        refactor.ts:get_local_defs(refactor.scope, refactor.region)
+    local region_refs =
+        refactor.ts:get_region_refs(refactor.scope, refactor.region)
 
     -- Removing class variables from things being passed to extracted func
     if is_class then
-        local class_vars = refactor.ts:get_class_vars(
-            refactor.scope,
-            refactor.region
-        )
+        local class_vars =
+            refactor.ts:get_class_vars(refactor.scope, refactor.region)
 
         if #class_vars > 0 then
             for _, class_var in ipairs(class_vars) do
@@ -407,9 +396,8 @@ local function extract_setup(refactor)
     -- NOTE: How do we think about this if we have to pass through multiple
     -- functions (method extraction)
     local is_class = refactor.ts:is_class_function(refactor.scope)
-    local args = vim.fn.sort(
-        vim.tbl_keys(get_selected_locals(refactor, is_class))
-    )
+    local args =
+        vim.fn.sort(vim.tbl_keys(get_selected_locals(refactor, is_class)))
 
     local first_line = function_body[1]
 
@@ -547,8 +535,7 @@ end
 
 M.extract_block = function(bufnr, opts)
     bufnr = bufnr or vim.fn.bufnr()
-    Pipeline
-        :from_task(refactor_setup(bufnr, opts))
+    Pipeline:from_task(refactor_setup(bufnr, opts))
         :add_task(function(refactor)
             return ensure_code_gen_106(refactor)
         end)
@@ -565,8 +552,7 @@ end
 
 M.extract_block_to_file = function(bufnr, opts)
     bufnr = bufnr or vim.fn.bufnr(vim.fn.bufname())
-    Pipeline
-        :from_task(refactor_setup(bufnr, opts))
+    Pipeline:from_task(refactor_setup(bufnr, opts))
         :add_task(function(refactor)
             return ensure_code_gen_106(refactor)
         end)
