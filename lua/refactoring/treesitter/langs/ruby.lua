@@ -11,12 +11,15 @@ function Ruby.new(bufnr, ft)
         bufnr = bufnr,
         scope_names = {
             method = "function",
+            singleton_method = "function",
         },
         block_scope = {
             method = true,
+            singleton_method = true,
         },
         indent_scopes = {
             method = true,
+            singleton_method = true,
         },
         variable_scope = {
             assignment = true,
@@ -42,12 +45,19 @@ function Ruby.new(bufnr, ft)
             InlineNode(
                 "(method parameters: (method_parameters (_) @tmp_capture))"
             ),
+            InlineNode(
+                "(singleton_method parameters: (method_parameters (_) @tmp_capture))"
+            ),
         },
         function_body = {
             InlineNode(
                 "((method name: (identifier) (method_parameters)? (_)(_)? @tmp_capture))"
             ),
             InlineNode("(method !parameters (_)(_) @tmp_capture)"),
+            InlineNode(
+                "((singleton_method name: (identifier) (method_parameters)? (_)(_)? @tmp_capture))"
+            ),
+            InlineNode("(singleton_method !parameters (_)(_) @tmp_capture)"),
         },
         valid_class_nodes = {
             class = 1,
@@ -56,6 +66,7 @@ function Ruby.new(bufnr, ft)
             module = FieldNode("name"),
             class = FieldNode("name"),
             method = FieldNode("name"),
+            singleton_method = FieldNode("name"),
         },
     }, bufnr)
 end
