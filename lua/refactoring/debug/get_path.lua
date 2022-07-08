@@ -5,8 +5,7 @@ local debug_utils = require("refactoring.debug.debug_utils")
 
 local function get_path(bufnr, config)
     local out = nil
-    Pipeline
-        :from_task(refactor_setup(bufnr, config))
+    Pipeline:from_task(refactor_setup(bufnr, config))
         :add_task(function(refactor)
             local point = Point:from_cursor()
             local debug_path = debug_utils.get_debug_path(refactor, point)

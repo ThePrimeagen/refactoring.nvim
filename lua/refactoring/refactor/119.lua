@@ -46,17 +46,12 @@ end
 local function extract_var_setup(refactor)
     local extract_node = refactor.region_node
 
-    local extract_node_text = table.concat(
-        utils.get_node_text(extract_node),
-        ""
-    )
+    local extract_node_text =
+        table.concat(utils.get_node_text(extract_node), "")
 
     local sexpr = extract_node:sexpr()
-    local occurrences = Query.find_occurrences(
-        refactor.scope,
-        sexpr,
-        refactor.bufnr
-    )
+    local occurrences =
+        Query.find_occurrences(refactor.scope, sexpr, refactor.bufnr)
 
     local actual_occurrences = {}
     local texts = {}
@@ -83,10 +78,8 @@ local function extract_var_setup(refactor)
         })
     end
 
-    local block_scope = refactor.ts.get_container(
-        refactor.region_node,
-        refactor.ts.block_scope
-    )
+    local block_scope =
+        refactor.ts.get_container(refactor.region_node, refactor.ts.block_scope)
 
     -- TODO: Add test for block_scope being nil
     if block_scope == nil then
@@ -141,8 +134,7 @@ local function ensure_code_gen_119(refactor)
 end
 
 function M.extract_var(bufnr, config)
-    Pipeline
-        :from_task(refactor_setup(bufnr, config))
+    Pipeline:from_task(refactor_setup(bufnr, config))
         :add_task(function(refactor)
             return ensure_code_gen_119(refactor)
         end)

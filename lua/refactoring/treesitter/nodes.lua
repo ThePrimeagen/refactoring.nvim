@@ -57,11 +57,8 @@ end
 
 local InlineNode = function(sexpr)
     return function(scope, bufnr, filetype)
-        local ok, result_object = pcall(
-            vim.treesitter.parse_query,
-            filetype,
-            sexpr
-        )
+        local ok, result_object =
+            pcall(vim.treesitter.parse_query, filetype, sexpr)
         if not ok then
             error(
                 string.format(

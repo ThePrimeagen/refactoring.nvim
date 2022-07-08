@@ -7,8 +7,7 @@ local M = {}
 
 -- TODO: How to save/reformat??? no idea
 M.post_refactor = function()
-    return Pipeline
-        :from_task(apply_text_edits)
+    return Pipeline:from_task(apply_text_edits)
         :add_task(format)
         :add_task(adjust_cursor)
 end
