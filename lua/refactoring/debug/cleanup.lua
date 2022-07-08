@@ -5,8 +5,7 @@ local lsp_utils = require("refactoring.lsp_utils")
 local post_refactor = require("refactoring.tasks.post_refactor")
 
 local function cleanup(bufnr, config)
-    return Pipeline
-        :from_task(refactor_setup(bufnr, config))
+    return Pipeline:from_task(refactor_setup(bufnr, config))
         :add_task(function(refactor)
             local opts = refactor.config:get()
             local lines = vim.api.nvim_buf_get_lines(bufnr, 0, -1, false)
@@ -35,13 +34,8 @@ local function cleanup(bufnr, config)
                     print(
                         "NOTE! Can't delete first line of file, leaving blank"
                     )
-                    region = Region:from_values(
-                        bufnr,
-                        row_num,
-                        1,
-                        row_num,
-                        100000
-                    )
+                    region =
+                        Region:from_values(bufnr, row_num, 1, row_num, 100000)
                 end
 
                 if opts.printf then

@@ -45,8 +45,7 @@ local function get_indent_amount(refactor)
 end
 
 local function printDebug(bufnr, config)
-    return Pipeline
-        :from_task(refactor_setup(bufnr, config))
+    return Pipeline:from_task(refactor_setup(bufnr, config))
         :add_task(function(refactor)
             return ensure_code_gen(refactor, { "print_var", "comment" })
         end)

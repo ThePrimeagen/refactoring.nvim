@@ -31,11 +31,8 @@ local function lua_constant(opts)
         else
             name = opts.name
         end
-        constant_string_pattern = string.format(
-            "local %s = %s\n",
-            name,
-            opts.value
-        )
+        constant_string_pattern =
+            string.format("local %s = %s\n", name, opts.value)
     end
 
     return constant_string_pattern

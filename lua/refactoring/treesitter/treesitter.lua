@@ -243,10 +243,8 @@ function TreeSitter:get_local_parameter_types(scope)
     -- end
 
     -- Get parameter list
-    local parameter_list_nodes = self:loop_thru_nodes(
-        function_node,
-        self.parameter_list
-    )
+    local parameter_list_nodes =
+        self:loop_thru_nodes(function_node, self.parameter_list)
 
     -- Only if we find something, else empty
     if #parameter_list_nodes > 0 then
@@ -274,10 +272,8 @@ function TreeSitter:indent_scope_difference(ancestor, child)
     end
 
     local indent_count = 0
-    local ancestor_container = containing_node_by_type(
-        ancestor,
-        self.indent_scopes
-    )
+    local ancestor_container =
+        containing_node_by_type(ancestor, self.indent_scopes)
     if ancestor_container ~= ancestor then
         error("Ancestor is not a indent scope container.")
     end
