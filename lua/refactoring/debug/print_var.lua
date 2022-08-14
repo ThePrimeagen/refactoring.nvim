@@ -9,6 +9,7 @@ local parsers = require("nvim-treesitter.parsers")
 local debug_utils = require("refactoring.debug.debug_utils")
 local ensure_code_gen = require("refactoring.tasks.ensure_code_gen")
 local get_select_input = require("refactoring.get_select_input")
+local utils = require("refactoring.utils")
 
 local function get_variable(opts, point)
     if opts.normal then
@@ -32,9 +33,9 @@ local function get_variable(opts, point)
         local filetype = vim.bo[bufnr].filetype
         -- TODO: Can we do something with treesitter files here?
         if filetype == "php" then
-            return "$" .. ts_utils.get_node_text(node)[1]
+            return "$" .. utils.get_node_text(node)[1]
         end
-        return ts_utils.get_node_text(node)[1]
+        return utils.get_node_text(node)[1]
     end
     local variable_region = Region:from_current_selection()
     return variable_region:get_text()[1]
