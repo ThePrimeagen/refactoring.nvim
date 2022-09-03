@@ -114,13 +114,22 @@ end
 function TreeSitter:get_local_defs(scope, region)
     self:validate_setting("function_args")
     local nodes = self:loop_thru_nodes(scope, self.function_args)
+    print("#nodes:", #nodes)
     local local_var_names = self:get_local_var_names(scope)
+    print("#local_var_names:", #local_var_names)
     local i = #nodes + 1
+    print("i:", i)
     for _, v in ipairs(local_var_names) do
+        print(
+            "vim.inspect(utils.get_node_text(v)):",
+            vim.inspect(utils.get_node_text(v))
+        )
         nodes[i] = v
         i = i + 1
     end
+    print("node number after loop:", #nodes)
     nodes = utils.region_complement(nodes, region)
+    print("node number after region_complement:", #nodes)
     return nodes
 end
 

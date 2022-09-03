@@ -34,7 +34,7 @@ local function for_each_file(cb)
     )
     for _, file in pairs(files) do
         file = remove_cwd(file)
-        if string.match(file, "start") then
+        if string.match(file, "start") and string.match(file, "rb") and string.match(file, "extract_block") then
             cb(file)
         end
     end

@@ -339,6 +339,7 @@ local function get_selected_locals(refactor, is_class)
     end
 
     local local_def_map = utils.node_text_to_set(local_defs)
+    print("vim.inspect(local_def_map):", vim.inspect(local_def_map))
     -- HACK: Can't think of a better way to do this right now,
     -- just removing `self` if captured
     if refactor.filetype == "python" and is_class then
@@ -346,6 +347,11 @@ local function get_selected_locals(refactor, is_class)
     end
 
     local region_refs_map = utils.node_text_to_set(region_refs)
+    print("vim.inspect(region_refs_map):", vim.inspect(region_refs_map))
+    print("Hitting here!")
+    print("Hitting here!")
+    print("Hitting here!")
+    print("Hitting here!")
     return utils.table_key_intersect(local_def_map, region_refs_map)
 end
 
