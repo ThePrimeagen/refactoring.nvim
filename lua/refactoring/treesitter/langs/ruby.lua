@@ -16,6 +16,7 @@ function Ruby.new(bufnr, ft)
         block_scope = {
             method = true,
             singleton_method = true,
+            body_statement = true,
         },
         indent_scopes = {
             method = true,
