@@ -50,4 +50,16 @@ function M.open_test_file(file)
     return vim.api.nvim_get_current_buf()
 end
 
+---@param test_name string: test name to check if we should skip
+---@param tests_to_skip table: table with names of tests that we want to skip
+---@return boolean: return whether a test should be skipped if it's in table of tests to skip
+function M.check_if_skip_test(test_name, tests_to_skip)
+    for _, test in pairs(tests_to_skip) do
+        if test_name == test then
+            return true
+        end
+    end
+    return false
+end
+
 return M

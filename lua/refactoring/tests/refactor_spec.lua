@@ -19,6 +19,11 @@ local extension_to_filetype = {
     ["ruby"] = "ruby",
 }
 
+local tests_to_skip = {
+   "refactor/106/rb/extract_block-2/extract_block.start.rb",
+   "refactor/119/rb/example/extract_var.start.rb",
+}
+
 local cwd = vim.loop.cwd()
 vim.cmd("set rtp+=" .. cwd)
 
@@ -34,7 +39,7 @@ local function for_each_file(cb)
     )
     for _, file in pairs(files) do
         file = remove_cwd(file)
-        if string.match(file, "start") then
+        if string.match(file, "start") and not test_utils.check_if_skip_test(file, tests_to_skip) then
             cb(file)
         end
     end
