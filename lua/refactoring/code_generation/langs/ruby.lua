@@ -44,7 +44,7 @@ local ruby = {
     terminate = function(code)
         return code
     end,
-    -- This is for returing multiple arguments from a function
+    -- This is for returning multiple arguments from a function
     -- @param names string|table
     pack = function(opts)
         return code_utils.returnify(opts, "%s")

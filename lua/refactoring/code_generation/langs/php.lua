@@ -48,7 +48,7 @@ local php = {
             opts.value
         )
     end,
-    -- This is for returing multiple arguments from a function
+    -- This is for returning multiple arguments from a function
     -- @param names string|table
     pack = function(names)
         return code_utils.returnify(names, string_pattern)
