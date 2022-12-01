@@ -6,7 +6,7 @@ test:
 	echo "===> Testing:"
 	nvim --headless --clean \
 	-u scripts/minimal.vim \
-	-c "PlenaryBustedDirectory lua/refactoring/tests/ {minimal_init = 'scripts/minimal.vim'}"
+	-c "PlenaryBustedDirectory lua/refactoring/tests/"
 
 ci-install-deps:
 	./scripts/find-supported-languages.sh
