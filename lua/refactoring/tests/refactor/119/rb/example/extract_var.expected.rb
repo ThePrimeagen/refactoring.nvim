@@ -1,7 +1,7 @@
 def orderCalculation(order, a, b)
     temp = a * b
-  basePrice = order.quantity*order.itemPrice
-   blah = (basePrice) - 7
+    basePrice = order.quantity*order.itemPrice
+    blah = (basePrice) - 7
 
     puts(temp, blah)
 

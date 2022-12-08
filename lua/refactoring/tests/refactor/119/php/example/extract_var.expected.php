@@ -14,7 +14,7 @@ class testing
     {
         $blah * $nonsence;
         $basePrice = $order->quantity*$order->itemPrice;
-       $basePrice;
+        $basePrice;
 
         return $basePrice - 
             max(0, $order->quantity - 500) * $order->itemPrice * 0.5 +
