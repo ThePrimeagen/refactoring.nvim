@@ -1,5 +1,6 @@
 local function getpos()
-    return vim.fn.line("."), vim.fn.col(".")
+    local cursor = vim.api.nvim_win_get_cursor(0)
+    return cursor[1], cursor[2]
 end
 
 ---@class RefactorPoint
