@@ -23,24 +23,28 @@ function Python.new(bufnr, ft)
             assignment = true,
         },
         local_var_names = {
-            InlineNode("(assignment left: (_ (_) @tmp_capture))"),
-            InlineNode("(assignment left: (_) @tmp_capture)"),
             InlineNode(
-                "(for_statement left: (identifier) @definition.local_name)"
+                '((assignment left: (_ (_) @capture)) (#not-eq? @capture "self"))'
+            ),
+            InlineNode(
+                '((assignment left: (_) @capture) (#not-eq? @capture "self"))'
+            ),
+            InlineNode(
+                '((for_statement left: (identifier) @capture) (#not-eq? @capture "self"))'
             ),
         },
         function_args = {
             InlineNode(
-                "((function_definition (parameters (identifier) @tmp_capture)))"
+                '((function_definition (parameters (identifier) @capture)) (#not-eq? @capture "self"))'
             ),
             InlineNode(
-                "((function_definition (parameters (default_parameter (identifier) @tmp_capture))))"
+                '((function_definition (parameters (default_parameter (identifier) @capture))) (#not-eq? @capture "self"))'
             ),
             InlineNode(
-                "((function_definition (parameters (typed_parameter (identifier) @tmp_capture))))"
+                '((function_definition (parameters (typed_parameter (identifier) @capture))) (#not-eq? @capture "self"))'
             ),
             InlineNode(
-                "((function_definition (parameters (typed_default_parameter (identifier) @tmp_capture))))"
+                '((function_definition (parameters (typed_default_parameter (identifier) @capture))) (#not-eq? @capture "self"))'
             ),
         },
         local_var_values = {

@@ -339,12 +339,6 @@ local function get_selected_locals(refactor, is_class)
     end
 
     local local_def_map = utils.node_text_to_set(local_defs)
-    -- HACK: Can't think of a better way to do this right now,
-    -- just removing `self` if captured
-    if refactor.filetype == "python" and is_class then
-        local_def_map["self"] = nil
-    end
-
     local region_refs_map = utils.node_text_to_set(region_refs)
     return utils.table_key_intersect(local_def_map, region_refs_map)
 end
