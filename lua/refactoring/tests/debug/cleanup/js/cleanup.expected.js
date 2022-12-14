@@ -1,3 +1,3 @@
 function main() {
-  console.log("poggers");
+    console.log("poggers");
 }
