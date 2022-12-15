@@ -71,7 +71,7 @@ function M.get_node_text(node, out)
     out = out or {}
     local count = node:child_count()
 
-    if count == 0 then
+    if count == 0 or node:type() == "string_literal" then
         local cur_bufnr = vim.api.nvim_get_current_buf()
         local text = vim.treesitter.query.get_node_text(node, cur_bufnr)
         table.insert(out, text)
