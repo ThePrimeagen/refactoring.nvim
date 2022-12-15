@@ -174,6 +174,12 @@ end
 
 --- Convert a region to an LSP Range
 function Region:to_lsp_range()
+    local end_character
+    if self.end_col == self.start_col and self.end_row == self.start_row then
+        end_character = self.end_col - 1
+    else
+        end_character = self.end_col
+    end
     return {
         ["start"] = {
             line = self.start_row - 1,
@@ -181,7 +187,7 @@ function Region:to_lsp_range()
         },
         ["end"] = {
             line = self.end_row - 1,
-            character = self.end_col,
+            character = end_character,
         },
     }
 end

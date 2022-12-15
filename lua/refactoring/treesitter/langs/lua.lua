@@ -17,9 +17,11 @@ function Lua.new(bufnr, ft)
             local_function = "function",
             ["function_declaration"] = "function",
             function_definition = "function",
+            chunk = "chunk",
         },
         block_scope = {
             block = true,
+            chunk = true,
         },
         variable_scope = {
             variable_declaration = true,
