@@ -78,8 +78,8 @@ function M.get_node_text(node, out)
         return out
     end
 
-    for idx = 0, count - 1 do
-        M.get_node_text(node:child(idx), out)
+    for child in node:iter_children() do
+        M.get_node_text(child, out)
     end
 
     return out
