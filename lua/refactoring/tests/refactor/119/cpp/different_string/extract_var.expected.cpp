@@ -12,6 +12,7 @@ std::string orderCalculation(Person person, std::string start, std::string end) 
   std::string greeting = start + space + end;
 
   std::cout << greeting << std::endl;
+  std::cout << " [not space] " << std::endl;
 
   return start + person.firstName + space + person.lastName + end;
 }
