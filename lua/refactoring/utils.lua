@@ -71,6 +71,8 @@ function M.get_node_text(node, out)
     out = out or {}
     local count = node:child_count()
 
+    -- TODO: this is a special case for cpp, other languages could have special
+    -- cases too. How to handle this properly?
     if count == 0 or node:type() == "string_literal" then
         local cur_bufnr = vim.api.nvim_get_current_buf()
         local text = vim.treesitter.query.get_node_text(node, cur_bufnr)
