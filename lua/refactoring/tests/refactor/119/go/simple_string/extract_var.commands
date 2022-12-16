@@ -1,0 +1,3 @@
+:13
+:execute 'norm! f"vf"'
+:execute "norm! \<Esc>"

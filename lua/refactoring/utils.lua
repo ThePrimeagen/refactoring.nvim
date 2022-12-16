@@ -71,9 +71,20 @@ function M.get_node_text(node, out)
     out = out or {}
     local count = node:child_count()
 
-    -- TODO: this is a special case for cpp, other languages could have special
-    -- cases too. How to handle this properly?
-    if count == 0 or node:type() == "string_literal" then
+    -- TODO: these are special cases for languages in which the string node
+    -- has as children nodes for the string delimiters (", ', etc) but not
+    -- for the string content.
+    -- How to handle this properly? My first idea was to add a field to the
+    -- Treesiter object so each language instance has its own list of possible
+    -- nodes with exceptions. Would it be right to pass the treesitter object
+    -- to this function?
+    if
+        count == 0
+        -- cpp special case
+        or node:type() == "string_literal"
+        -- go special case
+        or node:type() == "interpreted_string_literal"
+    then
         local cur_bufnr = vim.api.nvim_get_current_buf()
         local text = vim.treesitter.query.get_node_text(node, cur_bufnr)
         table.insert(out, text)
