@@ -80,7 +80,7 @@ function Lua.new(bufnr, ft)
             InlineNode("(repeat_statement) @tmp_capture"),
             InlineNode("(while_statement) @tmp_capture"),
             InlineNode("(variable_declaration) @tmp_capture"),
-            InlineNode("(function_call) @tmp_capture")
+            InlineNode("(function_call) @tmp_capture"),
         },
         function_body = {
             InlineNode("(block (_) @tmp_capture)"),
