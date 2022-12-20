@@ -119,7 +119,7 @@ end
 
 function Region:to_ts_node(root)
     local s_row, s_col, e_row, e_col = self:to_ts()
-    return root:descendant_for_range(s_row, s_col, e_row, e_col)
+    return root:named_descendant_for_range(s_row, s_col, e_row, e_col)
 end
 
 --- Convert a region to a tree sitter region
