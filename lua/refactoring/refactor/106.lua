@@ -246,11 +246,30 @@ local function get_func_call(refactor, extract_params)
         }
     end
 
+    -- in some languages (like typescript and javascript), you can return
+    -- multiple values in an object, but treesitter still sees that as multiple
+    -- values instead of just one object, which causes odd behaviour
+    local exception_languages = {
+        typescript = true,
+        javascript = true,
+    }
+
     if extract_params.has_return_vals then
-        func_call.text = refactor.code.constant({
-            name = extract_params.return_vals,
-            value = func_call.text,
-        })
+        if
+            #extract_params.return_vals > 1
+            and exception_languages[refactor.filetype] == nil
+        then
+            func_call.text = refactor.code.constant({
+                multiple = true,
+                identifiers = extract_params.return_vals,
+                values = { func_call.text },
+            })
+        else
+            func_call.text = refactor.code.constant({
+                name = extract_params.return_vals,
+                value = func_call.text,
+            })
+        end
     else
         func_call.text = refactor.code.terminate(func_call.text)
     end
