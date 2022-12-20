@@ -19,6 +19,28 @@ end
     )
 end
 
+local function ruby_constant(opts)
+    local constant_string_pattern
+
+    if opts.multiple then
+        constant_string_pattern = string.format(
+            "%s = %s\n",
+            table.concat(opts.identifiers, ", "),
+            table.concat(opts.values, ", ")
+        )
+    else
+        local name
+        if opts.name[1] ~= nil then
+            name = opts.name[1]
+        else
+            name = opts.name
+        end
+        constant_string_pattern = string.format("%s = %s\n", name, opts.value)
+    end
+
+    return constant_string_pattern
+end
+
 local indent_char = " "
 
 local ruby = {
@@ -26,7 +48,7 @@ local ruby = {
         return string.format("# %s", statement)
     end,
     constant = function(opts)
-        return string.format("%s = %s\n", opts.name, opts.value)
+        return ruby_constant(opts)
     end,
     ["function"] = ruby_function,
     function_return = ruby_function,
