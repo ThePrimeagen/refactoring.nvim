@@ -382,11 +382,15 @@ local function extract_block_setup(refactor)
     region = Region:from_values(
         refactor.bufnr,
         first_line_region.start_row,
-        first_line_region.start_col,
+        -- The Tresitter delimited region never includes the blank spaces
+        -- before the first line which causes problems with indentation.
+        -- Setting this to 1 kinda solves this problems (?)
+        1,
         last_line_region.end_row,
         last_line_region.end_col
     )
     region_node = region:to_ts_node(refactor.ts:get_root())
+    region.start_col = 1
 
     refactor.region = region
     refactor.region_node = region_node
