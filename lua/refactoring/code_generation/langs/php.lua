@@ -42,8 +42,11 @@ local php = {
         return string.format("// %s", statement)
     end,
     constant = function(opts)
+        if not opts.statement then
+            opts.statement = "%s = %s;"
+        end
         return string.format(
-            "%s = %s;\n",
+            opts.statement .. "\n",
             code_utils.returnify(opts.name, string_pattern),
             opts.value
         )

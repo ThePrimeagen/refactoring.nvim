@@ -24,9 +24,12 @@ local function get_func_call_prefix(refactor)
 end
 
 local function get_new_var_text(extract_node_text, refactor, var_name)
+    local statement =
+        refactor.config:get_extract_var_statement(refactor.filetype)
     local base_text = refactor.code.constant({
         name = var_name,
         value = extract_node_text,
+        statement = statement,
     })
 
     if

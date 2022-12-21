@@ -28,6 +28,7 @@
     - [Customizing Printf and Print Var Statements](#config-debug-stringification)
       - [Customizing Printf Statements](#config-debug-stringification-printf)
       - [Customizing Print Var Statements](#config-debug-stringification-print-var)
+  - [Customizing Extract Variable Statements](#config-119-custom)
   - [Configuration for Type Prompt Operations](#config-prompt)
 
 ## Installation<a name="installation"></a>
@@ -298,6 +299,19 @@ view `multiple-statements/print_var.config`.
 statements, the plugin will prompt for which one should be inserted. If you
 just have one custom statement in your config, it will override the default
 automatically.
+
+### Customizing Extract variable Statements<a name="config-119-custom"></a>
+When performing an `extract_var` refactor operation, you can custom how the new
+variable would be declaed by setting configuration like the below example.
+
+```lua
+require('refactoring').setup({
+  -- overriding extract statement for go
+  extract_var_statements = {
+    go = "%s := %s // poggers"
+  }
+})
+```
 
 ### Configuration for Type Prompt Operations<a name="config-prompt"></a>
 

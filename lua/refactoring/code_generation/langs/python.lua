@@ -68,7 +68,13 @@ local function python_constant(opts)
         else
             name = opts.name
         end
-        constant_string_pattern = string.format("%s = %s\n", name, opts.value)
+
+        if not opts.statement then
+            opts.statement = "%s = %s"
+        end
+
+        constant_string_pattern =
+            string.format(opts.statement .. "\n", name, opts.value)
     end
 
     return constant_string_pattern
