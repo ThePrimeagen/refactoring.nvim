@@ -390,7 +390,6 @@ local function extract_block_setup(refactor)
         last_line_region.end_col
     )
     region_node = region:to_ts_node(refactor.ts:get_root())
-    region.start_col = 1
 
     refactor.region = region
     refactor.region_node = region_node
