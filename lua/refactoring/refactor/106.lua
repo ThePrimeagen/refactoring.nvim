@@ -384,7 +384,6 @@ local function extract_block_setup(refactor)
         first_line_region.start_row,
         -- The Tresitter delimited region never includes the blank spaces
         -- before the first line which causes problems with indentation.
-        -- Setting this to 1 kinda solves this problems (?)
         1,
         last_line_region.end_row,
         last_line_region.end_col
