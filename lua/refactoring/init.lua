@@ -37,9 +37,7 @@ end
 
 function M.select_refactor(opts)
     async.run(function()
-        local selected_refactor
-
-        selected_refactor = get_select_input(
+        local selected_refactor = get_select_input(
             M.get_refactors(),
             "Refactoring: select a refactor to apply:"
         )
