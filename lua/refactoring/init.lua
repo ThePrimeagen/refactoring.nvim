@@ -36,18 +36,18 @@ function M.get_refactors()
 end
 
 function M.select_refactor(opts)
-    local selected_refactor
-
     async.run(function()
+        local selected_refactor
+
         selected_refactor = get_select_input(
             M.get_refactors(),
             "Refactoring: select a refactor to apply:"
         )
-    end)
 
-    if selected_refactor then
-        M.refactor(selected_refactor, opts)
-    end
+        if selected_refactor then
+            M.refactor(selected_refactor, opts)
+        end
+    end)
 end
 
 M.debug = require("refactoring.debug")
