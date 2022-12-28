@@ -9,7 +9,32 @@ local ensure_code_gen = require("refactoring.tasks.ensure_code_gen")
 local get_select_input = require("refactoring.get_select_input")
 
 local function get_indent_amount(refactor)
-    return refactor.whitespace.cursor / refactor.whitespace.tabstop
+    local region = Region:from_point(refactor.cursor)
+    local region_node = region:to_ts_node(refactor.ts:get_root())
+
+    local indent_scope = refactor.ts:indent_scope(region_node)
+
+    local captures = {}
+    refactor.ts:validate_setting("statements")
+    for _, capture in ipairs(refactor.ts.statements) do
+        table.insert(captures, capture)
+    end
+    refactor.ts:validate_setting("function_body")
+    for _, capture in ipairs(refactor.ts.function_body) do
+        table.insert(captures, capture)
+    end
+
+    local indent_scope_first_child =
+        refactor.ts:loop_thru_nodes(indent_scope, captures)[1]
+
+    local first_child_region = Region:from_node(indent_scope_first_child)
+    local indent_scope_whitespace = vim.fn.indent(first_child_region.start_row)
+
+    if refactor.whitespace.cursor >= indent_scope_whitespace then
+        return refactor.whitespace.cursor / refactor.whitespace.tabstop
+    end
+
+    return indent_scope_whitespace / refactor.whitespace.tabstop
 end
 
 local function printDebug(bufnr, config)
@@ -28,7 +53,7 @@ local function printDebug(bufnr, config)
             point.col = opts.below and 100000 or 1
 
             local indent
-            if refactor.ts.allows_indenting_task then
+            if refactor.ts:allows_indenting_task() then
                 local indent_amount = get_indent_amount(refactor)
                 indent = refactor.code.indent({
                     indent_width = refactor.whitespace.tabstop,

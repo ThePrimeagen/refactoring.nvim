@@ -72,6 +72,9 @@ function Php.new(bufnr, ft)
             InlineNode("(do_statement) @tmp_capture"),
             InlineNode("(assignment_expression) @tmp_capture"),
         },
+        function_body = {
+            InlineNode("(compound_statement) @tmp_capture"),
+        },
     }, bufnr)
 end
 

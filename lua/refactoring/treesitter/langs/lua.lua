@@ -71,6 +71,7 @@ function Lua.new(bufnr, ft)
             while_statement = true,
             function_declaration = true,
             function_definition = true,
+            -- chunk = true,
         },
         statements = {
             InlineNode("(return_statement) @tmp_capture"),

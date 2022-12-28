@@ -19,6 +19,7 @@ function Ruby.new(bufnr, ft)
             body_statement = true,
         },
         indent_scopes = {
+            program = true,
             method = true,
             singleton_method = true,
         },
@@ -59,6 +60,7 @@ function Ruby.new(bufnr, ft)
                 "((singleton_method name: (identifier) (method_parameters)? (_)(_)? @tmp_capture))"
             ),
             InlineNode("(singleton_method !parameters (_)(_) @tmp_capture)"),
+            InlineNode("(body_statement) @tmp_capture"),
         },
         valid_class_nodes = {
             class = 1,
