@@ -12,20 +12,19 @@ local function get_indent_amount(refactor)
     local region = Region:from_point(refactor.cursor)
     local region_node = region:to_ts_node(refactor.ts:get_root())
 
-    local indent_scope = refactor.ts:get_scope(region_node)
+    local scope = refactor.ts:get_scope(region_node)
 
-    local captures = {}
-    refactor.ts:validate_setting("statements")
-    for _, capture in ipairs(refactor.ts.statements) do
-        table.insert(captures, capture)
+    local nodes = {}
+    local statements = refactor.ts:get_statements(scope)
+    for _, node in ipairs(statements) do
+        table.insert(nodes, node)
     end
-    refactor.ts:validate_setting("function_body")
-    for _, capture in ipairs(refactor.ts.function_body) do
-        table.insert(captures, capture)
+    local function_body = refactor.ts:get_function_body(scope)
+    for _, node in ipairs(function_body) do
+        table.insert(nodes, node)
     end
 
-    local indent_scope_first_child =
-        refactor.ts:loop_thru_nodes(indent_scope, captures)[1]
+    local indent_scope_first_child = nodes[1]
 
     local first_child_region = Region:from_node(indent_scope_first_child)
     local indent_scope_whitespace = vim.fn.indent(first_child_region.start_row)
