@@ -12,7 +12,7 @@ local function get_indent_amount(refactor)
     local region = Region:from_point(refactor.cursor)
     local region_node = region:to_ts_node(refactor.ts:get_root())
 
-    local indent_scope = refactor.ts:indent_scope(region_node)
+    local indent_scope = refactor.ts:get_scope(region_node)
 
     local captures = {}
     refactor.ts:validate_setting("statements")
