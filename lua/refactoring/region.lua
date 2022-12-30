@@ -14,6 +14,15 @@ local function get_selection_range()
     return start_row, start_col, end_row, end_col
 end
 
+local function get_motion_range()
+    local start_row = vim.fn.line("'[")
+    local start_col = vim.fn.col("'[")
+    local end_row = vim.fn.line("']")
+    local end_col = vim.fn.col("']")
+
+    return start_row, start_col, end_row, end_col
+end
+
 ---@class RefactorRegion
 --- The following fields act similar to a cursor
 ---@field start_row number: The 1-based row
@@ -26,8 +35,26 @@ Region.__index = Region
 
 --- Get a Region from the current selection
 ---@return RefactorRegion
-function Region:from_current_selection()
-    local start_row, start_col, end_row, end_col = get_selection_range()
+function Region:from_current_selection(use_motion)
+    local start_row, start_col, end_row, end_col
+
+    if use_motion then
+        start_row, start_col, end_row, end_col = get_motion_range()
+    else
+        start_row, start_col, end_row, end_col = get_selection_range()
+    end
+
+    return setmetatable({
+        bufnr = vim.fn.bufnr(),
+        start_row = start_row,
+        start_col = start_col,
+        end_row = end_row,
+        end_col = end_col,
+    }, self)
+end
+
+function Region:from_motion()
+    local start_row, start_col, end_row, end_col = get_motion_range()
 
     return setmetatable({
         bufnr = vim.fn.bufnr(),

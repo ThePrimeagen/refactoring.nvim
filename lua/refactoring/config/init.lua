@@ -54,6 +54,8 @@ local default_printf_statements = {}
 
 local default_print_var_statements = {}
 
+local default_use_motion = false
+
 ---@class Config
 ---@field config table
 local Config = {}
@@ -71,6 +73,7 @@ function Config:new(...)
         prompt_func_param_type = default_prompt_func_param_type,
         printf_statements = default_printf_statements,
         print_var_statements = default_print_var_statements,
+        use_motion = default_use_motion,
     })
 
     for idx = 1, select("#", ...) do
@@ -97,6 +100,7 @@ function Config:reset()
     self.config.prompt_func_param_type = default_prompt_func_param_type
     self.config.printf_statements = default_printf_statements
     self.config.print_var_statements = default_print_var_statements
+    self.config.use_motion = default_use_motion
 end
 
 function Config:automate_input(inputs)
