@@ -1,3 +1,3 @@
 def main
-  pass
+    pass
 end

@@ -70,6 +70,7 @@ function Python.new(bufnr, ft)
             InlineNode("(assignment) @tmp_capture"),
         },
         indent_scopes = {
+            module = true,
             function_definition = true,
             for_statement = true,
             if_statement = true,
