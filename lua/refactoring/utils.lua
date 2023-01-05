@@ -71,13 +71,7 @@ function M.get_node_text(node, out)
     out = out or {}
     local count = node:child_count()
 
-    -- TODO: these are special cases for languages in which the string node
-    -- has as children nodes for the string delimiters (", ', etc) but not
-    -- for the string content.
-    -- How to handle this properly? My first idea was to add a field to the
-    -- Treesiter object so each language instance has its own list of possible
-    -- nodes with exceptions. Would it be right to pass the treesitter object
-    -- to this function?
+    -- TODO: generalize node type checks for different languages in treesitter
     if
         count == 0
         -- cpp special case

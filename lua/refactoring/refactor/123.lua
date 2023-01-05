@@ -8,6 +8,7 @@ local post_refactor = require("refactoring.tasks.post_refactor")
 local refactor_setup = require("refactoring.tasks.refactor_setup")
 local selection_setup = require("refactoring.tasks.selection_setup")
 local get_select_input = require("refactoring.get_select_input")
+local ts_utils = require("refactoring.utils")
 
 local lsp_utils = require("refactoring.lsp_utils")
 
@@ -171,6 +172,13 @@ local function inline_var_setup(refactor, bufnr)
         -- Could be done via opts into replace_text.
         local insert_text, delete_text =
             lsp_utils.replace_text(Region:from_node(ref), value_text)
+
+        -- special case: if the identifier we are inlining has only one character, converting to an LSP
+        -- range breaks the whole thing so we have to manually reset it
+        if (ts_utils.get_node_text(node_to_inline)[1]):len() == 1 then
+            insert_text["range"]["end"]["character"] = insert_text["range"]["end"]["character"]
+                + 1
+        end
 
         table.insert(text_edits, insert_text)
         table.insert(text_edits, delete_text)
