@@ -51,8 +51,8 @@ local default_prompt_func_return_type = {
 }
 
 local default_printf_statements = {}
-
 local default_print_var_statements = {}
+local default_extract_var_statements = {}
 
 ---@class Config
 ---@field config table
@@ -71,6 +71,7 @@ function Config:new(...)
         prompt_func_param_type = default_prompt_func_param_type,
         printf_statements = default_printf_statements,
         print_var_statements = default_print_var_statements,
+        extract_var_statements = default_extract_var_statements,
     })
 
     for idx = 1, select("#", ...) do
@@ -97,6 +98,7 @@ function Config:reset()
     self.config.prompt_func_param_type = default_prompt_func_param_type
     self.config.printf_statements = default_printf_statements
     self.config.print_var_statements = default_print_var_statements
+    self.config.extract_var_statements = default_extract_var_statements
 end
 
 function Config:automate_input(inputs)
@@ -150,6 +152,21 @@ end
 
 function Config:set_print_var_statements(override_map)
     self.config.print_var_statements = override_map
+end
+
+---@param filetype string: the filetype
+---@return string|boolean
+function Config:get_extract_var_statement(filetype)
+    if self.config.extract_var_statements[filetype] == nil then
+        return false
+    end
+    return self.config.extract_var_statements[filetype]
+end
+
+---@param override_statement string: map with statements to any current extract_var_statements
+---@param filetype string: map with statements to any current extract_var_statements
+function Config:set_extract_var_statement(filetype, override_statement)
+    self.config.extract_var_statements[filetype] = override_statement
 end
 
 function Config:get_automated_input()

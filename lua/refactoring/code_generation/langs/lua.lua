@@ -16,11 +16,14 @@ end
 end
 
 local function lua_constant(opts)
-    local constant_string_pattern
+    local result
+    if not opts.statement then
+        opts.statement = "local %s = %s"
+    end
 
     if opts.multiple then
-        constant_string_pattern = string.format(
-            "local %s = %s\n",
+        result = string.format(
+            opts.statement .. "\n",
             table.concat(opts.identifiers, ", "),
             table.concat(opts.values, ", ")
         )
@@ -31,11 +34,10 @@ local function lua_constant(opts)
         else
             name = opts.name
         end
-        constant_string_pattern =
-            string.format("local %s = %s\n", name, opts.value)
+        result = string.format(opts.statement .. "\n", name, opts.value)
     end
 
-    return constant_string_pattern
+    return result
 end
 
 local indent_char = " "

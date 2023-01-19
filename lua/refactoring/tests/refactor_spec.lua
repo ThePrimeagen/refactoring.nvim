@@ -17,6 +17,10 @@ local extension_to_filetype = {
     ["py"] = "python",
     ["java"] = "java",
     ["ruby"] = "ruby",
+    ["rb"] = "ruby",
+    ["c"] = "c",
+    ["cpp"] = "cpp",
+    ["php"] = "php",
 }
 
 local tests_to_skip = {}
@@ -165,6 +169,14 @@ local function set_config_options(filename_prefix, filename_extension)
         prompt_func_param_type[filename_extension] =
             str_to_bool[config_values[2]]
         Config.get():set_prompt_func_param_type(prompt_func_param_type)
+
+        if config_values[3] ~= nil then
+            local extract_var_statement = config_values[3]
+            Config.get():set_extract_var_statement(
+                extension_to_filetype[filename_extension],
+                extract_var_statement
+            )
+        end
     end
 end
 
@@ -197,6 +209,8 @@ describe("Refactoring", function()
             )
 
             Config.get():reset()
+            -- TODO: Not sure why I have to call this out, but it's required
+            Config:get():set_extract_var_statement(extension_to_filetype[filename_extension], nil)
 
             set_config_options(filename_prefix, filename_extension)
             test_utils.run_inputs_if_exist(filename_prefix, cwd)

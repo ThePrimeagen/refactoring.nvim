@@ -107,23 +107,26 @@ local function go_call_class_func(opts)
 end
 
 local function constant(opts)
-    local constant_string_pattern
+    local result
+    if not opts.statement then
+        opts.statement = "%s := %s"
+    end
 
     if opts.multiple then
-        constant_string_pattern = string.format(
-            "%s := %s\n",
+        result = string.format(
+            opts.statement .. "\n",
             table.concat(opts.identifiers, ", "),
             table.concat(opts.values, ", ")
         )
     else
-        constant_string_pattern = string.format(
-            "%s := %s\n",
+        result = string.format(
+            opts.statement .. "\n",
             code_utils.returnify(opts.name, string_pattern),
             opts.value
         )
     end
 
-    return constant_string_pattern
+    return result
 end
 
 local indent_char = "\t"

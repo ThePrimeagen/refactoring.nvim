@@ -51,8 +51,12 @@ local function cpp_constant(opts)
 
         constant_string_pattern = constant_string_pattern .. ";\n"
     else
+        if not opts.statement then
+            opts.statement = "auto %s = %s;"
+        end
+
         constant_string_pattern = string.format(
-            "auto %s = %s;\n",
+            opts.statement .. "\n",
             code_utils.returnify(opts.name, string_pattern),
             opts.value
         )
