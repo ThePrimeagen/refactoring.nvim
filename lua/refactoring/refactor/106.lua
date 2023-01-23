@@ -290,28 +290,37 @@ local function get_func_call(refactor, extract_params)
     return func_call
 end
 
+local function is_comment_or_decorator_node(node)
+    if node == nil then
+        return false
+    end
+
+    local comment_and_decorator_node_types = {
+        "comment",
+        "block_comment",
+        "decorator",
+    }
+
+    for _, node_type in ipairs(comment_and_decorator_node_types) do
+        if node_type == node:type() then
+            return true
+        end
+    end
+
+    return false
+end
+
 local function get_non_comment_region_above_node(refactor)
     local scope = get_first_node_row(refactor.scope)
 
     local prev_sibling = scope:prev_named_sibling()
-
-    if prev_sibling == nil then
-        return utils.region_above_node(refactor.scope)
-    end
-
-    if
-        prev_sibling:type() == "comment"
-        or prev_sibling:type() == "block_comment"
-    then
+    if is_comment_or_decorator_node(prev_sibling) then
         local start_row
         while true do
             -- Only want first value
             start_row = prev_sibling:range()
             local temp = prev_sibling:prev_sibling()
-            if
-                temp ~= nil
-                and (temp:type() == "comment" or temp:type() == "block_comment")
-            then
+            if is_comment_or_decorator_node(temp) then
                 -- Only want first value
                 local temp_row = temp:range()
                 if start_row - temp_row == 1 then
