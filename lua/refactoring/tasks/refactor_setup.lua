@@ -6,10 +6,16 @@ local Point = require("refactoring.point")
 -- TODO: Move refactor into the actual init function.  Seems weird
 -- to have here.  Also make refactor object into a table instead of this
 -- monstrosity
+
+---
+---@param input_bufnr number
+---@param config Config
+---@return function
 local function refactor_setup(input_bufnr, config)
     input_bufnr = input_bufnr or vim.fn.bufnr()
     config = config or Config.get()
 
+    --- @retun boolean, Refactor
     return function()
         -- Setting bufnr to test bufnr
         local bufnr
@@ -25,7 +31,13 @@ local function refactor_setup(input_bufnr, config)
         local win = vim.api.nvim_get_current_win()
         local cursor = Point:from_cursor()
 
+        ---@class Refactor
+        ---@field region? RefactorRegion
+        ---@field region_node? userdata
+        ---@field scope? userdata
+        ---@field whitespace.highlight_start? number
         local refactor = {
+            ---@type {cursor: number, highlight_start: number, highlight_end: number}
             whitespace = {
                 cursor = vim.fn.indent(cursor.row),
             },

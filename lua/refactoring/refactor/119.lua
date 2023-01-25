@@ -46,6 +46,7 @@ local function get_new_var_text(extract_node_text, refactor, var_name)
     return base_text
 end
 
+---@param refactor Refactor
 local function extract_var_setup(refactor)
     local extract_node = refactor.region_node
 
@@ -127,6 +128,7 @@ local function extract_var_setup(refactor)
     })
 end
 
+---@param refactor Refactor
 local function ensure_code_gen_119(refactor)
     local list = { "constant" }
 
@@ -138,14 +140,20 @@ end
 
 function M.extract_var(bufnr, config)
     Pipeline:from_task(refactor_setup(bufnr, config))
-        :add_task(function(refactor)
-            return ensure_code_gen_119(refactor)
-        end)
+        :add_task(
+            ---@param refactor Refactor
+            function(refactor)
+                return ensure_code_gen_119(refactor)
+            end
+        )
         :add_task(selection_setup)
-        :add_task(function(refactor)
-            extract_var_setup(refactor)
-            return true, refactor
-        end)
+        :add_task(
+            ---@param refactor Refactor
+            function(refactor)
+                extract_var_setup(refactor)
+                return true, refactor
+            end
+        )
         :after(post_refactor.post_refactor)
         :run()
 end

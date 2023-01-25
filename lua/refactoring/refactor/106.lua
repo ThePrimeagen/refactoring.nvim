@@ -372,6 +372,8 @@ local function get_selected_locals(refactor, is_class)
     return utils.table_key_intersect(local_def_map, region_refs_map)
 end
 
+--- @param refactor Refactor
+---@return boolean, Refactor|string
 local function extract_block_setup(refactor)
     local region = Region:from_point(Point:from_cursor(), refactor.bufnr)
     local region_node = region:to_ts_node(refactor.ts:get_root())
@@ -413,6 +415,7 @@ local function extract_block_setup(refactor)
     return true, refactor
 end
 
+--- @param refactor Refactor
 local function extract_setup(refactor)
     local function_name = get_input("106: Extract Function Name > ")
     assert(function_name ~= "", "Error: Must provide function name")
@@ -476,6 +479,16 @@ local function extract_setup(refactor)
     }
 end
 
+--- @alias code_gen
+--- | '"return"'
+--- | '"pack"'
+--- | '"call_function"'
+--- | '"constant"'
+--- | '"function"'
+--- | '"function_return"'
+--- | '"terminate"'
+
+--- @type code_gen[]
 local ensure_code_gen_list = {
     "return",
     "pack",
@@ -489,18 +502,31 @@ local ensure_code_gen_list = {
     -- "class_function_return",
 }
 
+--- @alias class_code_gen
+--- | '"class_function"'
+--- | '"class_function_return"'
+--- | '"call_class_function"'
+
+--- @type class_code_gen[]
 local class_code_gen_list = {
     "class_function",
     "class_function_return",
     "call_class_function",
 }
 
+--- @alias indent_code_gen
+--- | '"indent_char_length"'
+--- | '"indent"'
+--- | '"indent_char"'
+
+--- @type indent_code_gen[]
 local indent_code_gen_list = {
     "indent_char_length",
     "indent",
     "indent_char",
 }
 
+--- @param refactor Refactor
 local function ensure_code_gen_106(refactor)
     local list = {}
     for _, func in ipairs(ensure_code_gen_list) do
@@ -561,16 +587,25 @@ end
 M.extract_block = function(bufnr, opts)
     bufnr = bufnr or vim.api.nvim_get_current_buf()
     Pipeline:from_task(refactor_setup(bufnr, opts))
-        :add_task(function(refactor)
-            return ensure_code_gen_106(refactor)
-        end)
-        :add_task(function(refactor)
-            return extract_block_setup(refactor)
-        end)
-        :add_task(function(refactor)
-            extract_setup(refactor)
-            return true, refactor
-        end)
+        :add_task(
+            --- @param refactor Refactor
+            function(refactor)
+                return ensure_code_gen_106(refactor)
+            end
+        )
+        :add_task(
+            --- @param refactor Refactor
+            function(refactor)
+                return extract_block_setup(refactor)
+            end
+        )
+        :add_task(
+            --- @param refactor Refactor
+            function(refactor)
+                extract_setup(refactor)
+                return true, refactor
+            end
+        )
         :after(post_refactor.post_refactor)
         :run()
 end
@@ -578,9 +613,12 @@ end
 M.extract_block_to_file = function(bufnr, opts)
     bufnr = bufnr or vim.api.nvim_get_current_buf()
     Pipeline:from_task(refactor_setup(bufnr, opts))
-        :add_task(function(refactor)
-            return ensure_code_gen_106(refactor)
-        end)
+        :add_task(
+            --- @param refactor Refactor
+            function(refactor)
+                return ensure_code_gen_106(refactor)
+            end
+        )
         :add_task(function(refactor)
             return extract_block_setup(refactor)
         end)

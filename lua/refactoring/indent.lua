@@ -28,6 +28,8 @@ M.buf_indent_amount = function(point, refactor, below, bufnr)
     for _, node in ipairs(function_body) do
         table.insert(nodes, node)
     end
+    -- TODO: if nodes is emtpy, just use the indent of the cursor
+    -- return refactor.whitespace.cursor / indent.buf_indent_width(refactor.bufnr)
 
     local line_numbers = {}
     for _, node in ipairs(nodes) do

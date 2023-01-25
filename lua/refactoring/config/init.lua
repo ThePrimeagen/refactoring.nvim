@@ -182,6 +182,7 @@ function Config:get_automated_input()
     return nil
 end
 
+---@return number
 function Config:get_test_bufnr()
     return self.config._automation.bufnr
 end
@@ -203,6 +204,7 @@ end
 local config = Config:new()
 local M = {}
 
+---@return Config
 function M.get()
     return config
 end

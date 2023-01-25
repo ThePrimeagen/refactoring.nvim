@@ -30,7 +30,7 @@ local function printDebug(bufnr, config)
                     refactor.cursor,
                     refactor,
                     opts.below,
-                    bufnr
+                    refactor.bufnr
                 )
                 indentation = refactor.code.indent({
                     indent_width = indent.buf_indent_width(refactor.bufnr),

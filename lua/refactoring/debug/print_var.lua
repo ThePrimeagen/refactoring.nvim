@@ -42,10 +42,6 @@ local function get_variable(opts, point)
     return variable_region:get_text()[1]
 end
 
-local function get_indent_amount(refactor)
-    return refactor.whitespace.cursor / indent.buf_indent_width(refactor.bufnr)
-end
-
 local function printDebug(bufnr, config)
     return Pipeline:from_task(refactor_setup(bufnr, config))
         :add_task(function(refactor)
@@ -67,7 +63,12 @@ local function printDebug(bufnr, config)
             local variable = get_variable(opts, point)
             local indentation
             if refactor.ts.allows_indenting_task then
-                local indent_amount = get_indent_amount(refactor)
+                local indent_amount = indent.buf_indent_amount(
+                    refactor.cursor,
+                    refactor,
+                    opts.below,
+                    refactor.bufnr
+                )
                 indentation = refactor.code.indent({
                     indent_width = indent.buf_indent_width(refactor.bufnr),
                     indent_amount = indent_amount,
