@@ -11,6 +11,7 @@ local refactor_setup = require("refactoring.tasks.refactor_setup")
 local get_input = require("refactoring.get_input")
 local create_file = require("refactoring.tasks.create_file")
 local post_refactor = require("refactoring.tasks.post_refactor")
+local indent = require("refactoring.indent")
 
 local M = {}
 
@@ -87,12 +88,12 @@ local function get_function_param_types(refactor, args)
 end
 
 local function get_func_header_prefix(refactor)
-    local bufnr_shiftwidth = vim.bo.shiftwidth
+    local ident_width = indent.buf_indent_width(refactor.bufnr)
     local scope_region = Region:from_node(refactor.scope, refactor.bufnr)
     local _, scope_start_col, _, _ = scope_region:to_vim()
-    local baseline_indent = math.floor(scope_start_col / bufnr_shiftwidth)
+    local baseline_indent = math.floor(scope_start_col / ident_width)
     local opts = {
-        indent_width = bufnr_shiftwidth,
+        indent_width = ident_width,
         indent_amount = baseline_indent,
     }
     return refactor.code.indent(opts)
@@ -116,15 +117,15 @@ local function get_first_node_row(node)
 end
 
 local function get_indent_prefix(refactor)
-    local bufnr_shiftwidth = vim.bo.shiftwidth
+    local ident_width = indent.buf_indent_width(refactor.bufnr)
     local first_node_row, _ = get_first_node_row(refactor.scope)
     local scope_region = Region:from_node(first_node_row, refactor.bufnr)
     local _, scope_start_col, _, _ = scope_region:to_vim()
-    local baseline_indent = math.floor(scope_start_col / bufnr_shiftwidth)
+    local baseline_indent = math.floor(scope_start_col / ident_width)
     local total_indents = baseline_indent + 1
-    refactor.cursor_col_adjustment = total_indents * bufnr_shiftwidth
+    refactor.cursor_col_adjustment = total_indents * ident_width
     local opts = {
-        indent_width = bufnr_shiftwidth,
+        indent_width = ident_width,
         indent_amount = total_indents,
     }
     return refactor.code.indent(opts)
@@ -521,7 +522,7 @@ local function ensure_code_gen_106(refactor)
 end
 
 M.extract_to_file = function(bufnr, opts)
-    bufnr = bufnr or vim.fn.bufnr(vim.fn.bufname())
+    bufnr = bufnr or vim.api.nvim_get_current_buf()
     get_extract_setup_pipeline(bufnr, opts)
         :add_task(function(refactor)
             return ensure_code_gen_106(refactor)
@@ -536,7 +537,7 @@ M.extract_to_file = function(bufnr, opts)
 end
 
 M.extract = function(bufnr, opts)
-    bufnr = bufnr or vim.fn.bufnr()
+    bufnr = bufnr or vim.api.nvim_get_current_buf()
     get_extract_setup_pipeline(bufnr, opts)
         :add_task(function(refactor)
             return ensure_code_gen_106(refactor)
@@ -558,7 +559,7 @@ M.extract = function(bufnr, opts)
 end
 
 M.extract_block = function(bufnr, opts)
-    bufnr = bufnr or vim.fn.bufnr()
+    bufnr = bufnr or vim.api.nvim_get_current_buf()
     Pipeline:from_task(refactor_setup(bufnr, opts))
         :add_task(function(refactor)
             return ensure_code_gen_106(refactor)
@@ -575,7 +576,7 @@ M.extract_block = function(bufnr, opts)
 end
 
 M.extract_block_to_file = function(bufnr, opts)
-    bufnr = bufnr or vim.fn.bufnr(vim.fn.bufname())
+    bufnr = bufnr or vim.api.nvim_get_current_buf()
     Pipeline:from_task(refactor_setup(bufnr, opts))
         :add_task(function(refactor)
             return ensure_code_gen_106(refactor)

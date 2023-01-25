@@ -28,8 +28,6 @@ local function refactor_setup(input_bufnr, config)
         local refactor = {
             whitespace = {
                 cursor = vim.fn.indent(cursor.row),
-                expandtab = vim.bo[bufnr].expandtab, -- are we whitespace?
-                tabstop = vim.bo[bufnr].tabstop, -- are we whitespace?
             },
             cursor = cursor,
             highlight_start_col = vim.fn.col("'<"),

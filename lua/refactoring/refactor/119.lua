@@ -7,17 +7,17 @@ local selection_setup = require("refactoring.tasks.selection_setup")
 local refactor_setup = require("refactoring.tasks.refactor_setup")
 local post_refactor = require("refactoring.tasks.post_refactor")
 local ensure_code_gen = require("refactoring.tasks.ensure_code_gen")
+local indent = require("refactoring.indent")
 
 local M = {}
 
 local function get_func_call_prefix(refactor)
-    local bufnr_shiftwidth = vim.bo.shiftwidth
+    local ident_width = indent.buf_indent_width(refactor.bufnr)
     local scope_region = Region:from_node(refactor.scope, refactor.bufnr)
-    local _, scope_start_col, _, _ = scope_region:to_vim()
-    local baseline_indent = math.floor(scope_start_col / bufnr_shiftwidth)
+    local baseline_indent = math.floor(scope_region.start_col / ident_width)
     local total_indent = baseline_indent + 1
     local opts = {
-        indent_width = bufnr_shiftwidth,
+        indent_width = ident_width,
         indent_amount = total_indent,
     }
     return refactor.code.indent(opts)

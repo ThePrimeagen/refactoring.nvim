@@ -10,6 +10,7 @@ local debug_utils = require("refactoring.debug.debug_utils")
 local ensure_code_gen = require("refactoring.tasks.ensure_code_gen")
 local get_select_input = require("refactoring.get_select_input")
 local utils = require("refactoring.utils")
+local indent = require("refactoring.indent")
 
 local function get_variable(opts, point)
     if opts.normal then
@@ -42,7 +43,7 @@ local function get_variable(opts, point)
 end
 
 local function get_indent_amount(refactor)
-    return refactor.whitespace.cursor / refactor.whitespace.tabstop
+    return refactor.whitespace.cursor / indent.buf_indent_width(refactor.bufnr)
 end
 
 local function printDebug(bufnr, config)
@@ -64,11 +65,11 @@ local function printDebug(bufnr, config)
 
             -- Get variable text
             local variable = get_variable(opts, point)
-            local indent
+            local indentation
             if refactor.ts.allows_indenting_task then
                 local indent_amount = get_indent_amount(refactor)
-                indent = refactor.code.indent({
-                    indent_width = refactor.whitespace.tabstop,
+                indentation = refactor.code.indent({
+                    indent_width = indent.buf_indent_width(refactor.bufnr),
                     indent_amount = indent_amount,
                 })
             end
@@ -109,9 +110,9 @@ local function printDebug(bufnr, config)
             local print_statement = refactor.code.print_var(print_var_opts)
 
             local statement
-            if indent ~= nil then
+            if indentation ~= nil then
                 local temp = {}
-                temp[1] = indent
+                temp[1] = indentation
                 temp[2] = print_statement
                 statement = table.concat(temp, "")
             else
