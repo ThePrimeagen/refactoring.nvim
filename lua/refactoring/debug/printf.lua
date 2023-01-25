@@ -9,81 +9,6 @@ local ensure_code_gen = require("refactoring.tasks.ensure_code_gen")
 local get_select_input = require("refactoring.get_select_input")
 local indent = require("refactoring.indent")
 
-local function get_indent_amount(refactor, below)
-    local region = Region:from_point(refactor.cursor)
-    local region_node = region:to_ts_node(refactor.ts:get_root())
-
-    local scope = refactor.ts:get_scope(region_node)
-
-    local nodes = {}
-    local statements = refactor.ts:get_statements(scope)
-    for _, node in ipairs(statements) do
-        table.insert(nodes, node)
-    end
-    local function_body = refactor.ts:get_function_body(scope)
-    for _, node in ipairs(function_body) do
-        table.insert(nodes, node)
-    end
-
-    local line_numbers = {}
-    for _, node in ipairs(nodes) do
-        local start_row, _, end_row, _ = node:range()
-        table.insert(line_numbers, start_row + 1)
-        table.insert(line_numbers, end_row + 1)
-    end
-
-    local hash = {}
-    line_numbers = vim.tbl_filter(function(line_number)
-        if hash[line_number] then
-            return false
-        end
-        hash[line_number] = true
-        local distance = refactor.cursor.row - line_number
-        return distance ~= 0
-    end, line_numbers)
-
-    local line_numbers_up = vim.tbl_filter(function(line_number)
-        local distance = refactor.cursor.row - line_number
-        return distance > 0
-    end, line_numbers)
-    local line_numbers_down = vim.tbl_filter(function(line_number)
-        local distance = refactor.cursor.row - line_number
-        return distance < 0
-    end, line_numbers)
-
-    local sort = function(a, b)
-        local a_distance = math.abs(refactor.cursor.row - a)
-        local b_distance = math.abs(refactor.cursor.row - b)
-        return a_distance < b_distance
-    end
-    table.sort(line_numbers_up, sort)
-    table.sort(line_numbers_down, sort)
-
-    local line_up = line_numbers_up[1]
-    local line_down = line_numbers_down[1]
-
-    local line_down_indent = vim.fn.indent(line_down)
-    local line_up_indent = vim.fn.indent(line_up)
-    local cursor_indent = vim.fn.indent(refactor.cursor.row)
-
-    local indent_scope_whitespace
-    if below then
-        if cursor_indent == 0 then
-            indent_scope_whitespace = math.max(line_down_indent, line_up_indent)
-        else
-            indent_scope_whitespace = math.max(cursor_indent, line_down_indent)
-        end
-    else
-        if cursor_indent == 0 then
-            indent_scope_whitespace = math.max(line_down_indent, line_up_indent)
-        else
-            indent_scope_whitespace = math.max(cursor_indent, line_up_indent)
-        end
-    end
-
-    return indent_scope_whitespace / indent.buf_indent_width(refactor.bufnr)
-end
-
 local function printDebug(bufnr, config)
     return Pipeline:from_task(refactor_setup(bufnr, config))
         :add_task(function(refactor)
@@ -101,7 +26,12 @@ local function printDebug(bufnr, config)
 
             local indentation
             if refactor.ts:allows_indenting_task() then
-                local indent_amount = get_indent_amount(refactor, opts.below)
+                local indent_amount = indent.buf_indent_amount(
+                    refactor.cursor,
+                    refactor,
+                    opts.below,
+                    bufnr
+                )
                 indentation = refactor.code.indent({
                     indent_width = indent.buf_indent_width(refactor.bufnr),
                     indent_amount = indent_amount,

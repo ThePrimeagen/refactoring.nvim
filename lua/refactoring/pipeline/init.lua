@@ -35,7 +35,7 @@ end
 ---
 --- It would only make sense to allow for this pipeline to be attached
 ---
----@param pipeline RefactorPipeline: the next pipeline to run after the primary pipeline has been an
+---@param pipeline RefactorPipeline|function: the next pipeline to run after the primary pipeline has been an
 function Pipeline:after(pipeline)
     if type(pipeline) == "function" then
         pipeline = pipeline()

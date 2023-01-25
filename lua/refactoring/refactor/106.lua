@@ -90,7 +90,7 @@ end
 local function get_func_header_prefix(refactor)
     local ident_width = indent.buf_indent_width(refactor.bufnr)
     local scope_region = Region:from_node(refactor.scope, refactor.bufnr)
-    local _, scope_start_col, _, _ = scope_region:to_vim()
+    local scope_start_col = scope_region.start_col
     local baseline_indent = math.floor(scope_start_col / ident_width)
     local opts = {
         indent_width = ident_width,
@@ -120,7 +120,7 @@ local function get_indent_prefix(refactor)
     local ident_width = indent.buf_indent_width(refactor.bufnr)
     local first_node_row, _ = get_first_node_row(refactor.scope)
     local scope_region = Region:from_node(first_node_row, refactor.bufnr)
-    local _, scope_start_col, _, _ = scope_region:to_vim()
+    local scope_start_col = scope_region.start_col
     local baseline_indent = math.floor(scope_start_col / ident_width)
     local total_indents = baseline_indent + 1
     refactor.cursor_col_adjustment = total_indents * ident_width

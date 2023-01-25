@@ -67,6 +67,8 @@ function Region:is_empty()
 end
 
 --- Get a region from a Treesitter Node
+---@param node userdata
+---@param bufnr? number
 ---@return RefactorRegion
 function Region:from_node(node, bufnr)
     bufnr = bufnr or vim.fn.bufnr()
@@ -83,9 +85,9 @@ function Region:from_node(node, bufnr)
 end
 
 --- Get a region from a given point.
----@param point    the point to use as start- and endpoint
----@param {bufnr}  the bufnr for the region
----@return region
+---@param point RefactorPoint the point to use as start- and endpoint
+---@param bufnr? number  the bufnr for the region
+---@return RefactorRegion
 function Region:from_point(point, bufnr)
     -- maybe should set this to zero
     bufnr = bufnr or vim.fn.bufnr()
@@ -110,11 +112,6 @@ function Region:from_lsp_range(lsp_range, bufnr)
         end_row = lsp_range["end"].line + 1,
         end_col = lsp_range["end"].character,
     }, self)
-end
-
---- Convert a region to a vim region
-function Region:to_vim()
-    return self.start_row, self.start_col, self.end_row, self.end_col
 end
 
 function Region:to_ts_node(root)
