@@ -141,6 +141,7 @@ function Region:get_lines()
 end
 
 --- Get the left boundary of the region
+--- @return RefactorPoint
 function Region:get_start_point()
     return Point:from_values(self.start_row, self.start_col)
 end

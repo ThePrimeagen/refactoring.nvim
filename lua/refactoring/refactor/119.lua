@@ -11,19 +11,30 @@ local indent = require("refactoring.indent")
 
 local M = {}
 
-local function get_func_call_prefix(refactor)
+---@param refactor Refactor
+---@param region RefactorRegion
+---@return string
+local function get_func_call_prefix(refactor, region)
     local ident_width = indent.buf_indent_width(refactor.bufnr)
-    local scope_region = Region:from_node(refactor.scope, refactor.bufnr)
-    local baseline_indent = math.floor(scope_region.start_col / ident_width)
-    local total_indent = baseline_indent + 1
+    local indent_amount = indent.buf_indent_amount(
+        region:get_start_point(),
+        refactor,
+        false,
+        refactor.bufnr
+    )
     local opts = {
         indent_width = ident_width,
-        indent_amount = total_indent,
+        indent_amount = indent_amount,
     }
     return refactor.code.indent(opts)
 end
 
-local function get_new_var_text(extract_node_text, refactor, var_name)
+---@param extract_node_text string
+---@param refactor Refactor
+---@param var_name string
+---@param region RefactorRegion
+---@return string
+local function get_new_var_text(extract_node_text, refactor, var_name, region)
     local statement =
         refactor.config:get_extract_var_statement(refactor.filetype)
     local base_text = refactor.code.constant({
@@ -36,7 +47,7 @@ local function get_new_var_text(extract_node_text, refactor, var_name)
         refactor.ts:is_indent_scope(refactor.scope)
         and refactor.ts:allows_indenting_task()
     then
-        local indent_whitespace = get_func_call_prefix(refactor)
+        local indent_whitespace = get_func_call_prefix(refactor, region)
         local indented_text = {}
         indented_text[1] = indent_whitespace
         indented_text[2] = base_text
@@ -121,10 +132,11 @@ local function extract_var_setup(refactor)
         )
     end
 
+    local region = utils.region_one_line_up_from_node(contained)
     table.insert(refactor.text_edits, {
         add_newline = false,
-        region = utils.region_one_line_up_from_node(contained),
-        text = get_new_var_text(extract_node_text, refactor, var_name),
+        region = region,
+        text = get_new_var_text(extract_node_text, refactor, var_name, region),
     })
 end
 
