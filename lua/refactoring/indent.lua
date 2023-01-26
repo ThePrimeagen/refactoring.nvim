@@ -100,7 +100,7 @@ end
 ---@param line string
 ---@param bufnr number
 ---@return number
-function M.line_indent_amount(line, bufnr)
+M.line_indent_amount = function(line, bufnr)
     local indent_char = M.indent_char(bufnr)
     local whitespace = 0
     for char in line:gmatch(".") do
@@ -158,6 +158,20 @@ end
 ---@return string
 M.indent_char = function(bufnr)
     return vim.bo[bufnr].expandtab and " " or "\t"
+end
+
+---
+---@param lines string[]
+---@param start number
+---@param finish number
+---@param indent_amount number
+---@param bufnr number
+M.lines_remove_indent = function(lines, start, finish, indent_amount, bufnr)
+    local effective_indent = indent_amount * M.buf_indent_width(bufnr)
+
+    for i = start, finish do
+        lines[i] = lines[i]:sub(effective_indent + 1, #lines[i])
+    end
 end
 
 return M

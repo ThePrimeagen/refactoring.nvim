@@ -135,32 +135,26 @@ local function indent_func_code(function_params, has_return_vals, refactor)
 
     -- Removing indent_chars up to initial indent
     -- Not removing indent for return statement like rest of func body
-    local loop_len = #function_params.body + 1
+    local lines_to_remove = #function_params.body
     if has_return_vals then
-        loop_len = loop_len - 1
+        lines_to_remove = lines_to_remove - 1
     end
-    local i = 1
-    while i < loop_len do
-        function_params.body[i] = string.sub(
-            function_params.body[i],
-            refactor.whitespace.func_call
-                    * indent.buf_indent_width(refactor.bufnr)
-                + 1,
-            #function_params.body[i]
-        )
-        i = i + 1
-    end
+    indent.lines_remove_indent(
+        function_params.body,
+        1,
+        lines_to_remove,
+        refactor.whitespace.func_call,
+        refactor.bufnr
+    )
 
     local indent_prefix = get_indent_prefix(refactor)
-    i = 1
-    while i < #function_params.body + 1 do
+    for i = 1, #function_params.body do
         if function_params.body[i] ~= "" then
             local temp = {}
             temp[1] = indent_prefix
             temp[2] = function_params.body[i]
             function_params.body[i] = table.concat(temp, "")
         end
-        i = i + 1
     end
 end
 
