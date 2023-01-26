@@ -1,3 +1,4 @@
+---@param refactor Refactor
 local function format(refactor)
     local format_cmd = refactor.config:get_formatting_for(refactor.filetype).cmd
     if format_cmd then

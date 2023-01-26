@@ -35,7 +35,8 @@ local function refactor_setup(input_bufnr, config)
         ---@field region? RefactorRegion
         ---@field region_node? userdata
         ---@field scope? userdata
-        ---@field whitespace.highlight_start? number
+        ---@field cursor_col_adjustment? number
+        ---@field text_edits? {add_newline: boolean, region: RefactorRegion, text: string} | LspRange
         local refactor = {
             ---@type {cursor: number, highlight_start?: number, highlight_end?: number, func_call?: number}
             whitespace = {

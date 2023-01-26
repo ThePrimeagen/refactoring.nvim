@@ -1,5 +1,6 @@
 local Region = require("refactoring.region")
 
+---@param refactor Refactor
 local function selection_setup(refactor)
     local region = Region:from_current_selection()
     local region_node = region:to_ts_node(refactor.ts:get_root())

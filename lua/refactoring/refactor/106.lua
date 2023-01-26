@@ -22,6 +22,7 @@ local function get_extract_setup_pipeline(bufnr, opts)
         :add_task(selection_setup)
 end
 
+---@param refactor Refactor
 local function get_return_vals(refactor)
     local region_vars = utils.region_intersect(
         refactor.ts:get_local_declarations(refactor.scope),
@@ -87,6 +88,7 @@ local function get_function_param_types(refactor, args)
     return args_types
 end
 
+---@param refactor Refactor
 local function get_func_header_prefix(refactor)
     local ident_width = indent.buf_indent_width(refactor.bufnr)
     local scope_region = Region:from_node(refactor.scope, refactor.bufnr)
@@ -112,6 +114,7 @@ local function get_first_node_row(node)
     return first, start_row
 end
 
+---@param refactor Refactor
 local function get_indent_prefix(refactor)
     local ident_width = indent.buf_indent_width(refactor.bufnr)
     local first_node_row, _ = get_first_node_row(refactor.scope)
@@ -159,6 +162,9 @@ local function indent_func_code(function_params, has_return_vals, refactor)
 end
 
 -- TODO: Change name of this, misleading
+---@param extract_params table
+---@param refactor Refactor
+---@return table
 local function get_func_params(extract_params, refactor)
     local func_params = {
         name = extract_params.function_name,
@@ -186,6 +192,9 @@ local function get_func_params(extract_params, refactor)
     return func_params
 end
 
+---@param refactor Refactor
+---@param extract_params table
+---@return string
 local function get_function_code(refactor, extract_params)
     local function_code
     local func_params = get_func_params(extract_params, refactor)
@@ -262,8 +271,13 @@ local function get_func_call(refactor, extract_params)
         refactor.ts:allows_indenting_task()
         and refactor.ts:is_indent_scope(refactor.scope)
     then
-        local indent_whitespace =
-            indent.indent(refactor.whitespace.func_call, refactor.bufnr)
+        local indent_amount = indent.buf_indent_amount(
+            refactor.region:get_start_point(),
+            refactor,
+            false,
+            refactor.bufnr
+        )
+        local indent_whitespace = indent.indent(indent_amount, refactor.bufnr)
         local func_call_with_indent = {}
         func_call_with_indent[1] = indent_whitespace
         func_call_with_indent[2] = func_call.text
@@ -295,6 +309,7 @@ local function is_comment_or_decorator_node(node)
     return false
 end
 
+---@param refactor Refactor
 local function get_non_comment_region_above_node(refactor)
     local scope = get_first_node_row(refactor.scope)
 
@@ -440,8 +455,11 @@ local function extract_setup(refactor)
     local func_call = get_func_call(refactor, extract_params)
 
     local region_above_scope = get_non_comment_region_above_node(refactor)
-    local extract_function
+    if is_class then
+        region_above_scope = get_non_comment_region_above_node(refactor)
+    end
 
+    local extract_function
     if is_class then
         extract_function = lsp_utils.insert_new_line_text(
             region_above_scope,
@@ -450,7 +468,7 @@ local function extract_setup(refactor)
         )
     else
         extract_function = {
-            region = get_non_comment_region_above_node(refactor),
+            region = region_above_scope,
             text = function_code,
             bufnr = refactor.buffers[2],
         }
@@ -464,16 +482,6 @@ local function extract_setup(refactor)
     }
 end
 
---- @alias code_gen
---- | '"return"'
---- | '"pack"'
---- | '"call_function"'
---- | '"constant"'
---- | '"function"'
---- | '"function_return"'
---- | '"terminate"'
-
---- @type code_gen[]
 local ensure_code_gen_list = {
     "return",
     "pack",
@@ -487,12 +495,6 @@ local ensure_code_gen_list = {
     -- "class_function_return",
 }
 
---- @alias class_code_gen
---- | '"class_function"'
---- | '"class_function_return"'
---- | '"call_class_function"'
-
---- @type class_code_gen[]
 local class_code_gen_list = {
     "class_function",
     "class_function_return",
@@ -518,14 +520,20 @@ end
 M.extract_to_file = function(bufnr, opts)
     bufnr = bufnr or vim.api.nvim_get_current_buf()
     get_extract_setup_pipeline(bufnr, opts)
-        :add_task(function(refactor)
-            return ensure_code_gen_106(refactor)
-        end)
+        :add_task(
+            ---@param refactor Refactor
+            function(refactor)
+                return ensure_code_gen_106(refactor)
+            end
+        )
         :add_task(create_file.from_input)
-        :add_task(function(refactor)
-            extract_setup(refactor)
-            return true, refactor
-        end)
+        :add_task(
+            ---@param refactor Refactor
+            function(refactor)
+                extract_setup(refactor)
+                return true, refactor
+            end
+        )
         :after(post_refactor.no_cursor_post_refactor)
         :run()
 end
@@ -533,21 +541,30 @@ end
 M.extract = function(bufnr, opts)
     bufnr = bufnr or vim.api.nvim_get_current_buf()
     get_extract_setup_pipeline(bufnr, opts)
-        :add_task(function(refactor)
-            return ensure_code_gen_106(refactor)
-        end)
-        :add_task(function(refactor)
-            if refactor.region:is_empty() then
-                error(
-                    "Current selected region is empty, have to provide a non empty region to perform a extract func operation"
-                )
+        :add_task(
+            ---@param refactor Refactor
+            function(refactor)
+                return ensure_code_gen_106(refactor)
             end
-            return true, refactor
-        end)
-        :add_task(function(refactor)
-            extract_setup(refactor)
-            return true, refactor
-        end)
+        )
+        :add_task(
+            ---@param refactor Refactor
+            function(refactor)
+                if refactor.region:is_empty() then
+                    error(
+                        "Current selected region is empty, have to provide a non empty region to perform a extract func operation"
+                    )
+                end
+                return true, refactor
+            end
+        )
+        :add_task(
+            ---@param refactor Refactor
+            function(refactor)
+                extract_setup(refactor)
+                return true, refactor
+            end
+        )
         :after(post_refactor.post_refactor)
         :run()
 end
@@ -587,14 +604,20 @@ M.extract_block_to_file = function(bufnr, opts)
                 return ensure_code_gen_106(refactor)
             end
         )
-        :add_task(function(refactor)
-            return extract_block_setup(refactor)
-        end)
+        :add_task(
+            --- @param refactor Refactor
+            function(refactor)
+                return extract_block_setup(refactor)
+            end
+        )
         :add_task(create_file.from_input)
-        :add_task(function(refactor)
-            extract_setup(refactor)
-            return true, refactor
-        end)
+        :add_task(
+            --- @param refactor Refactor
+            function(refactor)
+                extract_setup(refactor)
+                return true, refactor
+            end
+        )
         :after(post_refactor.no_cursor_post_refactor)
         :run()
 end

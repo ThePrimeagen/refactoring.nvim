@@ -170,7 +170,16 @@ function Region:get_text()
     return text
 end
 
+---@class LspPoint
+---@field line number
+---@field character number
+
+---@class LspRange
+---@field start LspPoint
+---@field end LspPoint
+
 --- Convert a region to an LSP Range
+---@return LspRange
 function Region:to_lsp_range()
     local end_character
     if self.end_col == self.start_col and self.end_row == self.start_row then

@@ -44,91 +44,99 @@ end
 
 local function printDebug(bufnr, config)
     return Pipeline:from_task(refactor_setup(bufnr, config))
-        :add_task(function(refactor)
-            return ensure_code_gen(refactor, { "print_var", "comment" })
-        end)
-        :add_task(function(refactor)
-            local opts = refactor.config:get()
-            local point = Point:from_cursor()
-
-            -- always go below for text
-            opts.below = true
-            point.col = opts.below and 100000 or 1
-
-            if opts.normal == nil then
-                opts.normal = false
+        :add_task(
+            ---@param refactor Refactor
+            function(refactor)
+                return ensure_code_gen(refactor, { "print_var", "comment" })
             end
+        )
+        :add_task(
+            ---@param refactor Refactor
+            function(refactor)
+                local opts = refactor.config:get()
+                local point = Point:from_cursor()
 
-            -- Get variable text
-            local variable = get_variable(opts, point)
-            local indentation
-            if refactor.ts.allows_indenting_task then
-                local indent_amount = indent.buf_indent_amount(
-                    refactor.cursor,
-                    refactor,
-                    opts.below,
-                    refactor.bufnr
-                )
-                indentation = indent.indent(indent_amount, refactor.bufnr)
-            end
+                -- always go below for text
+                opts.below = true
+                point.col = opts.below and 100000 or 1
 
-            local debug_path = debug_utils.get_debug_path(refactor, point)
-            local prefix = string.format("%s %s:", debug_path, variable)
-
-            local default_print_var_statement =
-                refactor.code.default_print_var_statement()
-
-            local custom_print_var_statements =
-                opts.print_var_statements[refactor.filetype]
-
-            local print_var_statement
-
-            if custom_print_var_statements then
-                if #custom_print_var_statements > 1 then
-                    print_var_statement = get_select_input(
-                        custom_print_var_statements,
-                        "print_var: Select a statement to insert:",
-                        function(item)
-                            return item
-                        end
-                    )
-                else
-                    print_var_statement = custom_print_var_statements[1]
+                if opts.normal == nil then
+                    opts.normal = false
                 end
-            else
-                print_var_statement = default_print_var_statement[1]
+
+                -- Get variable text
+                local variable = get_variable(opts, point)
+                local indentation
+                if refactor.ts.allows_indenting_task then
+                    local indent_amount = indent.buf_indent_amount(
+                        refactor.cursor,
+                        refactor,
+                        opts.below,
+                        refactor.bufnr
+                    )
+                    indentation = indent.indent(indent_amount, refactor.bufnr)
+                end
+
+                local debug_path = debug_utils.get_debug_path(refactor, point)
+                local prefix = string.format("%s %s:", debug_path, variable)
+
+                local default_print_var_statement =
+                    refactor.code.default_print_var_statement()
+
+                local custom_print_var_statements =
+                    opts.print_var_statements[refactor.filetype]
+
+                local print_var_statement
+
+                if custom_print_var_statements then
+                    if #custom_print_var_statements > 1 then
+                        print_var_statement = get_select_input(
+                            custom_print_var_statements,
+                            "print_var: Select a statement to insert:",
+                            function(item)
+                                return item
+                            end
+                        )
+                    else
+                        print_var_statement = custom_print_var_statements[1]
+                    end
+                else
+                    print_var_statement = default_print_var_statement[1]
+                end
+
+                local print_var_opts = {
+                    statement = print_var_statement,
+                    prefix = prefix,
+                    var = variable,
+                }
+
+                local print_statement = refactor.code.print_var(print_var_opts)
+
+                local statement
+                if indentation ~= nil then
+                    local temp = {}
+                    temp[1] = indentation
+                    temp[2] = print_statement
+                    statement = table.concat(temp, "")
+                else
+                    statement = print_statement
+                end
+
+                refactor.text_edits = {
+                    lsp_utils.insert_new_line_text(
+                        Region:from_point(point),
+                        statement
+                            .. " "
+                            .. refactor.code.comment(
+                                "__AUTO_GENERATED_PRINT_VAR__"
+                            ),
+                        opts
+                    ),
+                }
+
+                return true, refactor
             end
-
-            local print_var_opts = {
-                statement = print_var_statement,
-                prefix = prefix,
-                var = variable,
-            }
-
-            local print_statement = refactor.code.print_var(print_var_opts)
-
-            local statement
-            if indentation ~= nil then
-                local temp = {}
-                temp[1] = indentation
-                temp[2] = print_statement
-                statement = table.concat(temp, "")
-            else
-                statement = print_statement
-            end
-
-            refactor.text_edits = {
-                lsp_utils.insert_new_line_text(
-                    Region:from_point(point),
-                    statement
-                        .. " "
-                        .. refactor.code.comment("__AUTO_GENERATED_PRINT_VAR__"),
-                    opts
-                ),
-            }
-
-            return true, refactor
-        end)
+        )
         :after(post_refactor.post_refactor)
         :run()
 end

@@ -31,6 +31,7 @@ local function get_rows(cursor)
 end
 
 -- cursor is the original cursor before the refactor
+---@param refactor Refactor
 local function adjust_cursor(refactor)
     local win = refactor.win
     local cursor = refactor.cursor
