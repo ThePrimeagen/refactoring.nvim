@@ -33,7 +33,7 @@ M.buf_indent_amount = function(point, refactor, below, bufnr)
     for _, node in ipairs(function_body) do
         table.insert(nodes, node)
     end
-    -- TODO: if nodes is emtpy, just use the indent of the cursor
+
     if #nodes == 0 then
         return refactor.whitespace.cursor / M.buf_indent_width(refactor.bufnr)
     end
@@ -95,6 +95,77 @@ M.buf_indent_amount = function(point, refactor, below, bufnr)
     end
 
     return indent_scope_whitespace / M.buf_indent_width(refactor.bufnr)
+end
+
+---@param line string
+---@param bufnr number
+---@return number
+function M.line_indent_amount(line, bufnr)
+    local indent_char = M.indent_char(bufnr)
+    local whitespace = 0
+    for char in line:gmatch(".") do
+        if char ~= indent_char then
+            break
+        end
+        whitespace = whitespace + 1
+    end
+    return whitespace
+end
+
+---@param indent_amount number
+---@param bufnr number
+---@return string
+local function space_indent(indent_amount, bufnr)
+    local indent = {}
+
+    local single_indent_table = {}
+    local i = 1
+    -- lua loops are weird, adding 1 for correct value
+    while i < M.buf_indent_width(bufnr) + 1 do
+        single_indent_table[i] = " "
+        i = i + 1
+    end
+    local single_indent = table.concat(single_indent_table, "")
+
+    i = 1
+    -- lua loops are weird, adding 1 for correct value
+    while i < indent_amount + 1 do
+        indent[i] = single_indent
+        i = i + 1
+    end
+
+    return table.concat(indent, "")
+end
+
+---@param indent_amount number
+---@return string
+local function tab_indent(indent_amount)
+    local indent = {}
+    local i = 1
+    -- lua loops are weird, adding 1 for correct value
+    while i < indent_amount + 1 do
+        indent[i] = "\t"
+        i = i + 1
+    end
+    return table.concat(indent, "")
+end
+
+---@param indent_amount number
+---@param bufnr number
+---@return string
+M.indent = function(indent_amount, bufnr)
+    local use_spaces = vim.bo[bufnr].expandtab
+    if use_spaces then
+        return space_indent(indent_amount, bufnr)
+    else
+        return tab_indent(indent_amount)
+    end
+end
+
+---@param bufnr number
+---@return string
+M.indent_char = function(bufnr)
+    return vim.bo[bufnr].expandtab and " " or "\t"
 end
 
 return M

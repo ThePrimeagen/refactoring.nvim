@@ -15,18 +15,13 @@ local M = {}
 ---@param region RefactorRegion
 ---@return string
 local function get_func_call_prefix(refactor, region)
-    local ident_width = indent.buf_indent_width(refactor.bufnr)
     local indent_amount = indent.buf_indent_amount(
         region:get_start_point(),
         refactor,
         false,
         refactor.bufnr
     )
-    local opts = {
-        indent_width = ident_width,
-        indent_amount = indent_amount,
-    }
-    return refactor.code.indent(opts)
+    return indent.indent(indent_amount, refactor.bufnr)
 end
 
 ---@param extract_node_text string

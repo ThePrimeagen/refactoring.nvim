@@ -69,10 +69,7 @@ local function printDebug(bufnr, config)
                     opts.below,
                     refactor.bufnr
                 )
-                indentation = refactor.code.indent({
-                    indent_width = indent.buf_indent_width(refactor.bufnr),
-                    indent_amount = indent_amount,
-                })
+                indentation = indent.indent(indent_amount, refactor.bufnr)
             end
 
             local debug_path = debug_utils.get_debug_path(refactor, point)

@@ -37,7 +37,7 @@ local function refactor_setup(input_bufnr, config)
         ---@field scope? userdata
         ---@field whitespace.highlight_start? number
         local refactor = {
-            ---@type {cursor: number, highlight_start: number, highlight_end: number}
+            ---@type {cursor: number, highlight_start?: number, highlight_end?: number, func_call?: number}
             whitespace = {
                 cursor = vim.fn.indent(cursor.row),
             },

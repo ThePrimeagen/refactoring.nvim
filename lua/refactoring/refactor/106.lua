@@ -92,11 +92,7 @@ local function get_func_header_prefix(refactor)
     local scope_region = Region:from_node(refactor.scope, refactor.bufnr)
     local scope_start_col = scope_region.start_col
     local baseline_indent = math.floor(scope_start_col / ident_width)
-    local opts = {
-        indent_width = ident_width,
-        indent_amount = baseline_indent,
-    }
-    return refactor.code.indent(opts)
+    return indent.indent(baseline_indent, refactor.bufnr)
 end
 
 local function get_first_node_row(node)
@@ -124,13 +120,12 @@ local function get_indent_prefix(refactor)
     local baseline_indent = math.floor(scope_start_col / ident_width)
     local total_indents = baseline_indent + 1
     refactor.cursor_col_adjustment = total_indents * ident_width
-    local opts = {
-        indent_width = ident_width,
-        indent_amount = total_indents,
-    }
-    return refactor.code.indent(opts)
+    return indent.indent(total_indents, refactor.bufnr)
 end
 
+---@param function_params table
+---@param has_return_vals boolean
+---@param refactor Refactor
 local function indent_func_code(function_params, has_return_vals, refactor)
     if refactor.ts:is_indent_scope(refactor.scope) then
         -- Indent func header
@@ -148,7 +143,7 @@ local function indent_func_code(function_params, has_return_vals, refactor)
     while i < loop_len do
         function_params.body[i] = string.sub(
             function_params.body[i],
-            refactor.indent_chars + 1,
+            refactor.whitespace.func_call + 1,
             #function_params.body[i]
         )
         i = i + 1
@@ -214,11 +209,12 @@ local function get_function_code(refactor, extract_params)
     return function_code
 end
 
+--- @param refactor Refactor
 local function get_indent_func_call(refactor)
     local temp = {}
     local i = 0
-    while i < refactor.indent_chars + 1 do
-        temp[i] = refactor.code.indent_char()
+    while i < refactor.whitespace.func_call + 1 do
+        temp[i] = indent.indent_char(refactor.bufnr)
         i = i + 1
     end
     return table.concat(temp, "")
@@ -430,7 +426,8 @@ local function extract_setup(refactor)
     local first_line = function_body[1]
 
     if refactor.ts:allows_indenting_task() then
-        refactor.indent_chars = refactor.code.indent_char_length(first_line)
+        refactor.whitespace.func_call =
+            indent.line_indent_amount(first_line, refactor.bufnr)
     end
 
     local return_vals = get_return_vals(refactor)
