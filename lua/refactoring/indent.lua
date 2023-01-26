@@ -109,7 +109,7 @@ function M.line_indent_amount(line, bufnr)
         end
         whitespace = whitespace + 1
     end
-    return whitespace
+    return whitespace / M.buf_indent_width(bufnr)
 end
 
 ---@param indent_amount number
@@ -119,19 +119,13 @@ local function space_indent(indent_amount, bufnr)
     local indent = {}
 
     local single_indent_table = {}
-    local i = 1
-    -- lua loops are weird, adding 1 for correct value
-    while i < M.buf_indent_width(bufnr) + 1 do
+    for i = 1, M.buf_indent_width(bufnr) do
         single_indent_table[i] = " "
-        i = i + 1
     end
     local single_indent = table.concat(single_indent_table, "")
 
-    i = 1
-    -- lua loops are weird, adding 1 for correct value
-    while i < indent_amount + 1 do
+    for i = 1, indent_amount do
         indent[i] = single_indent
-        i = i + 1
     end
 
     return table.concat(indent, "")
@@ -141,11 +135,8 @@ end
 ---@return string
 local function tab_indent(indent_amount)
     local indent = {}
-    local i = 1
-    -- lua loops are weird, adding 1 for correct value
-    while i < indent_amount + 1 do
+    for i = 1, indent_amount do
         indent[i] = "\t"
-        i = i + 1
     end
     return table.concat(indent, "")
 end
@@ -155,6 +146,7 @@ end
 ---@return string
 M.indent = function(indent_amount, bufnr)
     local use_spaces = vim.bo[bufnr].expandtab
+
     if use_spaces then
         return space_indent(indent_amount, bufnr)
     else

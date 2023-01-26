@@ -1,7 +1,6 @@
 -- c mostly == cpp
 local code_utils = require("refactoring.code_generation.utils")
 local cpp = require("refactoring.code_generation.langs.cpp")
-local code_gen_indent = require("refactoring.code_generation.indent")
 
 local string_pattern = "%s"
 
@@ -67,8 +66,6 @@ local function c_constant(opts)
     return constant_string_pattern
 end
 
-local indent_char = " "
-
 local c = {
     comment = cpp.comment,
     default_printf_statement = cpp.default_printf_statement,
@@ -97,15 +94,6 @@ local c = {
     call_function = cpp.call_function,
     pack = cpp.pack,
     terminate = cpp.terminate,
-    indent_char_length = function(first_line)
-        return code_gen_indent.indent_char_length(first_line, indent_char)
-    end,
-    indent_char = function()
-        return indent_char
-    end,
-    indent = function(opts)
-        return code_gen_indent.indent(opts, indent_char)
-    end,
 }
 
 return c

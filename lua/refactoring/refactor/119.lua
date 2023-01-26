@@ -139,9 +139,6 @@ end
 local function ensure_code_gen_119(refactor)
     local list = { "constant" }
 
-    if refactor.ts:allows_indenting_task() then
-        table.insert(list, "indent")
-    end
     return ensure_code_gen(refactor, list)
 end
 

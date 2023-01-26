@@ -1,5 +1,4 @@
 local code_utils = require("refactoring.code_generation.utils")
-local code_gen_indent = require("refactoring.code_generation.indent")
 
 local function lua_function(opts)
     return string.format(
@@ -40,8 +39,6 @@ local function lua_constant(opts)
     return result
 end
 
-local indent_char = " "
-
 local lua = {
     comment = function(statement)
         return string.format("-- %s", statement)
@@ -79,15 +76,6 @@ local lua = {
     end,
     pack = function(opts)
         return code_utils.returnify(opts, "%s")
-    end,
-    indent_char_length = function(first_line)
-        return code_gen_indent.indent_char_length(first_line, indent_char)
-    end,
-    indent_char = function()
-        return indent_char
-    end,
-    indent = function(opts)
-        return code_gen_indent.indent(opts, indent_char)
     end,
 }
 return lua

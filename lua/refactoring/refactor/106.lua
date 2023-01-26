@@ -143,7 +143,9 @@ local function indent_func_code(function_params, has_return_vals, refactor)
     while i < loop_len do
         function_params.body[i] = string.sub(
             function_params.body[i],
-            refactor.whitespace.func_call + 1,
+            refactor.whitespace.func_call
+                    * indent.buf_indent_width(refactor.bufnr)
+                + 1,
             #function_params.body[i]
         )
         i = i + 1
@@ -210,16 +212,7 @@ local function get_function_code(refactor, extract_params)
 end
 
 --- @param refactor Refactor
-local function get_indent_func_call(refactor)
-    local temp = {}
-    local i = 0
-    while i < refactor.whitespace.func_call + 1 do
-        temp[i] = indent.indent_char(refactor.bufnr)
-        i = i + 1
-    end
-    return table.concat(temp, "")
-end
-
+--- @param extract_params table
 local function get_func_call(refactor, extract_params)
     local func_call
     if extract_params.is_class then
@@ -275,7 +268,8 @@ local function get_func_call(refactor, extract_params)
         refactor.ts:allows_indenting_task()
         and refactor.ts:is_indent_scope(refactor.scope)
     then
-        local indent_whitespace = get_indent_func_call(refactor)
+        local indent_whitespace =
+            indent.indent(refactor.whitespace.func_call, refactor.bufnr)
         local func_call_with_indent = {}
         func_call_with_indent[1] = indent_whitespace
         func_call_with_indent[2] = func_call.text
@@ -511,18 +505,6 @@ local class_code_gen_list = {
     "call_class_function",
 }
 
---- @alias indent_code_gen
---- | '"indent_char_length"'
---- | '"indent"'
---- | '"indent_char"'
-
---- @type indent_code_gen[]
-local indent_code_gen_list = {
-    "indent_char_length",
-    "indent",
-    "indent_char",
-}
-
 --- @param refactor Refactor
 local function ensure_code_gen_106(refactor)
     local list = {}
@@ -536,11 +518,6 @@ local function ensure_code_gen_106(refactor)
         end
     end
 
-    if refactor.ts:allows_indenting_task() then
-        for _, func in ipairs(indent_code_gen_list) do
-            table.insert(list, func)
-        end
-    end
     return ensure_code_gen(refactor, list)
 end
 
