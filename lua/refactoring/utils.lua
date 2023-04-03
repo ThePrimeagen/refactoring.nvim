@@ -80,7 +80,7 @@ function M.get_node_text(node, out)
         or node:type() == "interpreted_string_literal"
     then
         local cur_bufnr = vim.api.nvim_get_current_buf()
-        local text = vim.treesitter.query.get_node_text(node, cur_bufnr)
+        local text = vim.treesitter.get_node_text(node, cur_bufnr)
         table.insert(out, text)
         return out
     end
@@ -170,7 +170,7 @@ function M.node_text_to_set(...)
         local nodes = select(i, ...)
         local cur_bufnr = vim.api.nvim_get_current_buf()
         for _, node in pairs(nodes) do
-            local text = vim.treesitter.query.get_node_text(node, cur_bufnr)
+            local text = vim.treesitter.get_node_text(node, cur_bufnr)
             if text ~= nil then
                 out[text] = true
             end

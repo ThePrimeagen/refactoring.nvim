@@ -28,7 +28,7 @@ function Query.get_root(bufnr, filetype)
 end
 
 function Query.from_query_name(bufnr, filetype, query_name)
-    local query = vim.treesitter.get_query(filetype, query_name)
+    local query = vim.treesitter.query.get(filetype, query_name)
     return Query:new(bufnr, filetype, query)
 end
 
@@ -66,7 +66,7 @@ function Query.find_occurrences(scope, sexpr, bufnr)
         sexpr = sexpr .. " @tmp_capture"
     end
 
-    local ok, sexpr_query = pcall(vim.treesitter.parse_query, filetype, sexpr)
+    local ok, sexpr_query = pcall(vim.treesitter.query.parse, filetype, sexpr)
     if not ok then
         error(
             string.format("Invalid query: '%s'\n error: %s", sexpr, sexpr_query)

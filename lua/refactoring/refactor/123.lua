@@ -60,7 +60,7 @@ local function get_node_to_inline(identifiers, bufnr)
             identifiers,
             "123: Select an identifier to inline:",
             function(node)
-                return vim.treesitter.query.get_node_text(node, bufnr)
+                return vim.treesitter.get_node_text(node, bufnr)
             end
         )
     end
@@ -80,11 +80,11 @@ local function construct_new_declaration(
         if identifier ~= identifer_to_exclude then
             table.insert(
                 new_identifiers,
-                vim.treesitter.query.get_node_text(identifier, bufnr)
+                vim.treesitter.get_node_text(identifier, bufnr)
             )
             table.insert(
                 new_values,
-                vim.treesitter.query.get_node_text(values[idx], bufnr)
+                vim.treesitter.get_node_text(values[idx], bufnr)
             )
         end
     end
@@ -165,7 +165,7 @@ local function inline_var_setup(refactor, bufnr)
     end
 
     local value_text =
-        vim.treesitter.query.get_node_text(value_node_to_inline, bufnr)
+        vim.treesitter.get_node_text(value_node_to_inline, bufnr)
 
     for _, ref in pairs(references) do
         -- TODO: In my mind, if nothing is left on the line when you remove, it should get deleted.

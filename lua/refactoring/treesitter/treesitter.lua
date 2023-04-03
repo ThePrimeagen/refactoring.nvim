@@ -165,7 +165,7 @@ function TreeSitter:is_class_function(scope)
 end
 
 function TreeSitter:get_references(scope)
-    local query = vim.treesitter.get_query(self.filetype, "locals")
+    local query = vim.treesitter.query.get(self.filetype, "locals")
     local out = {}
     for id, node, _ in query:iter_captures(scope, self.bufnr, 0, -1) do
         local n_capture = query.captures[id]

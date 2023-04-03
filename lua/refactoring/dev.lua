@@ -14,7 +14,7 @@ function M.create_query_from_buffer()
     return Query:new(
         bufnr,
         filetype,
-        vim.treesitter.get_query(filetype, "refactoring")
+        vim.treesitter.query.get(filetype, "refactoring")
     )
 end
 
@@ -45,7 +45,7 @@ function M.debug_current_selection()
     print("Region", vim.inspect(region))
     print(
         "Selection:Scope",
-        vim.inspect(vim.treesitter.query.get_node_text(scope, bufnr))
+        vim.inspect(vim.treesitter.get_node_text(scope, bufnr))
     )
 end
 
@@ -65,7 +65,7 @@ function M.print_local_def()
     print(vim.inspect(def))
     print(def[1]:type())
     print(
-        vim.treesitter.query.get_node_text(def, vim.api.nvim_get_current_buf())
+        vim.treesitter.get_node_text(def, vim.api.nvim_get_current_buf())
     )
 end
 
@@ -77,7 +77,7 @@ end
 function M.print_scope(scope)
     print(
         vim.inspect(
-            vim.treesitter.query.get_node_text(
+            vim.treesitter.get_node_text(
                 scope,
                 vim.api.nvim_get_current_buf()
             )
