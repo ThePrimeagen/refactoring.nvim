@@ -164,8 +164,7 @@ local function inline_var_setup(refactor, bufnr)
         table.insert(text_edits, delete_text)
     end
 
-    local value_text =
-        vim.treesitter.get_node_text(value_node_to_inline, bufnr)
+    local value_text = vim.treesitter.get_node_text(value_node_to_inline, bufnr)
 
     for _, ref in pairs(references) do
         -- TODO: In my mind, if nothing is left on the line when you remove, it should get deleted.

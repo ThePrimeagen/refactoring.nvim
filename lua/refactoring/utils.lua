@@ -1,4 +1,3 @@
-local ts_utils = require("nvim-treesitter.ts_utils")
 local Region = require("refactoring.region")
 local async = require("plenary.async")
 
@@ -124,8 +123,8 @@ function M.node_contains(a, b)
         end_col = end_col - 1
     end
 
-    return ts_utils.is_in_node_range(a, start_row, start_col)
-        and ts_utils.is_in_node_range(a, end_row, end_col)
+    return vim.treesitter.is_in_node_range(a, start_row, start_col)
+        and vim.treesitter.is_in_node_range(a, end_row, end_col)
 end
 
 -- TODO: This likely doesn't work with multistatement line inserts
