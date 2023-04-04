@@ -39,7 +39,7 @@ local FieldNode = function(...)
                     curr = curr[1]
                 end
 
-                return vim.treesitter.query.get_node_text(curr, 0) or fallback
+                return vim.treesitter.get_node_text(curr, 0) or fallback
             end,
         })
     end
@@ -58,7 +58,7 @@ end
 local InlineNode = function(sexpr)
     return function(scope, bufnr, filetype)
         local ok, result_object =
-            pcall(vim.treesitter.parse_query, filetype, sexpr)
+            pcall(vim.treesitter.query.parse, filetype, sexpr)
         if not ok then
             error(
                 string.format(
@@ -85,7 +85,7 @@ local QueryNode = function(sexpr)
         local first = occurrences[1]
 
         if first then
-            local res = vim.treesitter.query.get_node_text(
+            local res = vim.treesitter.get_node_text(
                 first,
                 vim.api.nvim_get_current_buf()
             )

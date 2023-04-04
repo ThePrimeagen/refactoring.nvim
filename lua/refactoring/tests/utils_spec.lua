@@ -43,7 +43,7 @@ describe("Utils", function()
         local query = Query:new(
             bufnr,
             filetype,
-            vim.treesitter.get_query(filetype, "locals")
+            vim.treesitter.query.get(filetype, "locals")
         )
         local root = Query.get_root(bufnr, filetype)
 
@@ -56,10 +56,10 @@ describe("Utils", function()
         local intersections = utils.region_intersect(captures, region)
 
         assert.are.same(#intersections, 1)
-        assert.are.same(vim.treesitter.query.get_node_text(intersections[1], bufnr), "bar")
+        assert.are.same(vim.treesitter.get_node_text(intersections[1], bufnr), "bar")
         local complements = utils.region_complement(captures, region)
 
         assert.are.same(#complements, 1)
-        assert.are.same(vim.treesitter.query.get_node_text(complements[1], bufnr), "foo")
+        assert.are.same(vim.treesitter.get_node_text(complements[1], bufnr), "foo")
     end)
 end)
