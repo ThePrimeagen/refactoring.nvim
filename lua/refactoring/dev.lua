@@ -64,9 +64,7 @@ function M.print_local_def()
     print(def)
     print(vim.inspect(def))
     print(def[1]:type())
-    print(
-        vim.treesitter.get_node_text(def, vim.api.nvim_get_current_buf())
-    )
+    print(vim.treesitter.get_node_text(def, vim.api.nvim_get_current_buf()))
 end
 
 function M.get_current_node()
@@ -77,7 +75,7 @@ end
 function M.print_scope(scope)
     print(
         vim.inspect(
-            vim.treesitter.get_node_text(
+            vim.treesitter.query.get_node_text(
                 scope,
                 vim.api.nvim_get_current_buf()
             )

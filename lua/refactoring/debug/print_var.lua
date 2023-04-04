@@ -25,7 +25,7 @@ local function get_variable(opts, point)
         })
         for _, tree in ipairs(lang_tree:trees()) do
             local root = tree:root()
-            if root and ts_utils.is_in_node_range(root, row, col) then
+            if root and vim.treesitter.is_in_node_range(root, row, col) then
                 root:named_descendant_for_range(row, col, row, col)
             end
         end
