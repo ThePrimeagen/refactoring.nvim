@@ -31,14 +31,14 @@ local function get_rows(cursor)
 end
 
 -- cursor is the original cursor before the refactor
+---@param refactor Refactor
 local function adjust_cursor(refactor)
     local win = refactor.win
     local cursor = refactor.cursor
     local add_rows = get_rows(cursor)
-    local r, _ = cursor:to_vim_win()
-    local result_row = r + add_rows
+    local result_row = cursor.row + add_rows
 
-    local _, col = cursor:to_vim()
+    local col = cursor.col
     if refactor.cursor_col_adjustment ~= nil then
         col = col + refactor.cursor_col_adjustment
     end

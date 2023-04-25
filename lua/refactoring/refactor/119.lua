@@ -7,23 +7,29 @@ local selection_setup = require("refactoring.tasks.selection_setup")
 local refactor_setup = require("refactoring.tasks.refactor_setup")
 local post_refactor = require("refactoring.tasks.post_refactor")
 local ensure_code_gen = require("refactoring.tasks.ensure_code_gen")
+local indent = require("refactoring.indent")
 
 local M = {}
 
-local function get_func_call_prefix(refactor)
-    local bufnr_shiftwidth = vim.bo.shiftwidth
-    local scope_region = Region:from_node(refactor.scope, refactor.bufnr)
-    local _, scope_start_col, _, _ = scope_region:to_vim()
-    local baseline_indent = math.floor(scope_start_col / bufnr_shiftwidth)
-    local total_indent = baseline_indent + 1
-    local opts = {
-        indent_width = bufnr_shiftwidth,
-        indent_amount = total_indent,
-    }
-    return refactor.code.indent(opts)
+---@param refactor Refactor
+---@param region RefactorRegion
+---@return string
+local function get_func_call_prefix(refactor, region)
+    local indent_amount = indent.buf_indent_amount(
+        region:get_start_point(),
+        refactor,
+        false,
+        refactor.bufnr
+    )
+    return indent.indent(indent_amount, refactor.bufnr)
 end
 
-local function get_new_var_text(extract_node_text, refactor, var_name)
+---@param extract_node_text string
+---@param refactor Refactor
+---@param var_name string
+---@param region RefactorRegion
+---@return string
+local function get_new_var_text(extract_node_text, refactor, var_name, region)
     local statement =
         refactor.config:get_extract_var_statement(refactor.filetype)
     local base_text = refactor.code.constant({
@@ -36,7 +42,7 @@ local function get_new_var_text(extract_node_text, refactor, var_name)
         refactor.ts:is_indent_scope(refactor.scope)
         and refactor.ts:allows_indenting_task()
     then
-        local indent_whitespace = get_func_call_prefix(refactor)
+        local indent_whitespace = get_func_call_prefix(refactor, region)
         local indented_text = {}
         indented_text[1] = indent_whitespace
         indented_text[2] = base_text
@@ -46,6 +52,7 @@ local function get_new_var_text(extract_node_text, refactor, var_name)
     return base_text
 end
 
+---@param refactor Refactor
 local function extract_var_setup(refactor)
     local extract_node = refactor.region_node
 
@@ -120,32 +127,37 @@ local function extract_var_setup(refactor)
         )
     end
 
+    local region = utils.region_one_line_up_from_node(contained)
     table.insert(refactor.text_edits, {
         add_newline = false,
-        region = utils.region_one_line_up_from_node(contained),
-        text = get_new_var_text(extract_node_text, refactor, var_name),
+        region = region,
+        text = get_new_var_text(extract_node_text, refactor, var_name, region),
     })
 end
 
+---@param refactor Refactor
 local function ensure_code_gen_119(refactor)
     local list = { "constant" }
 
-    if refactor.ts:allows_indenting_task() then
-        table.insert(list, "indent")
-    end
     return ensure_code_gen(refactor, list)
 end
 
 function M.extract_var(bufnr, config)
     Pipeline:from_task(refactor_setup(bufnr, config))
-        :add_task(function(refactor)
-            return ensure_code_gen_119(refactor)
-        end)
+        :add_task(
+            ---@param refactor Refactor
+            function(refactor)
+                return ensure_code_gen_119(refactor)
+            end
+        )
         :add_task(selection_setup)
-        :add_task(function(refactor)
-            extract_var_setup(refactor)
-            return true, refactor
-        end)
+        :add_task(
+            ---@param refactor Refactor
+            function(refactor)
+                extract_var_setup(refactor)
+                return true, refactor
+            end
+        )
         :after(post_refactor.post_refactor)
         :run()
 end

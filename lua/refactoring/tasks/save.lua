@@ -1,5 +1,6 @@
 -- TODO: Likely unnecessary, but it could be nice if we needed to add any logic
 -- to the saving process
+---@param refactor Refactor
 local function save(refactor)
     for _, bufnr in pairs(refactor.buffers) do
         -- TODO: Window?

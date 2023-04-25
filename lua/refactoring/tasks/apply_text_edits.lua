@@ -8,6 +8,7 @@ local function get_text(edit)
     return edit.text
 end
 
+---@param refactor Refactor
 local function refactor_apply_text_edits(refactor)
     if not refactor.text_edits then
         return true, refactor

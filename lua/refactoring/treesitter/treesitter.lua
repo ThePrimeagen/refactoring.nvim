@@ -6,6 +6,7 @@ local Region = require("refactoring.region")
 ---@class TreeSitter
 --- The following fields act similar to a cursor
 ---@field scope_names table: nodes that are scopes in current buffer
+---@field block_scope table: scopes that are blocks in current buffer
 ---@field valid_class_nodes table: nodes that mean scope is a class function
 ---@field class_names table: nodes to get class names
 ---@field class_type table: nodes to get types for classes

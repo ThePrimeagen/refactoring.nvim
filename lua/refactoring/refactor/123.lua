@@ -92,6 +92,8 @@ local function construct_new_declaration(
     return new_identifiers, new_values
 end
 
+---@param refactor Refactor
+---@param bufnr number
 local function inline_var_setup(refactor, bufnr)
     -- figure out if we're dealing with a visual selection or a cursor node
     local declarator_node, node_on_cursor =
@@ -186,12 +188,17 @@ local function inline_var_setup(refactor, bufnr)
     refactor.text_edits = text_edits
 end
 
+---@param bufnr number
+---@param opts table
 function M.inline_var(bufnr, opts)
     get_inline_setup_pipeline(bufnr, opts)
-        :add_task(function(refactor)
-            inline_var_setup(refactor, bufnr)
-            return true, refactor
-        end)
+        :add_task(
+            --- @param refactor Refactor
+            function(refactor)
+                inline_var_setup(refactor, bufnr)
+                return true, refactor
+            end
+        )
         :after(post_refactor.post_refactor)
         :run()
 end

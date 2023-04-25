@@ -1,5 +1,4 @@
 local code_utils = require("refactoring.code_generation.utils")
-local code_gen_indent = require("refactoring.code_generation.indent")
 
 local function ruby_function(opts)
     local singleton = opts.scope_type == "singleton_method"
@@ -47,8 +46,6 @@ local function ruby_constant(opts)
     return constant_string_pattern
 end
 
-local indent_char = " "
-
 local ruby = {
     comment = function(statement)
         return string.format("# %s", statement)
@@ -76,15 +73,6 @@ local ruby = {
     -- @param names string|table
     pack = function(opts)
         return code_utils.returnify(opts, "%s")
-    end,
-    indent_char_length = function(first_line)
-        return code_gen_indent.indent_char_length(first_line, indent_char)
-    end,
-    indent_char = function()
-        return indent_char
-    end,
-    indent = function(opts)
-        return code_gen_indent.indent(opts, indent_char)
     end,
     print = function(opts)
         return string.format(opts.statement, opts.content)

@@ -1,5 +1,4 @@
 local code_utils = require("refactoring.code_generation.utils")
-local code_gen_indent = require("refactoring.code_generation.indent")
 
 local function build_args(args, arg_types)
     local final_args = {}
@@ -80,20 +79,9 @@ local function python_constant(opts)
     return constant_string_pattern
 end
 
-local indent_char = " "
-
 local python = {
     constant = function(opts)
         return python_constant(opts)
-    end,
-    indent_char_length = function(first_line)
-        return code_gen_indent.indent_char_length(first_line, indent_char)
-    end,
-    indent_char = function()
-        return indent_char
-    end,
-    indent = function(opts)
-        return code_gen_indent.indent(opts, indent_char)
     end,
     ["return"] = function(code)
         return string.format("return %s", code_utils.stringify_code(code))

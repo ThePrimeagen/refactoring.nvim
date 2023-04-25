@@ -1,5 +1,4 @@
 local code_utils = require("refactoring.code_generation.utils")
-local code_gen_indent = require("refactoring.code_generation.indent")
 
 local string_pattern = "%s"
 
@@ -65,8 +64,6 @@ local function java_constant(opts)
     return constant_string_pattern
 end
 
-local indent_char = " "
-
 local java = {
     comment = function(statement)
         return string.format("// %s", statement)
@@ -124,15 +121,6 @@ public static %s %s(%s) {
     end,
     terminate = function(code)
         return code .. ";"
-    end,
-    indent_char_length = function(first_line)
-        return code_gen_indent.indent_char_length(first_line, indent_char)
-    end,
-    indent_char = function()
-        return indent_char
-    end,
-    indent = function(opts)
-        return code_gen_indent.indent(opts, indent_char)
     end,
 }
 
