@@ -18,7 +18,7 @@ export const Button: React.FC = () => {
     const foo = () => 42;
     return (
         <button>
-            < lago answer={answer} count={count} foo={foo}/>;
+            < foo_bar answer={answer} count={count} foo={foo}/>;
         </button>
     );
 };

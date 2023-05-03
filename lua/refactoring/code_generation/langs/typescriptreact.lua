@@ -58,8 +58,6 @@ local function tsx_call_function(opts)
     end
 end
 
-local string_pattern = "{%s}"
-
 ---@type code_generation
 local tsx = {
     default_printf_statement = ts.default_printf_statement,

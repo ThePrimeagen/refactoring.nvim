@@ -95,11 +95,13 @@ end
 local function get_func_header_prefix(refactor)
     local indent_width = indent.buf_indent_width(refactor.bufnr)
     local scope_region = Region:from_node(refactor.scope, refactor.bufnr)
-    local scope_end_col = scope_region.end_col
-    local baseline_indent = math.floor(scope_end_col / indent_width)
+    local min_indent = math.min(scope_region.end_col, scope_region.start_col)
+    local baseline_indent = math.floor(min_indent / indent_width)
     return indent.indent(baseline_indent, refactor.bufnr)
 end
 
+---@param node TSNode
+---@return TSNode first_node_row, integer start_row
 local function get_first_node_row(node)
     local start_row, _, _, _ = node:range()
     local first = node
@@ -308,20 +310,20 @@ local function get_func_call(refactor, extract_params)
     return func_call
 end
 
-local function is_comment_or_special(node)
+---@param node TSNode|nil
+---@return boolean
+local function is_comment_or_decorator(node)
     if node == nil then
         return false
     end
 
-    local comment_and_special_node_types = {
+    local comment_and_decorator_node_types = {
         "comment",
         "block_comment",
         "decorator",
-        "type_annotation",
-        "identifier",
     }
 
-    for _, node_type in ipairs(comment_and_special_node_types) do
+    for _, node_type in ipairs(comment_and_decorator_node_types) do
         if node_type == node:type() then
             return true
         end
@@ -332,22 +334,19 @@ end
 
 ---@param refactor Refactor
 local function get_non_comment_region_above_node(refactor)
-    local scope = refactor.scope
-    local scope_row = scope:range()
-
-    local prev_sibling = scope:prev_named_sibling()
-    if is_comment_or_special(prev_sibling) then
-        prev_sibling = get_first_node_row(refactor.scope)
+    local row_prev_sibling =
+        get_first_node_row(refactor.scope):prev_named_sibling()
+    if is_comment_or_decorator(row_prev_sibling) then
         local start_row
         while true do
             -- Only want first value
-            start_row = prev_sibling:range()
-            local temp = prev_sibling:prev_sibling()
-            if is_comment_or_special(temp) then
+            start_row = row_prev_sibling:range()
+            local temp = row_prev_sibling:prev_sibling()
+            if is_comment_or_decorator(temp) then
                 -- Only want first value
                 local temp_row = temp:range()
                 if start_row - temp_row == 1 then
-                    prev_sibling = temp
+                    row_prev_sibling = temp
                 else
                     break
                 end
@@ -356,13 +355,14 @@ local function get_non_comment_region_above_node(refactor)
             end
         end
 
-        if start_row >= 0 then
-            return utils.region_above_node(prev_sibling)
+        if start_row > 0 then
+            return utils.region_above_node(row_prev_sibling)
         else
             return utils.region_above_node(refactor.scope)
         end
     else
-        return utils.region_above_node(refactor.scope)
+        local aux = utils.region_above_node(refactor.scope)
+        return aux
     end
 end
 

@@ -190,10 +190,12 @@ function M.table_key_intersect(a, b)
     return out
 end
 
+---@param node TSNode
 function M.region_above_node(node)
     local scope_region = Region:from_node(node)
     local lsp_range = scope_region:to_lsp_range()
     lsp_range.start.line = math.max(lsp_range.start.line - 1, 0)
+    lsp_range.start.character = 0
     lsp_range["end"] = lsp_range.start
     return Region:from_lsp_range(lsp_range)
 end
