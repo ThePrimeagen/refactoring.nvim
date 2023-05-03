@@ -16,7 +16,6 @@ end
 
 ---@param opts code_generation_function
 local function tsx_function(opts)
-    vim.print(opts.region_type)
     if opts.region_type == "jsx_element" then
         local args
         if opts.args_types ~= nil then

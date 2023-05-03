@@ -346,11 +346,6 @@ local function get_non_comment_region_above_node(refactor)
             if is_comment_or_special(temp) then
                 -- Only want first value
                 local temp_row = temp:range()
-                vim.print({
-                    start_row = start_row,
-                    temp_row = temp_row,
-                    scope_row = scope_row,
-                })
                 if start_row - temp_row == 1 then
                     prev_sibling = temp
                 else
@@ -496,7 +491,6 @@ local function extract_setup(refactor)
         region_above_scope = get_non_comment_region_above_node(refactor)
     end
 
-    vim.print(refactor.buffers)
     local extract_function
     if is_class then
         extract_function = lsp_utils.insert_new_line_text(

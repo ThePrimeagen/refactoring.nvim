@@ -212,6 +212,9 @@ function TreeSitter:get_class_type(scope)
     return nil
 end
 
+---@param node TSNode
+---@param container_map table
+---@return TSNode|nil
 local function containing_node_by_type(node, container_map)
     if not node then
         return nil
@@ -255,7 +258,7 @@ function TreeSitter:get_local_parameter_types(scope)
     -- Only if we find something, else empty
     if #parameter_list_nodes > 0 then
         for _, node in pairs(parameter_list_nodes) do
-            local region = Region:from_node(node)
+            local region = Region:from_node(node, self.bufnr)
             local parameter_list = region:get_text()
             local parameter_split = utils.split_string(parameter_list[1], " ")
             parameter_types[parameter_split[1]] = parameter_split[2]

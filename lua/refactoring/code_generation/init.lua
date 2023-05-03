@@ -11,7 +11,7 @@ local php = require("refactoring.code_generation.langs.php")
 local java = require("refactoring.code_generation.langs.java")
 local ruby = require("refactoring.code_generation.langs.ruby")
 
----@type {[string]: code_generation} | {"new_line": fun(): string}
+---@type {[string]: code_generation} | {new_line: fun(): string}
 local M = {
     javascript = javascript,
     typescript = typescript,
