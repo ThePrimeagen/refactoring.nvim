@@ -4,6 +4,9 @@ function M.stringify_code(code)
     return type(code) == "table" and table.concat(code, "\n") or code
 end
 
+---@param args string|string[]
+---@param string_pattern string
+---@return string
 function M.returnify(args, string_pattern)
     if type(args) == "string" then
         return args

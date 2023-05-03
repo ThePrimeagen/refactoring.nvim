@@ -4,11 +4,11 @@ local Region = require("refactoring.region")
 local Query = require("refactoring.query")
 
 ---@class LspDefinition
----@field name_node ts_node
----@field value_node ts_node
----@field declarator_node ts_node
----@field definition lsp_range
----@field definition_region Region
+---@field name_node TSNode
+---@field value_node TSNode
+---@field declarator_node TSNode
+---@field definition LspRange
+---@field definition_region RefactorRegion
 local LspDefinition = {}
 LspDefinition.__index = LspDefinition
 

@@ -6,6 +6,7 @@ local default_formatting = {
     -- I realize this is almost never a good idea.
     ts = {},
     js = {},
+    typescriptreact = {},
 
     lua = {},
     go = {},
@@ -54,8 +55,48 @@ local default_printf_statements = {}
 local default_print_var_statements = {}
 local default_extract_var_statements = {}
 
+---@class code_generation_constant
+---@field multiple boolean?
+---@field identifiers string[]?
+---@field values string[]?
+---@field statement string|nil|boolean
+---@field name string|nil|string[]
+---@field value string?
+
+---@alias code_generation_call_function func_params
+
+---@alias code_generation_function func_params
+
+---@class code_generation
+---@field default_printf_statement function?
+---@field print function?
+---@field default_print_var_statement function?
+---@field print_var function?
+---@field comment function?
+---@field constant fun(opts: code_generation_constant): string
+---@field pack fun(names: string|table):string This is for returning multiple arguments from a function
+---@field unpack fun(names: string|table):string This is for consuming one or more arguments from a function call.
+---@field return function?
+---@field function fun(opts: code_generation_function):string
+---@field function_return function?
+---@field call_function fun(opts: code_generation_call_function):string
+---@field terminate function?
+---@field class_function fun(opts: code_generation_call_function):string
+---@field class_function_return function?
+---@field call_class_function function?
+
+---@class c
+---@field _automation table
+---@field formatting table
+---@field code_generation table
+---@field prompt_func_return_type table
+---@field prompt_func_param_type table
+---@field printf_statements table
+---@field print_var_statements table
+---@field extract_var_statements table
+
 ---@class Config
----@field config table
+---@field config c
 local Config = {}
 Config.__index = Config
 
@@ -191,6 +232,9 @@ function Config:set_test_bufnr(bufnr)
     self.config._automation.bufnr = bufnr
 end
 
+--- Get the code generation for the current filetype
+---@param filetype string
+---@return code_generation
 function Config:get_code_generation_for(filetype)
     filetype = filetype or vim.bo[0].ft
     return self.config.code_generation[filetype]

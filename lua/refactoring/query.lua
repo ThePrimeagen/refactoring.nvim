@@ -18,6 +18,10 @@ Query.query_type = {
 }
 
 function Query.get_root(bufnr, filetype)
+    -- TODO (TheLeoP): typescriptreact parser name is tsx
+    if filetype == "typescriptreact" then
+        filetype = "tsx"
+    end
     local parser = parsers.get_parser(bufnr or 0, filetype)
     if not parser then
         error(
@@ -59,8 +63,16 @@ function Query:pluck_by_capture(scope, captures)
     return out
 end
 
+---@param scope TSNode
+---@param sexpr string
+---@param bufnr integer
+---@return TSNode[]
 function Query.find_occurrences(scope, sexpr, bufnr)
     local filetype = vim.bo[bufnr].filetype
+    -- TODO (TheLeoP): typescriptreact parser name is tsx
+    if filetype == "typescriptreact" then
+        filetype = "tsx"
+    end
 
     if not sexpr:find("@") then
         sexpr = sexpr .. " @tmp_capture"

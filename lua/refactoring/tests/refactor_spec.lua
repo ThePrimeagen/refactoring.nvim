@@ -12,6 +12,7 @@ local async = require("plenary.async")
 local extension_to_filetype = {
     ["lua"] = "lua",
     ["ts"] = "typescript",
+    ["tsx"] = "typescriptreact",
     ["js"] = "javascript",
     ["go"] = "go",
     ["py"] = "python",
@@ -40,7 +41,10 @@ local function for_each_file(cb)
     )
     for _, file in pairs(files) do
         file = remove_cwd(file)
-        if string.match(file, "start") and not test_utils.check_if_skip_test(file, tests_to_skip) then
+        if
+            string.match(file, "start")
+            and not test_utils.check_if_skip_test(file, tests_to_skip)
+        then
             cb(file)
         end
     end
@@ -103,17 +107,10 @@ local function test_empty_input()
 end
 
 local function validate_cursor_if_file_exists(filename_prefix)
-    local cursor_position_name = string.format(
-        "%s.cursor_position",
-        filename_prefix
-    )
-    local cursor_position_file = Path:new(
-        cwd,
-        "lua",
-        "refactoring",
-        "tests",
-        cursor_position_name
-    )
+    local cursor_position_name =
+        string.format("%s.cursor_position", filename_prefix)
+    local cursor_position_file =
+        Path:new(cwd, "lua", "refactoring", "tests", cursor_position_name)
     if cursor_position_file:exists() then
         local cursor_position = test_utils.get_contents(
             string.format("%s.cursor_position", filename_prefix)
@@ -147,17 +144,11 @@ end
 -- assuming first line is for prompt_func_return_type flag
 local function set_config_options(filename_prefix, filename_extension)
     local config_file_name = string.format("%s.config", filename_prefix)
-    local config_file = Path:new(
-        cwd,
-        "lua",
-        "refactoring",
-        "tests",
-        config_file_name
-    )
+    local config_file =
+        Path:new(cwd, "lua", "refactoring", "tests", config_file_name)
     if config_file:exists() then
-        local config_values = test_utils.get_contents(
-            string.format("%s.config", filename_prefix)
-        )
+        local config_values =
+            test_utils.get_contents(string.format("%s.config", filename_prefix))
 
         local prompt_func_return_type = {}
         local str_to_bool = { ["true"] = true, ["false"] = false }
@@ -210,7 +201,10 @@ describe("Refactoring", function()
 
             Config.get():reset()
             -- TODO: Not sure why I have to call this out, but it's required
-            Config:get():set_extract_var_statement(extension_to_filetype[filename_extension], nil)
+            Config:get():set_extract_var_statement(
+                extension_to_filetype[filename_extension],
+                nil
+            )
 
             set_config_options(filename_prefix, filename_extension)
             test_utils.run_inputs_if_exist(filename_prefix, cwd)

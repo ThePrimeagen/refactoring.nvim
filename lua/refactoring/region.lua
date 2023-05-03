@@ -67,7 +67,7 @@ function Region:is_empty()
 end
 
 --- Get a region from a Treesitter Node
----@param node userdata
+---@param node TSNode
 ---@param bufnr? number
 ---@return RefactorRegion
 function Region:from_node(node, bufnr)

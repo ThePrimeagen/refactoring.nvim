@@ -1,5 +1,6 @@
 local TreeSitter = require("refactoring.treesitter.treesitter")
 local Typescript = require("refactoring.treesitter.langs.typescript")
+local TypescriptReact = require("refactoring.treesitter.langs.typescriptreact")
 local Cpp = require("refactoring.treesitter.langs.cpp")
 local C = require("refactoring.treesitter.langs.c")
 local go = require("refactoring.treesitter.langs.go")
@@ -14,6 +15,7 @@ local M = {
     TreeSitter = TreeSitter,
     javascript = JavaScript,
     typescript = Typescript,
+    typescriptreact = TypescriptReact,
     python = Python,
     go = go,
     lua = Lua,

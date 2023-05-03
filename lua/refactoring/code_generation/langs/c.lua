@@ -66,6 +66,7 @@ local function c_constant(opts)
     return constant_string_pattern
 end
 
+---@type code_generation
 local c = {
     comment = cpp.comment,
     default_printf_statement = cpp.default_printf_statement,

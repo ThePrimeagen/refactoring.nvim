@@ -52,6 +52,17 @@ local function get_new_var_text(extract_node_text, refactor, var_name, region)
     return base_text
 end
 
+---@param var_name string
+---@param refactor Refactor
+---@return string
+local function get_var_name(var_name, refactor)
+    -- TODO (TheLeoP): jsx specific logic
+    if refactor.region_node:type() == "jsx_element" then
+        return string.format("< %s />", var_name)
+    end
+    return var_name
+end
+
 ---@param refactor Refactor
 local function extract_var_setup(refactor)
     local extract_node = refactor.region_node
@@ -59,6 +70,7 @@ local function extract_var_setup(refactor)
     local extract_node_text =
         table.concat(utils.get_node_text(extract_node), "")
 
+    ---@type string
     local sexpr = extract_node:sexpr()
     local occurrences =
         Query.find_occurrences(refactor.scope, sexpr, refactor.bufnr)
@@ -84,7 +96,7 @@ local function extract_var_setup(refactor)
         table.insert(refactor.text_edits, {
             add_newline = false,
             region = region,
-            text = var_name,
+            text = get_var_name(var_name, refactor),
         })
     end
 

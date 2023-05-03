@@ -33,10 +33,11 @@ local function refactor_setup(input_bufnr, config)
 
         ---@class Refactor
         ---@field region? RefactorRegion
-        ---@field region_node? userdata
-        ---@field scope? userdata
+        ---@field region_node? TSNode
+        ---@field scope? TSNode
         ---@field cursor_col_adjustment? number
         ---@field text_edits? {add_newline: boolean, region: RefactorRegion, text: string} | LspRange
+        ---@field code code_generation
         local refactor = {
             ---@type {cursor: number, highlight_start?: number, highlight_end?: number, func_call?: number}
             whitespace = {

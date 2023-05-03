@@ -39,6 +39,7 @@ local function lua_constant(opts)
     return result
 end
 
+---@type code_generation
 local lua = {
     comment = function(statement)
         return string.format("-- %s", statement)

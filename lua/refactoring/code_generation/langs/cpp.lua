@@ -64,6 +64,7 @@ local function cpp_constant(opts)
     return constant_string_pattern
 end
 
+---@type code_generation
 local cpp = {
     comment = function(statement)
         return string.format("// %s", statement)

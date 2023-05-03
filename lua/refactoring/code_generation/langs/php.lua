@@ -18,6 +18,7 @@ public function %s (
     )
 end
 
+---@type code_generation
 local php = {
     default_print_var_statement = function()
         return { "printf('%s %%s'.%s, %s);" }
@@ -49,14 +50,10 @@ local php = {
             opts.value
         )
     end,
-    -- This is for returing multiple arguments from a function
-    -- @param names string|table
     pack = function(names)
         return code_utils.returnify(names, string_pattern)
     end,
 
-    -- this is for consuming one or more arguments from a function call.
-    -- @param names string|table
     unpack = function(names)
         return code_utils.returnify(names, string_pattern)
     end,
