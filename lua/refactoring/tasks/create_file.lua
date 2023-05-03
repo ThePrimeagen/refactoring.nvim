@@ -3,9 +3,12 @@ local get_input = require("refactoring.get_input")
 local M = {}
 
 ---@param refactor Refactor
+---@return boolean, Refactor|string
 function M.from_input(refactor)
     local file_name = get_input("Create File: Name > ", vim.fn.expand("%:h"))
-    assert(file_name ~= "", "Error: Must provide a file name")
+    if not file_name then
+        return false, "Error: Must provide a file name"
+    end
     -- OPTIONS? We should probably configure this
     -- extract on second method added
     vim.cmd(":vnew")

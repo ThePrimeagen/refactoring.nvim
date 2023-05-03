@@ -50,9 +50,7 @@ end
 local function get_node_to_inline(identifiers, bufnr)
     local node_to_inline, identifier_pos
 
-    if #identifiers == 0 then
-        error("No declarations in selected area")
-    elseif #identifiers == 1 then
+    if #identifiers == 1 then
         identifier_pos = 1
         node_to_inline = identifiers[identifier_pos]
     else
@@ -117,6 +115,9 @@ local function inline_var_setup(refactor, bufnr)
         definition = ts.find_definition(node_to_inline, bufnr)
         identifier_pos = determine_identifier_position(identifiers, definition)
     else
+        if #identifiers == 0 then
+            return false, "No declarations in selected area"
+        end
         node_to_inline, identifier_pos = get_node_to_inline(identifiers, bufnr)
         definition = ts.find_definition(node_to_inline, bufnr)
     end
@@ -186,6 +187,7 @@ local function inline_var_setup(refactor, bufnr)
     end
 
     refactor.text_edits = text_edits
+    return true, refactor
 end
 
 ---@param bufnr number
@@ -195,12 +197,11 @@ function M.inline_var(bufnr, opts)
         :add_task(
             --- @param refactor Refactor
             function(refactor)
-                inline_var_setup(refactor, bufnr)
-                return true, refactor
+                return inline_var_setup(refactor, bufnr)
             end
         )
         :after(post_refactor.post_refactor)
-        :run()
+        :run(nil, vim.notify)
 end
 
 return M

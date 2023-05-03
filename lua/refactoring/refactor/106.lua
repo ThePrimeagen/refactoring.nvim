@@ -438,9 +438,13 @@ local function extract_block_setup(refactor)
 end
 
 --- @param refactor Refactor
+--- @return boolean, Refactor|string
 local function extract_setup(refactor)
     local function_name = get_input("106: Extract Function Name > ")
-    assert(function_name ~= "", "Error: Must provide function name")
+    if not function_name then
+        return false, "Error: Must provide function name"
+    end
+    assert(function_name)
     local function_body = refactor.region:get_text()
 
     -- NOTE: How do we think about this if we have to pass through multiple
@@ -508,6 +512,7 @@ local function extract_setup(refactor)
         extract_function,
         func_call,
     }
+    return true, refactor
 end
 
 local ensure_code_gen_list = {
@@ -548,106 +553,52 @@ end
 M.extract_to_file = function(bufnr, opts)
     bufnr = bufnr or vim.api.nvim_get_current_buf()
     get_extract_setup_pipeline(bufnr, opts)
-        :add_task(
-            ---@param refactor Refactor
-            function(refactor)
-                return ensure_code_gen_106(refactor)
-            end
-        )
+        :add_task(ensure_code_gen_106)
         :add_task(create_file.from_input)
-        :add_task(
-            ---@param refactor Refactor
-            function(refactor)
-                extract_setup(refactor)
-                return true, refactor
-            end
-        )
+        :add_task(extract_setup)
         :after(post_refactor.no_cursor_post_refactor)
-        :run()
+        :run(nil, vim.notify)
 end
 
 M.extract = function(bufnr, opts)
     bufnr = bufnr or vim.api.nvim_get_current_buf()
     get_extract_setup_pipeline(bufnr, opts)
+        :add_task(ensure_code_gen_106)
         :add_task(
             ---@param refactor Refactor
-            function(refactor)
-                return ensure_code_gen_106(refactor)
-            end
-        )
-        :add_task(
-            ---@param refactor Refactor
+            ---@return boolean, Refactor|string
             function(refactor)
                 if refactor.region:is_empty() then
-                    error(
+                    return false,
                         "Current selected region is empty, have to provide a non empty region to perform a extract func operation"
-                    )
                 end
                 return true, refactor
             end
         )
-        :add_task(
-            ---@param refactor Refactor
-            function(refactor)
-                extract_setup(refactor)
-                return true, refactor
-            end
-        )
+        :add_task(extract_setup)
         :after(post_refactor.post_refactor)
-        :run()
+        :run(nil, vim.notify)
 end
 
 M.extract_block = function(bufnr, opts)
     bufnr = bufnr or vim.api.nvim_get_current_buf()
     Pipeline:from_task(refactor_setup(bufnr, opts))
-        :add_task(
-            --- @param refactor Refactor
-            function(refactor)
-                return ensure_code_gen_106(refactor)
-            end
-        )
-        :add_task(
-            --- @param refactor Refactor
-            function(refactor)
-                return extract_block_setup(refactor)
-            end
-        )
-        :add_task(
-            --- @param refactor Refactor
-            function(refactor)
-                extract_setup(refactor)
-                return true, refactor
-            end
-        )
+        :add_task(ensure_code_gen_106)
+        :add_task(extract_block_setup)
+        :add_task(extract_setup)
         :after(post_refactor.post_refactor)
-        :run()
+        :run(nil, vim.notify)
 end
 
 M.extract_block_to_file = function(bufnr, opts)
     bufnr = bufnr or vim.api.nvim_get_current_buf()
     Pipeline:from_task(refactor_setup(bufnr, opts))
-        :add_task(
-            --- @param refactor Refactor
-            function(refactor)
-                return ensure_code_gen_106(refactor)
-            end
-        )
-        :add_task(
-            --- @param refactor Refactor
-            function(refactor)
-                return extract_block_setup(refactor)
-            end
-        )
+        :add_task(ensure_code_gen_106)
+        :add_task(extract_block_setup)
         :add_task(create_file.from_input)
-        :add_task(
-            --- @param refactor Refactor
-            function(refactor)
-                extract_setup(refactor)
-                return true, refactor
-            end
-        )
+        :add_task(extract_setup)
         :after(post_refactor.no_cursor_post_refactor)
-        :run()
+        :run(nil, vim.notify)
 end
 
 return M
