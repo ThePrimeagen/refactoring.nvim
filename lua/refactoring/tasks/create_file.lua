@@ -9,9 +9,11 @@ function M.from_input(refactor)
     -- OPTIONS? We should probably configure this
     -- extract on second method added
     vim.cmd(":vnew")
-    vim.cmd(string.format(":set filetype=%s", refactor.filetype))
     vim.cmd(string.format(":w! %s", file_name))
+    vim.cmd(string.format(":set filetype=%s", refactor.filetype))
     table.insert(refactor.buffers, vim.fn.bufnr())
+
+    --TODO (TheLeoP): add text_edits for when extracting file (?)
 
     return true, refactor
 end
