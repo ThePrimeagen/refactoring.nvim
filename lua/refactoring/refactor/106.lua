@@ -311,7 +311,7 @@ end
 
 ---@param node TSNode|nil
 ---@return boolean
-local function is_comment_or_decorator(node)
+local function is_comment_or_decorator_node(node)
     if node == nil then
         return false
     end
@@ -333,19 +333,18 @@ end
 
 ---@param refactor Refactor
 local function get_non_comment_region_above_node(refactor)
-    local row_prev_sibling =
-        get_first_node_row(refactor.scope):prev_named_sibling()
-    if is_comment_or_decorator(row_prev_sibling) then
+    local prev_sibling = get_first_node_row(refactor.scope):prev_named_sibling()
+    if is_comment_or_decorator_node(prev_sibling) then
         local start_row
         while true do
             -- Only want first value
-            start_row = row_prev_sibling:range()
-            local temp = row_prev_sibling:prev_sibling()
-            if is_comment_or_decorator(temp) then
+            start_row = prev_sibling:range()
+            local temp = prev_sibling:prev_sibling()
+            if is_comment_or_decorator_node(temp) then
                 -- Only want first value
                 local temp_row = temp:range()
                 if start_row - temp_row == 1 then
-                    row_prev_sibling = temp
+                    prev_sibling = temp
                 else
                     break
                 end
@@ -355,13 +354,12 @@ local function get_non_comment_region_above_node(refactor)
         end
 
         if start_row > 0 then
-            return utils.region_above_node(row_prev_sibling)
+            return utils.region_above_node(prev_sibling)
         else
             return utils.region_above_node(refactor.scope)
         end
     else
-        local aux = utils.region_above_node(refactor.scope)
-        return aux
+        return utils.region_above_node(refactor.scope)
     end
 end
 
