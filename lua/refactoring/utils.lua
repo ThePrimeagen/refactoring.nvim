@@ -166,8 +166,9 @@ end
 
 -- TODO: Very unsure if this needs to be a "util" or not But this is super
 -- useful in refactor 106 and I assume it will be used elsewhere quite a bit
-function M.node_text_to_set(bufnr, ...)
+function M.node_text_to_set(...)
     local out = {}
+    local bufnr = vim.api.nvim_get_current_buf()
     for i = 1, select("#", ...) do
         local nodes = select(i, ...)
         for _, node in pairs(nodes) do
