@@ -28,7 +28,7 @@ function M.refactor(name, opts)
     -- Remove the calls to vim.fn
     -- I just forgot the name of this ;)
     local config = Config.get():merge(opts)
-    refactors[refactor](vim.api.nvim_buf_get_number(0), config)
+    refactors[refactor](vim.api.nvim_get_current_buf(), config)
 end
 
 function M.get_refactors()

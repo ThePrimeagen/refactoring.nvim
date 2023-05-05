@@ -30,6 +30,9 @@ function M.take_one(table, fn)
     return out
 end
 
+---@param inputstr string
+---@param sep string
+---@return string[]
 function M.split_string(inputstr, sep)
     local t = {}
     -- [[ lets not think about the edge case there... --]]
@@ -48,6 +51,7 @@ function M.split_string(inputstr, sep)
     return t
 end
 
+---@return RefactorRegion
 function M.get_top_of_file_region()
     local range = { line = 0, character = 0 }
     return Region:from_lsp_range({ start = range, ["end"] = range })
@@ -66,6 +70,8 @@ function M.trim(s)
     return (s:gsub("^%s*(.-)%s*$", "%1"))
 end
 
+---@param node TSNode
+---@param out string[]|nil
 function M.get_node_text(node, out)
     out = out or {}
     local count = node:child_count()
@@ -106,6 +112,8 @@ function M.appears_before(a, b)
     return (a_col < b_col or b_col + b_bytes > a_col + a_bytes)
 end
 
+---@param nodes TSNode[]
+---@return TSNode[]
 function M.sort_in_appearance_order(nodes)
     table.sort(nodes, M.appears_before)
     return nodes
@@ -131,6 +139,7 @@ function M.node_contains(a, b)
 end
 
 -- TODO: This likely doesn't work with multistatement line inserts
+---@param node TSNode
 function M.region_one_line_up_from_node(node)
     local region = Region:from_node(node)
     region.end_row = region.start_row
@@ -139,24 +148,35 @@ function M.region_one_line_up_from_node(node)
     return region
 end
 
+---@param nodes TSNode[]
+---@param region RefactorRegion
+---@return TSNode[]
 M.region_complement = function(nodes, region)
     return vim.tbl_filter(function(node)
         return not region:contains(Region:from_node(node))
     end, nodes)
 end
 
+---@param nodes TSNode[]
+---@param region RefactorRegion
+---@return TSNode[]
 M.region_intersect = function(nodes, region)
     return vim.tbl_filter(function(node)
         return region:contains(Region:from_node(node))
     end, nodes)
 end
 
+---@param nodes TSNode[]
+---@param region RefactorRegion
+---@return TSNode[]
 M.after_region = function(nodes, region)
     return vim.tbl_filter(function(node)
         return Region:from_node(node):is_after(region)
     end, nodes)
 end
 
+---@param t table
+---@return boolean
 function M.table_has_keys(t)
     for _ in pairs(t) do
         return true
@@ -181,6 +201,9 @@ function M.node_text_to_set(...)
     return out
 end
 
+---@param a table
+---@param b table
+---@return table
 function M.table_key_intersect(a, b)
     local out = {}
     for k, v in pairs(b) do

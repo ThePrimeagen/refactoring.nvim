@@ -6,7 +6,7 @@ local M = {}
 ---@return boolean, Refactor|string
 function M.from_input(refactor)
     local file_name = get_input("Create File: Name > ", vim.fn.expand("%:h"))
-    if not file_name then
+    if not file_name or file_name == "" then
         return false, "Error: Must provide a file name"
     end
     -- OPTIONS? We should probably configure this

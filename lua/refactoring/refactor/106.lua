@@ -441,7 +441,7 @@ end
 --- @return boolean, Refactor|string
 local function extract_setup(refactor)
     local function_name = get_input("106: Extract Function Name > ")
-    if not function_name then
+    if not function_name or function_name == "" then
         return false, "Error: Must provide function name"
     end
     assert(function_name)
@@ -550,6 +550,8 @@ local function ensure_code_gen_106(refactor)
     return ensure_code_gen(refactor, list)
 end
 
+---@param bufnr integer
+---@param opts c|Config
 M.extract_to_file = function(bufnr, opts)
     bufnr = bufnr or vim.api.nvim_get_current_buf()
     get_extract_setup_pipeline(bufnr, opts)
@@ -560,6 +562,8 @@ M.extract_to_file = function(bufnr, opts)
         :run(nil, vim.notify)
 end
 
+---@param bufnr integer
+---@param opts c|Config
 M.extract = function(bufnr, opts)
     bufnr = bufnr or vim.api.nvim_get_current_buf()
     get_extract_setup_pipeline(bufnr, opts)
@@ -580,6 +584,8 @@ M.extract = function(bufnr, opts)
         :run(nil, vim.notify)
 end
 
+---@param bufnr integer
+---@param opts c|Config
 M.extract_block = function(bufnr, opts)
     bufnr = bufnr or vim.api.nvim_get_current_buf()
     Pipeline:from_task(refactor_setup(bufnr, opts))
@@ -590,6 +596,8 @@ M.extract_block = function(bufnr, opts)
         :run(nil, vim.notify)
 end
 
+---@param bufnr integer
+---@param opts c|Config
 M.extract_block_to_file = function(bufnr, opts)
     bufnr = bufnr or vim.api.nvim_get_current_buf()
     Pipeline:from_task(refactor_setup(bufnr, opts))

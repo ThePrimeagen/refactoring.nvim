@@ -89,7 +89,7 @@ local function extract_var_setup(refactor)
     utils.sort_in_appearance_order(actual_occurrences)
 
     local var_name = get_input("119: What is the var name > ")
-    if not var_name then
+    if not var_name or var_name == "" then
         return false, "Error: Must provide new var name"
     end
 
