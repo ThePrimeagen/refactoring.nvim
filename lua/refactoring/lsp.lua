@@ -16,7 +16,7 @@ function LspDefinition:from_cursor(bufnr, ts_query)
     local definition = lsp_utils.get_definition_under_cursor(bufnr)
 
     local definition_region =
-        Region:from_lsp_range(definition.targetRange or definition.range)
+        Region:from_lsp_range_insert(definition.targetRange or definition.range)
     local declarator_node = ts_query:get_scope_over_region(
         definition_region,
         Query.query_type.Declarator

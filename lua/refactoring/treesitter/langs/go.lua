@@ -22,6 +22,7 @@ function Golang.new(bufnr, ft)
         scope_names = {
             function_declaration = "function",
             method_declaration = "function",
+            func_literal = "function",
             method = "program",
         },
         valid_class_nodes = {
@@ -65,6 +66,7 @@ function Golang.new(bufnr, ft)
             InlineNode("(if_statement) @tmp_capture"),
             InlineNode("(for_statement) @tmp_capture"),
             InlineNode("(call_expression) @tmp_capture"),
+            InlineNode("(assignment_statement) @tmp_capture"),
         },
         parameter_list = {
             InlineNode(

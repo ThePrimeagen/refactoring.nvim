@@ -54,7 +54,7 @@ end
 ---@return RefactorRegion
 function M.get_top_of_file_region()
     local range = { line = 0, character = 0 }
-    return Region:from_lsp_range({ start = range, ["end"] = range })
+    return Region:from_lsp_range_insert({ start = range, ["end"] = range })
 end
 
 -- FROM http://lua-users.org/wiki/CommonFunctions
@@ -217,11 +217,12 @@ end
 ---@param node TSNode
 function M.region_above_node(node)
     local scope_region = Region:from_node(node)
-    local lsp_range = scope_region:to_lsp_range()
+    -- TODO (TheLeoP): should I create a special case for this?
+    local lsp_range = scope_region:to_lsp_range_insert()
     lsp_range.start.line = math.max(lsp_range.start.line - 1, 0)
     lsp_range.start.character = 0
     lsp_range["end"] = lsp_range.start
-    return Region:from_lsp_range(lsp_range)
+    return Region:from_lsp_range_insert(lsp_range)
 end
 
 return M

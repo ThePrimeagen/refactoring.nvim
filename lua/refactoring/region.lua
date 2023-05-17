@@ -2,25 +2,20 @@ local Point = require("refactoring.point")
 
 ---@return integer start_row, integer start_col, integer end_row, integer end_col
 local function get_selection_range()
-    -- local _, end_row, _, _ = unpack(vim.fn.getpos("'>"))
     local start_row = vim.fn.line("'<")
     local start_col = vim.fn.col("'<")
     local end_row = vim.fn.line("'>")
     local end_col = vim.fn.col("'>")
 
-    -- end_col :: TS is 0 based, and '> on line selections is char_count + 1
-    -- I think - 2 is correct on
-    --
-    -- end_row : end_row is exclusive in TS, so we don't minus
     return start_row, start_col, end_row, end_col
 end
 
 ---@class RefactorRegion
 --- The following fields act similar to a cursor
 ---@field start_row number: The 1-based row
----@field start_col number: The 0-based col
+---@field start_col number: The 1-based col
 ---@field end_row number: The 1-based row
----@field end_col number: The 0-based col
+---@field end_col number: The 1-based col
 ---@field bufnr number: the buffer that the region is from
 local Region = {}
 Region.__index = Region
@@ -51,7 +46,7 @@ function Region:from_values(bufnr, start_row, start_col, end_row, end_col)
         start_col = start_col,
         end_row = end_row,
         end_col = end_col,
-        bufnr = vim.fn.bufnr(bufnr),
+        bufnr = bufnr,
     }, self)
 end
 
@@ -59,7 +54,7 @@ end
 ---@return RefactorRegion
 function Region:empty(bufnr)
     return setmetatable({
-        bufnr = vim.fn.bufnr(bufnr),
+        bufnr = bufnr,
     }, self)
 end
 
@@ -86,7 +81,7 @@ function Region:from_node(node, bufnr)
 
     -- TODO: is col correct?
     return setmetatable({
-        bufnr = vim.fn.bufnr(bufnr),
+        bufnr = bufnr,
         start_row = start_line + 1,
         start_col = start_col + 1,
         end_row = end_line + 1,
@@ -99,11 +94,10 @@ end
 ---@param bufnr? number  the bufnr for the region
 ---@return RefactorRegion
 function Region:from_point(point, bufnr)
-    -- maybe should set this to zero
     bufnr = bufnr or vim.api.nvim_get_current_buf()
 
     return setmetatable({
-        bufnr = vim.fn.bufnr(bufnr),
+        bufnr = bufnr,
         start_row = point.row,
         start_col = point.col,
         end_row = point.row,
@@ -114,12 +108,26 @@ end
 ---@param lsp_range LspRange
 ---@param bufnr integer|nil
 ---@return RefactorRegion
-function Region:from_lsp_range(lsp_range, bufnr)
+function Region:from_lsp_range_insert(lsp_range, bufnr)
     bufnr = bufnr or vim.api.nvim_get_current_buf()
 
-    -- todo: is col correct?
     return setmetatable({
-        bufnr = vim.fn.bufnr(bufnr),
+        bufnr = bufnr,
+        start_row = lsp_range.start.line + 1,
+        start_col = lsp_range.start.character + 1,
+        end_row = lsp_range["end"].line + 1,
+        end_col = lsp_range["end"].character + 1,
+    }, self)
+end
+
+---@param lsp_range LspRange
+---@param bufnr integer|nil
+---@return RefactorRegion
+function Region:from_lsp_range_replace(lsp_range, bufnr)
+    bufnr = bufnr or vim.api.nvim_get_current_buf()
+
+    return setmetatable({
+        bufnr = bufnr,
         start_row = lsp_range.start.line + 1,
         start_col = lsp_range.start.character + 1,
         end_row = lsp_range["end"].line + 1,
@@ -141,6 +149,7 @@ function Region:to_ts()
     return self.start_row - 1,
         self.start_col - 1,
         self.end_row - 1,
+        -- TODO (TheLeoP): fix: it's possible to wrongly select a node with a shorter range (example: select "foo" instead of "foo()" in golang)
         self.end_col - 2
 end
 
@@ -194,13 +203,7 @@ end
 
 --- Convert a region to an LSP Range
 ---@return LspRange
-function Region:to_lsp_range()
-    local end_character
-    if self.end_col == self.start_col and self.end_row == self.start_row then
-        end_character = self.end_col - 1
-    else
-        end_character = self.end_col
-    end
+function Region:to_lsp_range_insert()
     return {
         ["start"] = {
             line = self.start_row - 1,
@@ -208,7 +211,22 @@ function Region:to_lsp_range()
         },
         ["end"] = {
             line = self.end_row - 1,
-            character = end_character,
+            character = self.end_col - 1,
+        },
+    }
+end
+
+--- Convert a region to an LSP Range
+---@return LspRange
+function Region:to_lsp_range_replace()
+    return {
+        ["start"] = {
+            line = self.start_row - 1,
+            character = self.start_col - 1,
+        },
+        ["end"] = {
+            line = self.end_row - 1,
+            character = self.end_col,
         },
     }
 end
@@ -219,9 +237,18 @@ end
 
 ---@param text string
 ---@return LspTextEdit
-function Region:to_lsp_text_edit(text)
+function Region:to_lsp_text_edit_insert(text)
     return {
-        range = self:to_lsp_range(),
+        range = self:to_lsp_range_insert(),
+        newText = text,
+    }
+end
+
+---@param text string
+---@return LspTextEdit
+function Region:to_lsp_text_edit_replace(text)
+    return {
+        range = self:to_lsp_range_replace(),
         newText = text,
     }
 end

@@ -36,7 +36,7 @@ describe("Region", function()
         -- TODO: Why is first selection just not present...
         vim.cmd(":1")
         vim_motion("jwvje")
-        eq("n", vim.fn.mode())
+        eq("n", vim.api.nvim_get_mode().mode)
         eq(3, vim.fn.line("."))
         local region = Region:from_current_selection()
         eq({ "(true) {", "    bar" }, region:get_text())

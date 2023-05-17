@@ -49,9 +49,6 @@ describe("lsp_utils", function()
         }, vim.api.nvim_buf_get_lines(0, 0, -1, false))
     end)
 
-    -- TODO: Genuinely think that this could be a bug within neovim.  I cannot
-    -- set the end col = start col or else it will consume the starting
-    -- character
     it("should insert text.", function()
         setup()
         test_utils.vim_motion("2jfbviw")
@@ -71,7 +68,7 @@ describe("lsp_utils", function()
         setup()
         test_utils.vim_motion("2jfbviw")
         local region = Region:from_current_selection()
-        local insert_text, delete_text = lsp_utils.replace_text(
+        local insert_text = lsp_utils.replace_text(
             region,
             [[
 
@@ -80,11 +77,7 @@ bin, ban,]]
         )
 
         local bufnr = vim.api.nvim_get_current_buf()
-        vim.lsp.util.apply_text_edits(
-            { insert_text, delete_text },
-            bufnr,
-            "utf-16"
-        )
+        vim.lsp.util.apply_text_edits({ insert_text }, bufnr, "utf-16")
 
         assert.are.same({
             "foo",

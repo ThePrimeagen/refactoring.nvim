@@ -45,9 +45,9 @@ local function get_return_vals(refactor)
     local region_var_map = utils.node_text_to_set(region_vars)
 
     local ref_map = utils.node_text_to_set(refs)
-    local return_vals = vim.fn.sort(
+    local return_vals =
         vim.tbl_keys(utils.table_key_intersect(region_var_map, ref_map))
-    )
+    table.sort(return_vals)
 
     return return_vals
 end
@@ -229,13 +229,12 @@ local function get_func_call(refactor, extract_params)
     local func_call
     if extract_params.is_class then
         func_call = {
-            region = refactor.region,
-            text = refactor.code.call_class_function({
+            range = refactor.region:to_lsp_range_replace(),
+            newText = refactor.code.call_class_function({
                 name = extract_params.function_name,
                 args = extract_params.args,
                 class_type = refactor.ts:get_class_type(refactor.scope),
             }),
-            add_newline = false,
         }
     else
         -- TODO (TheLeoP): jsx specific logic
@@ -247,14 +246,13 @@ local function get_func_call(refactor, extract_params)
         )
         local contains_jsx = ok and #ocurrences > 0
         func_call = {
-            region = refactor.region,
-            text = refactor.code.call_function({
+            range = refactor.region:to_lsp_range_replace(),
+            newText = refactor.code.call_function({
                 name = extract_params.function_name,
                 args = extract_params.args,
                 region_type = extract_params.region_type,
                 contains_jsx = contains_jsx,
             }),
-            add_newline = false,
         }
     end
 
@@ -272,19 +270,19 @@ local function get_func_call(refactor, extract_params)
             #extract_params.return_vals > 1
             and exception_languages[refactor.filetype] == nil
         then
-            func_call.text = refactor.code.constant({
+            func_call.newText = refactor.code.constant({
                 multiple = true,
                 identifiers = extract_params.return_vals,
-                values = { func_call.text },
+                values = { func_call.newText },
             })
         else
-            func_call.text = refactor.code.constant({
+            func_call.newText = refactor.code.constant({
                 name = extract_params.return_vals,
-                value = func_call.text,
+                value = func_call.newText,
             })
         end
     else
-        func_call.text = refactor.code.terminate(func_call.text)
+        func_call.newText = refactor.code.terminate(func_call.newText)
     end
 
     if
@@ -300,11 +298,9 @@ local function get_func_call(refactor, extract_params)
         local indent_whitespace = indent.indent(indent_amount, refactor.bufnr)
         local func_call_with_indent = {}
         func_call_with_indent[1] = indent_whitespace
-        func_call_with_indent[2] = func_call.text
-        func_call.text = table.concat(func_call_with_indent, "")
+        func_call_with_indent[2] = func_call.newText
+        func_call.newText = table.concat(func_call_with_indent, "")
     end
-
-    func_call.add_newline = false
 
     return func_call
 end
@@ -451,8 +447,8 @@ local function extract_setup(refactor)
     -- functions (method extraction)
     local is_class = refactor.ts:is_class_function(refactor.scope)
     ---@type string[]
-    local args =
-        vim.fn.sort(vim.tbl_keys(get_selected_locals(refactor, is_class)))
+    local args = vim.tbl_keys(get_selected_locals(refactor, is_class))
+    table.sort(args)
 
     local first_line = function_body[1]
 

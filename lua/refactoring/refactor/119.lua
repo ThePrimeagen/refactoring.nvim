@@ -8,6 +8,7 @@ local refactor_setup = require("refactoring.tasks.refactor_setup")
 local post_refactor = require("refactoring.tasks.post_refactor")
 local ensure_code_gen = require("refactoring.tasks.ensure_code_gen")
 local indent = require("refactoring.indent")
+local lsp_utils = require("refactoring.lsp_utils")
 
 local M = {}
 
@@ -95,12 +96,13 @@ local function extract_var_setup(refactor)
 
     refactor.text_edits = {}
     for _, occurrence in pairs(actual_occurrences) do
-        local region = Region:from_node(occurrence, refactor.bufnr)
-        table.insert(refactor.text_edits, {
-            add_newline = false,
-            region = region,
-            text = get_var_name(var_name, refactor),
-        })
+        table.insert(
+            refactor.text_edits,
+            lsp_utils.replace_text(
+                Region:from_node(occurrence, refactor.bufnr),
+                get_var_name(var_name, refactor)
+            )
+        )
     end
 
     local block_scope =
@@ -142,11 +144,13 @@ local function extract_var_setup(refactor)
     end
 
     local region = utils.region_one_line_up_from_node(contained)
-    table.insert(refactor.text_edits, {
-        add_newline = false,
-        region = region,
-        text = get_new_var_text(extract_node_text, refactor, var_name, region),
-    })
+    table.insert(
+        refactor.text_edits,
+        lsp_utils.insert_text(
+            region,
+            get_new_var_text(extract_node_text, refactor, var_name, region)
+        )
+    )
     return true, refactor
 end
 

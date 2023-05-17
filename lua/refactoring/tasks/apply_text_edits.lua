@@ -27,10 +27,18 @@ local function refactor_apply_text_edits(refactor)
         -- new line auto additions and just lsp generated content
         if edit.newText then
             table.insert(edits[bufnr], edit)
-            add_change(Region:from_lsp_range(edit.range, bufnr), edit.newText)
+            add_change(
+                -- TODO (TheLeoP): Probably this is wrong and I should evaluate whether to insert or replace x2
+                Region:from_lsp_range_insert(edit.range, bufnr),
+                edit.newText
+            )
         else
             local newText = get_text(edit)
-            table.insert(edits[bufnr], edit.region:to_lsp_text_edit(newText))
+            table.insert(
+                edits[bufnr],
+                -- TODO (TheLeoP): Probably this is wrong and I should evaluate whether to insert or replace
+                edit.region:to_lsp_text_edit_insert(newText)
+            )
             add_change(edit.region, newText)
         end
     end

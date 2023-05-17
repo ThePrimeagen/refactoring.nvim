@@ -213,7 +213,7 @@ function TreeSitter:get_class_type(scope)
 end
 
 ---@param node TSNode
----@param container_map table
+---@param container_map table|number|string
 ---@return TSNode|nil
 local function containing_node_by_type(node, container_map)
     if not node then
@@ -225,6 +225,7 @@ local function containing_node_by_type(node, container_map)
         container_map = { container_map = true }
     end
 
+    -- TODO (TheLeoP): fix: if multiple containing nodes have the same type, this returns the first match, not necesarily the containing node (example: golang "block")
     repeat
         if container_map[node:type()] ~= nil then
             break
@@ -233,7 +234,7 @@ local function containing_node_by_type(node, container_map)
     -- This statement can be uncommented to print all the parent nodes of the
     -- current node until there are no more. Useful in finding certain nodes
     -- like the global scope node, which doesn't show up in playground.
-    -- print(node:type())
+    -- vim.print({ type = node:type(), container_map })
     until node == nil
 
     return node
