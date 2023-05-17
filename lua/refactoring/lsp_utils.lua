@@ -20,24 +20,28 @@ end
 
 ---@param pointOrRegion RefactorRegion|RefactorPoint
 ---@param text string
----@param opts table
+---@param opts {below: boolean, _end: boolean}|nil
 ---@return LspTextEdit
 function M.insert_new_line_text(pointOrRegion, text, opts)
     opts = opts or {
         below = true,
+        _end = true,
     }
 
     local region = to_region(pointOrRegion)
 
-    -- what is after?  I just assume 10000 is equivalent
     if opts.below then
-        region.start_col = 10000
-        region.end_col = 10000
         text = code.new_line() .. text
     else
-        region.start_col = 1
-        region.end_col = 0
         text = text .. code.new_line()
+    end
+    -- what is after?  I just assume 10000 is equivalent
+    if opts._end then
+        region.start_col = 10000
+        region.end_col = 10000
+    else
+        region.start_col = 1
+        region.end_col = 1
     end
     return region:to_lsp_text_edit_insert(text)
 end

@@ -492,14 +492,14 @@ local function extract_setup(refactor)
         extract_function = lsp_utils.insert_new_line_text(
             region_above_scope,
             function_code,
-            { below = true }
+            { below = true, _end = true }
         )
     else
-        extract_function = {
-            region = region_above_scope,
-            text = function_code,
-            bufnr = refactor.buffers[2],
-        }
+        extract_function = lsp_utils.insert_new_line_text(
+            region_above_scope,
+            function_code,
+            { below = true }
+        )
     end
 
     -- NOTE: there is going to be a bunch of edge cases we haven't thought

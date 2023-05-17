@@ -36,7 +36,7 @@ local function refactor_setup(input_bufnr, config)
         ---@field region_node? TSNode
         ---@field scope? TSNode
         ---@field cursor_col_adjustment? integer
-        ---@field text_edits? {add_newline: boolean, region: RefactorRegion, text: string}[] | LspTextEdit[]
+        ---@field text_edits? LspTextEdit[]
         ---@field code code_generation
         local refactor = {
             ---@type {cursor: integer, highlight_start?: integer, highlight_end?: integer, func_call?: integer}
