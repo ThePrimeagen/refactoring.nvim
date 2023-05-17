@@ -10,12 +10,11 @@ local Point = require("refactoring.point")
 ---
 ---@param input_bufnr number
 ---@param config c|Config
----@return function
+---@return fun(): true, Refactor
 local function refactor_setup(input_bufnr, config)
     input_bufnr = input_bufnr or vim.api.nvim_get_current_buf()
     config = config or Config.get()
 
-    --- @retun boolean, Refactor
     return function()
         -- Setting bufnr to test bufnr
         local bufnr
