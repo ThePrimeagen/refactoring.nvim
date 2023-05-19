@@ -1,13 +1,13 @@
 local utils = require("refactoring.utils")
 local Query = require("refactoring.query")
 
--- @class Query2
--- @field query Query
--- @field types Query
--- @field scope tsnode
--- @field region RefactorRegion
--- @field filter function
--- @field region_calc_type string
+--- @class Query2
+--- @field query Query
+--- @field types Query
+--- @field scope TSNode
+--- @field region RefactorRegion
+--- @field filter function
+--- @field region_calc_type string
 local Query2 = {}
 
 Query2.__index = Query2

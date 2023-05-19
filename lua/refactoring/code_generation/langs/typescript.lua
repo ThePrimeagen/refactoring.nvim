@@ -15,6 +15,7 @@ local function build_args(args, arg_types)
     return final_args
 end
 
+---@param opts code_generation_function
 local function typescript_class_function(opts)
     -- Need this for javascript
     local args
@@ -42,6 +43,7 @@ local function typescript_class_function(opts)
     )
 end
 
+---@param opts code_generation_function
 local function typescript_function(opts)
     -- Need this for javascript
     local args
@@ -66,6 +68,8 @@ local function typescript_function(opts)
     )
 end
 
+---@param opts code_generation_constant
+---@return string
 local function typescript_constant(opts)
     local constant_string_pattern
 
@@ -98,6 +102,7 @@ local function typescript_constant(opts)
     return constant_string_pattern
 end
 
+---@type code_generation
 local typescript = {
     default_printf_statement = function()
         return { 'console.log("%s");' }
@@ -119,14 +124,10 @@ local typescript = {
         return typescript_constant(opts)
     end,
 
-    -- This is for returing multiple arguments from a function
-    -- @param names string|table
     pack = function(names)
         return code_utils.returnify(names, string_pattern)
     end,
 
-    -- this is for consuming one or more arguments from a function call.
-    -- @param names string|table
     unpack = function(names)
         return code_utils.returnify(names, string_pattern)
     end,

@@ -6,6 +6,7 @@ local code_utils = require("refactoring.code_generation.utils")
 local Region = require("refactoring.region")
 local Point = require("refactoring.point")
 local lsp_utils = require("refactoring.lsp_utils")
+local Query = require("refactoring.query")
 
 local refactor_setup = require("refactoring.tasks.refactor_setup")
 local get_input = require("refactoring.get_input")
@@ -23,6 +24,7 @@ local function get_extract_setup_pipeline(bufnr, opts)
 end
 
 ---@param refactor Refactor
+---@return string[]
 local function get_return_vals(refactor)
     local region_vars = utils.region_intersect(
         refactor.ts:get_local_declarations(refactor.scope),
@@ -90,13 +92,15 @@ end
 
 ---@param refactor Refactor
 local function get_func_header_prefix(refactor)
-    local ident_width = indent.buf_indent_width(refactor.bufnr)
+    local indent_width = indent.buf_indent_width(refactor.bufnr)
     local scope_region = Region:from_node(refactor.scope, refactor.bufnr)
-    local scope_start_col = scope_region.start_col
-    local baseline_indent = math.floor(scope_start_col / ident_width)
+    local min_indent = math.min(scope_region.end_col, scope_region.start_col)
+    local baseline_indent = math.floor(min_indent / indent_width)
     return indent.indent(baseline_indent, refactor.bufnr)
 end
 
+---@param node TSNode
+---@return TSNode first_node_row, integer start_row
 local function get_first_node_row(node)
     local start_row, _, _, _ = node:range()
     local first = node
@@ -126,7 +130,7 @@ local function get_indent_prefix(refactor)
     return indent.indent(total_indents, refactor.bufnr)
 end
 
----@param function_params table
+---@param function_params func_params
 ---@param has_return_vals boolean
 ---@param refactor Refactor
 local function indent_func_code(function_params, has_return_vals, refactor)
@@ -162,15 +166,20 @@ local function indent_func_code(function_params, has_return_vals, refactor)
 end
 
 -- TODO: Change name of this, misleading
----@param extract_params table
+---@param extract_params extract_params
 ---@param refactor Refactor
----@return table
+---@return func_params
 local function get_func_params(extract_params, refactor)
+    ---@class func_params
+    ---@field func_header string|nil
+    ---@field contains_jsx boolean|nil
     local func_params = {
         name = extract_params.function_name,
         args = extract_params.args,
         body = extract_params.function_body,
         scope_type = extract_params.scope_type,
+        ---@type string
+        region_type = refactor.region:to_ts_node(refactor.ts:get_root()):type(),
     }
 
     if refactor.ts.require_param_types then
@@ -193,7 +202,7 @@ local function get_func_params(extract_params, refactor)
 end
 
 ---@param refactor Refactor
----@param extract_params table
+---@param extract_params extract_params
 ---@return string
 local function get_function_code(refactor, extract_params)
     local function_code
@@ -215,7 +224,7 @@ local function get_function_code(refactor, extract_params)
 end
 
 --- @param refactor Refactor
---- @param extract_params table
+--- @param extract_params extract_params
 local function get_func_call(refactor, extract_params)
     local func_call
     if extract_params.is_class then
@@ -229,11 +238,21 @@ local function get_func_call(refactor, extract_params)
             add_newline = false,
         }
     else
+        -- TODO (TheLeoP): jsx specific logic
+        local ok, ocurrences = pcall(
+            Query.find_occurrences,
+            refactor.scope,
+            "(jsx_element) @tmp_capture",
+            refactor.bufnr
+        )
+        local contains_jsx = ok and #ocurrences > 0
         func_call = {
             region = refactor.region,
             text = refactor.code.call_function({
                 name = extract_params.function_name,
                 args = extract_params.args,
+                region_type = extract_params.region_type,
+                contains_jsx = contains_jsx,
             }),
             add_newline = false,
         }
@@ -245,6 +264,7 @@ local function get_func_call(refactor, extract_params)
     local exception_languages = {
         typescript = true,
         javascript = true,
+        typescriptreact = true,
     }
 
     if extract_params.has_return_vals then
@@ -289,6 +309,8 @@ local function get_func_call(refactor, extract_params)
     return func_call
 end
 
+---@param node TSNode|nil
+---@return boolean
 local function is_comment_or_decorator_node(node)
     if node == nil then
         return false
@@ -311,9 +333,7 @@ end
 
 ---@param refactor Refactor
 local function get_non_comment_region_above_node(refactor)
-    local scope = get_first_node_row(refactor.scope)
-
-    local prev_sibling = scope:prev_named_sibling()
+    local prev_sibling = get_first_node_row(refactor.scope):prev_named_sibling()
     if is_comment_or_decorator_node(prev_sibling) then
         local start_row
         while true do
@@ -343,6 +363,9 @@ local function get_non_comment_region_above_node(refactor)
     end
 end
 
+---@param refactor Refactor
+---@param is_class boolean
+---@return string[]
 local function get_selected_locals(refactor, is_class)
     local local_defs =
         refactor.ts:get_local_defs(refactor.scope, refactor.region)
@@ -423,6 +446,7 @@ local function extract_setup(refactor)
     -- NOTE: How do we think about this if we have to pass through multiple
     -- functions (method extraction)
     local is_class = refactor.ts:is_class_function(refactor.scope)
+    ---@type string[]
     local args =
         vim.fn.sort(vim.tbl_keys(get_selected_locals(refactor, is_class)))
 
@@ -442,6 +466,7 @@ local function extract_setup(refactor)
         )
     end
 
+    ---@class extract_params
     local extract_params = {
         return_vals = return_vals,
         has_return_vals = has_return_vals,
@@ -449,7 +474,10 @@ local function extract_setup(refactor)
         args = args,
         function_name = function_name,
         function_body = function_body,
+        ---@type string
         scope_type = refactor.scope:type(),
+        ---@type string
+        region_type = refactor.region:to_ts_node(refactor.ts:get_root()):type(),
     }
     local function_code = get_function_code(refactor, extract_params)
     local func_call = get_func_call(refactor, extract_params)

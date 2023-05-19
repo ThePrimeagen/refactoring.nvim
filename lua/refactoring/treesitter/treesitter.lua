@@ -166,7 +166,12 @@ function TreeSitter:is_class_function(scope)
 end
 
 function TreeSitter:get_references(scope)
-    local query = vim.treesitter.query.get(self.filetype, "locals")
+    local ft = self.filetype
+    -- TODO (TheLeoP): typescriptreact parser name is tsx
+    if ft == "typescriptreact" then
+        ft = "tsx"
+    end
+    local query = vim.treesitter.query.get(ft, "locals")
     local out = {}
     for id, node, _ in query:iter_captures(scope, self.bufnr, 0, -1) do
         local n_capture = query.captures[id]
@@ -207,6 +212,9 @@ function TreeSitter:get_class_type(scope)
     return nil
 end
 
+---@param node TSNode
+---@param container_map table
+---@return TSNode|nil
 local function containing_node_by_type(node, container_map)
     if not node then
         return nil
@@ -250,7 +258,7 @@ function TreeSitter:get_local_parameter_types(scope)
     -- Only if we find something, else empty
     if #parameter_list_nodes > 0 then
         for _, node in pairs(parameter_list_nodes) do
-            local region = Region:from_node(node)
+            local region = Region:from_node(node, self.bufnr)
             local parameter_list = region:get_text()
             local parameter_split = utils.split_string(parameter_list[1], " ")
             parameter_types[parameter_split[1]] = parameter_split[2]
@@ -352,7 +360,8 @@ function TreeSitter:get_parent_scope(node)
 end
 
 function TreeSitter:get_root()
-    local parser = parsers.get_parser(self.bufnr, self.filetype)
+    local ft = self.filetype == "typescriptreact" and "tsx" or self.filetype
+    local parser = parsers.get_parser(self.bufnr, ft)
     return parser:parse()[1]:root()
 end
 

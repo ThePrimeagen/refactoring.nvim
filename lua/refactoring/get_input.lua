@@ -12,6 +12,9 @@ local input = async.wrap(function(prompt, text, completion, callback)
     }, callback)
 end, 4)
 
+---@param question string
+---@param text string|nil
+---@return string|nil
 local function get_input(question, text)
     text = text or ""
 

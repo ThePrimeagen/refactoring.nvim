@@ -9,7 +9,7 @@ M.reload = function()
 end
 
 function M.create_query_from_buffer()
-    local bufnr = vim.fn.bufnr()
+    local bufnr = vim.api.nvim_get_current_buf()
     local filetype = vim.bo[bufnr].filetype
     return Query:new(
         bufnr,
@@ -37,7 +37,7 @@ function M.get_scope_from_region(region)
 end
 
 function M.debug_current_selection()
-    local bufnr = vim.fn.bufnr()
+    local bufnr = vim.api.nvim_get_current_buf()
     local region = Region:from_current_selection()
     local scope = M.get_scope_from_region(region)
 
@@ -50,7 +50,7 @@ function M.debug_current_selection()
 end
 
 function M.print_selections_sexpr()
-    local bufnr = vim.fn.bufnr()
+    local bufnr = vim.api.nvim_get_current_buf()
     local filetype = vim.bo[bufnr].filetype
     local root = Query.get_root(bufnr, filetype)
     local region = Region:from_current_selection()

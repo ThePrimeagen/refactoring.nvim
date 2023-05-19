@@ -9,7 +9,7 @@ describe("Query", function()
     it("should capture sexpr", function()
         vim.cmd(":new")
         vim.cmd(":set filetype=typescript")
-        local bufnr = vim.fn.bufnr()
+        local bufnr = vim.api.nvim_get_current_buf()
         local file = test_utils.read_file("query.ts")
         vim.api.nvim_buf_set_lines(
             0,
@@ -27,11 +27,8 @@ describe("Query", function()
         local extract_node = region:to_ts_node(ts:get_root())
         local scope = ts:get_scope(extract_node)
 
-        local occurrences = Query.find_occurrences(
-            scope,
-            extract_node:sexpr(),
-            bufnr
-        )
+        local occurrences =
+            Query.find_occurrences(scope, extract_node:sexpr(), bufnr)
         eq(3, #occurrences)
 
         local query_parts = {

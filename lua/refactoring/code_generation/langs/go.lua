@@ -128,6 +128,7 @@ local function constant(opts)
     return result
 end
 
+---@type code_generation
 local go = {
     comment = function(statement)
         return string.format("// %s", statement)

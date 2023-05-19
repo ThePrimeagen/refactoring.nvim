@@ -91,6 +91,9 @@ function M.get_node_text(node, out)
     return out
 end
 
+---@param a TSNode
+---@param b TSNode
+---@return boolean
 function M.appears_before(a, b)
     local a_row, a_col, a_bytes = a:start()
     local b_row, b_col, b_bytes = b:start()
@@ -109,8 +112,8 @@ function M.sort_in_appearance_order(nodes)
 end
 
 -- determines if a contains node b.
--- @param a the containing node
--- @param b the node to be contained
+--- @param a TSNode the containing node
+--- @param b TSNode the node to be contained
 function M.node_contains(a, b)
     if a == nil or b == nil then
         return false
@@ -165,11 +168,11 @@ end
 -- useful in refactor 106 and I assume it will be used elsewhere quite a bit
 function M.node_text_to_set(...)
     local out = {}
+    local bufnr = vim.api.nvim_get_current_buf()
     for i = 1, select("#", ...) do
         local nodes = select(i, ...)
-        local cur_bufnr = vim.api.nvim_get_current_buf()
         for _, node in pairs(nodes) do
-            local text = vim.treesitter.get_node_text(node, cur_bufnr)
+            local text = vim.treesitter.get_node_text(node, bufnr)
             if text ~= nil then
                 out[text] = true
             end
@@ -188,10 +191,12 @@ function M.table_key_intersect(a, b)
     return out
 end
 
+---@param node TSNode
 function M.region_above_node(node)
     local scope_region = Region:from_node(node)
     local lsp_range = scope_region:to_lsp_range()
     lsp_range.start.line = math.max(lsp_range.start.line - 1, 0)
+    lsp_range.start.character = 0
     lsp_range["end"] = lsp_range.start
     return Region:from_lsp_range(lsp_range)
 end

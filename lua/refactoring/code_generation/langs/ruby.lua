@@ -46,6 +46,7 @@ local function ruby_constant(opts)
     return constant_string_pattern
 end
 
+---@type code_generation
 local ruby = {
     comment = function(statement)
         return string.format("# %s", statement)
@@ -69,10 +70,8 @@ local ruby = {
     terminate = function(code)
         return code
     end,
-    -- This is for returing multiple arguments from a function
-    -- @param names string|table
-    pack = function(opts)
-        return code_utils.returnify(opts, "%s")
+    pack = function(names)
+        return code_utils.returnify(names, "%s")
     end,
     print = function(opts)
         return string.format(opts.statement, opts.content)

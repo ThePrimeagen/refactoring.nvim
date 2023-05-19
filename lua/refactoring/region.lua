@@ -30,7 +30,7 @@ function Region:from_current_selection()
     local start_row, start_col, end_row, end_col = get_selection_range()
 
     return setmetatable({
-        bufnr = vim.fn.bufnr(),
+        bufnr = vim.api.nvim_get_current_buf(),
         start_row = start_row,
         start_col = start_col,
         end_row = end_row,
@@ -67,11 +67,11 @@ function Region:is_empty()
 end
 
 --- Get a region from a Treesitter Node
----@param node userdata
+---@param node TSNode
 ---@param bufnr? number
 ---@return RefactorRegion
 function Region:from_node(node, bufnr)
-    bufnr = bufnr or vim.fn.bufnr()
+    bufnr = bufnr or vim.api.nvim_get_current_buf()
     local start_line, start_col, end_line, end_col = node:range()
 
     -- todo: is col correct?
@@ -90,7 +90,7 @@ end
 ---@return RefactorRegion
 function Region:from_point(point, bufnr)
     -- maybe should set this to zero
-    bufnr = bufnr or vim.fn.bufnr()
+    bufnr = bufnr or vim.api.nvim_get_current_buf()
 
     return setmetatable({
         bufnr = vim.fn.bufnr(bufnr),
@@ -102,7 +102,7 @@ function Region:from_point(point, bufnr)
 end
 
 function Region:from_lsp_range(lsp_range, bufnr)
-    bufnr = bufnr or vim.fn.bufnr()
+    bufnr = bufnr or vim.api.nvim_get_current_buf()
 
     -- todo: is col correct?
     return setmetatable({
