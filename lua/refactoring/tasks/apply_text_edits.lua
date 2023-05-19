@@ -16,8 +16,6 @@ local function refactor_apply_text_edits(refactor)
             edits[bufnr] = {}
         end
 
-        -- TODO: We should think of a way to make this work with better for both
-        -- new line auto additions and just lsp generated content
         table.insert(edits[bufnr], edit)
         add_change(
             -- TODO (TheLeoP): Probably this is wrong and I should evaluate whether to insert or replace x2

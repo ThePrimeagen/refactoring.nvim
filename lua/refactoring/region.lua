@@ -79,7 +79,6 @@ function Region:from_node(node, bufnr)
     bufnr = bufnr or vim.api.nvim_get_current_buf()
     local start_line, start_col, end_line, end_col = node:range()
 
-    -- TODO: is col correct?
     return setmetatable({
         bufnr = bufnr,
         start_row = start_line + 1,
@@ -142,7 +141,8 @@ function Region:to_ts_node(root)
     return root:named_descendant_for_range(s_row, s_col, e_row, e_col)
 end
 
---- Convert a region to a tree sitter region
+--- Convert a region to a treesitter region
+---@return integer start_row, integer start_col, integer end_row, integer end_col
 function Region:to_ts()
     -- Need the -2 for end_col to be  correct for `ts_utils.is_in_node_range`
     -- function results when checking scope for languages like python
@@ -154,6 +154,7 @@ function Region:to_ts()
 end
 
 --- Get the lines contained in the region
+---@return string[]
 function Region:get_lines()
     local text = vim.api.nvim_buf_get_lines(
         self.bufnr,
@@ -165,15 +166,18 @@ function Region:get_lines()
 end
 
 --- Get the left boundary of the region
+---@return RefactorPoint
 function Region:get_start_point()
     return Point:from_values(self.start_row, self.start_col)
 end
 
 --- Get the right boundary of the region
+---@return RefactorPoint
 function Region:get_end_point()
     return Point:from_values(self.end_row, self.end_col)
 end
 
+---@return string[]
 function Region:get_text()
     local text = vim.api.nvim_buf_get_lines(
         self.bufnr,
@@ -201,7 +205,7 @@ end
 ---@field start LspPoint
 ---@field end LspPoint
 
---- Convert a region to an LSP Range
+--- Convert a region to an LSP Range inteded to be used to insert text (start and end should the same despite end being exclusive)
 ---@return LspRange
 function Region:to_lsp_range_insert()
     return {
@@ -216,7 +220,7 @@ function Region:to_lsp_range_insert()
     }
 end
 
---- Convert a region to an LSP Range
+--- Convert a region to an LSP Range intended to be used to replace text (end should be exclusive)
 ---@return LspRange
 function Region:to_lsp_range_replace()
     return {
@@ -267,6 +271,7 @@ end
 
 --- Returns true if self contains region.
 ---@param region RefactorRegion
+---@return boolean
 function Region:contains(region)
     if region.bufnr ~= self.bufnr then
         return false
@@ -278,12 +283,14 @@ end
 
 --- Returns true if self contains point.
 ---@param point RefactorPoint
+---@return boolean
 function Region:contains_point(point)
     return self:get_start_point():leq(point) and self:get_end_point():geq(point)
 end
 
 --- Return true if the position of self lies after the position of region
 ---@param region RefactorRegion
+---@return boolean
 function Region:is_after(region)
     return self:get_start_point():gt(region:get_end_point())
 end

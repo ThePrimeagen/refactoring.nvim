@@ -8,7 +8,6 @@ local post_refactor = require("refactoring.tasks.post_refactor")
 local refactor_setup = require("refactoring.tasks.refactor_setup")
 local selection_setup = require("refactoring.tasks.selection_setup")
 local get_select_input = require("refactoring.get_select_input")
--- local ts_utils = require("refactoring.utils")
 
 local lsp_utils = require("refactoring.lsp_utils")
 

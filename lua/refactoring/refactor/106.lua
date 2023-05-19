@@ -440,7 +440,6 @@ local function extract_setup(refactor)
     if not function_name or function_name == "" then
         return false, "Error: Must provide function name"
     end
-    assert(function_name)
     local function_body = refactor.region:get_text()
 
     -- NOTE: How do we think about this if we have to pass through multiple
