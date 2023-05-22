@@ -36,4 +36,23 @@ M.find_references = function(node, scope, bufnr, definition)
     return references
 end
 
+M.find_declaration = function(node, bufnr)
+    local current_node_text = ts_utils.get_node_text(node, bufnr)[1]
+
+    for _, definitions in ipairs(ts_locals.get_definitions(bufnr)) do
+        for _, definition in pairs(definitions) do
+            local def_node = definition.node
+
+            -- TODO: not sure if this is the correct way to do it
+            local texts = ts_utils.get_node_text(def_node, bufnr)
+            local node_text = texts[1]
+            if (node_text == current_node_text) then
+                return def_node, true
+            end
+        end
+    end
+    -- TODO: return a default?? maybe
+    return nil
+end
+
 return M
