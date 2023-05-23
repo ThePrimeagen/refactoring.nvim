@@ -216,12 +216,13 @@ end
 ---@param node TSNode
 function M.region_above_node(node)
     local scope_region = Region:from_node(node)
-    -- TODO (TheLeoP): should I create a special case for this?
-    local lsp_range = scope_region:to_lsp_range_insert()
-    lsp_range.start.line = math.max(lsp_range.start.line - 1, 0)
-    lsp_range.start.character = 0
-    lsp_range["end"] = lsp_range.start
-    return Region:from_lsp_range_insert(lsp_range)
+
+    scope_region.start_row = math.max(scope_region.start_row - 1, 1)
+    scope_region.start_col = 1
+    scope_region.end_row = scope_region.start_row
+    scope_region.end_col = scope_region.start_col
+
+    return scope_region
 end
 
 return M
