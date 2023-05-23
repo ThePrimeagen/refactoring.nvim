@@ -73,33 +73,43 @@ local function determine_declarator_node(refactor, bufnr)
     end
 end
 
+local function already_processed(list, item)
+    for _, value in ipairs(list) do
+        if value == item then
+            return true
+        end
+    end
+    return false
+end
+
 local function inline_func_setup(refactor, bufnr)
     local declarator_node = determine_declarator_node(refactor, bufnr)
-
-    local references =
-        ts.find_references(declarator_node, refactor.scope, bufnr)
-
-    if #references < 2 then
-        error("Error: no function usages to inline")
-        return
-    end
-
-    local text_edits = {}
-    -- TODO: find and delete the function declaration
-
-    -- print(dump(declarator_node:parent():type()))
-    -- print(vim.inspect(utils.get_node_text(declarator_node:parent())))
 
     local function_text
     for _, value in ipairs(refactor.ts:get_function_body(declarator_node:parent())) do
         function_text = vim.treesitter.get_node_text(value, bufnr)
     end
 
+
+    local references =
+        ts.find_references(declarator_node, refactor.scope, bufnr, declarator_node)
+
+    if #references < 2 then
+        error("Error: no function usages to inline")
+        return
+    end
+
     -- replaces all references with inner function text
-    local node_at_point = ts.get_node_at_cursor()
-    local lsp_range = ts_utils.node_to_lsp_range(node_at_point:parent())
-    local text_edit = { range = lsp_range, newText = function_text }
-    table.insert(text_edits, text_edit)
+    local text_edits = {}
+    local processed = {}
+    for _, ref in ipairs(references) do
+        if not already_processed(processed, ref) then
+            local lsp_range = ts_utils.node_to_lsp_range(ref:parent())
+            local text_edit = { range = lsp_range, newText = function_text }
+            table.insert(text_edits, text_edit)
+            table.insert(processed, ref)
+        end
+    end
 
     -- detele the original function
     table.insert(
@@ -112,7 +122,6 @@ end
 ---@param bufnr number
 ---@param opts table
 function M.inline_func(bufnr, opts)
-    print("from inline_func")
     get_inline_setup_pipeline(bufnr, opts)
         :add_task(
         --- @param refactor Refactor
