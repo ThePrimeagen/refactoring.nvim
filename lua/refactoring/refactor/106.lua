@@ -46,7 +46,8 @@ local function get_return_vals(refactor)
     local region_var_map = utils.node_text_to_set(bufnr, region_vars)
 
     local ref_map = utils.node_text_to_set(bufnr, refs)
-    local return_vals = vim.tbl_keys(utils.table_key_intersect(region_var_map, ref_map))
+    local return_vals =
+        vim.tbl_keys(utils.table_key_intersect(region_var_map, ref_map))
     table.sort(return_vals)
 
     return return_vals
