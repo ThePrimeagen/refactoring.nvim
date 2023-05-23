@@ -107,6 +107,30 @@ local function test_empty_input()
     end
 end
 
+local function validate_error_if_file_exists(err, filename_prefix)
+    local expected_error_name = string.format(
+        "%s.expected_error",
+        filename_prefix
+    )
+    local expected_error_file = Path:new(
+        cwd,
+        "lua",
+        "refactoring",
+        "tests",
+        expected_error_name
+    )
+    if expected_error_file:exists() then
+        local cursor_position = test_utils.get_contents(
+            string.format("%s.expected_error", filename_prefix)
+        )
+        local expected_error = cursor_position[1]
+        local has_error_message = string.find(err, expected_error)
+        if not has_error_message then
+            eq(expected_error, err)
+        end
+    end
+end
+
 local function validate_cursor_if_file_exists(filename_prefix)
     local cursor_position_name =
         string.format("%s.cursor_position", filename_prefix)
@@ -214,9 +238,10 @@ describe("Refactoring", function()
             set_bufnr_shiftwidth(filename_extension)
 
             test_utils.run_commands(filename_prefix)
-            refactoring.refactor(refactor)
+            local status, err = pcall(refactoring.refactor, refactor)
             async.util.scheduler()
             local lines = vim.api.nvim_buf_get_lines(bufnr, 0, -1, false)
+            validate_error_if_file_exists(err, filename_prefix)
 
             eq(expected, lines)
             validate_cursor_if_file_exists(filename_prefix)
