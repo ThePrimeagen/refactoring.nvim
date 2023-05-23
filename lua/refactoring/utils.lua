@@ -159,10 +159,11 @@ end
 
 ---@param nodes TSNode[]
 ---@param region RefactorRegion
+---@param bufnr integer|nil
 ---@return TSNode[]
-M.region_intersect = function(nodes, region)
+M.region_intersect = function(nodes, region, bufnr)
     return vim.tbl_filter(function(node)
-        return region:contains(Region:from_node(node))
+        return region:contains(Region:from_node(node, bufnr))
     end, nodes)
 end
 

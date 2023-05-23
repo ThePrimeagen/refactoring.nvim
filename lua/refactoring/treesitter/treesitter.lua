@@ -182,9 +182,13 @@ function TreeSitter:get_references(scope)
     return out
 end
 
+---@param scope TSNode
+---@param region RefactorRegion
+---@return TSNode[]
 function TreeSitter:get_region_refs(scope, region)
     local nodes = self:get_references(scope)
-    nodes = utils.region_intersect(nodes, region)
+
+    nodes = utils.region_intersect(nodes, region, region.bufnr)
     return nodes
 end
 
