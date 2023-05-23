@@ -11,7 +11,7 @@ local function refactor_apply_text_edits(refactor)
     local edits = {}
 
     for _, edit in pairs(refactor.text_edits) do
-        local bufnr = refactor.buffers[1]
+        local bufnr = edit.bufnr or refactor.buffers[1]
         if not edits[bufnr] then
             edits[bufnr] = {}
         end

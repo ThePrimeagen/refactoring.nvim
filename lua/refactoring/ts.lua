@@ -11,7 +11,7 @@ end
 
 ---@param node TSNode
 ---@param bufnr integer
----@return TSNode
+---@return TSNode, TSNode
 M.find_definition = function(node, bufnr)
     return ts_locals.find_definition(node, bufnr)
 end

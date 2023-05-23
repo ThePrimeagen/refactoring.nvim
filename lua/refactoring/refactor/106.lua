@@ -499,6 +499,7 @@ local function extract_setup(refactor)
             function_code,
             { below = true }
         )
+        extract_function.bufnr = refactor.buffers[2]
     end
 
     -- NOTE: there is going to be a bunch of edge cases we haven't thought
