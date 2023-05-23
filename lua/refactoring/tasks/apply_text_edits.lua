@@ -17,11 +17,13 @@ local function refactor_apply_text_edits(refactor)
         end
 
         table.insert(edits[bufnr], edit)
-        add_change(
-            -- TODO (TheLeoP): Probably this is wrong and I should evaluate whether to insert or replace x2
-            Region:from_lsp_range_insert(edit.range, bufnr),
-            edit.newText
-        )
+        local region
+        if edit.range["end"] == edit.range["start"] then
+            region = Region:from_lsp_range_replace(edit.range, bufnr)
+        else
+            region = Region:from_lsp_range_insert(edit.range, bufnr)
+        end
+        add_change(region, edit.newText)
     end
 
     for bufnr, edit_set in pairs(edits) do
