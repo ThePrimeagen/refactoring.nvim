@@ -42,9 +42,10 @@ local function get_return_vals(refactor)
     local refs = refactor.ts:get_references(refactor.scope)
     refs = utils.after_region(refs, refactor.region)
 
-    local region_var_map = utils.node_text_to_set(region_vars)
+    local bufnr = refactor.buffers[1]
+    local region_var_map = utils.node_text_to_set(bufnr, region_vars)
 
-    local ref_map = utils.node_text_to_set(refs)
+    local ref_map = utils.node_text_to_set(bufnr, refs)
     local return_vals =
         vim.tbl_keys(utils.table_key_intersect(region_var_map, ref_map))
     table.sort(return_vals)
@@ -385,8 +386,9 @@ local function get_selected_locals(refactor, is_class)
         end
     end
 
-    local local_def_map = utils.node_text_to_set(local_defs)
-    local region_refs_map = utils.node_text_to_set(region_refs)
+    local bufnr = refactor.buffers[1]
+    local local_def_map = utils.node_text_to_set(bufnr, local_defs)
+    local region_refs_map = utils.node_text_to_set(bufnr, region_refs)
     return utils.table_key_intersect(local_def_map, region_refs_map)
 end
 
