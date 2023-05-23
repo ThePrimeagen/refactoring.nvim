@@ -4,9 +4,7 @@ local post_refactor = require("refactoring.tasks.post_refactor")
 local ts = require("refactoring.ts")
 local Region = require("refactoring.region")
 local lsp_utils = require("refactoring.lsp_utils")
-local ts_locals = require("nvim-treesitter.locals")
-local ts_utils2 = require("nvim-treesitter.ts_utils")
-local utils = require("refactoring.utils")
+local ts_utils = require("nvim-treesitter.ts_utils")
 
 local function dump(o)
     if type(o) == "table" then
@@ -78,6 +76,14 @@ end
 local function inline_func_setup(refactor, bufnr)
     local declarator_node = determine_declarator_node(refactor, bufnr)
 
+    local references =
+        ts.find_references(declarator_node, refactor.scope, bufnr)
+
+    if #references < 2 then
+        error("Error: no function usages to inline")
+        return
+    end
+
     local text_edits = {}
     -- TODO: find and delete the function declaration
 
@@ -86,12 +92,12 @@ local function inline_func_setup(refactor, bufnr)
 
     local function_text
     for _, value in ipairs(refactor.ts:get_function_body(declarator_node:parent())) do
-        function_text = ts_utils2.get_node_text(value, bufnr)[1]
+        function_text = vim.treesitter.get_node_text(value, bufnr)
     end
 
     -- replaces all references with inner function text
     local node_at_point = ts.get_node_at_cursor()
-    local lsp_range = ts_utils2.node_to_lsp_range(node_at_point:parent())
+    local lsp_range = ts_utils.node_to_lsp_range(node_at_point:parent())
     local text_edit = { range = lsp_range, newText = function_text }
     table.insert(text_edits, text_edit)
 
