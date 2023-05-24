@@ -5,6 +5,7 @@ local ts = require("refactoring.ts")
 local Region = require("refactoring.region")
 local lsp_utils = require("refactoring.lsp_utils")
 local ts_utils = require("nvim-treesitter.ts_utils")
+local utils = require("refactoring.utils")
 
 local function dump(o)
     if type(o) == "table" then
@@ -82,15 +83,28 @@ local function already_processed(list, item)
     return false
 end
 
+local function get_args(refactor, value)
+    local curr_scope = refactor.ts:get_scope(value)
+    -- print("body")
+    -- print("scope")
+    -- print(dump(curr_scope))
+    -- print(dumpcode(curr_scope))
+    local curr_region = Region:from_node(value)
+    -- print("region")
+    -- print(dump(curr_region))
+    local local_defs = refactor.ts:get_local_defs(curr_scope, curr_region)
+    local region_refs = refactor.ts:get_region_refs(curr_scope, curr_region)
+    local local_def_map = utils.node_text_to_set(local_defs)
+    local region_refs_map = utils.node_text_to_set(region_refs)
+    return vim.fn.sort(vim.tbl_keys(utils.table_key_intersect(local_def_map, region_refs_map)))
+end
+
+
 local function inline_func_setup(refactor, bufnr)
     local declarator_node = determine_declarator_node(refactor, bufnr)
 
+    -- TODO: I need something more elaborated that plain text, I need nodes, and append, maybe
     local function_text
-    for _, value in ipairs(refactor.ts:get_function_body(declarator_node:parent())) do
-        function_text = vim.treesitter.get_node_text(value, bufnr)
-    end
-
-
     local references =
         ts.find_references(declarator_node, refactor.scope, bufnr, declarator_node)
 
@@ -99,14 +113,38 @@ local function inline_func_setup(refactor, bufnr)
         return
     end
 
+    for _, value in ipairs(refactor.ts:get_function_body(declarator_node)) do
+        print("value")
+        print(dump(value))
+    end
+
+    local args
+    for _, value in ipairs(refactor.ts:get_function_body(declarator_node:parent())) do
+        function_text = vim.treesitter.get_node_text(value, bufnr)
+        args = get_args(refactor, value)
+    end
+
     -- replaces all references with inner function text
     local text_edits = {}
     local processed = {}
     for _, ref in ipairs(references) do
         if not already_processed(processed, ref) then
-            local lsp_range = ts_utils.node_to_lsp_range(ref:parent())
-            local text_edit = { range = lsp_range, newText = function_text }
-            table.insert(text_edits, text_edit)
+            if #args > 0 then
+                for _, arg in ipairs(args) do
+                    local param_text = refactor.code.constant({ name = arg, value = '"test"', })
+                    table.insert(text_edits, lsp_utils.insert_text(Region:from_node(ref:parent(), bufnr), param_text))
+                end
+
+                -- local func_call = refactor.code.go_call_class_func({ class_type = 'fmt', name = 'Errorf', args = args, })
+                local func_call = refactor.code.call_function({ name = '\tfmt.Errorf', args = args, })
+                local insert_text, delete_text = lsp_utils.replace_text(Region:from_node(ref:parent(), bufnr), func_call)
+                table.insert(text_edits, insert_text)
+                table.insert(text_edits, delete_text)
+            else
+                local lsp_range = ts_utils.node_to_lsp_range(ref:parent())
+                local text_edit = { range = lsp_range, newText = function_text }
+                table.insert(text_edits, text_edit)
+            end
             table.insert(processed, ref)
         end
     end
