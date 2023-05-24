@@ -83,19 +83,15 @@ local function is_processed(list, item)
     return false
 end
 
-local function get_args(refactor, node, bufnr)
-    local curr_scope = refactor.ts:get_scope(node)
-    local curr_region = Region:from_node(node)
-    local local_defs = refactor.ts:get_local_defs(curr_scope, curr_region)
-    local region_refs = refactor.ts:get_region_refs(curr_scope, curr_region)
-    local local_def_map = utils.node_text_to_set(bufnr, local_defs)
-    local region_refs_map = utils.node_text_to_set(bufnr, region_refs)
-    return vim.fn.sort(vim.tbl_keys(utils.table_key_intersect(local_def_map, region_refs_map)))
-end
-
-
 local function get_function_arguments(refactor, declarator_node, bufnr)
     local args = {}
+    for _, value in ipairs(refactor.ts:loop_thru_nodes(declarator_node:parent(), refactor.ts.function_args)) do
+        table.insert(args, vim.treesitter.get_node_text(value, bufnr))
+    end
+    return args
+end
+
+local function get_used_function_definition(refactor, declarator_node, bufnr)
     for _, node in ipairs(refactor.ts:get_function_body(declarator_node:parent())) do
         local curr_scope = refactor.ts:get_scope(node)
         local curr_region = Region:from_node(node)
@@ -105,9 +101,8 @@ local function get_function_arguments(refactor, declarator_node, bufnr)
         local region_refs_map = utils.node_text_to_set(bufnr, region_refs)
         return vim.fn.sort(vim.tbl_keys(utils.table_key_intersect(local_def_map, region_refs_map)))
     end
-    return args
+    return {}
 end
-
 
 local function get_function_calls(refactor, declarator_node, args)
     local function_calls = {}
@@ -174,7 +169,9 @@ local function inline_func_setup(refactor, bufnr)
     end
 
     local declarator_args = get_function_arguments(refactor, declarator_node, bufnr)
-    local function_calls = get_function_calls(refactor, declarator_node, declarator_args)
+    local used_args = get_used_function_definition(refactor, declarator_node, bufnr)
+
+    local function_calls = get_function_calls(refactor, declarator_node, used_args)
 
 
     -- replaces all references with inner function text
