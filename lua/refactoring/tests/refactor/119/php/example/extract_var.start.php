@@ -1,6 +1,6 @@
 <?php
 
-Class Order 
+class Order 
 {
     public $quantity;
     public $itemPrice;

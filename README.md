@@ -80,11 +80,11 @@ are supported (with individual support for each function may vary):
     - Both Extract Function and Extract Block have the capability to extract to
       a separate file.
   - **119: Extract Variable**
-    - In visual mode, extracts occurences of a selected expression to its own
-      variable, replacing occurences of that expression with the variable
+    - In visual mode, extracts occurrences of a selected expression to its own
+      variable, replacing occurrences of that expression with the variable
   - **123: Inline Variable**
     - Inverse of extract variable
-    - Replaces all occurences of a variable with its value
+    - Replaces all occurrences of a variable with its value
     - Can be used in normal mode or visual mode
       - Using this function in normal mode will automatically find the variable
         under the cursor and inline it
@@ -302,7 +302,7 @@ automatically.
 
 ### Customizing Extract variable Statements<a name="config-119-custom"></a>
 When performing an `extract_var` refactor operation, you can custom how the new
-variable would be declaed by setting configuration like the below example.
+variable would be declared by setting configuration like the below example.
 
 ```lua
 require('refactoring').setup({

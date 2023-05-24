@@ -68,13 +68,13 @@ end
 local function construct_new_declaration(
     identifiers,
     values,
-    identifer_to_exclude,
+    identifier_to_exclude,
     bufnr
 )
     local new_identifiers, new_values = {}, {}
 
     for idx, identifier in pairs(identifiers) do
-        if identifier ~= identifer_to_exclude then
+        if identifier ~= identifier_to_exclude then
             table.insert(
                 new_identifiers,
                 vim.treesitter.get_node_text(identifier, bufnr)
