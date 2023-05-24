@@ -58,6 +58,8 @@ local function printDebug(bufnr, config)
 
                 -- always go below for text
                 opts.below = true
+                -- always go end for text
+                opts._end = true
                 point.col = opts.below and 100000 or 1
 
                 if opts.normal == nil then

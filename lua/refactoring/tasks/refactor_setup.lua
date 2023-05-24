@@ -9,13 +9,12 @@ local Point = require("refactoring.point")
 
 ---
 ---@param input_bufnr number
----@param config Config
----@return function
+---@param config c|Config
+---@return fun(): true, Refactor
 local function refactor_setup(input_bufnr, config)
     input_bufnr = input_bufnr or vim.api.nvim_get_current_buf()
     config = config or Config.get()
 
-    --- @retun boolean, Refactor
     return function()
         -- Setting bufnr to test bufnr
         local bufnr
@@ -35,16 +34,15 @@ local function refactor_setup(input_bufnr, config)
         ---@field region? RefactorRegion
         ---@field region_node? TSNode
         ---@field scope? TSNode
-        ---@field cursor_col_adjustment? number
-        ---@field text_edits? {add_newline: boolean, region: RefactorRegion, text: string} | LspRange
+        ---@field cursor_col_adjustment? integer
+        ---@field text_edits? LspTextEdit[] | {bufnr: integer|nil}[]
         ---@field code code_generation
         local refactor = {
-            ---@type {cursor: number, highlight_start?: number, highlight_end?: number, func_call?: number}
+            ---@type {cursor: integer, highlight_start?: integer, highlight_end?: integer, func_call?: integer}
             whitespace = {
                 cursor = vim.fn.indent(cursor.row),
             },
             cursor = cursor,
-            highlight_start_col = vim.fn.col("'<"),
             code = config:get_code_generation_for(filetype),
             ts = TreeSitter.get_treesitter(),
             filetype = filetype,

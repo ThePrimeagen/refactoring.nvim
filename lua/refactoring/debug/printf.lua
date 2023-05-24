@@ -27,6 +27,10 @@ local function printDebug(bufnr, config)
                 if opts.below == nil then
                     opts.below = true
                 end
+                -- set default `end` behavior
+                if opts._end == nil then
+                    opts._end = true
+                end
                 point.col = opts.below and 100000 or 1
 
                 local indentation

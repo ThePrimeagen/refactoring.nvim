@@ -8,7 +8,6 @@ local post_refactor = require("refactoring.tasks.post_refactor")
 local refactor_setup = require("refactoring.tasks.refactor_setup")
 local selection_setup = require("refactoring.tasks.selection_setup")
 local get_select_input = require("refactoring.get_select_input")
-local ts_utils = require("refactoring.utils")
 
 local lsp_utils = require("refactoring.lsp_utils")
 
@@ -50,9 +49,7 @@ end
 local function get_node_to_inline(identifiers, bufnr)
     local node_to_inline, identifier_pos
 
-    if #identifiers == 0 then
-        error("No declarations in selected area")
-    elseif #identifiers == 1 then
+    if #identifiers == 1 then
         identifier_pos = 1
         node_to_inline = identifiers[identifier_pos]
     else
@@ -117,6 +114,9 @@ local function inline_var_setup(refactor, bufnr)
         definition = ts.find_definition(node_to_inline, bufnr)
         identifier_pos = determine_identifier_position(identifiers, definition)
     else
+        if #identifiers == 0 then
+            return false, "No declarations in selected area"
+        end
         node_to_inline, identifier_pos = get_node_to_inline(identifiers, bufnr)
         definition = ts.find_definition(node_to_inline, bufnr)
     end
@@ -153,7 +153,7 @@ local function inline_var_setup(refactor, bufnr)
             bufnr
         )
 
-        local insert_text, delete_text = lsp_utils.replace_text(
+        local insert_text = lsp_utils.replace_text(
             Region:from_node(declarator_node, bufnr),
             refactor.code.constant({
                 multiple = true,
@@ -163,7 +163,6 @@ local function inline_var_setup(refactor, bufnr)
         )
 
         table.insert(text_edits, insert_text)
-        table.insert(text_edits, delete_text)
     end
 
     local value_text = vim.treesitter.get_node_text(value_node_to_inline, bufnr)
@@ -171,21 +170,14 @@ local function inline_var_setup(refactor, bufnr)
     for _, ref in pairs(references) do
         -- TODO: In my mind, if nothing is left on the line when you remove, it should get deleted.
         -- Could be done via opts into replace_text.
-        local insert_text, delete_text =
+        local insert_text =
             lsp_utils.replace_text(Region:from_node(ref), value_text)
 
-        -- special case: if the identifier we are inlining has only one character, converting to an LSP
-        -- range breaks the whole thing so we have to manually reset it
-        if (ts_utils.get_node_text(node_to_inline)[1]):len() == 1 then
-            insert_text["range"]["end"]["character"] = insert_text["range"]["end"]["character"]
-                + 1
-        end
-
         table.insert(text_edits, insert_text)
-        table.insert(text_edits, delete_text)
     end
 
     refactor.text_edits = text_edits
+    return true, refactor
 end
 
 ---@param bufnr number
@@ -195,12 +187,11 @@ function M.inline_var(bufnr, opts)
         :add_task(
             --- @param refactor Refactor
             function(refactor)
-                inline_var_setup(refactor, bufnr)
-                return true, refactor
+                return inline_var_setup(refactor, bufnr)
             end
         )
         :after(post_refactor.post_refactor)
-        :run()
+        :run(nil, vim.notify)
 end
 
 return M

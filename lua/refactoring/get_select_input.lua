@@ -1,9 +1,6 @@
 local Config = require("refactoring.config")
 
--- This will be able to be hot swapped out with better input capture as we
--- go on.  This is just a place holder
 local async = require("plenary.async")
--- local input = vim.fn.input
 local select_input = async.wrap(function(items, prompt, format, kind, callback)
     vim.ui.select(items, {
         prompt = prompt,

@@ -11,12 +11,16 @@ local async = require("plenary.async")
 local Pipeline = {}
 Pipeline.__index = Pipeline
 
+---@param task fun(): boolean, any
+---@return RefactorPipeline
 function Pipeline:from_task(task)
     return setmetatable({
         _tasks = { task },
     }, self)
 end
 
+---@param task function
+---@return RefactorPipeline
 function Pipeline:add_task(task)
     table.insert(self._tasks, task)
     return self
@@ -44,6 +48,9 @@ function Pipeline:after(pipeline)
     return self
 end
 
+---@param cb function|nil
+---@param err function|nil
+---@param seed_value any|nil
 function Pipeline:run(cb, err, seed_value)
     err = err or error
     async.void(function()

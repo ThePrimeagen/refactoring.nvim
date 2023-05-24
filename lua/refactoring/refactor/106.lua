@@ -42,12 +42,13 @@ local function get_return_vals(refactor)
     local refs = refactor.ts:get_references(refactor.scope)
     refs = utils.after_region(refs, refactor.region)
 
-    local region_var_map = utils.node_text_to_set(region_vars)
+    local bufnr = refactor.buffers[1]
+    local region_var_map = utils.node_text_to_set(bufnr, region_vars)
 
-    local ref_map = utils.node_text_to_set(refs)
-    local return_vals = vim.fn.sort(
+    local ref_map = utils.node_text_to_set(bufnr, refs)
+    local return_vals =
         vim.tbl_keys(utils.table_key_intersect(region_var_map, ref_map))
-    )
+    table.sort(return_vals)
 
     return return_vals
 end
@@ -229,13 +230,12 @@ local function get_func_call(refactor, extract_params)
     local func_call
     if extract_params.is_class then
         func_call = {
-            region = refactor.region,
-            text = refactor.code.call_class_function({
+            range = refactor.region:to_lsp_range_replace(),
+            newText = refactor.code.call_class_function({
                 name = extract_params.function_name,
                 args = extract_params.args,
                 class_type = refactor.ts:get_class_type(refactor.scope),
             }),
-            add_newline = false,
         }
     else
         -- TODO (TheLeoP): jsx specific logic
@@ -247,14 +247,13 @@ local function get_func_call(refactor, extract_params)
         )
         local contains_jsx = ok and #ocurrences > 0
         func_call = {
-            region = refactor.region,
-            text = refactor.code.call_function({
+            range = refactor.region:to_lsp_range_replace(),
+            newText = refactor.code.call_function({
                 name = extract_params.function_name,
                 args = extract_params.args,
                 region_type = extract_params.region_type,
                 contains_jsx = contains_jsx,
             }),
-            add_newline = false,
         }
     end
 
@@ -272,19 +271,19 @@ local function get_func_call(refactor, extract_params)
             #extract_params.return_vals > 1
             and exception_languages[refactor.filetype] == nil
         then
-            func_call.text = refactor.code.constant({
+            func_call.newText = refactor.code.constant({
                 multiple = true,
                 identifiers = extract_params.return_vals,
-                values = { func_call.text },
+                values = { func_call.newText },
             })
         else
-            func_call.text = refactor.code.constant({
+            func_call.newText = refactor.code.constant({
                 name = extract_params.return_vals,
-                value = func_call.text,
+                value = func_call.newText,
             })
         end
     else
-        func_call.text = refactor.code.terminate(func_call.text)
+        func_call.newText = refactor.code.terminate(func_call.newText)
     end
 
     if
@@ -300,11 +299,9 @@ local function get_func_call(refactor, extract_params)
         local indent_whitespace = indent.indent(indent_amount, refactor.bufnr)
         local func_call_with_indent = {}
         func_call_with_indent[1] = indent_whitespace
-        func_call_with_indent[2] = func_call.text
-        func_call.text = table.concat(func_call_with_indent, "")
+        func_call_with_indent[2] = func_call.newText
+        func_call.newText = table.concat(func_call_with_indent, "")
     end
-
-    func_call.add_newline = false
 
     return func_call
 end
@@ -389,8 +386,9 @@ local function get_selected_locals(refactor, is_class)
         end
     end
 
-    local local_def_map = utils.node_text_to_set(local_defs)
-    local region_refs_map = utils.node_text_to_set(region_refs)
+    local bufnr = refactor.buffers[1]
+    local local_def_map = utils.node_text_to_set(bufnr, local_defs)
+    local region_refs_map = utils.node_text_to_set(bufnr, region_refs)
     return utils.table_key_intersect(local_def_map, region_refs_map)
 end
 
@@ -438,17 +436,20 @@ local function extract_block_setup(refactor)
 end
 
 --- @param refactor Refactor
+--- @return boolean, Refactor|string
 local function extract_setup(refactor)
     local function_name = get_input("106: Extract Function Name > ")
-    assert(function_name ~= "", "Error: Must provide function name")
+    if not function_name or function_name == "" then
+        return false, "Error: Must provide function name"
+    end
     local function_body = refactor.region:get_text()
 
     -- NOTE: How do we think about this if we have to pass through multiple
     -- functions (method extraction)
     local is_class = refactor.ts:is_class_function(refactor.scope)
     ---@type string[]
-    local args =
-        vim.fn.sort(vim.tbl_keys(get_selected_locals(refactor, is_class)))
+    local args = vim.tbl_keys(get_selected_locals(refactor, is_class))
+    table.sort(args)
 
     local first_line = function_body[1]
 
@@ -492,14 +493,15 @@ local function extract_setup(refactor)
         extract_function = lsp_utils.insert_new_line_text(
             region_above_scope,
             function_code,
-            { below = true }
+            { below = true, _end = true }
         )
     else
-        extract_function = {
-            region = region_above_scope,
-            text = function_code,
-            bufnr = refactor.buffers[2],
-        }
+        extract_function = lsp_utils.insert_new_line_text(
+            region_above_scope,
+            function_code,
+            { below = true }
+        )
+        extract_function.bufnr = refactor.buffers[2]
     end
 
     -- NOTE: there is going to be a bunch of edge cases we haven't thought
@@ -508,6 +510,7 @@ local function extract_setup(refactor)
         extract_function,
         func_call,
     }
+    return true, refactor
 end
 
 local ensure_code_gen_list = {
@@ -545,109 +548,63 @@ local function ensure_code_gen_106(refactor)
     return ensure_code_gen(refactor, list)
 end
 
+---@param bufnr integer
+---@param opts c|Config
 M.extract_to_file = function(bufnr, opts)
     bufnr = bufnr or vim.api.nvim_get_current_buf()
     get_extract_setup_pipeline(bufnr, opts)
-        :add_task(
-            ---@param refactor Refactor
-            function(refactor)
-                return ensure_code_gen_106(refactor)
-            end
-        )
+        :add_task(ensure_code_gen_106)
         :add_task(create_file.from_input)
-        :add_task(
-            ---@param refactor Refactor
-            function(refactor)
-                extract_setup(refactor)
-                return true, refactor
-            end
-        )
+        :add_task(extract_setup)
         :after(post_refactor.no_cursor_post_refactor)
-        :run()
+        :run(nil, vim.notify)
 end
 
+---@param bufnr integer
+---@param opts c|Config
 M.extract = function(bufnr, opts)
     bufnr = bufnr or vim.api.nvim_get_current_buf()
     get_extract_setup_pipeline(bufnr, opts)
+        :add_task(ensure_code_gen_106)
         :add_task(
             ---@param refactor Refactor
-            function(refactor)
-                return ensure_code_gen_106(refactor)
-            end
-        )
-        :add_task(
-            ---@param refactor Refactor
+            ---@return boolean, Refactor|string
             function(refactor)
                 if refactor.region:is_empty() then
-                    error(
+                    return false,
                         "Current selected region is empty, have to provide a non empty region to perform a extract func operation"
-                    )
                 end
                 return true, refactor
             end
         )
-        :add_task(
-            ---@param refactor Refactor
-            function(refactor)
-                extract_setup(refactor)
-                return true, refactor
-            end
-        )
+        :add_task(extract_setup)
         :after(post_refactor.post_refactor)
-        :run()
+        :run(nil, vim.notify)
 end
 
+---@param bufnr integer
+---@param opts c|Config
 M.extract_block = function(bufnr, opts)
     bufnr = bufnr or vim.api.nvim_get_current_buf()
     Pipeline:from_task(refactor_setup(bufnr, opts))
-        :add_task(
-            --- @param refactor Refactor
-            function(refactor)
-                return ensure_code_gen_106(refactor)
-            end
-        )
-        :add_task(
-            --- @param refactor Refactor
-            function(refactor)
-                return extract_block_setup(refactor)
-            end
-        )
-        :add_task(
-            --- @param refactor Refactor
-            function(refactor)
-                extract_setup(refactor)
-                return true, refactor
-            end
-        )
+        :add_task(ensure_code_gen_106)
+        :add_task(extract_block_setup)
+        :add_task(extract_setup)
         :after(post_refactor.post_refactor)
-        :run()
+        :run(nil, vim.notify)
 end
 
+---@param bufnr integer
+---@param opts c|Config
 M.extract_block_to_file = function(bufnr, opts)
     bufnr = bufnr or vim.api.nvim_get_current_buf()
     Pipeline:from_task(refactor_setup(bufnr, opts))
-        :add_task(
-            --- @param refactor Refactor
-            function(refactor)
-                return ensure_code_gen_106(refactor)
-            end
-        )
-        :add_task(
-            --- @param refactor Refactor
-            function(refactor)
-                return extract_block_setup(refactor)
-            end
-        )
+        :add_task(ensure_code_gen_106)
+        :add_task(extract_block_setup)
         :add_task(create_file.from_input)
-        :add_task(
-            --- @param refactor Refactor
-            function(refactor)
-                extract_setup(refactor)
-                return true, refactor
-            end
-        )
+        :add_task(extract_setup)
         :after(post_refactor.no_cursor_post_refactor)
-        :run()
+        :run(nil, vim.notify)
 end
 
 return M

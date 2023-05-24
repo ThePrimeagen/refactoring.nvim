@@ -8,6 +8,7 @@ local refactor_setup = require("refactoring.tasks.refactor_setup")
 local post_refactor = require("refactoring.tasks.post_refactor")
 local ensure_code_gen = require("refactoring.tasks.ensure_code_gen")
 local indent = require("refactoring.indent")
+local lsp_utils = require("refactoring.lsp_utils")
 
 local M = {}
 
@@ -64,6 +65,7 @@ local function get_var_name(var_name, refactor)
 end
 
 ---@param refactor Refactor
+---@return boolean, Refactor|string
 local function extract_var_setup(refactor)
     local extract_node = refactor.region_node
 
@@ -88,16 +90,19 @@ local function extract_var_setup(refactor)
     utils.sort_in_appearance_order(actual_occurrences)
 
     local var_name = get_input("119: What is the var name > ")
-    assert(var_name ~= "", "Error: Must provide new var name")
+    if not var_name or var_name == "" then
+        return false, "Error: Must provide new var name"
+    end
 
     refactor.text_edits = {}
     for _, occurrence in pairs(actual_occurrences) do
-        local region = Region:from_node(occurrence, refactor.bufnr)
-        table.insert(refactor.text_edits, {
-            add_newline = false,
-            region = region,
-            text = get_var_name(var_name, refactor),
-        })
+        table.insert(
+            refactor.text_edits,
+            lsp_utils.replace_text(
+                Region:from_node(occurrence, refactor.bufnr),
+                get_var_name(var_name, refactor)
+            )
+        )
     end
 
     local block_scope =
@@ -105,14 +110,14 @@ local function extract_var_setup(refactor)
 
     -- TODO: Add test for block_scope being nil
     if block_scope == nil then
-        error("block_scope is nil! Something went wrong")
+        return false, "block_scope is nil! Something went wrong"
     end
 
     local unfiltered_statements = refactor.ts:get_statements(block_scope)
 
     -- TODO: Add test for unfiltered_statements being nil
     if #unfiltered_statements < 1 then
-        error("unfiltered_statements is nil! Something went wrong")
+        return false, "unfiltered_statements is nil! Something went wrong"
     end
 
     local statements = vim.tbl_filter(function(node)
@@ -122,7 +127,7 @@ local function extract_var_setup(refactor)
 
     -- TODO: Add test for statements being nil
     if #statements < 1 then
-        error("statements is nil! Something went wrong")
+        return false, "statements is nil! Something went wrong"
     end
 
     local contained = nil
@@ -134,17 +139,19 @@ local function extract_var_setup(refactor)
     end
 
     if not contained then
-        error(
+        return false,
             "Extract var unable to determine its containing statement within the block scope, please post issue with exact highlight + code!  Thanks"
-        )
     end
 
     local region = utils.region_one_line_up_from_node(contained)
-    table.insert(refactor.text_edits, {
-        add_newline = false,
-        region = region,
-        text = get_new_var_text(extract_node_text, refactor, var_name, region),
-    })
+    table.insert(
+        refactor.text_edits,
+        lsp_utils.insert_text(
+            region,
+            get_new_var_text(extract_node_text, refactor, var_name, region)
+        )
+    )
+    return true, refactor
 end
 
 ---@param refactor Refactor
@@ -156,22 +163,11 @@ end
 
 function M.extract_var(bufnr, config)
     Pipeline:from_task(refactor_setup(bufnr, config))
-        :add_task(
-            ---@param refactor Refactor
-            function(refactor)
-                return ensure_code_gen_119(refactor)
-            end
-        )
+        :add_task(ensure_code_gen_119)
         :add_task(selection_setup)
-        :add_task(
-            ---@param refactor Refactor
-            function(refactor)
-                extract_var_setup(refactor)
-                return true, refactor
-            end
-        )
+        :add_task(extract_var_setup)
         :after(post_refactor.post_refactor)
-        :run()
+        :run(nil, vim.notify)
 end
 
 return M

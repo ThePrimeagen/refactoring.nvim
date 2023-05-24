@@ -3,62 +3,68 @@ local Region = require("refactoring.region")
 
 local M = {}
 
--- TODO: I think this is a bug in neovim.
--- The reason being to successfully insert at this character, we have to
--- make the start != end col or else it consumes one character
---
--- LSP definition:
--- https://microsoft.github.io/language-server-protocol/specification#textEdit
-local function fix_insertion_region(region)
-    region.end_row = region.start_row
-    region.end_col = region.start_col - 1
-    return region
-end
-
+---@param pointOrRegion RefactorRegion|RefactorPoint
+---@return RefactorRegion
 local function to_region(pointOrRegion)
     if not pointOrRegion.end_row then
-        return Region:from_point(pointOrRegion)
+        return Region:from_point(pointOrRegion --[[@as RefactorPoint]])
     end
-    return pointOrRegion
+    return pointOrRegion --[[@as RefactorRegion]]
 end
 
+---@param region RefactorRegion
+---@return LspTextEdit
 function M.delete_text(region)
-    return region:to_lsp_text_edit("")
+    return region:to_lsp_text_edit_replace("")
 end
 
+---@param pointOrRegion RefactorRegion|RefactorPoint
+---@param text string
+---@param opts {below: boolean, _end: boolean}|nil
+---@return LspTextEdit
 function M.insert_new_line_text(pointOrRegion, text, opts)
     opts = opts or {
         below = true,
+        _end = true,
     }
 
     local region = to_region(pointOrRegion)
 
-    -- what is after?  I just assume 10000 is equivalent
     if opts.below then
-        region.start_col = 10000
-        region.end_col = 10000
         text = code.new_line() .. text
     else
-        region.start_col = 1
-        region.end_col = 0
         text = text .. code.new_line()
     end
-    return region:to_lsp_text_edit(text)
+    -- what is after?  I just assume 10000 is equivalent
+    if opts._end then
+        region.start_col = 10000
+        region.end_col = 10000
+    else
+        region.start_col = 1
+        region.end_col = 1
+    end
+    return region:to_lsp_text_edit_insert(text)
 end
 
+---@param pointOrRegion RefactorRegion|RefactorPoint
+---@param text string
+---@return LspTextEdit
 function M.insert_text(pointOrRegion, text)
     local region = to_region(pointOrRegion)
     local clone = region:clone()
-    fix_insertion_region(clone)
+    clone.end_col = clone.start_col
+    clone.end_row = clone.start_row
 
-    return clone:to_lsp_text_edit(text)
+    return clone:to_lsp_text_edit_insert(text)
 end
 
+---@param region RefactorRegion
+---@param text string
+---@return LspTextEdit
 function M.replace_text(region, text)
-    local delete_text = M.delete_text(region)
-    local insert_text = M.insert_text(region, text)
+    local clone = region:clone()
 
-    return insert_text, delete_text
+    return clone:to_lsp_text_edit_replace(text)
 end
 
 return M
