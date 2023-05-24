@@ -6,6 +6,7 @@ local StringNode = Nodes.StringNode
 local QueryNode = Nodes.QueryNode
 local InlineNode = Nodes.InlineNode
 
+---@type TreeSitterInstance
 local Lua = {}
 
 function Lua.new(bufnr, ft)

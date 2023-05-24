@@ -3,6 +3,8 @@ local Query = require("refactoring.query")
 local BaseFieldNode = {}
 BaseFieldNode.__index = BaseFieldNode
 
+---@param ... any
+---@return any[]
 local function to_array(...)
     local items = {}
 
@@ -14,6 +16,14 @@ local function to_array(...)
     return items
 end
 
+---@class FieldnameNode
+---@field fieldnames string[]
+---@field node TSNode
+
+---@alias FieldNodeFunc fun(node: TSNode, fallback: integer|string): FieldnameNode
+
+---@param ... string
+---@return FieldNodeFunc
 local FieldNode = function(...)
     local fieldnames = to_array(...)
 
@@ -45,6 +55,8 @@ local FieldNode = function(...)
     end
 end
 
+---@param text string
+---@return fun(): table
 local StringNode = function(text)
     return function()
         return setmetatable({}, {
@@ -55,6 +67,10 @@ local StringNode = function(text)
     end
 end
 
+---@alias InlineNodeFunc fun(scope: TSNode, bufnr: integer, filetype: string): TSNode[]
+
+---@param sexpr string sexpr of a capture
+---@return InlineNodeFunc
 local InlineNode = function(sexpr)
     return function(scope, bufnr, filetype)
         -- TODO (TheLeoP): typescriptreact parser name is tsx
@@ -81,6 +97,8 @@ local InlineNode = function(sexpr)
     end
 end
 
+---@param sexpr string
+---@return fun(scope: TSNode, bufnr: integer): string
 local QueryNode = function(sexpr)
     -- The reason why this works is because __tostring method is already
     -- implemented on string
@@ -100,6 +118,8 @@ local QueryNode = function(sexpr)
     end
 end
 
+---@param  ... function
+---@return fun(... :any): string
 local function TakeFirstNode(...)
     local nodes = to_array(...)
     return function(...)

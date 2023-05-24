@@ -3,6 +3,7 @@ local Nodes = require("refactoring.treesitter.nodes")
 local FieldNode = Nodes.FieldNode
 local InlineNode = Nodes.InlineNode
 
+---@type TreeSitterInstance
 local Golang = {}
 
 function Golang.new(bufnr, ft)

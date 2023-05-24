@@ -4,6 +4,7 @@ local FieldNode = Nodes.FieldNode
 local StringNode = Nodes.StringNode
 local InlineNode = Nodes.InlineNode
 
+---@type TreeSitterInstance
 local Typescript = {}
 
 function Typescript.new(bufnr, ft)
@@ -100,6 +101,8 @@ function Typescript.new(bufnr, ft)
     }, bufnr)
 
     -- overriding function
+    ---@param arg string
+    ---@return string
     function ts.get_arg_type_key(arg)
         return arg .. ":"
     end

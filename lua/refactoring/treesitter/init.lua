@@ -11,6 +11,12 @@ local php = require("refactoring.treesitter.langs.php")
 local java = require("refactoring.treesitter.langs.java")
 local ruby = require("refactoring.treesitter.langs.ruby")
 
+---@alias NewTSInstance fun(bufnr: integer, ft: string): TreeSitter
+
+---@class TreeSitterInstance
+---@field new NewTSInstance
+
+---@type table<string, TreeSitter|TreeSitterInstance|fun(bufnr: integer|nil): TreeSitter>
 local M = {
     TreeSitter = TreeSitter,
     javascript = JavaScript,
@@ -34,6 +40,9 @@ local M = {
 
 local DefaultSitter = {}
 
+---@param bufnr integer
+---@param ft string
+---@return TreeSitter
 function DefaultSitter.new(bufnr, ft)
     return TreeSitter:new({
         filetype = ft,
@@ -41,12 +50,8 @@ function DefaultSitter.new(bufnr, ft)
     }, bufnr)
 end
 
-local function get_bufrn(bufnr)
-    return bufnr or vim.api.nvim_get_current_buf()
-end
-
 function M.get_treesitter(bufnr)
-    bufnr = get_bufrn(bufnr)
+    bufnr = bufnr or vim.api.nvim_get_current_buf()
 
     local ft = vim.bo[bufnr].ft
     return M[ft] and M[ft].new(bufnr, ft) or DefaultSitter.new(bufnr, ft)

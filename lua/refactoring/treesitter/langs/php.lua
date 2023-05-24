@@ -4,6 +4,7 @@ local FieldNode = Nodes.FieldNode
 local StringNode = Nodes.StringNode
 local InlineNode = Nodes.InlineNode
 
+---@type TreeSitterInstance
 local Php = {}
 
 function Php.new(bufnr, ft)

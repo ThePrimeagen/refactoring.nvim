@@ -140,6 +140,7 @@ end
 
 -- TODO: This likely doesn't work with multistatement line inserts
 ---@param node TSNode
+---@return RefactorRegion
 function M.region_one_line_up_from_node(node)
     local region = Region:from_node(node)
     region.end_row = region.start_row

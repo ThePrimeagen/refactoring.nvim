@@ -7,6 +7,7 @@ local TakeFirstNode = Nodes.TakeFirstNode
 local QueryNode = Nodes.QueryNode
 local InlineNode = Nodes.InlineNode
 
+---@type TreeSitterInstance
 local C = {}
 
 function C.new(bufnr, ft)

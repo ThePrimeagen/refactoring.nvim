@@ -3,6 +3,7 @@ local Nodes = require("refactoring.treesitter.nodes")
 local FieldNode = Nodes.FieldNode
 local InlineNode = Nodes.InlineNode
 
+---@type TreeSitterInstance
 local Python = {}
 
 function Python.new(bufnr, ft)
@@ -99,6 +100,8 @@ function Python.new(bufnr, ft)
     }, bufnr)
 
     -- overriding function
+    ---@param arg string
+    ---@return string
     function ts.get_arg_type_key(arg)
         return arg .. ":"
     end
