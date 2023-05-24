@@ -50,6 +50,9 @@ function Java.new(bufnr, ft)
             while_statement = true,
             do_statement = true,
         },
+        function_scopes = {
+            method_declaration = true,
+        },
         debug_paths = {
             class_declaration = FieldNode("name"),
             method_declaration = TakeFirstNode(
@@ -71,6 +74,11 @@ function Java.new(bufnr, ft)
             InlineNode("(do_statement) @tmp_capture"),
             InlineNode("(while_statement) @tmp_capture"),
             InlineNode("(local_variable_declaration) @tmp_capture"),
+        },
+        parameter_list = {
+            InlineNode(
+                "(method_declaration parameters: (formal_parameters ((formal_parameter) @tmp_capture)))"
+            ),
         },
         function_body = {
             InlineNode("(block (_) @tmp_capture)"),

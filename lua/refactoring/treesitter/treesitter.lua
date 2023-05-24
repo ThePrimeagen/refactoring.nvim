@@ -278,21 +278,21 @@ local function containing_node_by_type(node, container_map)
     return node
 end
 
--- TODO: Can we validate settings here without breaking things?
 ---@param scope TSNode
 ---@return table<string, string>
 function TreeSitter:get_local_parameter_types(scope)
     local parameter_types = {}
+    self:validate_setting("function_scopes")
     local function_node = containing_node_by_type(scope, self.function_scopes)
 
-    -- TODO: Uncomment this error once validate settings in this func
-    -- if function_node == nil then
-    -- error(
-    -- "Failed to get function_node in get_local_parameter_types, check `function_scopes` queries"
-    -- )
-    -- end
+    if function_node == nil then
+        error(
+            "Failed to get function_node in get_local_parameter_types, check `function_scopes` queries"
+        )
+    end
 
     -- Get parameter list
+    self:validate_setting("parameter_list")
     local parameter_list_nodes =
         self:loop_thru_nodes(function_node, self.parameter_list)
 
