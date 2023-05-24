@@ -8,7 +8,8 @@ local FieldNode = Nodes.FieldNode
 local JavaScript = {}
 
 function JavaScript.new(bufnr, ft)
-    return TreeSitter:new({
+    ---@type TreeSitterLanguageConfig
+    local config = {
         filetype = ft,
         bufnr = bufnr,
         scope_names = {
@@ -79,7 +80,8 @@ function JavaScript.new(bufnr, ft)
         function_body = {
             InlineNode("(statement_block (_) @tmp_capture)"),
         },
-    }, bufnr)
+    }
+    return TreeSitter:new(config, bufnr)
 end
 
 return JavaScript

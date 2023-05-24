@@ -7,7 +7,8 @@ local InlineNode = Nodes.InlineNode
 local Python = {}
 
 function Python.new(bufnr, ft)
-    local ts = TreeSitter:new({
+    ---@type TreeSitterLanguageConfig
+    local config = {
         filetype = ft,
         bufnr = bufnr,
         require_param_types = true,
@@ -97,7 +98,8 @@ function Python.new(bufnr, ft)
                 "(expression_statement (assignment left: ((attribute attribute: ((identifier) @capture)))))"
             ),
         },
-    }, bufnr)
+    }
+    local ts = TreeSitter:new(config, bufnr)
 
     -- overriding function
     ---@param arg string

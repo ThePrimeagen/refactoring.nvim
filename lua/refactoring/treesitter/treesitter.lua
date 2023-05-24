@@ -3,39 +3,41 @@ local Point = require("refactoring.point")
 local utils = require("refactoring.utils")
 local Region = require("refactoring.region")
 
----@class TreeSitter
---- The following fields act similar to a cursor
+---@class TreeSitterLanguageConfig
+---@field bufnr integer: the bufnr to which this belongs
+---@field filetype string: the filetype
 ---@field scope_names table<string, string>: nodes that are scopes in current buffer
 ---@field block_scope table<string, true>: scopes that are blocks in current buffer
 ---@field variable_scope table<string, true>: scopes that contain variables in current buffer
+---@field local_var_names InlineNodeFunc[]: list of inline nodes for local variable names
+---@field function_args InlineNodeFunc[]: nodes to find args for a function
+---@field local_var_values InlineNodeFunc[]: list of inline nodes for local variable values
+---@field local_declarations InlineNodeFunc[]: list of inline nodes for local declarations
+---@field indent_scopes table<string, true>: nodes where code has addition indent inside
+---@field debug_paths table<string, FieldNodeFunc>: nodes to know path for debug strings
+---@field statements InlineNodeFunc[]: statements in current scope
+---@field function_body InlineNodeFunc[]: nodes to find body for a function
+---@field require_param_types boolean: flag to require parameter types for codegen
 ---@field valid_class_nodes table<string, 0|1|true>: nodes that mean scope is a class function
 ---@field class_names InlineNodeFunc[]: nodes to get class names
 ---@field class_type InlineNodeFunc[]: nodes to get types for classes
 ---@field class_vars InlineNodeFunc[]: nodes to get class variable assignments in a scope
----@field local_var_names InlineNodeFunc[]: list of inline nodes for local variable names
----@field local_var_values InlineNodeFunc[]: list of inline nodes for local variable values
----@field local_declarations InlineNodeFunc[]: list of inline nodes for local declarations
----@field debug_paths table<string, FieldNodeFunc>: nodes to know path for debug strings
----@field statements InlineNodeFunc[]: statements in current scope
----@field indent_scopes table<string, true>: nodes where code has addition indent inside
 ---@field parameter_list InlineNodeFunc[]: nodes to get list of parameters for a function
 ---@field function_scopes table<string, string|true>: nodes to find a function declaration
----@field function_args InlineNodeFunc[]: nodes to find args for a function
----@field function_body InlineNodeFunc[]: nodes to find body for a function
----@field bufnr integer: the bufnr to which this belongs
 ---@field require_class_name boolean: flag to require class name for codegen
 ---@field require_class_type boolean: flag to require class type for codegen
----@field require_param_types boolean: flag to require parameter types for codegen
----@field filetype string: the filetype
----@field query RefactorQuery: the refactoring query
+
+--- The following fields act similar to a cursor
+---@class TreeSitter: TreeSitterLanguageConfig
 local TreeSitter = {}
 TreeSitter.__index = TreeSitter
 
----@param config {filetype: string}
+---@param config TreeSitterLanguageConfig
 ---@param bufnr integer
 ---@return TreeSitter
 function TreeSitter:new(config, bufnr)
-    local c = vim.tbl_extend("force", {
+    ---@class TreeSitterLanguageConfig
+    local default_config = {
         scope_names = {},
         valid_class_nodes = {},
         class_names = {},
@@ -56,7 +58,8 @@ function TreeSitter:new(config, bufnr)
         require_class_type = false,
         require_param_types = false,
         filetype = config.filetype,
-    }, config)
+    }
+    local c = vim.tbl_extend("force", default_config, config)
 
     return setmetatable(c, self)
 end

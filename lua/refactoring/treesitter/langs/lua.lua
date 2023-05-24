@@ -10,7 +10,8 @@ local InlineNode = Nodes.InlineNode
 local Lua = {}
 
 function Lua.new(bufnr, ft)
-    return TreeSitter:new({
+    ---@type TreeSitterLanguageConfig
+    local config = {
         filetype = ft,
         bufnr = bufnr,
         scope_names = {
@@ -87,7 +88,8 @@ function Lua.new(bufnr, ft)
         function_body = {
             InlineNode("(block (_) @tmp_capture)"),
         },
-    }, bufnr)
+    }
+    return TreeSitter:new(config, bufnr)
 end
 
 return Lua

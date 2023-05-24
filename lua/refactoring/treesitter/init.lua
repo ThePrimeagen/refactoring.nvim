@@ -11,10 +11,8 @@ local php = require("refactoring.treesitter.langs.php")
 local java = require("refactoring.treesitter.langs.java")
 local ruby = require("refactoring.treesitter.langs.ruby")
 
----@alias NewTSInstance fun(bufnr: integer, ft: string): TreeSitter
-
----@class TreeSitterInstance
----@field new NewTSInstance
+---@class TreeSitterInstance: TreeSitter
+---@field new fun(bufnr: integer, ft: string): TreeSitter
 
 ---@type table<string, TreeSitter|TreeSitterInstance|fun(bufnr: integer|nil): TreeSitter>
 local M = {
