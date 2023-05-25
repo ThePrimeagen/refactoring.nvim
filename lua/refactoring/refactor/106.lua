@@ -67,8 +67,10 @@ end
 ---@return table<string, string>
 local function get_function_param_types(refactor, args)
     local args_types = {}
-    local parameter_arg_types =
-        refactor.ts:get_local_parameter_types(refactor.scope)
+    local parameter_arg_types = refactor.ts:get_local_parameter_types(
+        refactor.scope,
+        refactor.ts.argument_type_index
+    )
     for _, arg in pairs(args) do
         local function_param_type
         local curr_arg = refactor.ts.get_arg_type_key(arg)

@@ -96,6 +96,7 @@ function Cpp.new(bufnr, ft)
             InlineNode("(compound_statement) @tmp_capture"),
         },
         require_param_types = true,
+        argument_type_index = 1,
     }
     return TreeSitter:new(config, bufnr)
 end

@@ -86,6 +86,7 @@ function Java.new(bufnr, ft)
         require_class_name = true,
         require_class_type = true,
         require_param_types = true,
+        argument_type_index = 1,
     }
     return TreeSitter:new(config, bufnr)
 end
