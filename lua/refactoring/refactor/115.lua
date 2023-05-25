@@ -207,7 +207,11 @@ local function inline_func_setup(refactor, bufnr)
                                 break
                             end
 
-                            table.insert(returned_values, vim.treesitter.get_node_text(return_value, bufnr))
+
+                            local value = vim.treesitter.get_node_text(return_value, bufnr)
+                            if value ~= "," then
+                                table.insert(returned_values, value)
+                            end
                             idx = idx + 1
                         end
                     end
@@ -217,8 +221,13 @@ local function inline_func_setup(refactor, bufnr)
 
         local variable_declaration = {}
         for index, _ in ipairs(returned_variable_names) do
+            local fix_indent = ""
+            if index > 1 then
+                fix_indent = "\t"
+            end
+
             local param = refactor.code.constant({
-                name = returned_variable_names[index],
+                name = fix_indent .. returned_variable_names[index],
                 value = returned_values[index],
             })
             table.insert(variable_declaration, index, param)
