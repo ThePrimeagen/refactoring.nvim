@@ -51,7 +51,6 @@ local function for_each_file(cb)
 end
 
 local function test_empty_input()
-    -- TODO (TheLeoP): does this make sense?
     vim.notify = error
     local test_cases = {
         [1] = {
