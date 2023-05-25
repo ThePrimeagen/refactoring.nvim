@@ -7,10 +7,12 @@ local TakeFirstNode = Nodes.TakeFirstNode
 local QueryNode = Nodes.QueryNode
 local InlineNode = Nodes.InlineNode
 
+---@type TreeSitterInstance
 local Java = {}
 
 function Java.new(bufnr, ft)
-    return TreeSitter:new({
+    ---@type TreeSitterLanguageConfig
+    local config = {
         filetype = ft,
         bufnr = bufnr,
         scope_names = {
@@ -54,7 +56,6 @@ function Java.new(bufnr, ft)
                 QueryNode("(method_declaration (identifier) @tmp_capture)"),
                 StringNode("function")
             ),
-
             if_statement = StringNode("if"),
             for_statement = StringNode("for"),
             enhanced_for_statement = StringNode("enhanced_for"),
@@ -77,7 +78,8 @@ function Java.new(bufnr, ft)
         require_class_name = true,
         require_class_type = true,
         require_param_types = true,
-    }, bufnr)
+    }
+    return TreeSitter:new(config, bufnr)
 end
 
 return Java

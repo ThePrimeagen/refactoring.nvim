@@ -3,10 +3,12 @@ local Nodes = require("refactoring.treesitter.nodes")
 local FieldNode = Nodes.FieldNode
 local InlineNode = Nodes.InlineNode
 
+---@type TreeSitterInstance
 local Python = {}
 
 function Python.new(bufnr, ft)
-    local ts = TreeSitter:new({
+    ---@type TreeSitterLanguageConfig
+    local config = {
         filetype = ft,
         bufnr = bufnr,
         require_param_types = true,
@@ -96,9 +98,12 @@ function Python.new(bufnr, ft)
                 "(expression_statement (assignment left: ((attribute attribute: ((identifier) @capture)))))"
             ),
         },
-    }, bufnr)
+    }
+    local ts = TreeSitter:new(config, bufnr)
 
     -- overriding function
+    ---@param arg string
+    ---@return string
     function ts.get_arg_type_key(arg)
         return arg .. ":"
     end

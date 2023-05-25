@@ -7,10 +7,12 @@ local TakeFirstNode = Nodes.TakeFirstNode
 local QueryNode = Nodes.QueryNode
 local InlineNode = Nodes.InlineNode
 
+---@type TreeSitterInstance
 local C = {}
 
 function C.new(bufnr, ft)
-    return TreeSitter:new({
+    ---@type TreeSitterLanguageConfig
+    local config = {
         filetype = ft,
         bufnr = bufnr,
         scope_names = {
@@ -60,7 +62,6 @@ function C.new(bufnr, ft)
                 QueryNode("(function_declarator (identifier) @tmp_capture)"),
                 StringNode("function")
             ),
-
             if_statement = StringNode("if"),
             for_statement = StringNode("for"),
             while_statement = StringNode("while"),
@@ -79,7 +80,8 @@ function C.new(bufnr, ft)
             InlineNode("(compound_statement (_) @tmp_capture)"),
         },
         require_param_types = true,
-    }, bufnr)
+    }
+    return TreeSitter:new(config, bufnr)
 end
 
 return C

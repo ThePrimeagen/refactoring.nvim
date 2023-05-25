@@ -59,10 +59,12 @@ end
 
 -- FROM http://lua-users.org/wiki/CommonFunctions
 -- remove trailing and leading whitespace from string.
+---@param s string|table<any, string>
+---@return string|table<any, string>
 function M.trim(s)
     if type(s) == "table" then
         for i, str in pairs(s) do
-            s[i] = M.trim(str)
+            s[i] = M.trim(str) --[[@as string]]
         end
         return s
     end
@@ -140,6 +142,7 @@ end
 
 -- TODO: This likely doesn't work with multistatement line inserts
 ---@param node TSNode
+---@return RefactorRegion
 function M.region_one_line_up_from_node(node)
     local region = Region:from_node(node)
     region.end_row = region.start_row
@@ -187,6 +190,9 @@ end
 
 -- TODO: Very unsure if this needs to be a "util" or not But this is super
 -- useful in refactor 106 and I assume it will be used elsewhere quite a bit
+---@param bufnr integer
+---@param ... TSNode
+---@return table<string, true>
 function M.node_text_to_set(bufnr, ...)
     local out = {}
     for i = 1, select("#", ...) do
@@ -215,6 +221,7 @@ function M.table_key_intersect(a, b)
 end
 
 ---@param node TSNode
+---@return RefactorRegion
 function M.region_above_node(node)
     local scope_region = Region:from_node(node)
 

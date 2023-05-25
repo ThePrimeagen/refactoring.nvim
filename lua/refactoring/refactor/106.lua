@@ -62,6 +62,9 @@ local function get_function_return_type()
     return function_return_type
 end
 
+---@param refactor Refactor
+---@param args string[]
+---@return table<string, string>
 local function get_function_param_types(refactor, args)
     local args_types = {}
     local parameter_arg_types =

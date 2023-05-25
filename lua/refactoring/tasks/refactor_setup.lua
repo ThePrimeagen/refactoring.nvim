@@ -1,5 +1,4 @@
 local Config = require("refactoring.config")
-local Query = require("refactoring.query")
 local TreeSitter = require("refactoring.treesitter")
 local Point = require("refactoring.point")
 
@@ -7,7 +6,6 @@ local Point = require("refactoring.point")
 -- to have here.  Also make refactor object into a table instead of this
 -- monstrosity
 
----
 ---@param input_bufnr number
 ---@param config c|Config
 ---@return fun(): true, Refactor
@@ -24,27 +22,28 @@ local function refactor_setup(input_bufnr, config)
             bufnr = input_bufnr
         end
 
+        local ts = TreeSitter.get_treesitter()
+
         local filetype = vim.bo[bufnr].filetype
-        -- TODO: Move this to treesitter get root and get rid of Query
-        local root = Query.get_root(bufnr, filetype)
+        local root = ts:get_root()
         local win = vim.api.nvim_get_current_win()
         local cursor = Point:from_cursor()
 
         ---@class Refactor
-        ---@field region? RefactorRegion
-        ---@field region_node? TSNode
-        ---@field scope? TSNode
-        ---@field cursor_col_adjustment? integer
-        ---@field text_edits? LspTextEdit[] | {bufnr: integer|nil}[]
+        ---@field region RefactorRegion|nil
+        ---@field region_node TSNode|nil
+        ---@field scope TSNode|nil
+        ---@field cursor_col_adjustment integer|nil
+        ---@field text_edits LspTextEdit[] | {bufnr: integer|nil}[] | nil
         ---@field code code_generation
         local refactor = {
-            ---@type {cursor: integer, highlight_start?: integer, highlight_end?: integer, func_call?: integer}
+            ---@type {cursor: integer, highlight_start: integer|nil, highlight_end: integer|nil, func_call: integer|nil}
             whitespace = {
                 cursor = vim.fn.indent(cursor.row),
             },
             cursor = cursor,
             code = config:get_code_generation_for(filetype),
-            ts = TreeSitter.get_treesitter(),
+            ts = ts,
             filetype = filetype,
             bufnr = bufnr,
             win = win,

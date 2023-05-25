@@ -3,10 +3,12 @@ local Nodes = require("refactoring.treesitter.nodes")
 local FieldNode = Nodes.FieldNode
 local InlineNode = Nodes.InlineNode
 
+---@type TreeSitterInstance
 local Ruby = {}
 
 function Ruby.new(bufnr, ft)
-    return TreeSitter:new({
+    ---@type TreeSitterLanguageConfig
+    local config = {
         filetype = ft,
         bufnr = bufnr,
         scope_names = {
@@ -71,7 +73,8 @@ function Ruby.new(bufnr, ft)
             method = FieldNode("name"),
             singleton_method = FieldNode("name"),
         },
-    }, bufnr)
+    }
+    return TreeSitter:new(config, bufnr)
 end
 
 return Ruby

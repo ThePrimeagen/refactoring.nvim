@@ -3,10 +3,12 @@ local Nodes = require("refactoring.treesitter.nodes")
 local FieldNode = Nodes.FieldNode
 local InlineNode = Nodes.InlineNode
 
+---@type TreeSitterInstance
 local Golang = {}
 
 function Golang.new(bufnr, ft)
-    return TreeSitter:new({
+    ---@type TreeSitterLanguageConfig
+    local config = {
         filetype = ft,
         bufnr = bufnr,
         block_scope = {
@@ -95,7 +97,8 @@ function Golang.new(bufnr, ft)
         require_class_name = true,
         require_class_type = true,
         require_param_types = true,
-    }, bufnr)
+    }
+    return TreeSitter:new(config, bufnr)
 end
 
 return Golang

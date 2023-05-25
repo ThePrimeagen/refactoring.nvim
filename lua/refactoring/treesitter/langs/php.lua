@@ -4,10 +4,12 @@ local FieldNode = Nodes.FieldNode
 local StringNode = Nodes.StringNode
 local InlineNode = Nodes.InlineNode
 
+---@type TreeSitterInstance
 local Php = {}
 
 function Php.new(bufnr, ft)
-    return TreeSitter:new({
+    ---@type TreeSitterLanguageConfig
+    local config = {
         filetype = ft,
         bufnr = bufnr,
         scope_names = {
@@ -75,7 +77,8 @@ function Php.new(bufnr, ft)
         function_body = {
             InlineNode("(compound_statement) @tmp_capture"),
         },
-    }, bufnr)
+    }
+    return TreeSitter:new(config, bufnr)
 end
 
 return Php

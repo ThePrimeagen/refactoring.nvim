@@ -4,10 +4,12 @@ local FieldNode = Nodes.FieldNode
 local StringNode = Nodes.StringNode
 local InlineNode = Nodes.InlineNode
 
+---@type TreeSitterInstance
 local Typescript = {}
 
 function Typescript.new(bufnr, ft)
-    local ts = TreeSitter:new({
+    ---@type TreeSitterLanguageConfig
+    local config = {
         filetype = ft,
         bufnr = bufnr,
         require_param_types = true,
@@ -97,9 +99,12 @@ function Typescript.new(bufnr, ft)
         function_body = {
             InlineNode("(statement_block (_) @tmp_capture)"),
         },
-    }, bufnr)
+    }
+    local ts = TreeSitter:new(config, bufnr)
 
     -- overriding function
+    ---@param arg string
+    ---@return string
     function ts.get_arg_type_key(arg)
         return arg .. ":"
     end

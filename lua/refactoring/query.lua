@@ -8,6 +8,10 @@ local parsers = require("nvim-treesitter.parsers")
 --- }
 
 ---@class RefactorQuery
+---@field query Query|nil
+---@field bufnr integer
+---@field filetype string
+---@field root TSNode
 local Query = {}
 Query.__index = Query
 
@@ -17,6 +21,9 @@ Query.query_type = {
     Reference = "reference",
 }
 
+---@param bufnr integer
+---@param filetype string
+---@return TSNode
 function Query.get_root(bufnr, filetype)
     -- TODO (TheLeoP): typescriptreact parser name is tsx
     if filetype == "typescriptreact" then
@@ -31,11 +38,19 @@ function Query.get_root(bufnr, filetype)
     return parser:parse()[1]:root()
 end
 
+---@param bufnr integer
+---@param filetype string
+---@param query_name string
+---@return RefactorQuery
 function Query.from_query_name(bufnr, filetype, query_name)
     local query = vim.treesitter.query.get(filetype, query_name)
     return Query:new(bufnr, filetype, query)
 end
 
+---@param bufnr integer
+---@param filetype string
+---@param query Query
+---@return RefactorQuery
 function Query:new(bufnr, filetype, query)
     return setmetatable({
         query = query,
@@ -45,6 +60,9 @@ function Query:new(bufnr, filetype, query)
     }, self)
 end
 
+---@param scope TSNode
+---@param captures string|string[]
+---@return TSNode[]
 function Query:pluck_by_capture(scope, captures)
     if type(captures) ~= "table" then
         captures = { captures }
