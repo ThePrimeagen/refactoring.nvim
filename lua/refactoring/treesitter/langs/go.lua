@@ -48,9 +48,24 @@ function Golang.new(bufnr, ft)
                 "(var_declaration (var_spec name: (identifier) @tmp_capture))"
             ),
         },
+        -- TODO: not in doc
+        return_values = {
+            InlineNode("(return_statement (expression_list (_) @tmp_capture))"),
+        },
+        -- TODO: not in doc
+        function_references = {
+            InlineNode("(call_expression function: (identifier) @temp_capture)")
+        },
+        -- TODO: not in doc
         local_declarations = {
             InlineNode("(short_var_declaration) @tmp_capture"),
             InlineNode("(var_declaration) @tmp_capture"),
+        },
+        -- TODO: not in doc
+        caller_args = {
+            InlineNode(
+                "(call_expression arguments: (argument_list (_) @tmp_capture))"
+            ),
         },
         local_var_values = {
             InlineNode(

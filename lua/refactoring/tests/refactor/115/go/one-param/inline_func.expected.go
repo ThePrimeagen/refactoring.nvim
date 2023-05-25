@@ -5,7 +5,7 @@ import "fmt"
 
 
 func simple_function() {
-	a := "test"
+a := "test"
 	fmt.Errorf(a)
 	fmt.Println("test2")
 	fmt.Println("test3")

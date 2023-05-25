@@ -5,10 +5,15 @@ import "fmt"
 
 
 func simple_function() {
-a := "test1"
-b := "test2"
-c := "test3"
-	fmt.Errorf(a, b, c)
+aa := "test"
+err := "an error"
+bb := "third"
+cc := "fourth"
+	
+	fmt.Println(aa)
+	fmt.Println(err)
+	fmt.Println(bb)
+	fmt.Println(cc)
 	fmt.Println("test2")
 	fmt.Println("test3")
 	fmt.Println("test4")

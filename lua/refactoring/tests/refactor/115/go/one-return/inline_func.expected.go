@@ -5,8 +5,8 @@ import "fmt"
 
 
 func simple_function() {
-	aa := "test"
-
+aa := "test"
+	
 	fmt.Println(aa)
 	fmt.Println("test2")
 	fmt.Println("test3")

@@ -3,13 +3,17 @@ package main
 import "fmt"
 
 func extracted() (string, string) {
-	return "test", "an error"
+	fmt.Println("xyz1")
+	fmt.Println("xyz2")
+	fmt.Println("xyz3")
+	fmt.Println("xyz4")
+	return "zapato", "camion"
 }
 
 func simple_function() {
-	aa, err := extracted()
+	aa, bb := extracted()
 	fmt.Println(aa)
-	fmt.Println(err)
+	fmt.Println(bb)
 	fmt.Println("test2")
 	fmt.Println("test3")
 	fmt.Println("test4")
