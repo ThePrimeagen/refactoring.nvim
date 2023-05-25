@@ -106,6 +106,10 @@ end
 
 local function get_function_calls(refactor, declarator_node, args)
     local function_calls = {}
+    if #args == 0 then
+        return function_calls
+    end
+
     for _, value in ipairs(refactor.ts:get_statements(declarator_node:parent())) do
         local region
 
@@ -155,74 +159,161 @@ local function get_inlined_params(refactor, ref, declarator_args, bufnr)
     return params
 end
 
-
 local function inline_func_setup(refactor, bufnr)
-    local declarator_node = determine_declarator_node(refactor, bufnr)
+    local text_edits = {}
 
-    -- TODO: I need something more elaborated that plain text, I need nodes, and append, maybe
+    -- TODO: aqui tengo que ingeniarme algo para detectar si es un declaration
+    -- o no, si tiene returns o no, y si tiene params (has_params, has_returns, has_algo_mas?)
+    local declarator_node = determine_declarator_node(refactor, bufnr)
+    -- print(type(declarator_node))
+
+    local statements = {}
+    for _, statement in ipairs(refactor.ts:get_statements(declarator_node)) do
+        if statement:type() == "call_expression" then
+            table.insert(statements, statement)
+        end
+    end
+
+
+    if #statements > 0 then
+        -- build the returned variable names from the caller
+        local returned_variable_names = {}
+        local identifiers = refactor.ts:get_local_var_names(declarator_node)
+        for _, identifier in ipairs(identifiers) do
+            table.insert(returned_variable_names, vim.treesitter.get_node_text(identifier, bufnr))
+        end
+
+        -- find the new declarator node
+        local new_declarator_node
+        for _, statement in ipairs(statements) do
+            local declaration = ts.find_declaration(statement:child(0), bufnr)
+            if declaration then
+                new_declarator_node = declaration
+            end
+        end
+
+        -- build the returned values table from the function body
+        local returned_values = {}
+        if new_declarator_node ~= nil then
+            for _, statement in ipairs(refactor.ts:get_statements(new_declarator_node:parent())) do
+                -- TODO: ugly as hell
+                if statement:type() == "return_statement" then
+                    if statement:child(1) then
+                        local return_value = {}
+                        local idx = 0
+                        while type(return_value) ~= nil do
+                            return_value = statement:child(1):child(idx)
+                            if return_value == nil then
+                                break
+                            end
+
+                            table.insert(returned_values, vim.treesitter.get_node_text(return_value, bufnr))
+                            idx = idx + 1
+                        end
+                    end
+                end
+            end
+        end
+
+        local variable_declaration = {}
+        for index, _ in ipairs(returned_variable_names) do
+            local param = refactor.code.constant({
+                name = returned_variable_names[index],
+                value = returned_values[index],
+            })
+            table.insert(variable_declaration, index, param)
+        end
+
+
+        for _, statement in ipairs(statements) do
+            -- Insert each param as an inlined param (constant)
+            for index, _ in ipairs(returned_variable_names) do
+                local insert_text = lsp_utils.insert_text(Region:from_node(statement:parent():parent(), bufnr),
+                    variable_declaration[index])
+                table.insert(text_edits, insert_text)
+            end
+
+            -- delete the current function
+            local delete_text = lsp_utils.delete_text(Region:from_node(statement:parent():parent(), bufnr))
+            table.insert(text_edits, delete_text)
+        end
+
+        -- detele the original function
+        table.insert(
+            text_edits,
+            lsp_utils.delete_text(Region:from_node(new_declarator_node:parent(), bufnr))
+        )
+    end
+
+
     local references =
         ts.find_references(declarator_node, refactor.scope, bufnr, declarator_node)
+    -- print("references")
+    -- print(dump(references))
 
-    if #references < 2 then
+    if #references < 2 and #statements == 0 then
         error("Error: no function usages to inline")
         return
     end
 
     local declarator_args = get_function_arguments(refactor, declarator_node, bufnr)
+    -- print("declarator_args")
+    -- print(dump(declarator_args))
     local used_args = get_used_function_definition(refactor, declarator_node, bufnr)
-
+    -- print("used_args")
+    -- print(vim.inspect(used_args))
     local function_calls = get_function_calls(refactor, declarator_node, used_args)
+    -- print("function_calls")
+    -- print(dump(function_calls))
 
-
-    -- replaces all references with inner function text
-    local text_edits = {}
     local processed = {}
-    for _, ref in ipairs(references) do
-        if not is_processed(processed, ref) then
-            if #declarator_args > 0 then
-                local params = get_inlined_params(refactor, ref, declarator_args, bufnr)
-                for _, param in ipairs(params) do
-                    -- Insert each param as an inlined param (constant)
-                    local insert_text = lsp_utils.insert_text(Region:from_node(ref:parent(), bufnr), param)
-                    table.insert(text_edits, insert_text)
-                end
-
-                -- local func_call = refactor.code.go_call_class_func({ class_type = 'fmt', name = 'Errorf', args = args, })
-                -- local func_call = refactor.code.call_function({ name = '\tfmt.Errorf', args = args, })
-                for index, function_call in ipairs(function_calls) do
-                    local fix_new_line = ""
-                    if #function_calls > 1 and index < #function_calls then
-                        fix_new_line = "\n"
+    if #references > 0 then
+        for _, ref in ipairs(references) do
+            if not is_processed(processed, ref) then
+                if #declarator_args > 0 then
+                    local params = get_inlined_params(refactor, ref, declarator_args, bufnr)
+                    for _, param in ipairs(params) do
+                        -- Insert each param as an inlined param (constant)
+                        local insert_text = lsp_utils.insert_text(Region:from_node(ref:parent(), bufnr), param)
+                        table.insert(text_edits, insert_text)
                     end
 
-                    -- Insert function call
-                    local insert_text = lsp_utils.insert_text(Region:from_node(ref:parent(), bufnr),
-                        function_call .. fix_new_line)
-                    table.insert(text_edits, insert_text)
-                end
+                    -- local func_call = refactor.code.go_call_class_func({ class_type = 'fmt', name = 'Errorf', args = args, })
+                    -- local func_call = refactor.code.call_function({ name = '\tfmt.Errorf', args = args, })
+                    for index, function_call in ipairs(function_calls) do
+                        local fix_new_line = ""
+                        if #function_calls > 1 and index < #function_calls then
+                            fix_new_line = "\n"
+                        end
 
-                -- delete the current function
-                local delete_text = lsp_utils.delete_text(Region:from_node(ref:parent(), bufnr))
-                table.insert(text_edits, delete_text)
-            else
-                local function_text
-                for _, value in ipairs(refactor.ts:get_function_body(declarator_node:parent())) do
-                    function_text = vim.treesitter.get_node_text(value, bufnr)
-                end
+                        -- Insert function call
+                        local insert_text = lsp_utils.insert_text(Region:from_node(ref:parent(), bufnr),
+                            function_call .. fix_new_line)
+                        table.insert(text_edits, insert_text)
+                    end
 
-                local lsp_range = ts_utils.node_to_lsp_range(ref:parent())
-                local text_edit = { range = lsp_range, newText = function_text }
-                table.insert(text_edits, text_edit)
+                    -- delete the current function
+                    local delete_text = lsp_utils.delete_text(Region:from_node(ref:parent(), bufnr))
+                    table.insert(text_edits, delete_text)
+                else
+                    local function_text
+                    for _, value in ipairs(refactor.ts:get_function_body(declarator_node:parent())) do
+                        function_text = vim.treesitter.get_node_text(value, bufnr)
+                    end
+
+                    local lsp_range = ts_utils.node_to_lsp_range(ref:parent())
+                    local text_edit = { range = lsp_range, newText = function_text }
+                    table.insert(text_edits, text_edit)
+                end
+                table.insert(processed, ref)
             end
-            table.insert(processed, ref)
         end
+        -- detele the original function
+        table.insert(
+            text_edits,
+            lsp_utils.delete_text(Region:from_node(declarator_node:parent(), bufnr))
+        )
     end
-
-    -- detele the original function
-    table.insert(
-        text_edits,
-        lsp_utils.delete_text(Region:from_node(declarator_node:parent(), bufnr))
-    )
     refactor.text_edits = text_edits
 end
 
