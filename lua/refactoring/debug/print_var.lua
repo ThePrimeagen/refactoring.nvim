@@ -12,6 +12,8 @@ local get_select_input = require("refactoring.get_select_input")
 local utils = require("refactoring.utils")
 local indent = require("refactoring.indent")
 
+local MAX_COL = 100000
+
 local function get_variable(opts, point)
     if opts.normal then
         local bufnr = 0
@@ -60,7 +62,7 @@ local function printDebug(bufnr, config)
                 opts.below = true
                 -- always go end for text
                 opts._end = true
-                point.col = opts.below and 100000 or 1
+                point.col = opts.below and MAX_COL or 1
 
                 if opts.normal == nil then
                     opts.normal = false

@@ -8,5 +8,5 @@ class Test {
 
 void Test::foo() {
 
-printf("Test::foo(%d): \n", __LINE__); // __AUTO_GENERATED_PRINTF__
+printf("Test::foo 1(%d): \n", __LINE__); // __AUTO_GENERATED_PRINTF__
 }

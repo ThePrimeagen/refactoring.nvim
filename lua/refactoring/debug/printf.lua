@@ -9,6 +9,8 @@ local ensure_code_gen = require("refactoring.tasks.ensure_code_gen")
 local get_select_input = require("refactoring.get_select_input")
 local indent = require("refactoring.indent")
 
+local MAX_COL = 100000
+
 local function printDebug(bufnr, config)
     return Pipeline:from_task(refactor_setup(bufnr, config))
         :add_task(
@@ -30,20 +32,7 @@ local function printDebug(bufnr, config)
                 -- set default `end` behavior
                 opts._end = opts.below
 
-                point.col = opts.below and 100000 or 1
-
-                local indentation
-                if refactor.ts:allows_indenting_task() then
-                    local indent_amount = indent.buf_indent_amount(
-                        refactor.cursor,
-                        refactor,
-                        opts.below,
-                        refactor.bufnr
-                    )
-                    indentation = indent.indent(indent_amount, refactor.bufnr)
-                end
-
-                local debug_path = debug_utils.get_debug_path(refactor, point)
+                point.col = opts.below and MAX_COL or 1
 
                 local default_printf_statement =
                     refactor.code.default_printf_statement()
@@ -70,32 +59,92 @@ local function printDebug(bufnr, config)
                     printf_statement = default_printf_statement[1]
                 end
 
-                local printf_opts = {
-                    statement = printf_statement,
-                    content = debug_path,
-                }
+                local empty_printf = refactor.code
+                    .print({
+                        statement = printf_statement,
+                        content = "%d+",
+                    })
+                    :gsub("([%(%)])", "%%%1")
+                local debug_path = debug_utils.get_debug_path(refactor, point)
 
-                local statement
-                if indentation ~= nil then
-                    local temp = {}
-                    temp[1] = indentation
-                    temp[2] = refactor.code.print(printf_opts)
-                    statement = table.concat(temp, "")
-                else
-                    statement = refactor.code.print(printf_opts)
+                local text_to_count = debug_path ~= "" and debug_path
+                    or empty_printf
+                text_to_count = text_to_count
+                    .. ".*"
+                    .. "__AUTO_GENERATED_PRINTF__"
+                local lines = vim.api.nvim_buf_get_lines(bufnr, 0, -1, false)
+
+                local current_lines_with_text = {}
+                for row_num, line in ipairs(lines) do
+                    if string.find(line, text_to_count) ~= nil then
+                        table.insert(current_lines_with_text, row_num)
+                    end
                 end
+                local should_replace = vim.tbl_contains(
+                    current_lines_with_text,
+                    point.row
+                ) and opts.below
+                table.insert(current_lines_with_text, point.row)
+                table.sort(current_lines_with_text)
 
-                refactor.text_edits = {
-                    lsp_utils.insert_new_line_text(
-                        Region:from_point(point),
-                        statement
-                            .. " "
-                            .. refactor.code.comment(
-                                "__AUTO_GENERATED_PRINTF__"
-                            ),
-                        opts
-                    ),
-                }
+                refactor.text_edits = {}
+                for i, row_num in ipairs(current_lines_with_text) do
+                    local content
+                    if debug_path ~= "" then
+                        content = table.concat({ debug_path, tostring(i) }, " ")
+                    else
+                        content = tostring(i)
+                    end
+
+                    local text = refactor.code.print({
+                        statement = printf_statement,
+                        content = content,
+                    })
+                    text = text
+                        .. " "
+                        .. refactor.code.comment("__AUTO_GENERATED_PRINTF__")
+
+                    local indentation
+                    if refactor.ts:allows_indenting_task() then
+                        local indent_amount = indent.buf_indent_amount(
+                            Point:from_values(row_num, MAX_COL),
+                            refactor,
+                            opts.below,
+                            refactor.bufnr
+                        )
+                        indentation =
+                            indent.indent(indent_amount, refactor.bufnr)
+                    end
+                    if indentation ~= nil then
+                        text = table.concat({ indentation, text }, "")
+                    end
+
+                    if row_num == point.row and not should_replace then
+                        should_replace = true
+
+                        local range = Region:from_point(point, bufnr)
+                        table.insert(
+                            refactor.text_edits,
+                            lsp_utils.insert_new_line_text(range, text, opts)
+                        )
+                    else
+                        if row_num == point.row then
+                            should_replace = false
+                        end
+
+                        local range = Region:from_values(
+                            bufnr,
+                            row_num,
+                            1,
+                            row_num,
+                            MAX_COL
+                        )
+                        table.insert(
+                            refactor.text_edits,
+                            lsp_utils.replace_text(range, text)
+                        )
+                    end
+                end
 
                 return true, refactor
             end

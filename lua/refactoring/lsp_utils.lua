@@ -3,6 +3,8 @@ local Region = require("refactoring.region")
 
 local M = {}
 
+local MAX_COL = 10000
+
 ---@param pointOrRegion RefactorRegion|RefactorPoint
 ---@return RefactorRegion
 local function to_region(pointOrRegion)
@@ -35,10 +37,10 @@ function M.insert_new_line_text(pointOrRegion, text, opts)
     else
         text = text .. code.new_line()
     end
-    -- what is after?  I just assume 10000 is equivalent
+
     if opts._end then
-        region.start_col = 10000
-        region.end_col = 10000
+        region.start_col = MAX_COL
+        region.end_col = MAX_COL
     else
         region.start_col = 1
         region.end_col = 1
