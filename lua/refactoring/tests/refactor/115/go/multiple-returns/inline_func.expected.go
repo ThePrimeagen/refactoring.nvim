@@ -5,15 +5,16 @@ import "fmt"
 
 
 func simple_function() {
-aa := "test"
-err := "an error"
-bb := "third"
-cc := "fourth"
+val := map[string]int{
+		"zapato": 1,
+		"camion": 2,
+	}
+err := fmt.Errorf("an error")
 	
-	fmt.Println(aa)
-	fmt.Println(err)
-	fmt.Println(bb)
-	fmt.Println(cc)
+	if err != nil {
+		fmt.Println(err)
+	}
+	fmt.Println(val)
 	fmt.Println("test2")
 	fmt.Println("test3")
 	fmt.Println("test4")
