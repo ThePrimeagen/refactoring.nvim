@@ -68,6 +68,7 @@ local default_extract_var_statements = {}
 ---@field print_var fun(opts: {statement:string, prefix:string , var:string}): string
 ---@field comment fun(statement: string): string
 ---@field constant fun(opts: constant_opts): string
+---@field var_declaration fun(opts: code_generation): string
 ---@field pack fun(names: string|table):string This is for returning multiple arguments from a function
 ---@field unpack fun(names: string|table):string This is for consuming one or more arguments from a function call.
 ---@field return fun(code: string[]|string):string

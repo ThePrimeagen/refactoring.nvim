@@ -105,6 +105,29 @@ local function go_call_class_func(opts)
     )
 end
 
+local function var_declaration(opts)
+    local result
+    if not opts.statement then
+        opts.statement = "var %s %s"
+    end
+
+    -- if opts.multiple then
+    --     result = string.format(
+    --         opts.statement .. "\n",
+    --         table.concat(opts.identifiers, ", "),
+    --         table.concat(opts.values, ", ")
+    --     )
+    -- else
+        result = string.format(
+            opts.statement .. "\n",
+            code_utils.returnify(opts.name, string_pattern),
+            opts.value
+        )
+    -- end
+
+    return result
+end
+
 local function constant(opts)
     local result
     if not opts.statement then
@@ -147,6 +170,9 @@ local go = {
     end,
     constant = function(opts)
         return constant(opts)
+    end,
+    var_declaration = function(opts)
+        return var_declaration(opts)
     end,
     ["return"] = function(code)
         return string.format("return %s", code_utils.stringify_code(code))

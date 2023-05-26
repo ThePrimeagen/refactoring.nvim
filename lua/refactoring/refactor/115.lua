@@ -62,8 +62,15 @@ local function get_function_declaration(refactor, bufnr)
     end
 end
 
-local function get_references(refactor, function_declaration)
-    return refactor.ts:loop_thru_nodes(function_declaration:parent(), refactor.ts.function_references)
+local function get_references(refactor, function_declaration, identifier, bufnr)
+    local values = {}
+    for _, value in ipairs(refactor.ts:loop_thru_nodes(function_declaration:parent(), refactor.ts.function_references)) do
+        -- TODO: ugly ugly! -- need to filter out extra references to another functions
+        if vim.treesitter.get_node_text(value, bufnr) == vim.treesitter.get_node_text(identifier, bufnr) then
+            table.insert(values, value)
+        end
+    end
+    return values
 end
 
 local function get_function_returned_values(refactor, function_declaration, bufnr)
@@ -115,6 +122,18 @@ local function get_function_body(refactor, function_declaration, bufnr)
     return function_body
 end
 
+local function get_params_as_declarations(refactor, keys, values)
+    -- TODO: keys length and values should be the same
+    local var_declarations = {}
+    for idx, _ in ipairs(keys) do
+        table.insert(var_declarations, refactor.code.var_declaration({
+            name = keys[idx],
+            value = values[idx],
+        }))
+    end
+    return var_declarations
+end
+
 local function get_params_as_constants(refactor, keys, values)
     -- TODO: keys length and values should be the same
     local constants = {}
@@ -147,10 +166,9 @@ local function delete_region_edit(region)
 end
 
 local function inline_func_setup(refactor, bufnr)
-    local text_edits = {}
-
-    local function_declaration, _ = get_function_declaration(refactor, bufnr)
-    local function_references = get_references(refactor, function_declaration)
+    local text_edits                       = {}
+    local function_declaration, identifier = get_function_declaration(refactor, bufnr)
+    local function_references              = get_references(refactor, function_declaration, identifier, bufnr)
 
     if #function_references == 0 then
         error("Error: no function usages to inline")
