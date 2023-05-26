@@ -5,12 +5,12 @@ import "fmt"
 
 
 func simple_function() {
+aa := "zapato"
+bb := "camion"
 fmt.Println("xyz1")
 fmt.Println("xyz2")
 fmt.Println("xyz3")
 fmt.Println("xyz4")
-aa := "zapato"
-bb := "camion"
 	
 	fmt.Println(aa)
 	fmt.Println(bb)

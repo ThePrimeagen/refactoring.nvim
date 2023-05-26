@@ -6,10 +6,10 @@ import "fmt"
 
 func simple_function() {
 param := "a param"
+aa := "test"
 fmt.Println(param)
 fmt.Println(param + "" + param)
 fmt.Println("another line")
-aa := "test"
 	
 	fmt.Println(aa)
 	fmt.Println("test2")
@@ -20,10 +20,10 @@ aa := "test"
 
 func simple_function2() {
 param := "b param"
+bb := "test"
 fmt.Println(param)
 fmt.Println(param + "" + param)
 fmt.Println("another line")
-bb := "test"
 	
 	fmt.Println(bb)
 	fmt.Println("test6")

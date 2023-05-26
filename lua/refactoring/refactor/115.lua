@@ -146,6 +146,21 @@ local function get_params_as_constants(refactor, keys, values)
     return constants
 end
 
+-- local function get_receivers_as_constants(refactor, receiver_names, values)
+--     -- TODO: keys length and values should be the same
+--     local constants = {}
+--     for idx, _ in ipairs(receiver_names) do
+--         table.insert(constants, refactor.code.constant({
+--             name = receiver_names[idx],
+--             value = values[idx],
+--         }))
+--     end
+--     local lastElement = constants[#constants]
+--     table.remove(constants, #constants)
+--     table.insert(constants, 1, lastElement)
+--     return constants
+-- end
+
 local function inlined_sentences_edits(refactor, region, bufnr)
     local text_edits = {}
     local declaration, _ = get_function_declaration(refactor, bufnr)
@@ -180,6 +195,22 @@ local function inline_func_setup(refactor, bufnr)
         if #reference_receivers_names > 0 then
             local reference_region = utils.region_one_line_up_from_node(reference)
 
+            -- write the var declarations if there are more than 2 return statemetes in the body
+            local returned_values = get_function_returned_values(refactor, function_declaration, bufnr)
+            if #returned_values > 2 then
+                local returned_values_types = {}
+                for _, name in ipairs(reference_receivers_names) do
+                    -- TODO: ask for types or automatically detect them (is that possible?)
+                    table.insert(returned_values_types, name .. "_type")
+                end
+                local declarations = get_params_as_declarations(refactor, reference_receivers_names,
+                    returned_values_types)
+                for _, declaration in ipairs(declarations) do
+                    local insert_text = lsp_utils.insert_text(reference_region, declaration)
+                    table.insert(text_edits, insert_text)
+                end
+            end
+
             -- rewrites each parameter with its value in the new place
             local parameter_names = get_function_parameter_names(refactor, function_declaration, bufnr)
             local argument_values = get_function_arguments(refactor, reference, bufnr)
@@ -189,18 +220,17 @@ local function inline_func_setup(refactor, bufnr)
                 table.insert(text_edits, insert_text)
             end
 
-            -- inlines function body into the new place
-            for _, edit in ipairs(inlined_sentences_edits(refactor, reference_region, bufnr)) do
-                table.insert(text_edits, edit)
-            end
-
             -- rewrites returned values into constants with its proper names
-            local returned_values = get_function_returned_values(refactor, function_declaration, bufnr)
             constants = get_params_as_constants(refactor, reference_receivers_names, returned_values)
-
+            -- constants = get_receivers_as_constants(refactor, reference_receivers_names, returned_values2)
             for _, constant in ipairs(constants) do
                 local insert_text = lsp_utils.insert_text(reference_region, constant)
                 table.insert(text_edits, insert_text)
+            end
+
+            -- inlines function body into the new place (without return statements)
+            for _, edit in ipairs(inlined_sentences_edits(refactor, reference_region, bufnr)) do
+                table.insert(text_edits, edit)
             end
 
             -- deletes the original reference
@@ -219,7 +249,7 @@ local function inline_func_setup(refactor, bufnr)
                 table.insert(text_edits, insert_text)
             end
 
-            -- inlines function body into the new place
+            -- inlines function body into the new place (without return statements)
             for _, edit in ipairs(inlined_sentences_edits(refactor, reference_region, bufnr)) do
                 table.insert(text_edits, edit)
             end
