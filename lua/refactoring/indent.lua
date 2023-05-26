@@ -4,7 +4,7 @@ local M = {}
 
 --- return the indent width of a given buffer
 ---
---- If the buffer uses tabs ('noexpandtab'), the value uf 'tabstop' will be
+--- If the buffer uses tabs ('noexpandtab'), the value of 'tabstop' will be
 -- returned, else the value of 'shiftwidth' will be returned
 ---@param bufnr number
 ---@return number
