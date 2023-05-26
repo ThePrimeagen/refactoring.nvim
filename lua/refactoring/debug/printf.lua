@@ -63,12 +63,12 @@ local function printDebug(bufnr, config)
 
                 local scaped_printf_statement =
                     printf_statement:gsub("([%(%)])", "%%%%%1")
-                local count_pattern = debug_path ~= ""
+                local text_to_count_pattern = debug_path ~= ""
                         and debug_path .. " " .. "%d+"
                     or "%d+"
                 local text_to_count = refactor.code.print({
                     statement = scaped_printf_statement,
-                    content = count_pattern,
+                    content = text_to_count_pattern,
                 })
 
                 local lines = vim.api.nvim_buf_get_lines(bufnr, 0, -1, false)
