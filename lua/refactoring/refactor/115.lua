@@ -50,8 +50,6 @@ local function get_inline_setup_pipeline(bufnr, opts)
     -- :add_task(selection_setup)
 end
 
--- TODO: aqui todo lo nuevo
-
 local function get_function_declaration(refactor, bufnr)
     local current_node = ts.get_node_at_cursor(0)
 
@@ -68,7 +66,7 @@ local function get_references(refactor, function_declaration)
     return refactor.ts:loop_thru_nodes(function_declaration:parent(), refactor.ts.function_references)
 end
 
-local function get_returned_values(refactor, function_declaration, bufnr)
+local function get_function_returned_values(refactor, function_declaration, bufnr)
     local values = {}
     for _, value in ipairs(refactor.ts:loop_thru_nodes(function_declaration, refactor.ts.return_values)) do
         table.insert(values, vim.treesitter.get_node_text(value, bufnr))
@@ -84,7 +82,7 @@ local function get_function_parameter_names(refactor, function_declaration, bufn
     return values
 end
 
-local function get_receivers_variable_names(refactor, function_declaration, bufnr)
+local function get_function_receiver_names(refactor, function_declaration, bufnr)
     local values = {}
     for _, value in ipairs(refactor.ts:loop_thru_nodes(function_declaration:parent(), refactor.ts.local_var_names)) do
         table.insert(values, vim.treesitter.get_node_text(value, bufnr))
@@ -129,21 +127,6 @@ local function get_params_as_constants(refactor, keys, values)
     return constants
 end
 
-local function inlined_reference_params_edits(refactor, reference, bufnr)
-    local text_edits = {}
-    local declaration, _ = get_function_declaration(refactor, bufnr)
-    local parameter_names = get_function_parameter_names(refactor, declaration, bufnr)
-    local argument_values = get_function_arguments(refactor, reference, bufnr)
-    local constants = get_params_as_constants(refactor, parameter_names, argument_values)
-    local region = utils.region_one_line_up_from_node(reference)
-    for _, constant in ipairs(constants) do
-        local insert_text = lsp_utils.insert_text(region, constant)
-        table.insert(text_edits, insert_text)
-    end
-    return text_edits
-end
-
-
 local function inlined_sentences_edits(refactor, region, bufnr)
     local text_edits = {}
     local declaration, _ = get_function_declaration(refactor, bufnr)
@@ -166,16 +149,23 @@ end
 
 local function inline_func_setup(refactor, bufnr)
     local text_edits = {}
-    local function_declaration, _ = get_function_declaration(refactor, bufnr)
-    local function_declaration_region = Region:from_node(function_declaration, bufnr)
 
+    local function_declaration, _ = get_function_declaration(refactor, bufnr)
+    local function_receivers_names = get_function_receiver_names(refactor, function_declaration, bufnr)
     local function_references = get_references(refactor, function_declaration)
 
-    local returned_values = get_returned_values(refactor, function_declaration, bufnr)
-    local receivers_variable_names = get_receivers_variable_names(refactor, function_declaration, bufnr)
-
-    if #receivers_variable_names > 0 then
-        local returned_vars_as_constants = get_params_as_constants(refactor, receivers_variable_names, returned_values)
+    if #function_receivers_names > 0 then
+        -- rewrites each parameter with its value in the new place
+        for _, reference in ipairs(function_references) do
+            local parameter_names = get_function_parameter_names(refactor, function_declaration, bufnr)
+            local argument_values = get_function_arguments(refactor, reference, bufnr)
+            local constants = get_params_as_constants(refactor, parameter_names, argument_values)
+            local region = utils.region_one_line_up_from_node(reference)
+            for _, constant in ipairs(constants) do
+                local insert_text = lsp_utils.insert_text(region, constant)
+                table.insert(text_edits, insert_text)
+            end
+        end
 
         -- inlines function body into the new place
         for _, reference in ipairs(function_references) do
@@ -185,17 +175,12 @@ local function inline_func_setup(refactor, bufnr)
             end
         end
 
-        -- rewrites each parameter with its value in the new place
-        for _, reference in ipairs(function_references) do
-            for _, edit in ipairs(inlined_reference_params_edits(refactor, reference, bufnr)) do
-                table.insert(text_edits, edit)
-            end
-        end
-
         -- rewrites returned values into constants with its proper names
+        local returned_values = get_function_returned_values(refactor, function_declaration, bufnr)
+        local constants = get_params_as_constants(refactor, function_receivers_names, returned_values)
         for _, reference in ipairs(function_references) do
             local region = utils.region_one_line_up_from_node(reference)
-            for _, constant in ipairs(returned_vars_as_constants) do
+            for _, constant in ipairs(constants) do
                 local insert_text = lsp_utils.insert_text(region, constant)
                 table.insert(text_edits, insert_text)
             end
@@ -214,17 +199,22 @@ local function inline_func_setup(refactor, bufnr)
             return false, refactor
         end
 
+        -- rewrites each parameter with its value in the new place
+        for _, reference in ipairs(function_references) do
+            local parameter_names = get_function_parameter_names(refactor, function_declaration, bufnr)
+            local argument_values = get_function_arguments(refactor, reference, bufnr)
+            local constants = get_params_as_constants(refactor, parameter_names, argument_values)
+            local region = utils.region_one_line_up_from_node(reference)
+            for _, constant in ipairs(constants) do
+                local insert_text = lsp_utils.insert_text(region, constant)
+                table.insert(text_edits, insert_text)
+            end
+        end
+
         -- inlines function body into the new place
         for _, reference in ipairs(function_references) do
             local region = Region:from_node(reference:parent(), bufnr)
             for _, edit in ipairs(inlined_sentences_edits(refactor, region, bufnr)) do
-                table.insert(text_edits, edit)
-            end
-        end
-
-        -- rewrites each parameter with its value in the new place
-        for _, reference in ipairs(function_references) do
-            for _, edit in ipairs(inlined_reference_params_edits(refactor, reference, bufnr)) do
                 table.insert(text_edits, edit)
             end
         end
@@ -239,10 +229,8 @@ local function inline_func_setup(refactor, bufnr)
     end
 
     -- deletes function declaration
-    table.insert(
-        text_edits,
-        lsp_utils.delete_text(function_declaration_region)
-    )
+    local function_declaration_region = Region:from_node(function_declaration, bufnr)
+    table.insert(text_edits, lsp_utils.delete_text(function_declaration_region))
 
     refactor.text_edits = text_edits
 
