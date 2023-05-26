@@ -59,19 +59,18 @@ local function printDebug(bufnr, config)
                     printf_statement = default_printf_statement[1]
                 end
 
-                local empty_printf = refactor.code
-                    .print({
-                        statement = printf_statement,
-                        content = "%d+",
-                    })
-                    :gsub("([%(%)])", "%%%1")
                 local debug_path = debug_utils.get_debug_path(refactor, point)
 
-                local text_to_count = debug_path ~= "" and debug_path
-                    or empty_printf
-                text_to_count = text_to_count
-                    .. ".*"
-                    .. "__AUTO_GENERATED_PRINTF__"
+                local scaped_printf_statement =
+                    printf_statement:gsub("([%(%)])", "%%%%%1")
+                local count_pattern = debug_path ~= ""
+                        and debug_path .. " " .. "%d+"
+                    or "%d+"
+                local text_to_count = refactor.code.print({
+                    statement = scaped_printf_statement,
+                    content = count_pattern,
+                })
+
                 local lines = vim.api.nvim_buf_get_lines(bufnr, 0, -1, false)
 
                 local current_lines_with_text = {}
@@ -96,30 +95,32 @@ local function printDebug(bufnr, config)
                         content = tostring(i)
                     end
 
-                    local text = refactor.code.print({
-                        statement = printf_statement,
-                        content = content,
-                    })
-                    text = text
-                        .. " "
-                        .. refactor.code.comment("__AUTO_GENERATED_PRINTF__")
-
-                    local indentation
-                    if refactor.ts:allows_indenting_task() then
-                        local indent_amount = indent.buf_indent_amount(
-                            Point:from_values(row_num, MAX_COL),
-                            refactor,
-                            opts.below,
-                            refactor.bufnr
-                        )
-                        indentation =
-                            indent.indent(indent_amount, refactor.bufnr)
-                    end
-                    if indentation ~= nil then
-                        text = table.concat({ indentation, text }, "")
-                    end
-
                     if row_num == point.row and not should_replace then
+                        local text = refactor.code.print({
+                            statement = printf_statement,
+                            content = content,
+                        })
+                        text = text
+                            .. " "
+                            .. refactor.code.comment(
+                                "__AUTO_GENERATED_PRINTF__"
+                            )
+
+                        local indentation
+                        if refactor.ts:allows_indenting_task() then
+                            local indent_amount = indent.buf_indent_amount(
+                                Point:from_values(row_num, MAX_COL),
+                                refactor,
+                                opts.below,
+                                refactor.bufnr
+                            )
+                            indentation =
+                                indent.indent(indent_amount, refactor.bufnr)
+                        end
+                        if indentation ~= nil then
+                            text = table.concat({ indentation, text }, "")
+                        end
+
                         should_replace = true
 
                         local range = Region:from_point(point, bufnr)
@@ -132,17 +133,48 @@ local function printDebug(bufnr, config)
                             should_replace = false
                         end
 
-                        local range = Region:from_values(
-                            bufnr,
-                            row_num,
-                            1,
-                            row_num,
-                            MAX_COL
-                        )
-                        table.insert(
-                            refactor.text_edits,
-                            lsp_utils.replace_text(range, text)
-                        )
+                        local count_pattern = debug_path ~= ""
+                                and debug_path .. " " .. "(%d+)"
+                            or "(%d+)"
+                        local before_count_pattern = debug_path ~= ""
+                                and debug_path .. " " .. "()%d+"
+                            or "()%d+"
+                        local after_count_pattern = debug_path ~= ""
+                                and debug_path .. " " .. "%d+()"
+                            or "%d+()"
+                        local pattern_count = refactor.code.print({
+                            statement = scaped_printf_statement,
+                            content = count_pattern,
+                        })
+                        local pattern_before = refactor.code.print({
+                            statement = scaped_printf_statement,
+                            content = before_count_pattern,
+                        })
+                        local pattern_after = refactor.code.print({
+                            statement = scaped_printf_statement,
+                            content = after_count_pattern,
+                        })
+
+                        local _, _, current_count =
+                            string.find(lines[row_num], pattern_count)
+                        local _start =
+                            string.match(lines[row_num], pattern_before)
+                        local _end = string.match(lines[row_num], pattern_after)
+
+                        local text = tostring(i)
+                        if current_count ~= text then
+                            local range = Region:from_values(
+                                bufnr,
+                                row_num,
+                                _start,
+                                row_num,
+                                _end - 1
+                            )
+                            table.insert(
+                                refactor.text_edits,
+                                lsp_utils.replace_text(range, text)
+                            )
+                        end
                     end
                 end
 
