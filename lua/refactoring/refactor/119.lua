@@ -57,11 +57,14 @@ end
 ---@param refactor Refactor
 ---@return string
 local function get_var_name(var_name, refactor)
-    -- TODO (TheLeoP): jsx specific logic
-    if refactor.region_node:type() == "jsx_element" then
-        return string.format("< %s />", var_name)
+    if refactor.ts.require_special_var_format then
+        return refactor.code.special_var(
+            var_name,
+            { region_node_type = refactor.region_node:type() }
+        )
+    else
+        return var_name
     end
-    return var_name
 end
 
 ---@param refactor Refactor

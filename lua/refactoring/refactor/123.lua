@@ -153,16 +153,17 @@ local function inline_var_setup(refactor, bufnr)
             bufnr
         )
 
-        local insert_text = lsp_utils.replace_text(
-            Region:from_node(declarator_node, bufnr),
-            refactor.code.constant({
-                multiple = true,
-                identifiers = new_identifiers_text,
-                values = new_values_text,
-            })
+        table.insert(
+            text_edits,
+            lsp_utils.replace_text(
+                Region:from_node(declarator_node, bufnr),
+                refactor.code.constant({
+                    multiple = true,
+                    identifiers = new_identifiers_text,
+                    values = new_values_text,
+                })
+            )
         )
-
-        table.insert(text_edits, insert_text)
     end
 
     local value_text = vim.treesitter.get_node_text(value_node_to_inline, bufnr)
@@ -170,10 +171,19 @@ local function inline_var_setup(refactor, bufnr)
     for _, ref in pairs(references) do
         -- TODO: In my mind, if nothing is left on the line when you remove, it should get deleted.
         -- Could be done via opts into replace_text.
-        local insert_text =
-            lsp_utils.replace_text(Region:from_node(ref), value_text)
 
-        table.insert(text_edits, insert_text)
+        local parent = ref:parent()
+        if
+            refactor.ts.should_check_parent_node
+            and refactor.ts.should_check_parent_node(parent:type())
+        then
+            ref = parent
+        end
+
+        table.insert(
+            text_edits,
+            lsp_utils.replace_text(Region:from_node(ref), value_text)
+        )
     end
 
     refactor.text_edits = text_edits

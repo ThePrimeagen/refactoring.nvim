@@ -4,6 +4,11 @@ local FieldNode = Nodes.FieldNode
 local StringNode = Nodes.StringNode
 local InlineNode = Nodes.InlineNode
 
+local special_nodes = {
+    "jsx_element",
+    "jsx_self_closing_element",
+}
+
 ---@type TreeSitterInstance
 local TypescriptReact = {}
 
@@ -99,6 +104,11 @@ function TypescriptReact.new(bufnr, ft)
         function_body = {
             InlineNode("(statement_block (_) @tmp_capture)"),
         },
+        require_special_var_format = true,
+        ---@param parent_type string
+        should_check_parent_node = function(parent_type)
+            return vim.tbl_contains(special_nodes, parent_type)
+        end,
     }
     local ts = TreeSitter:new(config, bufnr)
 
