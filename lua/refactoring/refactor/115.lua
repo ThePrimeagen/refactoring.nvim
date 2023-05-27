@@ -137,7 +137,7 @@ end
 local function get_params_as_constants(refactor, keys, values)
     -- TODO: keys length and values should be the same
     local constants = {}
-    for idx, _ in ipairs(keys) do
+    for idx, _ in ipairs(values) do
         table.insert(constants, refactor.code.constant({
             name = keys[idx],
             value = values[idx],
