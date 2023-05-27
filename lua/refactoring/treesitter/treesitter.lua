@@ -26,6 +26,7 @@ local Region = require("refactoring.region")
 ---@field function_scopes table<string, string|true>: nodes to find a function declaration
 ---@field require_class_name boolean: flag to require class name for codegen
 ---@field require_class_type boolean: flag to require class type for codegen
+---@field argument_type_index 1|2: 1-indexed location of type in function args (int foo= 1, foo int= 2)
 
 --- The following fields act similar to a cursor
 ---@class TreeSitter: TreeSitterLanguageConfig
@@ -57,6 +58,7 @@ function TreeSitter:new(config, bufnr)
         require_class_name = false,
         require_class_type = false,
         require_param_types = false,
+        argument_type_index = 2,
         filetype = config.filetype,
     }
     local c = vim.tbl_extend("force", default_config, config)
@@ -278,21 +280,22 @@ local function containing_node_by_type(node, container_map)
     return node
 end
 
--- TODO: Can we validate settings here without breaking things?
 ---@param scope TSNode
+---@param type_index integer
 ---@return table<string, string>
-function TreeSitter:get_local_parameter_types(scope)
+function TreeSitter:get_local_parameter_types(scope, type_index)
     local parameter_types = {}
+    self:validate_setting("function_scopes")
     local function_node = containing_node_by_type(scope, self.function_scopes)
 
-    -- TODO: Uncomment this error once validate settings in this func
-    -- if function_node == nil then
-    -- error(
-    -- "Failed to get function_node in get_local_parameter_types, check `function_scopes` queries"
-    -- )
-    -- end
+    if function_node == nil then
+        error(
+            "Failed to get function_node in get_local_parameter_types, check `function_scopes` queries"
+        )
+    end
 
     -- Get parameter list
+    self:validate_setting("parameter_list")
     local parameter_list_nodes =
         self:loop_thru_nodes(function_node, self.parameter_list)
 
@@ -302,7 +305,10 @@ function TreeSitter:get_local_parameter_types(scope)
             local region = Region:from_node(node, self.bufnr)
             local parameter_list = region:get_text()
             local parameter_split = utils.split_string(parameter_list[1], " ")
-            parameter_types[parameter_split[1]] = parameter_split[2]
+
+            local arg_index = type_index == 2 and 1 or 2
+            parameter_types[parameter_split[arg_index]] =
+                parameter_split[type_index]
         end
     end
 

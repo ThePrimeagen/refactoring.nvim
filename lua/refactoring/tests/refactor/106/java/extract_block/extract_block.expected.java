@@ -1,6 +1,6 @@
 class Extract {
 
-public static void foo_bar(INSERT_PARAM_TYPE a) {
+public static void foo_bar(int a) {
     int test = 1, test_other = 11;
     for (int x = 0; x < test_other + test; x++) {
       System.out.println(x + " " + a);

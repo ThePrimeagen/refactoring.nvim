@@ -1,6 +1,6 @@
 #include <stdio.h>
 
-void foo_bar(INSERT_PARAM_TYPE a) {
+void foo_bar(int a) {
   int test = 1, test_other = 1;
 
   for (int idx = test - 1; idx < test_other; idx++) {

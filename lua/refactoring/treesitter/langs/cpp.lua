@@ -53,6 +53,10 @@ function Cpp.new(bufnr, ft)
             while_statement = true,
             do_statement = true,
         },
+        function_scopes = {
+            function_definition = true,
+            translation_unit = true,
+        },
         debug_paths = {
             class_specifier = FieldNode("name"),
             function_definition = TakeFirstNode(
@@ -82,11 +86,17 @@ function Cpp.new(bufnr, ft)
             InlineNode("(while_statement) @tmp_capture"),
             InlineNode("(declaration) @tmp_capture"),
         },
+        parameter_list = {
+            InlineNode(
+                "(function_declarator parameters:(parameter_list ((parameter_declaration) @tmp_capture)))"
+            ),
+        },
         function_body = {
             InlineNode("(compound_statement (_) @tmp_capture)"),
             InlineNode("(compound_statement) @tmp_capture"),
         },
         require_param_types = true,
+        argument_type_index = 1,
     }
     return TreeSitter:new(config, bufnr)
 end
