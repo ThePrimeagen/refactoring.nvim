@@ -196,7 +196,7 @@ function Config:set_print_var_statements(override_map)
 end
 
 ---@param filetype string: the filetype
----@return string|boolean
+---@return string|false
 function Config:get_extract_var_statement(filetype)
     if self.config.extract_var_statements[filetype] == nil then
         return false
