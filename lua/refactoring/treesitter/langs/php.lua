@@ -4,6 +4,10 @@ local FieldNode = Nodes.FieldNode
 local StringNode = Nodes.StringNode
 local InlineNode = Nodes.InlineNode
 
+local special_nodes = {
+    "variable_name",
+}
+
 ---@type TreeSitterInstance
 local Php = {}
 
@@ -21,7 +25,7 @@ function Php.new(bufnr, ft)
             compound_statement = true,
         },
         variable_scope = {
-            assignment_expression = true,
+            expression_statement = true,
         },
         indent_scopes = {
             program = true,
@@ -38,7 +42,7 @@ function Php.new(bufnr, ft)
         },
         local_var_names = {
             InlineNode(
-                "(expression_statement (assignment_expression left: (_) @tmp_capture))"
+                "(expression_statement (assignment_expression left: (variable_name (name) @tmp_capture)))"
             ),
         },
         function_args = {
@@ -77,6 +81,11 @@ function Php.new(bufnr, ft)
         function_body = {
             InlineNode("(compound_statement) @tmp_capture"),
         },
+        ---@param parent_type string
+        ---@return boolean
+        should_check_parent_node = function(parent_type)
+            return vim.tbl_contains(special_nodes, parent_type)
+        end,
     }
     return TreeSitter:new(config, bufnr)
 end

@@ -106,6 +106,7 @@ function TypescriptReact.new(bufnr, ft)
         },
         require_special_var_format = true,
         ---@param parent_type string
+        ---@return boolean
         should_check_parent_node = function(parent_type)
             return vim.tbl_contains(special_nodes, parent_type)
         end,

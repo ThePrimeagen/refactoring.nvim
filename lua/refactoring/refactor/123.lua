@@ -20,6 +20,8 @@ local function get_inline_setup_pipeline(bufnr, opts)
         :add_task(selection_setup)
 end
 
+---@param refactor Refactor
+---@param bufnr integer
 local function determine_declarator_node(refactor, bufnr)
     -- only deal with first declaration
     local declarator_node = refactor.ts:local_declarations_in_region(
