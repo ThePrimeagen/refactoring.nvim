@@ -81,8 +81,6 @@ function Php.new(bufnr, ft)
         function_body = {
             InlineNode("(compound_statement) @tmp_capture"),
         },
-        ---@param parent_type string
-        ---@return boolean
         should_check_parent_node = function(parent_type)
             return vim.tbl_contains(special_nodes, parent_type)
         end,

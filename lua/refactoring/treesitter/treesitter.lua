@@ -28,7 +28,7 @@ local Region = require("refactoring.region")
 ---@field require_class_type boolean: flag to require class type for codegen
 ---@field argument_type_index 1|2: 1-indexed location of type in function args (int foo= 1, foo int= 2)
 ---@field require_special_var_format boolean: flag to require special variable format for codegen
----@field should_check_parent_node fun(parent_type): boolean is checking the parent node necesary for context?
+---@field should_check_parent_node fun(parent_type: string): boolean is checking the parent node necesary for context?
 
 --- The following fields act similar to a cursor
 ---@class TreeSitter: TreeSitterLanguageConfig

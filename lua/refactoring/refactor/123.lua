@@ -113,6 +113,12 @@ local function inline_var_setup(refactor, bufnr)
 
     if node_on_cursor then
         node_to_inline = ts.get_node_at_cursor(0)
+        if
+            refactor.ts.should_check_parent_node
+            and refactor.ts.should_check_parent_node(node_to_inline:type())
+        then
+            node_to_inline = node_to_inline:named_child()
+        end
         definition = ts.find_definition(node_to_inline, bufnr)
         identifier_pos = determine_identifier_position(identifiers, definition)
     else
