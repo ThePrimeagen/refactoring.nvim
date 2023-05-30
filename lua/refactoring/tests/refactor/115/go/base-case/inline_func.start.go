@@ -12,4 +12,9 @@ func simple_function() {
 	fmt.Println("test3")
 	fmt.Println("test4")
 	fmt.Println("test5")
+	extracted()
+	fn := func() {
+		extracted()
+	}
+	fn()
 }

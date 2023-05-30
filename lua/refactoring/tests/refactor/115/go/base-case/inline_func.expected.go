@@ -10,4 +10,9 @@ func simple_function() {
 	fmt.Println("test3")
 	fmt.Println("test4")
 	fmt.Println("test5")
+	fmt.Errorf("test")
+	fn := func() {
+		fmt.Errorf("test")
+	}
+	fn()
 }

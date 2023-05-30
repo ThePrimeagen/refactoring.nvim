@@ -5,6 +5,7 @@ local ts = require("refactoring.ts")
 local Region = require("refactoring.region")
 local lsp_utils = require("refactoring.lsp_utils")
 local utils = require("refactoring.utils")
+local indent = require("refactoring.indent")
 
 local function dump(o)
     if type(o) == "table" then
@@ -90,6 +91,7 @@ local function get_function_parameter_names(refactor, function_declaration, bufn
 end
 
 local function get_function_receiver_names(refactor, function_declaration, bufnr)
+    -- TODO: multiple return points are not supported
     local values = {}
     for _, value in ipairs(refactor.ts:loop_thru_nodes(function_declaration:parent(), refactor.ts.local_var_names)) do
         table.insert(values, vim.treesitter.get_node_text(value, bufnr))
@@ -111,9 +113,9 @@ local function get_function_body(refactor, function_declaration, bufnr)
     local sentences = refactor.ts:get_function_body(function_declaration)
     -- TODO: try to fix indent in one single place
     local new_line = ""
-    if #sentences > 1 then
-        new_line = "\n"
-    end
+    -- if #sentences > 1 then
+    --     new_line = "\n"
+    -- end
     for _, sentence in ipairs(sentences) do
         if sentence:type() ~= "return_statement" then
             table.insert(function_body, vim.treesitter.get_node_text(sentence, bufnr) .. new_line)
@@ -173,7 +175,7 @@ local function inlined_sentences_edits(refactor, region, bufnr)
 end
 
 
-local function delete_region_edit(region)
+local function delete_region(region)
     local text_edits = {}
     local delete_text = lsp_utils.delete_text(region)
     table.insert(text_edits, delete_text)
@@ -191,55 +193,110 @@ local function inline_func_setup(refactor, bufnr)
     end
 
     for _, reference in ipairs(function_references) do
-        local reference_receivers_names = get_function_receiver_names(refactor, reference:parent():parent(), bufnr)
-        if #reference_receivers_names > 0 then
-            local reference_region = utils.region_one_line_up_from_node(reference)
-
-            -- write the var declarations if there are more than 2 return statemetes in the body
+        -- TODO: multiple return points are not supported
+        local reference_receivers_names = get_function_receiver_names(refactor, reference:parent():parent():parent(),
+            bufnr)
+        if #reference_receivers_names == 0 then
             local returned_values = get_function_returned_values(refactor, function_declaration, bufnr)
-            if #returned_values > 2 then
-                local returned_values_types = {}
-                for _, name in ipairs(reference_receivers_names) do
-                    -- TODO: ask for types or automatically detect them (is that possible?)
-                    table.insert(returned_values_types, name .. "_type")
-                end
-                local declarations = get_params_as_declarations(refactor, reference_receivers_names,
-                    returned_values_types)
-                for _, declaration in ipairs(declarations) do
-                    local insert_text = lsp_utils.insert_text(reference_region, declaration)
+            if #returned_values == 1 then
+                -- inlines function body into the new place (without return statements)
+                for _, rv in ipairs(returned_values) do
+                    local insert_text = lsp_utils.insert_text(Region:from_node(reference:parent(), bufnr), rv)
                     table.insert(text_edits, insert_text)
                 end
-            end
 
-            -- rewrites each parameter with its value in the new place
-            local parameter_names = get_function_parameter_names(refactor, function_declaration, bufnr)
-            local argument_values = get_function_arguments(refactor, reference, bufnr)
-            local constants = get_params_as_constants(refactor, parameter_names, argument_values)
-            for _, constant in ipairs(constants) do
-                local insert_text = lsp_utils.insert_text(reference_region, constant)
-                table.insert(text_edits, insert_text)
+                -- deletes the original reference
+                for _, edit in ipairs(delete_region(Region:from_node(reference:parent(), bufnr))) do
+                    table.insert(text_edits, edit)
+                end
             end
+        end
+        if #reference_receivers_names == 1 then
+            local returned_values = get_function_returned_values(refactor, function_declaration, bufnr)
+            if #returned_values == 1 then
+                -- inlines function body into the new place (without return statements)
+                for _, rv in ipairs(returned_values) do
+                    local insert_text = lsp_utils.insert_text(Region:from_node(reference, bufnr), rv)
+                    table.insert(text_edits, insert_text)
+                end
 
-            -- rewrites returned values into constants with its proper names
-            constants = get_params_as_constants(refactor, reference_receivers_names, returned_values)
-            -- constants = get_receivers_as_constants(refactor, reference_receivers_names, returned_values2)
-            for _, constant in ipairs(constants) do
-                local insert_text = lsp_utils.insert_text(reference_region, constant)
-                table.insert(text_edits, insert_text)
+                -- deletes the original reference
+                for _, edit in ipairs(delete_region(Region:from_node(reference, bufnr))) do
+                    table.insert(text_edits, edit)
+                end
             end
+        end
 
-            -- inlines function body into the new place (without return statements)
-            for _, edit in ipairs(inlined_sentences_edits(refactor, reference_region, bufnr)) do
-                table.insert(text_edits, edit)
-            end
+        if #reference_receivers_names > 0 then
+            local reference_region = utils.region_one_line_up_from_node(reference)
+            local returned_values = get_function_returned_values(refactor, function_declaration, bufnr)
 
-            -- deletes the original reference
-            for _, edit in ipairs(delete_region_edit(Region:from_node(reference:parent():parent():parent(), bufnr))) do
-                table.insert(text_edits, edit)
+            if #returned_values == 1 then
+                -- inlines function body into the new place (without return statements)
+                for _, rv in ipairs(returned_values) do
+                    local insert_text = lsp_utils.insert_text(Region:from_node(reference, bufnr), rv)
+                    table.insert(text_edits, insert_text)
+                end
+
+                -- deletes the original reference
+                for _, edit in ipairs(delete_region(Region:from_node(reference, bufnr))) do
+                    table.insert(text_edits, edit)
+                end
+            else
+                -- write the var declarations if there are more than 2 return statemetes in the body
+                if #returned_values > 2 then
+                    local returned_values_types = {}
+                    for _, name in ipairs(reference_receivers_names) do
+                        -- TODO: ask for types or automatically detect them (is that possible?)
+                        table.insert(returned_values_types, name .. "_type")
+                    end
+                    local declarations = get_params_as_declarations(refactor, reference_receivers_names,
+                        returned_values_types)
+                    for _, declaration in ipairs(declarations) do
+                        local insert_text = lsp_utils.insert_text(reference_region, declaration)
+                        table.insert(text_edits, insert_text)
+                    end
+                end
+
+                -- rewrites each parameter with its value in the new place
+                local parameter_names = get_function_parameter_names(refactor, function_declaration, bufnr)
+                local argument_values = get_function_arguments(refactor, reference, bufnr)
+                local constants = get_params_as_constants(refactor, parameter_names, argument_values)
+                for _, constant in ipairs(constants) do
+                    local insert_text = lsp_utils.insert_text(reference_region, constant)
+                    table.insert(text_edits, insert_text)
+                end
+
+                -- rewrites returned values into constants with its proper names
+                constants = get_params_as_constants(refactor, reference_receivers_names, returned_values)
+                -- constants = get_receivers_as_constants(refactor, reference_receivers_names, returned_values2)
+                for _, constant in ipairs(constants) do
+                    local insert_text = lsp_utils.insert_text(reference_region, constant)
+                    table.insert(text_edits, insert_text)
+                end
+
+                -- inlines function body into the new place (without return statements)
+                for _, edit in ipairs(inlined_sentences_edits(refactor, reference_region, bufnr)) do
+                    table.insert(text_edits, edit)
+                end
+
+                -- deletes the original reference
+                for _, edit in ipairs(delete_region(Region:from_node(reference:parent():parent():parent(), bufnr))) do
+                    table.insert(text_edits, edit)
+                end
             end
         else
             local reference_region = Region:from_node(reference:parent(), bufnr)
 
+            -- local returned_values = get_function_returned_values(refactor, function_declaration, bufnr)
+            -- if #returned_values > 0 then
+            --     -- inlines function body into the new place (without return statements)
+            --     for _, rv in ipairs(returned_values) do
+            --         local insert_text = lsp_utils.insert_text(reference_region, "(" .. rv .. ")")
+            --         table.insert(text_edits, insert_text)
+            --     end
+            -- end
+
             -- rewrites each parameter with its value in the new place
             local parameter_names = get_function_parameter_names(refactor, function_declaration, bufnr)
             local argument_values = get_function_arguments(refactor, reference, bufnr)
@@ -255,7 +312,7 @@ local function inline_func_setup(refactor, bufnr)
             end
 
             -- deletes the original reference
-            for _, edit in ipairs(delete_region_edit(reference_region)) do
+            for _, edit in ipairs(delete_region(reference_region)) do
                 table.insert(text_edits, edit)
             end
         end
@@ -270,6 +327,70 @@ local function inline_func_setup(refactor, bufnr)
     return true, refactor
 end
 
+local function inline_func_setup_v2(refactor, bufnr)
+    local function_declaration, identifier = get_function_declaration(refactor, bufnr)
+    local function_references              = get_references(refactor, function_declaration, identifier, bufnr)
+
+    if #function_references == 0 then
+        error("Error: no function usages to inline")
+        return false, refactor
+    end
+
+    local text_edits = {}
+    local function_declaration_body = get_function_body(refactor, function_declaration, bufnr)
+    local returned_values = get_function_returned_values(refactor, function_declaration, bufnr)
+
+    -- deletes the original reference
+    for _, reference in ipairs(function_references) do
+        -- inlines function body into the new place (without return statements)
+        if #returned_values == 0 and #function_declaration_body == 1 then
+            for _, sentence in ipairs(function_declaration_body) do
+                table.insert(text_edits, lsp_utils.insert_text(Region:from_node(reference:parent(), bufnr), sentence))
+            end
+        end
+
+        if #returned_values == 1 and #function_declaration_body == 0 then
+            for _, sentence in ipairs(returned_values) do
+                table.insert(text_edits, lsp_utils.insert_text(Region:from_node(reference:parent(), bufnr), sentence))
+            end
+        end
+
+        if #returned_values == 1 and #function_declaration_body > 0 then
+            for _, sentence in ipairs(function_declaration_body) do
+                table.insert(text_edits, lsp_utils.insert_new_line_text(
+                    utils.region_one_line_up_from_node(reference),
+                    "\t" .. sentence,
+                    {}
+                ))
+            end
+            for _, sentence in ipairs(returned_values) do
+                table.insert(text_edits, lsp_utils.insert_text(Region:from_node(reference:parent(), bufnr), sentence))
+            end
+        end
+
+        if #returned_values > 1 and #function_declaration_body == 0 then
+            for idx, sentence in ipairs(returned_values) do
+                local comma = ""
+                if idx ~= #returned_values then
+                    comma = ", "
+                end
+                table.insert(text_edits,
+                    lsp_utils.insert_text(Region:from_node(reference:parent(), bufnr), sentence .. comma))
+            end
+        end
+
+        -- Delete original reference
+        local delete_text = lsp_utils.delete_text(Region:from_node(reference:parent(), bufnr))
+        table.insert(text_edits, delete_text)
+    end
+
+    -- deletes function declaration
+    table.insert(text_edits, lsp_utils.delete_text(Region:from_node(function_declaration, bufnr)))
+
+    refactor.text_edits = text_edits
+    return true, refactor
+end
+
 ---@param bufnr number
 ---@param opts table
 function M.inline_func(bufnr, opts)
@@ -277,7 +398,7 @@ function M.inline_func(bufnr, opts)
         :add_task(
         --- @param refactor Refactor
             function(refactor)
-                return inline_func_setup(refactor, bufnr)
+                return inline_func_setup_v2(refactor, bufnr)
             end
         )
         :after(post_refactor.post_refactor)
