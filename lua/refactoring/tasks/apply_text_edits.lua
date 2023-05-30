@@ -18,7 +18,7 @@ local function refactor_apply_text_edits(refactor)
 
         table.insert(edits[bufnr], edit)
         local region
-        if edit.range["end"] == edit.range["start"] then
+        if edit.range["end"].line == edit.range["start"].line and edit.range["end"].character == edit.range["start"].character then
             region = Region:from_lsp_range_replace(edit.range, bufnr)
         else
             region = Region:from_lsp_range_insert(edit.range, bufnr)
