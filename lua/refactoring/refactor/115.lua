@@ -366,8 +366,58 @@ local function inline_func_setup_v2(refactor, bufnr)
     for _, reference in ipairs(function_references) do
         local indent_space = get_indent_spaces(refactor, reference:parent(), bufnr)
 
+        -- inlines function body into the new place (without return statements)
+        if #parameters_list == 0 and #returned_values == 0 and #function_declaration_body > 0 then
+            refactor_is_possible = true
+            for _, sentence in ipairs(function_declaration_body) do
+                table.insert(text_edits, lsp_utils.insert_new_line_text(
+                    Region:from_node(reference:parent(), bufnr),
+                    indent_space .. sentence,
+                    {}
+                ))
+            end
+        end
+
+        -- replaces the function call with the returned value
+        -- TODO: this could be merge into next one
+        if #parameters_list == 0 and #returned_values == 1 and #function_declaration_body == 0 then
+            refactor_is_possible = true
+            for _, sentence in ipairs(returned_values) do
+                table.insert(text_edits, lsp_utils.insert_text(Region:from_node(reference:parent(), bufnr), sentence))
+            end
+        end
+
+        -- replaces the function call with the returned value and inlines the function body
+        if #parameters_list == 0 and #returned_values == 1 and #function_declaration_body > 0 then
+            refactor_is_possible = true
+            for _, sentence in ipairs(function_declaration_body) do
+                table.insert(text_edits, lsp_utils.insert_new_line_text(
+                    utils.region_one_line_up_from_node(reference),
+                    indent_space .. sentence,
+                    {}
+                ))
+            end
+            for _, sentence in ipairs(returned_values) do
+                table.insert(text_edits, lsp_utils.insert_text(Region:from_node(reference:parent(), bufnr), sentence))
+            end
+        end
+
+        -- replaces the function call with the returned values (multiple)
+        -- TODO: this could be mergen into the next one
+        if #parameters_list == 0 and #returned_values > 1 and #function_declaration_body == 0 then
+            refactor_is_possible = true
+            for idx, sentence in ipairs(returned_values) do
+                local comma = ""
+                if idx ~= #returned_values then
+                    comma = ", "
+                end
+                table.insert(text_edits,
+                    lsp_utils.insert_text(Region:from_node(reference:parent(), bufnr), sentence .. comma))
+            end
+        end
+
         -- replaces the function call with the returned values (multiple) and alse function body (multiple lines)
-        if #parameters_list == 0 and #returned_values >= 0 and #function_declaration_body >= 0 then
+        if #parameters_list == 0 and #returned_values > 1 and #function_declaration_body > 1 then
             refactor_is_possible = true
             for _, sentence in ipairs(function_declaration_body) do
                 table.insert(text_edits, lsp_utils.insert_new_line_text(
@@ -386,26 +436,59 @@ local function inline_func_setup_v2(refactor, bufnr)
             end
         end
 
-        -- replaces the function call with all params and create constants for the given param
-        if #parameters_list > 0 and #returned_values >= 0 and #function_declaration_body >= 0 then
+        -- replaces the function call with the body and creates a constant to store the function arguments
+        if #parameters_list > 0 and #returned_values == 0 and #function_declaration_body > 0 then
             refactor_is_possible = true
             local arguments_list = get_function_arguments(refactor, reference:parent(), bufnr)
             local constants = get_params_as_constants(refactor, indent_space, parameters_list, arguments_list)
-            for idx, constant in ipairs(constants) do
-                local indentation = ""
-                if idx == 1 then
-                    indentation = indent_space
+            for _, constant in ipairs(constants) do
+                local insert_text = lsp_utils.insert_text(Region:from_node(reference:parent(), bufnr), constant)
+                table.insert(text_edits, insert_text)
+            end
+            for _, sentence in ipairs(function_declaration_body) do
+                local new_line = ""
+                if #function_declaration_body > 1 then
+                    new_line = code.new_line()
+                end
+                table.insert(text_edits, lsp_utils.insert_text(
+                    Region:from_node(reference:parent(), bufnr),
+                    indent_space .. sentence .. new_line
+                ))
+            end
+        end
+
+        -- replaces the function call with all params and create constants for the given param
+        if #parameters_list > 0 and #returned_values > 0 and #function_declaration_body == 0 then
+            refactor_is_possible = true
+            local arguments_list = get_function_arguments(refactor, reference:parent(), bufnr)
+            local constants = get_params_as_constants(refactor, indent_space, parameters_list, arguments_list)
+            for _, constant in ipairs(constants) do
+                table.insert(text_edits,
+                    lsp_utils.insert_text(utils.region_one_line_up_from_node(reference), indent_space .. constant))
+            end
+            for idx, sentence in ipairs(returned_values) do
+                local comma = ""
+                if idx ~= #returned_values then
+                    comma = ", "
                 end
                 table.insert(text_edits,
-                    lsp_utils.insert_text(utils.region_one_line_up_from_node(reference), indentation .. constant))
+                    lsp_utils.insert_text(Region:from_node(reference:parent(), bufnr), sentence .. comma))
+            end
+        end
+
+        if #parameters_list > 0 and #returned_values > 0 and #function_declaration_body > 0 then
+            refactor_is_possible = true
+            local arguments_list = get_function_arguments(refactor, reference:parent(), bufnr)
+            local constants = get_params_as_constants(refactor, indent_space, parameters_list, arguments_list)
+            for _, constant in ipairs(constants) do
+                table.insert(text_edits,
+                    lsp_utils.insert_text(utils.region_one_line_up_from_node(reference), indent_space .. constant))
             end
             for _, sentence in ipairs(function_declaration_body) do
                 local new_line = code.new_line()
-                local indentation = ""
-                indentation = indent_space
                 table.insert(text_edits, lsp_utils.insert_text(
                     utils.region_one_line_up_from_node(reference),
-                    indentation .. sentence .. new_line
+                    indent_space .. sentence .. new_line
                 ))
             end
             for idx, sentence in ipairs(returned_values) do

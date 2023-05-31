@@ -12,14 +12,14 @@ func simple_function() {
     fmt.Println("test")
     fmt.Println(a + b + c)
     fmt.Println(a + b + c)
-    
+
     a := 1
     b := 2
     c := 3
     fmt.Println("test")
     fmt.Println(a + b + c)
     fmt.Println(a + b + c)
-    
+
     fmt.Println(a)
     fn = func() {
         a := 1
@@ -28,6 +28,6 @@ func simple_function() {
         fmt.Println("test")
         fmt.Println(a + b + c)
         fmt.Println(a + b + c)
-        
+
     }
 }

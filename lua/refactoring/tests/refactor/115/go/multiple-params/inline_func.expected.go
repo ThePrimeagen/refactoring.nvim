@@ -10,6 +10,5 @@ func simple_function() {
     b := 2
     c := 3
     fmt.Println(a + b + c)
-    
     fmt.Println(a)
 }
