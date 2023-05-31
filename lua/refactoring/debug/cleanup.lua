@@ -4,6 +4,8 @@ local Region = require("refactoring.region")
 local lsp_utils = require("refactoring.lsp_utils")
 local post_refactor = require("refactoring.tasks.post_refactor")
 
+local MAX_COL = 100000
+
 local function cleanup(bufnr, config)
     return Pipeline:from_task(refactor_setup(bufnr, config))
         :add_task(
@@ -28,9 +30,9 @@ local function cleanup(bufnr, config)
                         region = Region:from_values(
                             bufnr,
                             row_num - 1,
-                            100000,
+                            MAX_COL,
                             row_num,
-                            100000
+                            MAX_COL
                         )
                     else
                         print(
@@ -41,7 +43,7 @@ local function cleanup(bufnr, config)
                             row_num,
                             1,
                             row_num,
-                            100000
+                            MAX_COL
                         )
                     end
 

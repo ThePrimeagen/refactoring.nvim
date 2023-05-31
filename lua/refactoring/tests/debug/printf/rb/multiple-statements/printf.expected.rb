@@ -1,4 +1,4 @@
 def main
-    puts "debug path main" # __AUTO_GENERATED_PRINTF__
+    puts "debug path main 1" # __AUTO_GENERATED_PRINTF__
     pass
 end

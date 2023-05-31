@@ -55,7 +55,7 @@ function Lua.new(bufnr, ft)
             class_specifier = FieldNode("name"),
             function_definition = StringNode("function"),
             function_declaration = QueryNode(
-                "(function_declaration name: (identifier) @name)"
+                "(function_declaration name: [(identifier) (dot_index_expression) (method_index_expression)] @name)"
             ),
             ["function"] = QueryNode("(function (function_name) @name)"),
             ["local_function"] = QueryNode(
