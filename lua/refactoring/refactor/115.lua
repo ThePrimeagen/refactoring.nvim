@@ -349,12 +349,14 @@ local function inline_func_setup_v2(refactor, bufnr)
             end
         end
 
+        -- replaces the function call with the returned value
         if #returned_values == 1 and #function_declaration_body == 0 then
             for _, sentence in ipairs(returned_values) do
                 table.insert(text_edits, lsp_utils.insert_text(Region:from_node(reference:parent(), bufnr), sentence))
             end
         end
 
+        -- replaces the function call with the returned value and inlines the function body
         if #returned_values == 1 and #function_declaration_body > 0 then
             for _, sentence in ipairs(function_declaration_body) do
                 table.insert(text_edits, lsp_utils.insert_new_line_text(
@@ -368,6 +370,7 @@ local function inline_func_setup_v2(refactor, bufnr)
             end
         end
 
+        -- replaces the function call with the returned values (multiple)
         if #returned_values > 1 and #function_declaration_body == 0 then
             for idx, sentence in ipairs(returned_values) do
                 local comma = ""
