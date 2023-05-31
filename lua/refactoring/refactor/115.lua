@@ -339,11 +339,13 @@ local function inline_func_setup_v2(refactor, bufnr)
     local text_edits = {}
     local function_declaration_body = get_function_body(refactor, function_declaration, bufnr)
     local returned_values = get_function_returned_values(refactor, function_declaration, bufnr)
+    local refactor_is_possible = false
 
     -- deletes the original reference
     for _, reference in ipairs(function_references) do
         -- inlines function body into the new place (without return statements)
         if #returned_values == 0 and #function_declaration_body == 1 then
+            refactor_is_possible = true
             for _, sentence in ipairs(function_declaration_body) do
                 table.insert(text_edits, lsp_utils.insert_text(Region:from_node(reference:parent(), bufnr), sentence))
             end
@@ -351,6 +353,7 @@ local function inline_func_setup_v2(refactor, bufnr)
 
         -- replaces the function call with the returned value
         if #returned_values == 1 and #function_declaration_body == 0 then
+            refactor_is_possible = true
             for _, sentence in ipairs(returned_values) do
                 table.insert(text_edits, lsp_utils.insert_text(Region:from_node(reference:parent(), bufnr), sentence))
             end
@@ -358,6 +361,7 @@ local function inline_func_setup_v2(refactor, bufnr)
 
         -- replaces the function call with the returned value and inlines the function body
         if #returned_values == 1 and #function_declaration_body > 0 then
+            refactor_is_possible = true
             for _, sentence in ipairs(function_declaration_body) do
                 table.insert(text_edits, lsp_utils.insert_new_line_text(
                     utils.region_one_line_up_from_node(reference),
@@ -372,6 +376,7 @@ local function inline_func_setup_v2(refactor, bufnr)
 
         -- replaces the function call with the returned values (multiple)
         if #returned_values > 1 and #function_declaration_body == 0 then
+            refactor_is_possible = true
             for idx, sentence in ipairs(returned_values) do
                 local comma = ""
                 if idx ~= #returned_values then
@@ -382,13 +387,40 @@ local function inline_func_setup_v2(refactor, bufnr)
             end
         end
 
-        -- Delete original reference
-        local delete_text = lsp_utils.delete_text(Region:from_node(reference:parent(), bufnr))
-        table.insert(text_edits, delete_text)
+        -- replaces the function call with the returned values (multiple) and alse function body (multiple lines)
+        if #returned_values > 1 and #function_declaration_body > 1 then
+            refactor_is_possible = true
+            for _, sentence in ipairs(function_declaration_body) do
+                table.insert(text_edits, lsp_utils.insert_new_line_text(
+                    utils.region_one_line_up_from_node(reference),
+                    "\t" .. sentence,
+                    {}
+                ))
+            end
+
+            for idx, sentence in ipairs(returned_values) do
+                local comma = ""
+                if idx ~= #returned_values then
+                    comma = ", "
+                end
+                table.insert(text_edits,
+                    lsp_utils.insert_text(Region:from_node(reference:parent(), bufnr), sentence .. comma))
+            end
+        end
+
+        if refactor_is_possible then
+            -- Delete original reference
+            local delete_text = lsp_utils.delete_text(Region:from_node(reference:parent(), bufnr))
+            table.insert(text_edits, delete_text)
+        end
     end
 
-    -- deletes function declaration
-    table.insert(text_edits, lsp_utils.delete_text(Region:from_node(function_declaration, bufnr)))
+    if refactor_is_possible then
+        -- deletes function declaration
+        table.insert(text_edits, lsp_utils.delete_text(Region:from_node(function_declaration, bufnr)))
+    else
+        return false, "inline function is not possible"
+    end
 
     refactor.text_edits = text_edits
     return true, refactor
