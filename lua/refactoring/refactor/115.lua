@@ -108,18 +108,48 @@ local function get_function_arguments(refactor, declarator_node, bufnr)
     return args
 end
 
+local function get_function_body_text(refactor, function_declaration, bufnr)
+    local block_first_child = refactor.ts:get_function_body(function_declaration)[1]
+    local block_last_child = block_first_child -- starting off here, we're going to find it manually
+
+    -- we have to find the last direct sibling manually because raw queries
+    -- pick up nested children nodes as well
+    while block_last_child:next_named_sibling() do
+        block_last_child = block_last_child:next_named_sibling()
+    end
+
+    local first_line_region = Region:from_node(block_first_child)
+    local last_line_region = Region:from_node(block_last_child)
+
+    -- update the region and its node with the block scope found
+    local region = Region:from_values(
+        refactor.bufnr,
+        first_line_region.start_row,
+        -- The Tresitter delimited region never includes the blank spaces
+        -- before the first line which causes problems with indentation.
+        1,
+        last_line_region.end_row,
+        last_line_region.end_col
+    )
+
+
+    local function_body = {}
+    for _, sentence in ipairs(region:get_text()) do
+        sentence = utils.trim(sentence) --[[@as string]]
+        if sentence:find("return", 1, true) ~= 1 then
+            table.insert(function_body, sentence .. code.new_line())
+        end
+    end
+    return function_body
+end
 
 local function get_function_body(refactor, function_declaration, bufnr)
     local function_body = {}
     local sentences = refactor.ts:get_function_body(function_declaration)
     -- TODO: try to fix indent in one single place
-    local new_line = ""
-    -- if #sentences > 1 then
-    --     new_line = "\n"
-    -- end
     for _, sentence in ipairs(sentences) do
         if sentence:type() ~= "return_statement" then
-            table.insert(function_body, vim.treesitter.get_node_text(sentence, bufnr) .. new_line)
+            table.insert(function_body, vim.treesitter.get_node_text(sentence, bufnr))
         end
     end
     return function_body
@@ -357,6 +387,7 @@ local function inline_func_setup_v2(refactor, bufnr)
 
     local text_edits = {}
     local function_declaration_body = get_function_body(refactor, function_declaration, bufnr)
+    local function_declaration_text = get_function_body_text(refactor, function_declaration, bufnr)
     local returned_values = get_function_returned_values(refactor, function_declaration, bufnr)
     local parameters_list = get_function_parameter_names(refactor, function_declaration, bufnr)
     local has_params = #parameters_list > 0
@@ -476,16 +507,26 @@ local function inline_func_setup_v2(refactor, bufnr)
             end
         end
 
-        if #parameters_list > 0 and #returned_values > 0 and #function_declaration_body > 0 then
+        if #parameters_list > 0 and #returned_values > 0 and (#function_declaration_body > 0 or #function_declaration_text > 0) then
             refactor_is_possible = true
+            local new_line = code.new_line()
+            -- TODO: a really tricy hack because function_declaration_body contains duplicated nodes that we don't want here
+            -- TODO: need to try to reproduce this hack in the other implementations, nested of nested and comments inside of nested
+            -- TODO: this code is not indented
+            local function_body = function_declaration_body
+            if #function_declaration_body ~= #function_declaration_text then
+                function_body = function_declaration_text
+                new_line = ""
+            end
+            -- end hack
+
             local arguments_list = get_function_arguments(refactor, reference:parent(), bufnr)
             local constants = get_params_as_constants(refactor, indent_space, parameters_list, arguments_list)
             for _, constant in ipairs(constants) do
                 table.insert(text_edits,
                     lsp_utils.insert_text(utils.region_one_line_up_from_node(reference), indent_space .. constant))
             end
-            for _, sentence in ipairs(function_declaration_body) do
-                local new_line = code.new_line()
+            for _, sentence in ipairs(function_body) do
                 table.insert(text_edits, lsp_utils.insert_text(
                     utils.region_one_line_up_from_node(reference),
                     indent_space .. sentence .. new_line
