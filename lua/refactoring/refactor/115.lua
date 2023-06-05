@@ -135,9 +135,9 @@ local function get_function_body_text(refactor, function_declaration, bufnr)
 
     local function_body = {}
     for _, sentence in ipairs(region:get_text()) do
-        sentence = utils.trim(sentence) --[[@as string]]
-        if sentence:find("return", 1, true) ~= 1 then
-            table.insert(function_body, sentence .. code.new_line())
+        local trimmed = utils.trim(sentence) --[[@as string]]
+        if trimmed:find("return", 1, true) ~= 1 then
+            table.insert(function_body, sentence)
         end
     end
     return function_body
@@ -516,7 +516,6 @@ local function inline_func_setup_v2(refactor, bufnr)
             local function_body = function_declaration_body
             if #function_declaration_body ~= #function_declaration_text then
                 function_body = function_declaration_text
-                new_line = ""
             end
             -- end hack
 
