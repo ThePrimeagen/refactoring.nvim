@@ -14,7 +14,7 @@ local function build_args(args, arg_types)
     return final_args
 end
 
----@param opts code_generation_function
+---@param opts function_opts
 local function tsx_function(opts)
     if opts.region_type == "jsx_element" then
         local args
@@ -46,7 +46,7 @@ return (
     end
 end
 
----@param opts code_generation_call_function
+---@param opts call_function_opts
 local function tsx_call_function(opts)
     if opts.region_type == "jsx_element" or opts.contains_jsx then
         local args = vim.tbl_map(function(arg)
@@ -58,6 +58,22 @@ local function tsx_call_function(opts)
     end
 end
 
+local special_nodes = {
+    "jsx_element",
+    "jsx_self_closing_element",
+}
+
+---@param var string
+---@param opts special_var_opts
+---@return string
+local function tsx_special_var(var, opts)
+    if vim.tbl_contains(special_nodes, opts.region_node_type) then
+        return string.format("< %s />", var)
+    else
+        return var
+    end
+end
+
 ---@type code_generation
 local tsx = {
     default_printf_statement = ts.default_printf_statement,
@@ -66,6 +82,7 @@ local tsx = {
     print_var = ts.print_var,
     comment = ts.comment,
     constant = ts.constant,
+    special_var = tsx_special_var,
     pack = ts.pack,
 
     unpack = ts.unpack,

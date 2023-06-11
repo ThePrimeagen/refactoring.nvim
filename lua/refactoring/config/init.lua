@@ -55,35 +55,30 @@ local default_printf_statements = {}
 local default_print_var_statements = {}
 local default_extract_var_statements = {}
 
----@class code_generation_constant
----@field multiple boolean?
----@field identifiers string[]?
----@field values string[]?
----@field statement string|nil|boolean
----@field name string|nil|string[]
----@field value string?
-
----@alias code_generation_call_function func_params
-
----@alias code_generation_function func_params
+---@alias constant_opts {multiple: boolean?, identifiers: string[]?, values: string[]?, statement: string|nil|boolean, name: string|nil|string[], value: string?}
+---@alias call_function_opts func_params
+---@alias function_opts func_params
+---@alias special_var_opts {region_node_type: string}
+---@alias print_opts {statement:string, content:string}
 
 ---@class code_generation
----@field default_printf_statement function?
----@field print function?
----@field default_print_var_statement function?
----@field print_var function?
----@field comment function?
----@field constant fun(opts: code_generation_constant): string
+---@field default_printf_statement fun(): string[]
+---@field print fun(opts: print_opts): string
+---@field default_print_var_statement fun(): string[]
+---@field print_var fun(opts: {statement:string, prefix:string , var:string}): string
+---@field comment fun(statement: string): string
+---@field constant fun(opts: constant_opts): string
 ---@field pack fun(names: string|table):string This is for returning multiple arguments from a function
 ---@field unpack fun(names: string|table):string This is for consuming one or more arguments from a function call.
----@field return function?
----@field function fun(opts: code_generation_function):string
----@field function_return function?
----@field call_function fun(opts: code_generation_call_function):string
----@field terminate function?
----@field class_function fun(opts: code_generation_call_function):string
----@field class_function_return function?
----@field call_class_function function?
+---@field return fun(code: string[]|string):string
+---@field function fun(opts: function_opts):string
+---@field function_return fun(opts: {args: string, body:string, name: string}): string
+---@field call_function fun(opts: call_function_opts):string
+---@field terminate fun(code: string): string
+---@field class_function fun(opts: call_function_opts):string
+---@field class_function_return fun(opts: {body: string, classname: string, name: string, return_type: string}): string
+---@field call_class_function fun(opts: {args: string[], class_type: string, name: string}): string
+---@field special_var fun(var: string, opts: special_var_opts): string
 
 ---@class c
 ---@field _automation table
@@ -196,7 +191,7 @@ function Config:set_print_var_statements(override_map)
 end
 
 ---@param filetype string: the filetype
----@return string|boolean
+---@return string|false
 function Config:get_extract_var_statement(filetype)
     if self.config.extract_var_statements[filetype] == nil then
         return false

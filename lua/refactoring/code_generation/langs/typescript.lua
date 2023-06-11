@@ -15,7 +15,7 @@ local function build_args(args, arg_types)
     return final_args
 end
 
----@param opts code_generation_function
+---@param opts function_opts
 local function typescript_class_function(opts)
     -- Need this for javascript
     local args
@@ -43,7 +43,7 @@ local function typescript_class_function(opts)
     )
 end
 
----@param opts code_generation_function
+---@param opts function_opts
 local function typescript_function(opts)
     -- Need this for javascript
     local args
@@ -68,7 +68,7 @@ local function typescript_function(opts)
     )
 end
 
----@param opts code_generation_constant
+---@param opts constant_opts
 ---@return string
 local function typescript_constant(opts)
     local constant_string_pattern

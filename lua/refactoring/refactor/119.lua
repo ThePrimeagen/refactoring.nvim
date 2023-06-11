@@ -57,11 +57,14 @@ end
 ---@param refactor Refactor
 ---@return string
 local function get_var_name(var_name, refactor)
-    -- TODO (TheLeoP): jsx specific logic
-    if refactor.region_node:type() == "jsx_element" then
-        return string.format("< %s />", var_name)
+    if refactor.ts.require_special_var_format then
+        return refactor.code.special_var(
+            var_name,
+            { region_node_type = refactor.region_node:type() }
+        )
+    else
+        return var_name
     end
-    return var_name
 end
 
 ---@param refactor Refactor
@@ -105,15 +108,28 @@ local function extract_var_setup(refactor)
         )
     end
 
-    local block_scope =
-        refactor.ts.get_container(refactor.region_node, refactor.ts.block_scope)
+    local block_scopes = {}
+    local already_seen = {}
+    for _, occurrence in pairs(actual_occurrences) do
+        local block_scope =
+            refactor.ts.get_container(occurrence, refactor.ts.block_scope)
+        -- TODO: Add test for block_scope being nil
+        if block_scope == nil then
+            return false, "block_scope is nil! Something went wrong"
+        end
+        if already_seen[block_scope:id()] == nil then
+            already_seen[block_scope:id()] = true
+            table.insert(block_scopes, block_scope)
+        end
+    end
+    utils.sort_in_appearance_order(block_scopes)
 
     -- TODO: Add test for block_scope being nil
-    if block_scope == nil then
+    if #block_scopes < 1 then
         return false, "block_scope is nil! Something went wrong"
     end
 
-    local unfiltered_statements = refactor.ts:get_statements(block_scope)
+    local unfiltered_statements = refactor.ts:get_statements(block_scopes[1])
 
     -- TODO: Add test for unfiltered_statements being nil
     if #unfiltered_statements < 1 then
@@ -121,7 +137,12 @@ local function extract_var_setup(refactor)
     end
 
     local statements = vim.tbl_filter(function(node)
-        return node:parent():id() == block_scope:id()
+        for _, scope in pairs(block_scopes) do
+            if node:parent():id() == scope:id() then
+                return true
+            end
+        end
+        return false
     end, unfiltered_statements)
     utils.sort_in_appearance_order(statements)
 

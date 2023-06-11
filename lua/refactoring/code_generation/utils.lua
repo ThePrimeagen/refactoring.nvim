@@ -1,7 +1,9 @@
 local M = {}
 
+---@param code string[]|string
+---@return string
 function M.stringify_code(code)
-    return type(code) == "table" and table.concat(code, "\n") or code
+    return type(code) == "table" and table.concat(code, "\n") or code --[[@as string]]
 end
 
 ---@param args string|string[]
