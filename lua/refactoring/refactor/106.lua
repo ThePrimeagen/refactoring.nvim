@@ -107,7 +107,7 @@ end
 
 ---@param node TSNode
 ---@return TSNode first_node_row, integer start_row
-local function get_first_node_row(node)
+local function get_first_node_in_row(node)
     local start_row, _, _, _ = node:range()
     local first = node
     while true do
@@ -127,8 +127,8 @@ end
 ---@param refactor Refactor
 local function get_indent_prefix(refactor)
     local ident_width = indent.buf_indent_width(refactor.bufnr)
-    local first_node_row, _ = get_first_node_row(refactor.scope)
-    local scope_region = Region:from_node(first_node_row, refactor.bufnr)
+    local first_node_in_row, _ = get_first_node_in_row(refactor.scope)
+    local scope_region = Region:from_node(first_node_in_row, refactor.bufnr)
     local scope_start_col = scope_region.start_col
     local baseline_indent = math.floor(scope_start_col / ident_width)
     local total_indents = baseline_indent + 1
@@ -335,7 +335,8 @@ end
 
 ---@param refactor Refactor
 local function get_non_comment_region_above_node(refactor)
-    local prev_sibling = get_first_node_row(refactor.scope):prev_named_sibling()
+    local prev_sibling =
+        get_first_node_in_row(refactor.scope):prev_named_sibling()
     if is_comment_or_decorator_node(prev_sibling) then
         local start_row
         while true do
@@ -360,6 +361,14 @@ local function get_non_comment_region_above_node(refactor)
         else
             return utils.region_above_node(refactor.scope)
         end
+    elseif refactor.scope:parent() == nil then
+        local first_node = refactor.scope:named_child(0)
+        local iter_node = first_node
+        while ({ refactor.scope:range() })[1] == ({ iter_node:range() })[1] do
+            iter_node = iter_node:next_named_sibling()
+        end
+
+        return utils.region_above_node(iter_node)
     else
         return utils.region_above_node(refactor.scope)
     end
