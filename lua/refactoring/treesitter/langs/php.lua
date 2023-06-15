@@ -52,7 +52,7 @@ function Php.new(bufnr, ft)
         },
         local_var_values = {
             InlineNode(
-                "(expression_statement (assignment_expression (binary_expression) @tmp_capture))"
+                "(expression_statement (assignment_expression right: (_) @tmp_capture))"
             ),
         },
         local_declarations = {
