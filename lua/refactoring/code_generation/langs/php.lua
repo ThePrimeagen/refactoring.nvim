@@ -5,6 +5,22 @@ local string_pattern = "%s"
 local function php_function(opts)
     return string.format(
         [[
+function %s (
+    %s
+) {
+    %s
+}
+
+]],
+        opts.name,
+        table.concat(opts.args, ", "),
+        code_utils.stringify_code(opts.body)
+    )
+end
+
+local function php_class_function(opts)
+    return string.format(
+        [[
 public function %s (
     %s
 ) {
@@ -67,14 +83,20 @@ local php = {
         return php_function(opts)
     end,
     call_function = function(opts)
+        return string.format("%s(%s)", opts.name, table.concat(opts.args, ", "))
+    end,
+    terminate = function(code)
+        return code .. ";"
+    end,
+    class_function = function(opts)
+        return php_class_function(opts)
+    end,
+    call_class_function = function(opts)
         return string.format(
             "$this->%s(%s)",
             opts.name,
             table.concat(opts.args, ", ")
         )
-    end,
-    terminate = function(code)
-        return code .. ";"
     end,
 }
 

@@ -193,7 +193,7 @@ end
 ---@param bufnr integer
 ---@param ... TSNode
 ---@return table<string, true>
-function M.node_text_to_set(bufnr, ...)
+function M.nodes_to_text_set(bufnr, ...)
     local out = {}
     for i = 1, select("#", ...) do
         local nodes = select(i, ...)

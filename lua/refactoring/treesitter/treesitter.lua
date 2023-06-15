@@ -140,11 +140,9 @@ function TreeSitter:get_local_defs(scope, region)
     self:validate_setting("function_args")
     local nodes = self:loop_thru_nodes(scope, self.function_args)
     local local_var_names = self:get_local_var_names(scope)
-    local i = #nodes + 1
-    for _, v in ipairs(local_var_names) do
-        nodes[i] = v
-        i = i + 1
-    end
+
+    vim.list_extend(nodes, local_var_names)
+
     nodes = utils.region_complement(nodes, region)
     return nodes
 end

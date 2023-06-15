@@ -43,9 +43,9 @@ local function get_return_vals(refactor)
     refs = utils.after_region(refs, refactor.region)
 
     local bufnr = refactor.buffers[1]
-    local region_var_map = utils.node_text_to_set(bufnr, region_vars)
+    local region_var_map = utils.nodes_to_text_set(bufnr, region_vars)
 
-    local ref_map = utils.node_text_to_set(bufnr, refs)
+    local ref_map = utils.nodes_to_text_set(bufnr, refs)
     local return_vals =
         vim.tbl_keys(utils.table_key_intersect(region_var_map, ref_map))
     table.sort(return_vals)
@@ -391,9 +391,29 @@ local function get_selected_locals(refactor, is_class)
         end
     end
 
+    -- TODO(TheLeoP): maybe extract this to it's own function
+    for i, node in ipairs(local_defs) do
+        local parent = node:parent()
+        if
+            refactor.ts.should_check_parent_node
+            and refactor.ts.should_check_parent_node(parent:type())
+        then
+            local_defs[i] = parent
+        end
+    end
+    for i, node in ipairs(region_refs) do
+        local parent = node:parent()
+        if
+            refactor.ts.should_check_parent_node
+            and refactor.ts.should_check_parent_node(parent:type())
+        then
+            region_refs[i] = parent
+        end
+    end
+
     local bufnr = refactor.buffers[1]
-    local local_def_map = utils.node_text_to_set(bufnr, local_defs)
-    local region_refs_map = utils.node_text_to_set(bufnr, region_refs)
+    local local_def_map = utils.nodes_to_text_set(bufnr, local_defs)
+    local region_refs_map = utils.nodes_to_text_set(bufnr, region_refs)
     return utils.table_key_intersect(local_def_map, region_refs_map)
 end
 
