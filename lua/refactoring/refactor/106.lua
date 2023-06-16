@@ -24,6 +24,20 @@ local function get_extract_setup_pipeline(bufnr, opts)
 end
 
 ---@param refactor Refactor
+---@param node TSNode
+---@return TSNode
+local function node_to_parent_if_needed(refactor, node)
+    local parent = node:parent()
+    if
+        refactor.ts.should_check_parent_node
+        and refactor.ts.should_check_parent_node(parent:type())
+    then
+        return parent
+    end
+    return node
+end
+
+---@param refactor Refactor
 ---@return string[]
 local function get_return_vals(refactor)
     local region_vars = utils.region_intersect(
@@ -41,6 +55,13 @@ local function get_return_vals(refactor)
 
     local refs = refactor.ts:get_references(refactor.scope)
     refs = utils.after_region(refs, refactor.region)
+
+    refs = vim.tbl_map(function(node)
+        return node_to_parent_if_needed(refactor, node)
+    end, refs)
+    region_vars = vim.tbl_map(function(node)
+        return node_to_parent_if_needed(refactor, node)
+    end, region_vars)
 
     local bufnr = refactor.buffers[1]
     local region_var_map = utils.nodes_to_text_set(bufnr, region_vars)
@@ -400,25 +421,12 @@ local function get_selected_locals(refactor, is_class)
         end
     end
 
-    -- TODO(TheLeoP): maybe extract this to it's own function
-    for i, node in ipairs(local_defs) do
-        local parent = node:parent()
-        if
-            refactor.ts.should_check_parent_node
-            and refactor.ts.should_check_parent_node(parent:type())
-        then
-            local_defs[i] = parent
-        end
-    end
-    for i, node in ipairs(region_refs) do
-        local parent = node:parent()
-        if
-            refactor.ts.should_check_parent_node
-            and refactor.ts.should_check_parent_node(parent:type())
-        then
-            region_refs[i] = parent
-        end
-    end
+    local_defs = vim.tbl_map(function(node)
+        return node_to_parent_if_needed(refactor, node)
+    end, local_defs)
+    region_refs = vim.tbl_map(function(node)
+        return node_to_parent_if_needed(refactor, node)
+    end, region_refs)
 
     local bufnr = refactor.buffers[1]
     local local_def_map = utils.nodes_to_text_set(bufnr, local_defs)
