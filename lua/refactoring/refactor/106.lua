@@ -382,14 +382,6 @@ local function get_non_comment_region_above_node(refactor)
         else
             return utils.region_above_node(refactor.scope)
         end
-    elseif refactor.scope:parent() == nil then
-        local first_node = refactor.scope:named_child(0)
-        local iter_node = first_node
-        while ({ refactor.scope:range() })[1] == ({ iter_node:range() })[1] do
-            iter_node = iter_node:next_named_sibling()
-        end
-
-        return utils.region_above_node(iter_node)
     else
         return utils.region_above_node(refactor.scope)
     end
