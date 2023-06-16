@@ -1,5 +1,7 @@
 <?php
 
+namespace Module;
+
 function simple_function($a)
 {
     $test = 1;

@@ -1,6 +1,8 @@
 <?php
 
-function foo (
+namespace Module;
+
+function foo_bar (
     $a, $test, $test_other
 ) {
         for ($idx = $test - 1; $idx < $test_other; ++$idx) {
@@ -14,5 +16,5 @@ function simple_function($a)
 {
     $test = 1;
     $test_other = 11;
-    foo($a, $test, $test_other);
+    foo_bar($a, $test, $test_other);
 }

@@ -22,6 +22,8 @@ function Php.new(bufnr, ft)
         scope_names = {
             program = "program",
             method_declaration = "function",
+            function_definition = "function",
+            arrow_function = "function",
             class_declaration = "class",
         },
         block_scope = {
@@ -32,14 +34,13 @@ function Php.new(bufnr, ft)
         },
         indent_scopes = {
             program = true,
-            function_declaration = true,
-            expression_statement = true,
             method_declaration = true,
-            arrow_function = true,
+            function_definition = true,
+            expression_statement = true,
             class_declaration = true,
+            arrow_function = true,
             if_statement = true,
             for_statement = true,
-            for_in_statement = true,
             while_statement = true,
             do_statement = true,
         },
