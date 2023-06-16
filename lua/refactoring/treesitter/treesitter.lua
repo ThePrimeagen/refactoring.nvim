@@ -204,11 +204,8 @@ end
 ---@return TSNode[]
 function TreeSitter:get_references(scope)
     local ft = self.filetype
-    -- TODO (TheLeoP): typescriptreact parser name is tsx
-    if ft == "typescriptreact" then
-        ft = "tsx"
-    end
-    local query = vim.treesitter.query.get(ft, "locals")
+    local lang = vim.treesitter.language.get_lang(ft)
+    local query = vim.treesitter.query.get(lang, "locals")
     local out = {}
     for id, node, _ in query:iter_captures(scope, self.bufnr, 0, -1) do
         local n_capture = query.captures[id]
@@ -429,9 +426,8 @@ end
 
 ---@return TSNode
 function TreeSitter:get_root()
-    -- TODO (TheLeoP): typescriptreact parser name is tsx
-    local ft = self.filetype == "typescriptreact" and "tsx" or self.filetype
-    local parser = parsers.get_parser(self.bufnr, ft)
+    local lang = vim.treesitter.language.get_lang(self.filetype)
+    local parser = parsers.get_parser(self.bufnr, lang)
     return parser:parse()[1]:root()
 end
 

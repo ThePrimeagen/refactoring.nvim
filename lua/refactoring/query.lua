@@ -25,11 +25,8 @@ Query.query_type = {
 ---@param filetype string
 ---@return TSNode
 function Query.get_root(bufnr, filetype)
-    -- TODO (TheLeoP): typescriptreact parser name is tsx
-    if filetype == "typescriptreact" then
-        filetype = "tsx"
-    end
-    local parser = parsers.get_parser(bufnr or 0, filetype)
+    local lang = vim.treesitter.language.get_lang(filetype)
+    local parser = parsers.get_parser(bufnr or 0, lang)
     if not parser then
         error(
             "No treesitter parser found. Install one using :TSInstall <language>"
@@ -87,16 +84,13 @@ end
 ---@return TSNode[]
 function Query.find_occurrences(scope, sexpr, bufnr)
     local filetype = vim.bo[bufnr].filetype
-    -- TODO (TheLeoP): typescriptreact parser name is tsx
-    if filetype == "typescriptreact" then
-        filetype = "tsx"
-    end
 
     if not sexpr:find("@") then
         sexpr = sexpr .. " @tmp_capture"
     end
 
-    local ok, sexpr_query = pcall(vim.treesitter.query.parse, filetype, sexpr)
+    local lang = vim.treesitter.language.get_lang(filetype)
+    local ok, sexpr_query = pcall(vim.treesitter.query.parse, lang, sexpr)
     if not ok then
         error(
             string.format("Invalid query: '%s'\n error: %s", sexpr, sexpr_query)
