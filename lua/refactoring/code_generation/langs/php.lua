@@ -91,6 +91,9 @@ local php = {
     class_function = function(opts)
         return php_class_function(opts)
     end,
+    class_function_return = function(opts)
+        return php_class_function(opts)
+    end,
     call_class_function = function(opts)
         return string.format(
             "$this->%s(%s)",

@@ -16,6 +16,9 @@ function Php.new(bufnr, ft)
     local config = {
         filetype = ft,
         bufnr = bufnr,
+        valid_class_nodes = {
+            class_declaration = true,
+        },
         scope_names = {
             program = "program",
             method_declaration = "function",
