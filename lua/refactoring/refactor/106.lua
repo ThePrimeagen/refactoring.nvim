@@ -521,9 +521,6 @@ local function extract_setup(refactor)
     local func_call = get_func_call(refactor, extract_params)
 
     local region_above_scope = get_non_comment_region_above_node(refactor)
-    if is_class then
-        region_above_scope = get_non_comment_region_above_node(refactor)
-    end
 
     local extract_function
     if is_class then

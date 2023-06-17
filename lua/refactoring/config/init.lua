@@ -96,13 +96,13 @@ local default_extract_var_statements = {}
 ---| "ruby"
 
 ---@class ConfigOpts
----@field formatting table<ft, {cmd: string}>|nil
----@field code_generation table<ft, code_generation>|{new_line: fun(): string}|nil
----@field prompt_func_return_type table<ft, boolean>|nil
----@field prompt_func_param_type table<ft, boolean>|nil
----@field printf_statements table<ft, string[]>|nil
----@field print_var_statements table<ft, string[]>|nil
----@field extract_var_statements table<ft, string>|nil
+---@field formatting table<ft, {cmd: string}>
+---@field code_generation table<ft, code_generation>|{new_line: fun(): string}
+---@field prompt_func_return_type table<ft, boolean>
+---@field prompt_func_param_type table<ft, boolean>
+---@field printf_statements table<ft, string[]>
+---@field print_var_statements table<ft, string[]>
+---@field extract_var_statements table<ft, string>
 
 ---@class c: ConfigOpts
 ---@field _automation table
