@@ -3,34 +3,47 @@ local code_utils = require("refactoring.code_generation.utils")
 local string_pattern = "%s"
 
 local function php_function(opts)
+    if opts.func_header == nil then
+        opts.func_header = ""
+    end
     return string.format(
         [[
-function %s (
-    %s
-) {
-    %s
-}
-
+%sfunction %s (
+%s    %s
+%s) {
+%s
+%s}
 ]],
+        opts.func_header,
         opts.name,
+        opts.func_header,
         table.concat(opts.args, ", "),
-        code_utils.stringify_code(opts.body)
+        opts.func_header,
+        code_utils.stringify_code(opts.body),
+        opts.func_header
     )
 end
 
 local function php_class_function(opts)
+    if opts.func_header == nil then
+        opts.func_header = ""
+    end
+
     return string.format(
         [[
-public function %s (
-    %s
-) {
-    %s
-}
-
+%spublic function %s (
+%s    %s
+%s) {
+%s
+%s}
 ]],
+        opts.func_header,
         opts.name,
+        opts.func_header,
         table.concat(opts.args, ", "),
-        code_utils.stringify_code(opts.body)
+        opts.func_header,
+        code_utils.stringify_code(opts.body),
+        opts.func_header
     )
 end
 
