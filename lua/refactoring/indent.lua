@@ -2,15 +2,16 @@ local Region = require("refactoring.region")
 
 local M = {}
 
---- return the indent width of a given buffer
+---Returns the indent width of a given buffer
 ---
---- If the buffer uses tabs ('noexpandtab'), the value of 'tabstop' will be
--- returned, else the value of 'shiftwidth' will be returned
+---This depends on the values of `expandtab`, `shiftwidth` and `tabstop` for the buffer
 ---@param bufnr number
 ---@return number
 M.buf_indent_width = function(bufnr)
-    return vim.bo[bufnr].expandtab and vim.bo[bufnr].shiftwidth
+    local exective_shiftwidth = vim.bo[bufnr].shiftwidth > 0
+            and vim.bo[bufnr].shiftwidth
         or vim.bo[bufnr].tabstop
+    return vim.bo[bufnr].expandtab and exective_shiftwidth or 1
 end
 
 ---@param point RefactorPoint
@@ -97,10 +98,37 @@ M.buf_indent_amount = function(point, refactor, below, bufnr)
     return indent_scope_whitespace / M.buf_indent_width(refactor.bufnr)
 end
 
+---Returns indent amount of a given line in a given buffer
+---
+---Indent amount: the number of indents (tab or space) at the beginning of the line
+---
+---Two  spaces => one indent amount (expandtab = true, shiftwidth = 2)
+---Four spaces => one indent amount (expandtab = true, shiftwidth = 4)
+---Four spaces => two indent amount (expandtab = true, shiftwidth = 2)
+---Two  tabs   => two indent amount (expandtab = false, shiftwidth = 8, tabstop=8)
+---Four tabs   => four indent amount (expandtab = false, shiftwidth = 4, tabstop=4)
+---Four tabs   => four indent amount (expandtab = false, shiftwidth = 8, tabstop=8)
+---
+---This depends on the values of `expandtab`, `shiftwidth` and `tabstop` for the buffer
 ---@param line string
 ---@param bufnr number
 ---@return number
 M.line_indent_amount = function(line, bufnr)
+    return M.line_indent_width(line, bufnr) / M.buf_indent_width(bufnr)
+end
+
+---Returns indent width of a given line in a given buffer
+---
+---Indent width: the number of indents (tab or space) at the beginning of the line
+---
+---Two  spaces => two indent width
+---Four spaces => four indent width
+---Two  tabs   => two indent width
+---Four tabs   => four indent width
+---@param line string
+---@param bufnr number
+---@return number
+M.line_indent_width = function(line, bufnr)
     local indent_char = M.indent_char(bufnr)
     local whitespace = 0
     for char in line:gmatch(".") do
@@ -109,7 +137,7 @@ M.line_indent_amount = function(line, bufnr)
         end
         whitespace = whitespace + 1
     end
-    return whitespace / M.buf_indent_width(bufnr)
+    return whitespace
 end
 
 ---@param indent_amount number
@@ -160,7 +188,6 @@ M.indent_char = function(bufnr)
     return vim.bo[bufnr].expandtab and " " or "\t"
 end
 
----
 ---@param lines string[]
 ---@param start number
 ---@param finish number
