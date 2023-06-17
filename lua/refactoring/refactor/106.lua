@@ -18,6 +18,9 @@ local M = {}
 
 -- 1.  We need definition set of potential captured variables
 
+---@param bufnr integer
+---@param opts Config
+---@return RefactorPipeline
 local function get_extract_setup_pipeline(bufnr, opts)
     return Pipeline:from_task(refactor_setup(bufnr, opts))
         :add_task(selection_setup)
@@ -583,7 +586,7 @@ local function ensure_code_gen_106(refactor)
 end
 
 ---@param bufnr integer
----@param opts c|Config
+---@param opts Config
 M.extract_to_file = function(bufnr, opts)
     bufnr = bufnr or vim.api.nvim_get_current_buf()
     get_extract_setup_pipeline(bufnr, opts)
@@ -595,7 +598,7 @@ M.extract_to_file = function(bufnr, opts)
 end
 
 ---@param bufnr integer
----@param opts c|Config
+---@param opts Config
 M.extract = function(bufnr, opts)
     bufnr = bufnr or vim.api.nvim_get_current_buf()
     get_extract_setup_pipeline(bufnr, opts)
@@ -617,7 +620,7 @@ M.extract = function(bufnr, opts)
 end
 
 ---@param bufnr integer
----@param opts c|Config
+---@param opts Config
 M.extract_block = function(bufnr, opts)
     bufnr = bufnr or vim.api.nvim_get_current_buf()
     Pipeline:from_task(refactor_setup(bufnr, opts))
@@ -629,7 +632,7 @@ M.extract_block = function(bufnr, opts)
 end
 
 ---@param bufnr integer
----@param opts c|Config
+---@param opts Config
 M.extract_block_to_file = function(bufnr, opts)
     bufnr = bufnr or vim.api.nvim_get_current_buf()
     Pipeline:from_task(refactor_setup(bufnr, opts))

@@ -7,7 +7,7 @@ local post_refactor = require("refactoring.tasks.post_refactor")
 local MAX_COL = 100000
 
 local function cleanup(bufnr, config)
-    return Pipeline:from_task(refactor_setup(bufnr, config))
+    Pipeline:from_task(refactor_setup(bufnr, config))
         :add_task(
             ---@param refactor Refactor
             function(refactor)

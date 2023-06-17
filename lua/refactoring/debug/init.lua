@@ -6,21 +6,26 @@ local cleanup = require("refactoring.debug.cleanup")
 
 local M = {}
 
+---@param opts ConfigOpts
 function M.printf(opts)
     local config = Config.get():merge(opts)
-    return printf(vim.api.nvim_get_current_buf(), config)
+    printf(vim.api.nvim_get_current_buf(), config)
 end
 
+---@param opts ConfigOpts
 function M.print_var(opts)
     local config = Config.get():merge(opts)
-    return print_var(vim.api.nvim_get_current_buf(), config)
+    print_var(vim.api.nvim_get_current_buf(), config)
 end
 
+---@param opts ConfigOpts
 function M.cleanup(opts)
     local config = Config.get():merge(opts)
-    return cleanup(vim.api.nvim_get_current_buf(), config)
+    cleanup(vim.api.nvim_get_current_buf(), config)
 end
 
+---@param opts ConfigOpts
+---@return string
 function M.get_path(opts)
     local config = Config.get():merge(opts)
     return get_path(vim.api.nvim_get_current_buf(), config)

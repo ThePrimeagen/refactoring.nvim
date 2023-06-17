@@ -5,10 +5,13 @@ local async = require("plenary.async")
 
 local M = {}
 
+---@param config ConfigOpts
 function M.setup(config)
     Config.setup(config)
 end
 
+---@param name string|number
+---@param opts ConfigOpts
 function M.refactor(name, opts)
     if opts == nil then
         opts = {}
@@ -29,10 +32,12 @@ function M.refactor(name, opts)
     refactors[refactor](vim.api.nvim_get_current_buf(), config)
 end
 
+---@return string[]
 function M.get_refactors()
     return vim.tbl_keys(refactors.refactor_names)
 end
 
+---@param opts ConfigOpts
 function M.select_refactor(opts)
     async.run(function()
         local selected_refactor = get_select_input(

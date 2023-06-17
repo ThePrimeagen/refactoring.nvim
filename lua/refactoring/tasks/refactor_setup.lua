@@ -7,7 +7,7 @@ local Point = require("refactoring.point")
 -- monstrosity
 
 ---@param input_bufnr number
----@param config c|Config
+---@param config Config
 ---@return fun(): true, Refactor
 local function refactor_setup(input_bufnr, config)
     input_bufnr = input_bufnr or vim.api.nvim_get_current_buf()
@@ -24,7 +24,7 @@ local function refactor_setup(input_bufnr, config)
 
         local ts = TreeSitter.get_treesitter()
 
-        local filetype = vim.bo[bufnr].filetype
+        local filetype = vim.bo[bufnr].filetype --[[@as ft]]
         local root = ts:get_root()
         local win = vim.api.nvim_get_current_win()
         local cursor = Point:from_cursor()
@@ -36,6 +36,7 @@ local function refactor_setup(input_bufnr, config)
         ---@field cursor_col_adjustment integer|nil
         ---@field text_edits LspTextEdit[] | {bufnr: integer|nil}[] | nil
         ---@field code code_generation
+        ---@field return_value string used by debug.get_path
         local refactor = {
             ---@type {cursor: integer, highlight_start: integer|nil, highlight_end: integer|nil, func_call: integer|nil}
             whitespace = {

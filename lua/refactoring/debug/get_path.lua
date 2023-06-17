@@ -3,8 +3,11 @@ local Point = require("refactoring.point")
 local refactor_setup = require("refactoring.tasks.refactor_setup")
 local debug_utils = require("refactoring.debug.debug_utils")
 
+---@param bufnr integer
+---@param config Config
+---@return string out
 local function get_path(bufnr, config)
-    local out = nil
+    local out = nil ---@type string
     Pipeline:from_task(refactor_setup(bufnr, config))
         :add_task(
             ---@param refactor Refactor
@@ -16,11 +19,15 @@ local function get_path(bufnr, config)
                 return true, refactor
             end
         )
-        :run(function(ok, res)
-            if ok then
-                out = res.return_value
+        :run(
+            ---@param ok boolean
+            ---@param res Refactor
+            function(ok, res)
+                if ok then
+                    out = res.return_value
+                end
             end
-        end)
+        )
 
     return out
 end

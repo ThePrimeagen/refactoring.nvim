@@ -80,21 +80,40 @@ local default_extract_var_statements = {}
 ---@field call_class_function fun(opts: {args: string[], class_type: string, name: string}): string
 ---@field special_var fun(var: string, opts: special_var_opts): string
 
----@class c
+---@alias ft
+---| "ts"
+---| "js"
+---| "typescriptreact"
+---| "lua"
+---| "go"
+---| "php"
+---| "cpp"
+---| "c"
+---| "h"
+---| "hpp"
+---| "cxx"
+---| "python"
+---| "ruby"
+
+---@class ConfigOpts
+---@field formatting table<ft, {cmd: string}>|nil
+---@field code_generation table<ft, code_generation>|{new_line: fun(): string}|nil
+---@field prompt_func_return_type table<ft, boolean>|nil
+---@field prompt_func_param_type table<ft, boolean>|nil
+---@field printf_statements table<ft, string[]>|nil
+---@field print_var_statements table<ft, string[]>|nil
+---@field extract_var_statements table<ft, string>|nil
+
+---@class c: ConfigOpts
 ---@field _automation table
----@field formatting table
----@field code_generation table
----@field prompt_func_return_type table
----@field prompt_func_param_type table
----@field printf_statements table
----@field print_var_statements table
----@field extract_var_statements table
 
 ---@class Config
 ---@field config c
 local Config = {}
 Config.__index = Config
 
+---@vararg ConfigOpts
+---@return Config
 function Config:new(...)
     local c = vim.tbl_deep_extend("force", {
         _automation = {
@@ -119,10 +138,13 @@ function Config:new(...)
     }, self)
 end
 
+---@return c
 function Config:get()
     return self.config
 end
 
+---@param opts ConfigOpts
+---@return Config
 function Config:merge(opts)
     return Config:new(self.config, opts or {})
 end
@@ -146,6 +168,8 @@ function Config:automate_input(inputs)
     self.config._automation.inputs_idx = 0
 end
 
+---@param filetype ft
+---@return boolean
 function Config:get_prompt_func_param_type(filetype)
     if self.config.prompt_func_param_type[filetype] == nil then
         return false
@@ -153,10 +177,13 @@ function Config:get_prompt_func_param_type(filetype)
     return self.config.prompt_func_param_type[filetype]
 end
 
+---@param override_map table<ft, boolean>
 function Config:set_prompt_func_param_type(override_map)
     self.config.prompt_func_param_type = override_map
 end
 
+---@param filetype ft
+---@return boolean
 function Config:get_prompt_func_return_type(filetype)
     if self.config.prompt_func_return_type[filetype] == nil then
         return false
@@ -164,10 +191,13 @@ function Config:get_prompt_func_return_type(filetype)
     return self.config.prompt_func_return_type[filetype]
 end
 
+---@param override_map table<ft, boolean>
 function Config:set_prompt_func_return_type(override_map)
     self.config.prompt_func_return_type = override_map
 end
 
+---@param filetype ft
+---@return string[]|false
 function Config:get_printf_statements(filetype)
     if self.config.printf_statements[filetype] == nil then
         return false
@@ -175,10 +205,13 @@ function Config:get_printf_statements(filetype)
     return self.config.prompt_func_return_type[filetype]
 end
 
+---@param override_map table<ft, string[]>
 function Config:set_printf_statements(override_map)
     self.config.printf_statements = override_map
 end
 
+---@param filetype ft
+---@return string[]|false
 function Config:get_print_var_statements(filetype)
     if self.config.print_var_statements[filetype] == nil then
         return false
@@ -190,7 +223,7 @@ function Config:set_print_var_statements(override_map)
     self.config.print_var_statements = override_map
 end
 
----@param filetype string: the filetype
+---@param filetype ft: the filetype
 ---@return string|false
 function Config:get_extract_var_statement(filetype)
     if self.config.extract_var_statements[filetype] == nil then
@@ -200,7 +233,7 @@ function Config:get_extract_var_statement(filetype)
 end
 
 ---@param override_statement string: map with statements to any current extract_var_statements
----@param filetype string: map with statements to any current extract_var_statements
+---@param filetype ft: map with statements to any current extract_var_statements
 function Config:set_extract_var_statement(filetype, override_statement)
     self.config.extract_var_statements[filetype] = override_statement
 end
@@ -228,13 +261,15 @@ function Config:set_test_bufnr(bufnr)
 end
 
 --- Get the code generation for the current filetype
----@param filetype string
+---@param filetype ft
 ---@return code_generation
 function Config:get_code_generation_for(filetype)
     filetype = filetype or vim.bo[0].ft
-    return self.config.code_generation[filetype]
+    return self.config.code_generation[filetype] --[[@as code_generation]]
 end
 
+---@param filetype ft
+---@return {cmd: string}
 function Config:get_formatting_for(filetype)
     filetype = filetype or vim.bo[0].ft
     return self.config.formatting[filetype] or self.config.formatting["default"]
@@ -248,6 +283,7 @@ function M.get()
     return config
 end
 
+---@param c ConfigOpts
 function M.setup(c)
     c = c or {}
     config = Config:new(c)

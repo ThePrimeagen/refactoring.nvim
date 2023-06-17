@@ -4,7 +4,6 @@ local Region = require("refactoring.region")
 local refactor_setup = require("refactoring.tasks.refactor_setup")
 local post_refactor = require("refactoring.tasks.post_refactor")
 local lsp_utils = require("refactoring.lsp_utils")
-local ts_utils = require("nvim-treesitter.ts_utils")
 local parsers = require("nvim-treesitter.parsers")
 local debug_utils = require("refactoring.debug.debug_utils")
 local ensure_code_gen = require("refactoring.tasks.ensure_code_gen")
@@ -14,7 +13,11 @@ local indent = require("refactoring.indent")
 
 local MAX_COL = 100000
 
-local function get_variable(opts, point)
+---@param opts table
+---@param point RefactorPoint
+---@param refactor Refactor
+---@return string identifier
+local function get_variable(opts, point, refactor)
     if opts.normal then
         local bufnr = 0
         local root_lang_tree = parsers.get_parser(bufnr)
@@ -32,20 +35,26 @@ local function get_variable(opts, point)
                 root:named_descendant_for_range(row, col, row, col)
             end
         end
-        local node = ts_utils.get_node_at_cursor()
-        local filetype = vim.bo[bufnr].filetype
-        -- TODO: Can we do something with treesitter files here?
-        if filetype == "php" then
-            return "$" .. utils.get_node_text(node)[1]
+        local node = vim.treesitter.get_node()
+
+        local parent_node = node:parent()
+        if
+            refactor.ts.should_check_parent_node
+            and refactor.ts.should_check_parent_node(parent_node:type())
+        then
+            node = parent_node
         end
-        return utils.get_node_text(node)[1]
+
+        return table.concat(utils.get_node_text(node), "")
     end
     local variable_region = Region:from_current_selection()
     return variable_region:get_text()[1]
 end
 
+---@param bufnr integer
+---@param config Config
 local function printDebug(bufnr, config)
-    return Pipeline:from_task(refactor_setup(bufnr, config))
+    Pipeline:from_task(refactor_setup(bufnr, config))
         :add_task(
             ---@param refactor Refactor
             function(refactor)
@@ -69,7 +78,7 @@ local function printDebug(bufnr, config)
                 end
 
                 -- Get variable text
-                local variable = get_variable(opts, point)
+                local variable = get_variable(opts, point, refactor)
                 local indentation
                 if refactor.ts.allows_indenting_task then
                     local indent_amount = indent.buf_indent_amount(
