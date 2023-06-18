@@ -38,7 +38,7 @@ local function refactor_setup(input_bufnr, config)
         ---@field code code_generation
         ---@field return_value string used by debug.get_path
         local refactor = {
-            ---@type {cursor: integer, highlight_start: integer|nil, highlight_end: integer|nil, func_call: integer|nil}
+            ---@type {cursor: integer, func_call: integer|nil}
             whitespace = {
                 cursor = vim.fn.indent(cursor.row),
             },
