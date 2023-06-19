@@ -24,6 +24,20 @@ local function get_extract_setup_pipeline(bufnr, opts)
 end
 
 ---@param refactor Refactor
+---@param node TSNode
+---@return TSNode
+local function node_to_parent_if_needed(refactor, node)
+    local parent = node:parent()
+    if
+        refactor.ts.should_check_parent_node
+        and refactor.ts.should_check_parent_node(parent:type())
+    then
+        return parent
+    end
+    return node
+end
+
+---@param refactor Refactor
 ---@return string[]
 local function get_return_vals(refactor)
     local region_vars = utils.region_intersect(
@@ -42,10 +56,17 @@ local function get_return_vals(refactor)
     local refs = refactor.ts:get_references(refactor.scope)
     refs = utils.after_region(refs, refactor.region)
 
-    local bufnr = refactor.buffers[1]
-    local region_var_map = utils.node_text_to_set(bufnr, region_vars)
+    refs = vim.tbl_map(function(node)
+        return node_to_parent_if_needed(refactor, node)
+    end, refs)
+    region_vars = vim.tbl_map(function(node)
+        return node_to_parent_if_needed(refactor, node)
+    end, region_vars)
 
-    local ref_map = utils.node_text_to_set(bufnr, refs)
+    local bufnr = refactor.buffers[1]
+    local region_var_map = utils.nodes_to_text_set(bufnr, region_vars)
+
+    local ref_map = utils.nodes_to_text_set(bufnr, refs)
     local return_vals =
         vim.tbl_keys(utils.table_key_intersect(region_var_map, ref_map))
     table.sort(return_vals)
@@ -107,7 +128,7 @@ end
 
 ---@param node TSNode
 ---@return TSNode first_node_row, integer start_row
-local function get_first_node_row(node)
+local function get_first_node_in_row(node)
     local start_row, _, _, _ = node:range()
     local first = node
     while true do
@@ -127,8 +148,8 @@ end
 ---@param refactor Refactor
 local function get_indent_prefix(refactor)
     local ident_width = indent.buf_indent_width(refactor.bufnr)
-    local first_node_row, _ = get_first_node_row(refactor.scope)
-    local scope_region = Region:from_node(first_node_row, refactor.bufnr)
+    local first_node_in_row, _ = get_first_node_in_row(refactor.scope)
+    local scope_region = Region:from_node(first_node_in_row, refactor.bufnr)
     local scope_start_col = scope_region.start_col
     local baseline_indent = math.floor(scope_start_col / ident_width)
     local total_indents = baseline_indent + 1
@@ -335,7 +356,8 @@ end
 
 ---@param refactor Refactor
 local function get_non_comment_region_above_node(refactor)
-    local prev_sibling = get_first_node_row(refactor.scope):prev_named_sibling()
+    local prev_sibling =
+        get_first_node_in_row(refactor.scope):prev_named_sibling()
     if is_comment_or_decorator_node(prev_sibling) then
         local start_row
         while true do
@@ -391,9 +413,16 @@ local function get_selected_locals(refactor, is_class)
         end
     end
 
+    local_defs = vim.tbl_map(function(node)
+        return node_to_parent_if_needed(refactor, node)
+    end, local_defs)
+    region_refs = vim.tbl_map(function(node)
+        return node_to_parent_if_needed(refactor, node)
+    end, region_refs)
+
     local bufnr = refactor.buffers[1]
-    local local_def_map = utils.node_text_to_set(bufnr, local_defs)
-    local region_refs_map = utils.node_text_to_set(bufnr, region_refs)
+    local local_def_map = utils.nodes_to_text_set(bufnr, local_defs)
+    local region_refs_map = utils.nodes_to_text_set(bufnr, region_refs)
     return utils.table_key_intersect(local_def_map, region_refs_map)
 end
 

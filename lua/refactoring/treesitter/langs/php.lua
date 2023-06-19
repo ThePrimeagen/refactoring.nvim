@@ -16,9 +16,14 @@ function Php.new(bufnr, ft)
     local config = {
         filetype = ft,
         bufnr = bufnr,
+        valid_class_nodes = {
+            class_declaration = true,
+        },
         scope_names = {
             program = "program",
             method_declaration = "function",
+            function_definition = "function",
+            arrow_function = "function",
             class_declaration = "class",
         },
         block_scope = {
@@ -29,14 +34,13 @@ function Php.new(bufnr, ft)
         },
         indent_scopes = {
             program = true,
-            function_declaration = true,
-            expression_statement = true,
             method_declaration = true,
-            arrow_function = true,
+            function_definition = true,
+            expression_statement = true,
             class_declaration = true,
+            arrow_function = true,
             if_statement = true,
             for_statement = true,
-            for_in_statement = true,
             while_statement = true,
             do_statement = true,
         },
@@ -52,7 +56,7 @@ function Php.new(bufnr, ft)
         },
         local_var_values = {
             InlineNode(
-                "(expression_statement (assignment_expression (binary_expression) @tmp_capture))"
+                "(expression_statement (assignment_expression right: (_) @tmp_capture))"
             ),
         },
         local_declarations = {
@@ -79,7 +83,7 @@ function Php.new(bufnr, ft)
             InlineNode("(assignment_expression) @tmp_capture"),
         },
         function_body = {
-            InlineNode("(compound_statement) @tmp_capture"),
+            InlineNode("(compound_statement (_) @tmp_capture)"),
         },
         should_check_parent_node = function(parent_type)
             return vim.tbl_contains(special_nodes, parent_type)

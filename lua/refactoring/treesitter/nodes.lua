@@ -73,12 +73,8 @@ end
 ---@return InlineNodeFunc
 local InlineNode = function(sexpr)
     return function(scope, bufnr, filetype)
-        -- TODO (TheLeoP): typescriptreact parser name is tsx
-        if filetype == "typescriptreact" then
-            filetype = "tsx"
-        end
-        local ok, result_object =
-            pcall(vim.treesitter.query.parse, filetype, sexpr)
+        local lang = vim.treesitter.language.get_lang(filetype)
+        local ok, result_object = pcall(vim.treesitter.query.parse, lang, sexpr)
         if not ok then
             error(
                 string.format(
