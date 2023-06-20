@@ -185,22 +185,28 @@ end
 
 ---@return string[]
 function Region:get_text()
-    local text = vim.api.nvim_buf_get_lines(
+    local lines = vim.api.nvim_buf_get_lines(
         self.bufnr,
         self.start_row - 1,
         self.end_row,
         false
     )
 
-    local text_length = #text
-    local end_col = math.min(#text[text_length], self.end_col)
-    local end_idx = vim.str_byteindex(text[text_length], end_col)
-    local start_idx = vim.str_byteindex(text[1], self.start_col)
+    local number_of_lines = #lines
+    local last_line_length = vim.str_utfindex(lines[number_of_lines])
+        or #lines[number_of_lines]
 
-    text[text_length] = text[text_length]:sub(1, end_idx)
-    text[1] = text[1]:sub(start_idx)
+    local end_col = self.end_col <= last_line_length
+            and vim.str_utfindex(lines[number_of_lines], self.end_col)
+        or last_line_length
 
-    return text
+    local last_line_end_idx = vim.str_byteindex(lines[number_of_lines], end_col)
+    local first_line_start_idx = vim.str_byteindex(lines[1], self.start_col - 1)
+
+    lines[number_of_lines] = lines[number_of_lines]:sub(1, last_line_end_idx)
+    lines[1] = lines[1]:sub(first_line_start_idx + 1)
+
+    return lines
 end
 
 ---@class LspPoint
