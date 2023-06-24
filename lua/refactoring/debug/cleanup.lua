@@ -4,8 +4,6 @@ local Region = require("refactoring.region")
 local lsp_utils = require("refactoring.lsp_utils")
 local post_refactor = require("refactoring.tasks.post_refactor")
 
-local MAX_COL = 100000
-
 local function cleanup(bufnr, config)
     Pipeline:from_task(refactor_setup(bufnr, config))
         :add_task(
@@ -25,27 +23,8 @@ local function cleanup(bufnr, config)
                 end
 
                 for row_num, line in ipairs(lines) do
-                    local region
-                    if row_num ~= 1 then
-                        region = Region:from_values(
-                            bufnr,
-                            row_num - 1,
-                            MAX_COL,
-                            row_num,
-                            MAX_COL
-                        )
-                    else
-                        print(
-                            "NOTE! Can't delete first line of file, leaving blank"
-                        )
-                        region = Region:from_values(
-                            bufnr,
-                            row_num,
-                            1,
-                            row_num,
-                            MAX_COL
-                        )
-                    end
+                    local region =
+                        Region:from_values(bufnr, row_num, 1, row_num + 1, 0)
 
                     if opts.printf then
                         if

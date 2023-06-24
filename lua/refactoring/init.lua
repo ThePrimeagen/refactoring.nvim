@@ -11,7 +11,7 @@ function M.setup(config)
 end
 
 ---@param name string|number
----@param opts ConfigOpts
+---@param opts ConfigOpts|nil
 function M.refactor(name, opts)
     if opts == nil then
         opts = {}
