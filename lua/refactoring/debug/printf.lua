@@ -11,6 +11,37 @@ local indent = require("refactoring.indent")
 
 local MAX_COL = 100000
 
+local M = {}
+
+---@param opts c
+---@param refactor Refactor
+---@return string
+function M.get_printf_statement(opts, refactor)
+    local default_printf_statement = refactor.code.default_printf_statement()
+
+    local custom_printf_statements = opts.printf_statements[refactor.filetype]
+
+    local printf_statement
+
+    -- if there's a set of statements given for this one
+    if custom_printf_statements then
+        if #custom_printf_statements > 1 then
+            printf_statement = get_select_input(
+                custom_printf_statements,
+                "printf: Select a statement to insert:",
+                function(item)
+                    return item
+                end
+            )
+        else
+            printf_statement = custom_printf_statements[1]
+        end
+    else
+        printf_statement = default_printf_statement[1]
+    end
+    return printf_statement
+end
+
 --- Add text edit for printf to be inserted (line above or below cursor).
 --- Should always be called at least once
 ---@param refactor Refactor
@@ -33,7 +64,6 @@ local function text_edit_insert(
         statement = printf_statement,
         content = content,
     })
-    text = text .. " " .. refactor.code.comment("__AUTO_GENERATED_PRINTF__")
 
     local indentation
     if refactor.ts:allows_indenting_task() then
@@ -48,6 +78,11 @@ local function text_edit_insert(
     if indentation ~= nil then
         text = table.concat({ indentation, text }, "")
     end
+    text = refactor.code.comment("__AUTO_GENERATED_PRINTF_START__")
+        .. "\n"
+        .. text
+        .. " "
+        .. refactor.code.comment("__AUTO_GENERATED_PRINTF_END__")
 
     local range = Region:from_point(point, bufnr)
     table.insert(
@@ -109,7 +144,7 @@ local function text_edits_replace(
     end
 end
 
-local function printDebug(bufnr, config)
+function M.printDebug(bufnr, config)
     return Pipeline:from_task(refactor_setup(bufnr, config))
         :add_task(
             ---@param refactor Refactor
@@ -132,32 +167,9 @@ local function printDebug(bufnr, config)
 
                 point.col = opts.below and MAX_COL or 1
 
-                local default_printf_statement =
-                    refactor.code.default_printf_statement()
-
-                local custom_printf_statements =
-                    opts.printf_statements[refactor.filetype]
-
-                local printf_statement
-
-                -- if there's a set of statements given for this one
-                if custom_printf_statements then
-                    if #custom_printf_statements > 1 then
-                        printf_statement = get_select_input(
-                            custom_printf_statements,
-                            "printf: Select a statement to insert:",
-                            function(item)
-                                return item
-                            end
-                        )
-                    else
-                        printf_statement = custom_printf_statements[1]
-                    end
-                else
-                    printf_statement = default_printf_statement[1]
-                end
-
                 local debug_path = debug_utils.get_debug_path(refactor, point)
+
+                local printf_statement = M.get_printf_statement(opts, refactor)
 
                 local scaped_printf_statement =
                     printf_statement:gsub("([%(%)])", "%%%%%1")
@@ -227,4 +239,4 @@ local function printDebug(bufnr, config)
         :run()
 end
 
-return printDebug
+return M

@@ -13,6 +13,38 @@ local indent = require("refactoring.indent")
 
 local MAX_COL = 100000
 
+local M = {}
+
+---@param opts c
+---@param refactor Refactor
+---@return string
+function M.get_print_var_statement(opts, refactor)
+    local default_print_var_statement =
+        refactor.code.default_print_var_statement()
+
+    local custom_print_var_statements =
+        opts.print_var_statements[refactor.filetype]
+
+    local print_var_statement
+
+    if custom_print_var_statements then
+        if #custom_print_var_statements > 1 then
+            print_var_statement = get_select_input(
+                custom_print_var_statements,
+                "print_var: Select a statement to insert:",
+                function(item)
+                    return item
+                end
+            )
+        else
+            print_var_statement = custom_print_var_statements[1]
+        end
+    else
+        print_var_statement = default_print_var_statement[1]
+    end
+    return print_var_statement
+end
+
 ---@param opts table
 ---@param point RefactorPoint
 ---@param refactor Refactor
@@ -53,7 +85,7 @@ end
 
 ---@param bufnr integer
 ---@param config Config
-local function printDebug(bufnr, config)
+function M.printDebug(bufnr, config)
     Pipeline:from_task(refactor_setup(bufnr, config))
         :add_task(
             ---@param refactor Refactor
@@ -93,29 +125,8 @@ local function printDebug(bufnr, config)
                 local debug_path = debug_utils.get_debug_path(refactor, point)
                 local prefix = string.format("%s %s:", debug_path, variable)
 
-                local default_print_var_statement =
-                    refactor.code.default_print_var_statement()
-
-                local custom_print_var_statements =
-                    opts.print_var_statements[refactor.filetype]
-
-                local print_var_statement
-
-                if custom_print_var_statements then
-                    if #custom_print_var_statements > 1 then
-                        print_var_statement = get_select_input(
-                            custom_print_var_statements,
-                            "print_var: Select a statement to insert:",
-                            function(item)
-                                return item
-                            end
-                        )
-                    else
-                        print_var_statement = custom_print_var_statements[1]
-                    end
-                else
-                    print_var_statement = default_print_var_statement[1]
-                end
+                local print_var_statement =
+                    M.get_print_var_statement(opts, refactor)
 
                 local print_var_opts = {
                     statement = print_var_statement,
@@ -127,10 +138,8 @@ local function printDebug(bufnr, config)
 
                 local statement
                 if indentation ~= nil then
-                    local temp = {}
-                    temp[1] = indentation
-                    temp[2] = print_statement
-                    statement = table.concat(temp, "")
+                    statement =
+                        table.concat({ indentation, print_statement }, "")
                 else
                     statement = print_statement
                 end
@@ -138,10 +147,14 @@ local function printDebug(bufnr, config)
                 refactor.text_edits = {
                     lsp_utils.insert_new_line_text(
                         Region:from_point(point),
-                        statement
+                        refactor.code.comment(
+                            "__AUTO_GENERATED_PRINT_VAR_START__"
+                        )
+                            .. "\n"
+                            .. statement
                             .. " "
                             .. refactor.code.comment(
-                                "__AUTO_GENERATED_PRINT_VAR__"
+                                "__AUTO_GENERATED_PRINT_VAR_END__"
                             ),
                         opts
                     ),
@@ -154,4 +167,4 @@ local function printDebug(bufnr, config)
         :run()
 end
 
-return printDebug
+return M

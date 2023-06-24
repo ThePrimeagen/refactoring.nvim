@@ -1,6 +1,6 @@
 local Config = require("refactoring.config")
-local printf = require("refactoring.debug.printf")
-local print_var = require("refactoring.debug.print_var")
+local printf = require("refactoring.debug.printf").printDebug
+local print_var = require("refactoring.debug.print_var").printDebug
 local get_path = require("refactoring.debug.get_path")
 local cleanup = require("refactoring.debug.cleanup")
 
