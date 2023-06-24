@@ -153,17 +153,14 @@ function Config:merge(opts)
 end
 
 function Config:reset()
-    self.config.formatting = vim.deepcopy(default_formatting)
-    self.config.code_generation = vim.deepcopy(default_code_generation)
-    self.config.prompt_func_return_type =
-        vim.deepcopy(default_prompt_func_return_type)
-    self.config.prompt_func_param_type =
-        vim.deepcopy(default_prompt_func_param_type)
-    self.config.printf_statements = vim.deepcopy(default_printf_statements)
-    self.config.print_var_statements =
-        vim.deepcopy(default_print_var_statements)
-    self.config.extract_var_statements =
-        vim.deepcopy(default_extract_var_statements)
+    local c = self.config
+    c.formatting = vim.deepcopy(default_formatting)
+    c.code_generation = vim.deepcopy(default_code_generation)
+    c.prompt_func_return_type = vim.deepcopy(default_prompt_func_return_type)
+    c.prompt_func_param_type = vim.deepcopy(default_prompt_func_param_type)
+    c.printf_statements = vim.deepcopy(default_printf_statements)
+    c.print_var_statements = vim.deepcopy(default_print_var_statements)
+    c.extract_var_statements = vim.deepcopy(default_extract_var_statements)
 end
 
 ---@param inputs string|string[]

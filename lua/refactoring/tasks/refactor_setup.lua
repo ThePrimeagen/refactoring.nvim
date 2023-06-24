@@ -14,7 +14,7 @@ local function refactor_setup(input_bufnr, config)
     config = config or Config.get()
 
     return function()
-        -- Setting bufnr to test bufnr
+        --- @type integer
         local bufnr
         if config:get_test_bufnr() ~= nil then
             bufnr = config:get_test_bufnr()

@@ -1,4 +1,3 @@
-local parsers = require("nvim-treesitter.parsers")
 local Point = require("refactoring.point")
 local utils = require("refactoring.utils")
 local Region = require("refactoring.region")
@@ -206,7 +205,23 @@ end
 function TreeSitter:get_references(scope)
     local ft = self.filetype
     local lang = vim.treesitter.language.get_lang(ft)
+
+    if lang == nil then
+        error(
+            string.format(
+                "The filetype %s has no treesitter lang asociated with it",
+                ft
+            )
+        )
+    end
+
     local query = vim.treesitter.query.get(lang, "locals")
+
+    if query == nil then
+        error(string.format("The lang %s has no query `locals`", lang))
+    end
+
+    ---@type TSNode[]
     local out = {}
     for id, node, _ in query:iter_captures(scope, self.bufnr, 0, -1) do
         local n_capture = query.captures[id]
@@ -269,6 +284,7 @@ local function containing_node_by_type(node, container_map)
         if container_map[node:type()] ~= nil then
             break
         end
+        --- @type TSNode
         node = node:parent()
     -- This statement can be uncommented to print all the parent nodes of the
     -- current node until there are no more. Useful in finding certain nodes
@@ -283,6 +299,7 @@ end
 ---@param type_index integer
 ---@return table<string, string>
 function TreeSitter:get_local_parameter_types(scope, type_index)
+    --- @type table<string, string>
     local parameter_types = {}
     self:validate_setting("function_scopes")
     local function_node = containing_node_by_type(scope, self.function_scopes)
@@ -399,9 +416,19 @@ function TreeSitter:local_declarations_under_cursor()
     self:validate_setting("local_declarations")
     local point = Point:from_cursor()
     local scope = self:get_scope(point:to_ts_node(self:get_root()))
-    return vim.tbl_filter(function(node)
-        return Region:from_node(node, 0):contains_point(point)
-    end, self:get_local_declarations(scope))[1]
+
+    if scope == nil then
+        error("Failed to get scope in local_declarations_under_cursor")
+    end
+
+    return vim.tbl_filter(
+        --- @param node TSNode
+        --- @return boolean
+        function(node)
+            return Region:from_node(node, 0):contains_point(point)
+        end,
+        self:get_local_declarations(scope)
+    )[1]
 end
 
 ---@param node TSNode
@@ -428,7 +455,7 @@ end
 ---@return TSNode
 function TreeSitter:get_root()
     local lang = vim.treesitter.language.get_lang(self.filetype)
-    local parser = parsers.get_parser(self.bufnr, lang)
+    local parser = vim.treesitter.get_parser(self.bufnr, lang)
     return parser:parse()[1]:root()
 end
 

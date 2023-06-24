@@ -22,8 +22,11 @@ end
 
 ---@param refactor Refactor
 ---@param bufnr integer
+---@return TSNode declarator_node
+---@return boolean is_node_on_cursor
 local function determine_declarator_node(refactor, bufnr)
     -- only deal with first declaration
+    --- @type TSNode|nil
     local declarator_node = refactor.ts:local_declarations_in_region(
         refactor.scope,
         refactor.region
@@ -36,10 +39,16 @@ local function determine_declarator_node(refactor, bufnr)
         local definition = ts.find_definition(current_node, bufnr)
         declarator_node =
             refactor.ts.get_container(definition, refactor.ts.variable_scope)
+        if declarator_node == nil then
+            error()
+        end
         return declarator_node, true
     end
 end
 
+---@param identifiers TSNode[]
+---@param node TSNode
+---@return integer|nil
 local function determine_identifier_position(identifiers, node)
     for idx, identifier in pairs(identifiers) do
         if node == identifier then
@@ -48,7 +57,11 @@ local function determine_identifier_position(identifiers, node)
     end
 end
 
+---@param identifiers TSNode[]
+---@param bufnr integer
+---@return TSNode|nil, integer|nil
 local function get_node_to_inline(identifiers, bufnr)
+    --- @type TSNode|nil, integer|nil
     local node_to_inline, identifier_pos
 
     if #identifiers == 1 then
@@ -58,6 +71,8 @@ local function get_node_to_inline(identifiers, bufnr)
         node_to_inline, identifier_pos = get_select_input(
             identifiers,
             "123: Select an identifier to inline:",
+            ---@param node TSNode
+            ---@return string
             function(node)
                 return vim.treesitter.get_node_text(node, bufnr)
             end
@@ -67,6 +82,12 @@ local function get_node_to_inline(identifiers, bufnr)
     return node_to_inline, identifier_pos
 end
 
+---@param identifiers TSNode[]
+---@param values TSNode[]
+---@param identifier_to_exclude TSNode[]
+---@param bufnr integer
+---@return string[] new_identifiers
+---@return string[] new_values
 local function construct_new_declaration(
     identifiers,
     values,
@@ -93,10 +114,15 @@ end
 
 ---@param refactor Refactor
 ---@param bufnr number
+---@return boolean, Refactor|string
 local function inline_var_setup(refactor, bufnr)
     -- figure out if we're dealing with a visual selection or a cursor node
-    local declarator_node, node_on_cursor =
-        determine_declarator_node(refactor, bufnr)
+    local ok, declarator_node, node_on_cursor =
+        pcall(determine_declarator_node, refactor, bufnr)
+
+    if not ok then
+        return false, "Coudn't determine declarator node"
+    end
 
     -- get all identifiers in the declarator node (for either situation)
     local identifiers = refactor.ts:get_local_var_names(declarator_node)
@@ -109,6 +135,7 @@ local function inline_var_setup(refactor, bufnr)
     end
 
     -- these three vars are determined based on the situation (cursor node or selected declaration)
+    --- @type TSNode|nil, integer|nil, TSNode
     local node_to_inline, identifier_pos, definition
 
     if node_on_cursor then
@@ -121,11 +148,20 @@ local function inline_var_setup(refactor, bufnr)
         end
         definition = ts.find_definition(node_to_inline, bufnr)
         identifier_pos = determine_identifier_position(identifiers, definition)
+
+        if identifier_pos == nil then
+            return false, "Cound't determine identifier position"
+        end
     else
         if #identifiers == 0 then
             return false, "No declarations in selected area"
         end
         node_to_inline, identifier_pos = get_node_to_inline(identifiers, bufnr)
+
+        if node_to_inline == nil or identifier_pos == nil then
+            return false, "Couldn't determine node to inline"
+        end
+
         definition = ts.find_definition(node_to_inline, bufnr)
     end
 
@@ -180,6 +216,7 @@ local function inline_var_setup(refactor, bufnr)
         -- TODO: In my mind, if nothing is left on the line when you remove, it should get deleted.
         -- Could be done via opts into replace_text.
 
+        --- @type TSNode
         local parent = ref:parent()
         if
             refactor.ts.should_check_parent_node

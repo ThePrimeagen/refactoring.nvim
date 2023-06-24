@@ -44,10 +44,7 @@ local function get_new_var_text(extract_node_text, refactor, var_name, region)
         and refactor.ts:allows_indenting_task()
     then
         local indent_whitespace = get_func_call_prefix(refactor, region)
-        local indented_text = {}
-        indented_text[1] = indent_whitespace
-        indented_text[2] = base_text
-        return table.concat(indented_text, "")
+        return table.concat({ indent_whitespace, base_text }, "")
     end
 
     return base_text
@@ -72,6 +69,10 @@ end
 local function extract_var_setup(refactor)
     local extract_node = refactor.region_node
 
+    if extract_node == nil then
+        return false, "Region node is nil. Something went wrong"
+    end
+
     local extract_node_text =
         table.concat(utils.get_node_text(extract_node), "")
 
@@ -80,6 +81,7 @@ local function extract_var_setup(refactor)
     local occurrences =
         Query.find_occurrences(refactor.scope, sexpr, refactor.bufnr)
 
+    --- @type TSNode[]
     local actual_occurrences = {}
     local texts = {}
 
@@ -108,7 +110,9 @@ local function extract_var_setup(refactor)
         )
     end
 
+    --- @type TSNode[]
     local block_scopes = {}
+    --- @type table<integer, true>
     local already_seen = {}
     for _, occurrence in pairs(actual_occurrences) do
         local block_scope =
@@ -136,14 +140,19 @@ local function extract_var_setup(refactor)
         return false, "unfiltered_statements is nil! Something went wrong"
     end
 
-    local statements = vim.tbl_filter(function(node)
-        for _, scope in pairs(block_scopes) do
-            if node:parent():id() == scope:id() then
-                return true
+    local statements = vim.tbl_filter(
+        ---@param node TSNode
+        ---@return TSNode[]
+        function(node)
+            for _, scope in pairs(block_scopes) do
+                if node:parent():id() == scope:id() then
+                    return true
+                end
             end
-        end
-        return false
-    end, unfiltered_statements)
+            return false
+        end,
+        unfiltered_statements
+    )
     utils.sort_in_appearance_order(statements)
 
     -- TODO: Add test for statements being nil
@@ -151,6 +160,7 @@ local function extract_var_setup(refactor)
         return false, "statements is nil! Something went wrong"
     end
 
+    ---@type TSNode|nil
     local contained = nil
     local top_occurrence = actual_occurrences[1]
     for _, statement in pairs(statements) do

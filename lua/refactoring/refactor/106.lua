@@ -48,23 +48,43 @@ local function get_return_vals(refactor)
         refactor.region
     )
 
-    region_vars = vim.tbl_map(function(node)
-        return refactor.ts:get_local_var_names(node)[1]
-    end, region_vars)
+    region_vars = vim.tbl_map(
+        ---@param node TSNode
+        ---@return TSNode[]
+        function(node)
+            return refactor.ts:get_local_var_names(node)[1]
+        end,
+        region_vars
+    )
 
-    region_vars = vim.tbl_filter(function(node)
-        return node
-    end, region_vars)
+    region_vars = vim.tbl_filter(
+        ---@param node TSNode
+        ---@return TSNode[]
+        function(node)
+            return node
+        end,
+        region_vars
+    )
 
     local refs = refactor.ts:get_references(refactor.scope)
     refs = utils.after_region(refs, refactor.region)
 
-    refs = vim.tbl_map(function(node)
-        return node_to_parent_if_needed(refactor, node)
-    end, refs)
-    region_vars = vim.tbl_map(function(node)
-        return node_to_parent_if_needed(refactor, node)
-    end, region_vars)
+    refs = vim.tbl_map(
+        ---@param node TSNode
+        ---@return TSNode[]
+        function(node)
+            return node_to_parent_if_needed(refactor, node)
+        end,
+        refs
+    )
+    region_vars = vim.tbl_map(
+        ---@param node TSNode
+        ---@return TSNode[]
+        function(node)
+            return node_to_parent_if_needed(refactor, node)
+        end,
+        region_vars
+    )
 
     local bufnr = refactor.buffers[1]
     local region_var_map = utils.nodes_to_text_set(bufnr, region_vars)
@@ -88,7 +108,7 @@ end
 
 ---@param refactor Refactor
 ---@param args string[]
----@return table<string, string>
+---@return table<string, string|nil>
 local function get_function_param_types(refactor, args)
     local args_types = {}
     local parameter_arg_types = refactor.ts:get_local_parameter_types(
@@ -96,6 +116,7 @@ local function get_function_param_types(refactor, args)
         refactor.ts.argument_type_index
     )
     for _, arg in pairs(args) do
+        --- @type string|nil
         local function_param_type
         local curr_arg = refactor.ts.get_arg_type_key(arg)
 
@@ -114,6 +135,7 @@ local function get_function_param_types(refactor, args)
         else
             function_param_type = code_utils.default_func_param_type()
         end
+        --- @type string|nil
         args_types[curr_arg] = function_param_type
     end
 
@@ -135,6 +157,7 @@ local function get_first_node_in_row(node)
     local start_row, _, _, _ = node:range()
     local first = node
     while true do
+        --- @type TSNode
         local parent = first:parent()
         if parent == nil then
             break
@@ -187,10 +210,8 @@ local function indent_func_code(function_params, has_return_vals, refactor)
     local indent_prefix = get_indent_prefix(refactor)
     for i = 1, #function_params.body do
         if function_params.body[i] ~= "" then
-            local temp = {}
-            temp[1] = indent_prefix
-            temp[2] = function_params.body[i]
-            function_params.body[i] = table.concat(temp, "")
+            function_params.body[i] =
+                table.concat({ indent_prefix, function_params.body[i] }, "")
         end
     end
 end
@@ -235,6 +256,7 @@ end
 ---@param extract_params extract_params
 ---@return string
 local function get_function_code(refactor, extract_params)
+    --- @type string
     local function_code
     local func_params = get_func_params(extract_params, refactor)
 
@@ -256,6 +278,7 @@ end
 --- @param refactor Refactor
 --- @param extract_params extract_params
 local function get_func_call(refactor, extract_params)
+    --- @type LspTextEdit
     local func_call
     if extract_params.is_class then
         func_call = {
@@ -326,10 +349,8 @@ local function get_func_call(refactor, extract_params)
             refactor.bufnr
         )
         local indent_whitespace = indent.indent(indent_amount, refactor.bufnr)
-        local func_call_with_indent = {}
-        func_call_with_indent[1] = indent_whitespace
-        func_call_with_indent[2] = func_call.newText
-        func_call.newText = table.concat(func_call_with_indent, "")
+        func_call.newText =
+            table.concat({ indent_whitespace, func_call.newText }, "")
     end
 
     return func_call
@@ -362,6 +383,7 @@ local function get_non_comment_region_above_node(refactor)
     local prev_sibling =
         get_first_node_in_row(refactor.scope):prev_named_sibling()
     if is_comment_or_decorator_node(prev_sibling) then
+        --- @type integer
         local start_row
         while true do
             -- Only want first value
@@ -416,12 +438,22 @@ local function get_selected_locals(refactor, is_class)
         end
     end
 
-    local_defs = vim.tbl_map(function(node)
-        return node_to_parent_if_needed(refactor, node)
-    end, local_defs)
-    region_refs = vim.tbl_map(function(node)
-        return node_to_parent_if_needed(refactor, node)
-    end, region_refs)
+    local_defs = vim.tbl_map(
+        ---@param node TSNode
+        ---@return TSNode[]
+        function(node)
+            return node_to_parent_if_needed(refactor, node)
+        end,
+        local_defs
+    )
+    region_refs = vim.tbl_map(
+        ---@param node TSNode
+        ---@return TSNode[]
+        function(node)
+            return node_to_parent_if_needed(refactor, node)
+        end,
+        region_refs
+    )
 
     local bufnr = refactor.buffers[1]
     local local_def_map = utils.nodes_to_text_set(bufnr, local_defs)
@@ -435,6 +467,11 @@ local function extract_block_setup(refactor)
     local region = Region:from_point(Point:from_cursor(), refactor.bufnr)
     local region_node = region:to_ts_node(refactor.ts:get_root())
     local scope = refactor.ts:get_scope(region_node)
+
+    if scope == nil then
+        return false, "Scope is nil. Couldn't find scope for current block"
+    end
+
     local block_first_child = refactor.ts:get_function_body(scope)[1]
     local block_last_child = block_first_child -- starting off here, we're going to find it manually
 
@@ -520,6 +557,7 @@ local function extract_setup(refactor)
 
     local region_above_scope = get_non_comment_region_above_node(refactor)
 
+    --- @type LspTextEdit | {bufnr: integer}
     local extract_function
     if is_class then
         extract_function = lsp_utils.insert_new_line_text(
@@ -533,6 +571,7 @@ local function extract_setup(refactor)
             function_code,
             { below = true }
         )
+        --- @type integer
         extract_function.bufnr = refactor.buffers[2]
     end
 
