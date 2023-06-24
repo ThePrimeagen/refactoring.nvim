@@ -77,13 +77,16 @@ local default_extract_var_statements = {}
 ---@field terminate fun(code: string): string
 ---@field class_function fun(opts: call_function_opts):string
 ---@field class_function_return fun(opts: {body: string, classname: string, name: string, return_type: string}): string
----@field call_class_function fun(opts: {args: string[], class_type: string, name: string}): string
+---@field call_class_function fun(opts: {args: string[], class_type: string|nil, name: string}): string
 ---@field special_var fun(var: string, opts: special_var_opts): string
 
 ---@alias ft
 ---| "ts"
 ---| "js"
 ---| "typescriptreact"
+---| "typescript"
+---| "javascript"
+---| "java"
 ---| "lua"
 ---| "go"
 ---| "php"
@@ -105,7 +108,7 @@ local default_extract_var_statements = {}
 ---@field extract_var_statements table<ft, string>
 
 ---@class c: ConfigOpts
----@field _automation table
+---@field _automation {bufnr: number, inputs: string[], inputs_idx: integer}
 
 ---@class Config
 ---@field config c
@@ -120,13 +123,13 @@ function Config:new(...)
             bufnr = nil,
         },
     }, {
-        formatting = default_formatting,
-        code_generation = default_code_generation,
-        prompt_func_return_type = default_prompt_func_return_type,
-        prompt_func_param_type = default_prompt_func_param_type,
-        printf_statements = default_printf_statements,
-        print_var_statements = default_print_var_statements,
-        extract_var_statements = default_extract_var_statements,
+        formatting = vim.deepcopy(default_formatting),
+        code_generation = vim.deepcopy(default_code_generation),
+        prompt_func_return_type = vim.deepcopy(default_prompt_func_return_type),
+        prompt_func_param_type = vim.deepcopy(default_prompt_func_param_type),
+        printf_statements = vim.deepcopy(default_printf_statements),
+        print_var_statements = vim.deepcopy(default_print_var_statements),
+        extract_var_statements = vim.deepcopy(default_extract_var_statements),
     })
 
     for idx = 1, select("#", ...) do
@@ -150,15 +153,20 @@ function Config:merge(opts)
 end
 
 function Config:reset()
-    self.config.formatting = default_formatting
-    self.config.code_generation = default_code_generation
-    self.config.prompt_func_return_type = default_prompt_func_return_type
-    self.config.prompt_func_param_type = default_prompt_func_param_type
-    self.config.printf_statements = default_printf_statements
-    self.config.print_var_statements = default_print_var_statements
-    self.config.extract_var_statements = default_extract_var_statements
+    self.config.formatting = vim.deepcopy(default_formatting)
+    self.config.code_generation = vim.deepcopy(default_code_generation)
+    self.config.prompt_func_return_type =
+        vim.deepcopy(default_prompt_func_return_type)
+    self.config.prompt_func_param_type =
+        vim.deepcopy(default_prompt_func_param_type)
+    self.config.printf_statements = vim.deepcopy(default_printf_statements)
+    self.config.print_var_statements =
+        vim.deepcopy(default_print_var_statements)
+    self.config.extract_var_statements =
+        vim.deepcopy(default_extract_var_statements)
 end
 
+---@param inputs string|string[]
 function Config:automate_input(inputs)
     if type(inputs) ~= "table" then
         inputs = { inputs }
@@ -232,8 +240,8 @@ function Config:get_extract_var_statement(filetype)
     return self.config.extract_var_statements[filetype]
 end
 
----@param override_statement string: map with statements to any current extract_var_statements
----@param filetype ft: map with statements to any current extract_var_statements
+---@param override_statement string|nil extract_var_statement
+---@param filetype ft filetype for which to override the extract_var_statement
 function Config:set_extract_var_statement(filetype, override_statement)
     self.config.extract_var_statements[filetype] = override_statement
 end
@@ -251,11 +259,12 @@ function Config:get_automated_input()
     return nil
 end
 
----@return number
+---@return integer
 function Config:get_test_bufnr()
     return self.config._automation.bufnr
 end
 
+---@param bufnr integer
 function Config:set_test_bufnr(bufnr)
     self.config._automation.bufnr = bufnr
 end
