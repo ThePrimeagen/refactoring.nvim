@@ -14,8 +14,11 @@ M.extract_block_to_file = extract.extract_block_to_file
 M.extract_var = extract_var.extract_var
 M.inline_var = inline_var.inline_var
 
+--- @type function
 M[106] = extract.extract
+--- @type function
 M[119] = extract_var.extract_var
+--- @type function
 M[123] = inline_var.inline_var
 
 -- TODO: Perhaps I am really out thinking myself on this one.  But it seems way

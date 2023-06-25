@@ -144,6 +144,8 @@ end
 
 -- TODO: make this better for more complex config options
 -- assuming first line is for prompt_func_return_type flag
+---@param filename_prefix string
+---@param filename_extension string
 local function set_config_options(filename_prefix, filename_extension)
     local config_file_name = string.format("%s.config", filename_prefix)
     local config_file =

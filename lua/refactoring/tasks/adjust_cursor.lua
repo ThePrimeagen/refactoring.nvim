@@ -1,29 +1,35 @@
 local utils = require("refactoring.utils")
 
+---@type {region:RefactorRegion, text:string}[]
 local changes = {}
+
+---@param region RefactorRegion
+---@param text string
 local function add_change(region, text)
-    table.insert(changes, { region, text })
+    table.insert(changes, { region = region, text = text })
 end
 
 local function reset()
     changes = {}
 end
 
+---@param cursor RefactorPoint
+---@return integer
 local function get_rows(cursor)
     local add_rows = 0
     for _, edit in pairs(changes) do
-        local region = edit[1]
-        local text = edit[2]
-        local start = region.start_row
+        local region = edit.region
+        local text = edit.text
+
         local text_length = #utils.split_string(text, "\n")
-        local diff = region.end_row - region.start_row
+        local row_diff = region.end_row - region.start_row
 
         if region.start_row == region.end_row and text_length > 0 then
-            diff = diff + 1
+            row_diff = row_diff + 1
         end
 
-        local length = text_length - diff
-        if start < cursor.row then
+        if region.start_row < cursor.row then
+            local length = text_length - row_diff
             add_rows = add_rows + length
         end
     end

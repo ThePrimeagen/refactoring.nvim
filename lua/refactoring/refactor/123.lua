@@ -144,6 +144,7 @@ local function inline_var_setup(refactor, bufnr)
             refactor.ts.should_check_parent_node
             and refactor.ts.should_check_parent_node(node_to_inline:type())
         then
+            --- @type TSNode
             node_to_inline = node_to_inline:named_child()
         end
         definition = ts.find_definition(node_to_inline, bufnr)
