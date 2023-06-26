@@ -72,7 +72,7 @@ local default_extract_var_statements = {}
 ---@field unpack fun(names: string|table):string This is for consuming one or more arguments from a function call.
 ---@field return fun(code: string[]|string):string
 ---@field function fun(opts: function_opts):string
----@field function_return fun(opts: {args: string, body:string, name: string}): string
+---@field function_return fun(opts: function_opts): string
 ---@field call_function fun(opts: call_function_opts):string
 ---@field terminate fun(code: string): string
 ---@field class_function fun(opts: call_function_opts):string

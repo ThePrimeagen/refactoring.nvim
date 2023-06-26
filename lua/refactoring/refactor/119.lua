@@ -192,6 +192,8 @@ local function ensure_code_gen_119(refactor)
     return ensure_code_gen(refactor, list)
 end
 
+---@param bufnr integer
+---@param config Config
 function M.extract_var(bufnr, config)
     Pipeline:from_task(refactor_setup(bufnr, config))
         :add_task(ensure_code_gen_119)

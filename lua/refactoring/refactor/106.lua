@@ -27,20 +27,6 @@ local function get_extract_setup_pipeline(bufnr, opts)
 end
 
 ---@param refactor Refactor
----@param node TSNode
----@return TSNode
-local function node_to_parent_if_needed(refactor, node)
-    local parent = node:parent()
-    if
-        refactor.ts.should_check_parent_node
-        and refactor.ts.should_check_parent_node(parent:type())
-    then
-        return parent
-    end
-    return node
-end
-
----@param refactor Refactor
 ---@return string[]
 local function get_return_vals(refactor)
     local region_vars = utils.region_intersect(
@@ -73,7 +59,7 @@ local function get_return_vals(refactor)
         ---@param node TSNode
         ---@return TSNode[]
         function(node)
-            return node_to_parent_if_needed(refactor, node)
+            return utils.node_to_parent_if_needed(refactor, node)
         end,
         refs
     )
@@ -81,7 +67,7 @@ local function get_return_vals(refactor)
         ---@param node TSNode
         ---@return TSNode[]
         function(node)
-            return node_to_parent_if_needed(refactor, node)
+            return utils.node_to_parent_if_needed(refactor, node)
         end,
         region_vars
     )
@@ -151,30 +137,10 @@ local function get_func_header_prefix(refactor)
     return indent.indent(baseline_indent, refactor.bufnr)
 end
 
----@param node TSNode
----@return TSNode first_node_row, integer start_row
-local function get_first_node_in_row(node)
-    local start_row, _, _, _ = node:range()
-    local first = node
-    while true do
-        --- @type TSNode
-        local parent = first:parent()
-        if parent == nil then
-            break
-        end
-        local parent_row, _, _, _ = parent:range()
-        if parent_row ~= start_row then
-            break
-        end
-        first = parent
-    end
-    return first, start_row
-end
-
 ---@param refactor Refactor
 local function get_indent_prefix(refactor)
     local ident_width = indent.buf_indent_width(refactor.bufnr)
-    local first_node_in_row, _ = get_first_node_in_row(refactor.scope)
+    local first_node_in_row, _ = utils.get_first_node_in_row(refactor.scope)
     local scope_region = Region:from_node(first_node_in_row, refactor.bufnr)
     local scope_start_col = scope_region.start_col
     local baseline_indent = math.floor(scope_start_col / ident_width)
@@ -356,111 +322,6 @@ local function get_func_call(refactor, extract_params)
     return func_call
 end
 
----@param node TSNode|nil
----@return boolean
-local function is_comment_or_decorator_node(node)
-    if node == nil then
-        return false
-    end
-
-    local comment_and_decorator_node_types = {
-        "comment",
-        "block_comment",
-        "decorator",
-    }
-
-    for _, node_type in ipairs(comment_and_decorator_node_types) do
-        if node_type == node:type() then
-            return true
-        end
-    end
-
-    return false
-end
-
----@param refactor Refactor
-local function get_non_comment_region_above_node(refactor)
-    local prev_sibling =
-        get_first_node_in_row(refactor.scope):prev_named_sibling()
-    if is_comment_or_decorator_node(prev_sibling) then
-        --- @type integer
-        local start_row
-        while true do
-            -- Only want first value
-            start_row = prev_sibling:range()
-            local temp = prev_sibling:prev_sibling()
-            if is_comment_or_decorator_node(temp) then
-                -- Only want first value
-                local temp_row = temp:range()
-                if start_row - temp_row == 1 then
-                    prev_sibling = temp
-                else
-                    break
-                end
-            else
-                break
-            end
-        end
-
-        if start_row > 0 then
-            return utils.region_above_node(prev_sibling)
-        else
-            return utils.region_above_node(refactor.scope)
-        end
-    else
-        return utils.region_above_node(refactor.scope)
-    end
-end
-
----@param refactor Refactor
----@param is_class boolean
----@return string[]
-local function get_selected_locals(refactor, is_class)
-    local local_defs =
-        refactor.ts:get_local_defs(refactor.scope, refactor.region)
-    local region_refs =
-        refactor.ts:get_region_refs(refactor.scope, refactor.region)
-
-    -- Removing class variables from things being passed to extracted func
-    if is_class then
-        local class_vars =
-            refactor.ts:get_class_vars(refactor.scope, refactor.region)
-
-        if #class_vars > 0 then
-            for _, class_var in ipairs(class_vars) do
-                for i, node in ipairs(local_defs) do
-                    if node == class_var then
-                        table.remove(local_defs, i)
-                        break
-                    end
-                end
-            end
-        end
-    end
-
-    local_defs = vim.tbl_map(
-        ---@param node TSNode
-        ---@return TSNode[]
-        function(node)
-            return node_to_parent_if_needed(refactor, node)
-        end,
-        local_defs
-    )
-    region_refs = vim.tbl_map(
-        ---@param node TSNode
-        ---@return TSNode[]
-        function(node)
-            return node_to_parent_if_needed(refactor, node)
-        end,
-        region_refs
-    )
-
-    local bufnr = refactor.buffers[1]
-    local local_def_map = utils.nodes_to_text_set(bufnr, local_defs)
-    local region_refs_map = utils.nodes_to_text_set(bufnr, region_refs)
-    return utils.table_key_intersect(local_def_map, region_refs_map)
-end
-
 --- @param refactor Refactor
 ---@return boolean, Refactor|string
 local function extract_block_setup(refactor)
@@ -520,7 +381,7 @@ local function extract_setup(refactor)
     -- functions (method extraction)
     local is_class = refactor.ts:is_class_function(refactor.scope)
     ---@type string[]
-    local args = vim.tbl_keys(get_selected_locals(refactor, is_class))
+    local args = vim.tbl_keys(utils.get_selected_locals(refactor, is_class))
     table.sort(args)
 
     local first_line = function_body[1]
@@ -555,7 +416,7 @@ local function extract_setup(refactor)
     local function_code = get_function_code(refactor, extract_params)
     local func_call = get_func_call(refactor, extract_params)
 
-    local region_above_scope = get_non_comment_region_above_node(refactor)
+    local region_above_scope = utils.get_non_comment_region_above_node(refactor)
 
     --- @type LspTextEdit | {bufnr: integer}
     local extract_function

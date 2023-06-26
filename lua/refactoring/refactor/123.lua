@@ -11,7 +11,7 @@ local get_select_input = require("refactoring.get_select_input")
 
 local lsp_utils = require("refactoring.lsp_utils")
 
-local ts = require("refactoring.ts")
+local ts_locals = require("refactoring.ts-locals")
 
 local M = {}
 
@@ -22,7 +22,7 @@ end
 
 ---@param refactor Refactor
 ---@param bufnr integer
----@return TSNode declarator_node
+---@return TSNode|nil declarator_node
 ---@return boolean is_node_on_cursor
 local function determine_declarator_node(refactor, bufnr)
     -- only deal with first declaration
@@ -35,13 +35,15 @@ local function determine_declarator_node(refactor, bufnr)
     if declarator_node then
         return declarator_node, false
     else
-        local current_node = ts.get_node_at_cursor(0)
-        local definition = ts.find_definition(current_node, bufnr)
+        local current_node = vim.treesitter.get_node()
+
+        if current_node == nil then
+            return nil, true
+        end
+
+        local definition = ts_locals.find_definition(current_node, bufnr)
         declarator_node =
             refactor.ts.get_container(definition, refactor.ts.variable_scope)
-        if declarator_node == nil then
-            error()
-        end
         return declarator_node, true
     end
 end
@@ -117,10 +119,10 @@ end
 ---@return boolean, Refactor|string
 local function inline_var_setup(refactor, bufnr)
     -- figure out if we're dealing with a visual selection or a cursor node
-    local ok, declarator_node, node_on_cursor =
-        pcall(determine_declarator_node, refactor, bufnr)
+    local declarator_node, node_on_cursor =
+        determine_declarator_node(refactor, bufnr)
 
-    if not ok then
+    if declarator_node == nil then
         return false, "Coudn't determine declarator node"
     end
 
@@ -139,7 +141,12 @@ local function inline_var_setup(refactor, bufnr)
     local node_to_inline, identifier_pos, definition
 
     if node_on_cursor then
-        node_to_inline = ts.get_node_at_cursor(0)
+        node_to_inline = vim.treesitter.get_node()
+
+        if node_to_inline == nil then
+            return false, "There is no node on cursor"
+        end
+
         if
             refactor.ts.should_check_parent_node
             and refactor.ts.should_check_parent_node(node_to_inline:type())
@@ -147,27 +154,25 @@ local function inline_var_setup(refactor, bufnr)
             --- @type TSNode
             node_to_inline = node_to_inline:named_child()
         end
-        definition = ts.find_definition(node_to_inline, bufnr)
+        definition = ts_locals.find_definition(node_to_inline, bufnr)
         identifier_pos = determine_identifier_position(identifiers, definition)
 
         if identifier_pos == nil then
             return false, "Cound't determine identifier position"
         end
+    elseif #identifiers == 0 then
+        return false, "No declarations in selected area"
     else
-        if #identifiers == 0 then
-            return false, "No declarations in selected area"
-        end
         node_to_inline, identifier_pos = get_node_to_inline(identifiers, bufnr)
 
         if node_to_inline == nil or identifier_pos == nil then
             return false, "Couldn't determine node to inline"
         end
 
-        definition = ts.find_definition(node_to_inline, bufnr)
+        definition = ts_locals.find_definition(node_to_inline, bufnr)
     end
 
-    local references =
-        ts.find_references(definition, refactor.scope, bufnr, definition)
+    local references = ts_locals.find_usages(definition, refactor.scope, bufnr)
 
     local all_values = refactor.ts:get_local_var_values(declarator_node)
 
@@ -236,8 +241,8 @@ local function inline_var_setup(refactor, bufnr)
     return true, refactor
 end
 
----@param bufnr number
----@param opts table
+---@param bufnr integer
+---@param opts Config
 function M.inline_var(bufnr, opts)
     get_inline_setup_pipeline(bufnr, opts)
         :add_task(
