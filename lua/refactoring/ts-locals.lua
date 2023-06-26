@@ -383,6 +383,7 @@ function M.find_usages(node, scope_node, bufnr)
             node_capture
             and kind == "reference"
             and ts.get_node_text(node_capture, bufnr) == node_text
+            and M.find_definition(node_capture, bufnr):equal(definition)
             and not node_capture:equal(definition)
         then
             table.insert(usages, node_capture)
