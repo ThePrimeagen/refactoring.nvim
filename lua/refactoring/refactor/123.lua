@@ -82,54 +82,22 @@ local function construct_new_declaration(
     return new_identifiers, new_values
 end
 
+---@param declarator_node TSNode
+---@param identifiers TSNode[]
+---@param node_to_inline TSNode
 ---@param refactor Refactor
----@return boolean, Refactor|string
-local function inline_var_setup(refactor)
-    -- only deal with first declaration
-    --- @type TSNode|nil
-    local declarator_node = refactor.ts:local_declarations_in_region(
-        refactor.scope,
-        refactor.region
-    )[1]
-
-    if declarator_node == nil then
-        -- if the visual selection does not contain a declaration and it only contains a reference
-        -- (which is under the cursor)
-        local identifier_node = vim.treesitter.get_node()
-        if identifier_node == nil then
-            return false, "Identifier_node is nil"
-        end
-        local definition =
-            ts_locals.find_definition(identifier_node, refactor.bufnr)
-        declarator_node =
-            refactor.ts.get_container(definition, refactor.ts.variable_scope)
-
-        if declarator_node == nil then
-            return false, "Coudn't determine declarator node"
-        end
-    end
-
-    -- get all identifiers in the declarator node (for either situation)
-    local identifiers = refactor.ts:get_local_var_names(declarator_node)
-
-    -- in the event of multiple identifiers, python gives one extra result
-    -- due to multiple queries (all of which are necessary for this to work)
-    if #identifiers > 1 and refactor.filetype == "python" then
-        -- get rid of the last item
-        identifiers[#identifiers] = nil
-    end
-    if #identifiers == 0 then
-        return false, "No declarations in selected area"
-    end
-
-    local node_to_inline, identifier_pos =
-        get_node_to_inline(identifiers, refactor.bufnr)
-
-    if node_to_inline == nil or identifier_pos == nil then
-        return false, "Couldn't determine node to inline"
-    end
-
-    local definition = ts_locals.find_definition(node_to_inline, refactor.bufnr)
+---@param definition TSNode[]
+---@param identifier_pos integer
+---@return LspTextEdit[]
+local function get_inline_text_edits(
+    declarator_node,
+    identifiers,
+    node_to_inline,
+    refactor,
+    definition,
+    identifier_pos
+)
+    local text_edits = {}
 
     local references =
         ts_locals.find_usages(definition, refactor.scope, refactor.bufnr)
@@ -146,8 +114,6 @@ local function inline_var_setup(refactor)
     end
 
     local value_node_to_inline = all_values[identifier_pos]
-
-    local text_edits = {}
 
     -- remove the whole declaration if there is only one identifier, else construct a new declaration
     if #identifiers == 1 then
@@ -199,6 +165,65 @@ local function inline_var_setup(refactor)
             lsp_utils.replace_text(Region:from_node(ref), value_text)
         )
     end
+    return text_edits
+end
+
+---@param refactor Refactor
+---@return boolean, Refactor|string
+local function inline_var_setup(refactor)
+    -- only deal with first declaration
+    --- @type TSNode|nil
+    local declarator_node = refactor.ts:local_declarations_in_region(
+        refactor.scope,
+        refactor.region
+    )[1]
+
+    if declarator_node == nil then
+        -- if the visual selection does not contain a declaration and it only contains a reference
+        -- (which is under the cursor)
+        local identifier_node = vim.treesitter.get_node()
+        if identifier_node == nil then
+            return false, "Identifier_node is nil"
+        end
+        local definition =
+            ts_locals.find_definition(identifier_node, refactor.bufnr)
+        declarator_node =
+            refactor.ts.get_container(definition, refactor.ts.variable_scope)
+
+        if declarator_node == nil then
+            return false, "Coudn't determine declarator node"
+        end
+    end
+
+    local identifiers = refactor.ts:get_local_var_names(declarator_node)
+
+    -- in the event of multiple identifiers, python gives one extra result
+    -- due to multiple queries (all of which are necessary for this to work)
+    if #identifiers > 1 and refactor.filetype == "python" then
+        -- get rid of the last item
+        identifiers[#identifiers] = nil
+    end
+    if #identifiers == 0 then
+        return false, "No declarations in selected area"
+    end
+
+    local node_to_inline, identifier_pos =
+        get_node_to_inline(identifiers, refactor.bufnr)
+
+    if node_to_inline == nil or identifier_pos == nil then
+        return false, "Couldn't determine node to inline"
+    end
+
+    local definition = ts_locals.find_definition(node_to_inline, refactor.bufnr)
+
+    local text_edits = get_inline_text_edits(
+        declarator_node,
+        identifiers,
+        node_to_inline,
+        refactor,
+        definition,
+        identifier_pos
+    )
 
     refactor.text_edits = text_edits
     return true, refactor
@@ -244,74 +269,14 @@ local function inline_var_normal_setup(refactor)
         return false, "Cound't determine identifier position"
     end
 
-    local references =
-        ts_locals.find_usages(definition, refactor.scope, refactor.bufnr)
-
-    local all_values = refactor.ts:get_local_var_values(declarator_node)
-
-    -- account for python giving multiple results for the values query
-    if refactor.filetype == "python" then
-        if #identifiers > 1 then
-            all_values[#all_values] = nil
-        else
-            all_values = { all_values[#all_values] }
-        end
-    end
-
-    local value_node_to_inline = all_values[identifier_pos]
-
-    local text_edits = {}
-
-    -- remove the whole declaration if there is only one identifier, else construct a new declaration
-    if #identifiers == 1 then
-        table.insert(
-            text_edits,
-            lsp_utils.delete_text(
-                Region:from_node(declarator_node, refactor.bufnr)
-            )
-        )
-    else
-        local new_identifiers_text, new_values_text = construct_new_declaration(
-            identifiers,
-            all_values,
-            node_to_inline,
-            refactor.bufnr
-        )
-
-        table.insert(
-            text_edits,
-            lsp_utils.replace_text(
-                Region:from_node(declarator_node, refactor.bufnr),
-                refactor.code.constant({
-                    multiple = true,
-                    identifiers = new_identifiers_text,
-                    values = new_values_text,
-                })
-            )
-        )
-    end
-
-    local value_text =
-        vim.treesitter.get_node_text(value_node_to_inline, refactor.bufnr)
-
-    for _, ref in pairs(references) do
-        -- TODO: In my mind, if nothing is left on the line when you remove, it should get deleted.
-        -- Could be done via opts into replace_text.
-
-        --- @type TSNode
-        local parent = ref:parent()
-        if
-            refactor.ts.should_check_parent_node
-            and refactor.ts.should_check_parent_node(parent:type())
-        then
-            ref = parent
-        end
-
-        table.insert(
-            text_edits,
-            lsp_utils.replace_text(Region:from_node(ref), value_text)
-        )
-    end
+    local text_edits = get_inline_text_edits(
+        declarator_node,
+        identifiers,
+        node_to_inline,
+        refactor,
+        definition,
+        identifier_pos
+    )
 
     refactor.text_edits = text_edits
     return true, refactor
