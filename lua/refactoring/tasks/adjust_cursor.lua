@@ -39,6 +39,12 @@ end
 -- cursor is the original cursor before the refactor
 ---@param refactor Refactor
 local function adjust_cursor(refactor)
+    local ns = refactor.config:get()._preview_namespace
+    if ns then
+        reset()
+        return true, refactor
+    end
+
     local win = refactor.win
     local cursor = refactor.cursor
     local add_rows = get_rows(cursor)

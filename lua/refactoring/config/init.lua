@@ -109,6 +109,7 @@ local default_extract_var_statements = {}
 
 ---@class c: ConfigOpts
 ---@field _automation {bufnr: number, inputs: string[], inputs_idx: integer}
+---@field _preview_namespace integer
 
 ---@class Config
 ---@field config c

@@ -306,7 +306,7 @@ end
 ---@param opts Config
 function M.inline_var(bufnr, opts)
     local mode = vim.api.nvim_get_mode().mode
-    if mode == "n" then
+    if mode == "n" or mode == "c" then
         M.inline_var_normal(bufnr, opts)
     else
         vim.cmd("norm! ")
