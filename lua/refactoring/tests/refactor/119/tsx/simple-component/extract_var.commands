@@ -1,2 +1,2 @@
 :4
-:execute "norm! _v$\<Esc>"
+:execute "norm! _v$h\<Esc>"

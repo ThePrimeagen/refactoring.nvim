@@ -1,6 +1,9 @@
-print(f"test")  # __AUTO_GENERATED_PRINTF__
+# __AUTO_GENERATED_PRINTF_START__
+print(f"main 1") # __AUTO_GENERATED_PRINTF_END__
 def main():
-    print(f"main")  # __AUTO_GENERATED_PRINTF__
+# __AUTO_GENERATED_PRINTF_START__
+    print(f"main 2") # __AUTO_GENERATED_PRINTF_END__
     print('poggers')
     i = 3
-    print(f" i: {str(i)}")  # __AUTO_GENERATED_PRINT_VAR__
+# __AUTO_GENERATED_PRINT_VAR_START__
+    print(f"main i: {str(i)}") # __AUTO_GENERATED_PRINT_VAR_END__

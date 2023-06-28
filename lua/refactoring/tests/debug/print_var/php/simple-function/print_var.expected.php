@@ -1,6 +1,7 @@
 <?php
 function testFunction() {
     $testVariable = 'Hello Kiwi';
-    printf('testFunction $testVariable: %s'."\n", $testVariable); // __AUTO_GENERATED_PRINT_VAR__
+// __AUTO_GENERATED_PRINT_VAR_START__
+    printf('testFunction $testVariable: %s'."\n", $testVariable); // __AUTO_GENERATED_PRINT_VAR_END__
 }
 ?>

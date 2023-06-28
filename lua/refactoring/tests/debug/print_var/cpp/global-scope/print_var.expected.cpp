@@ -1,2 +1,3 @@
 int i = 3;
-printf(" i: %s \n", i); // __AUTO_GENERATED_PRINT_VAR__
+// __AUTO_GENERATED_PRINT_VAR_START__
+printf(" i: %s \n", i); // __AUTO_GENERATED_PRINT_VAR_END__

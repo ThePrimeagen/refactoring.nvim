@@ -1,11 +1,19 @@
 local Point = require("refactoring.point")
 
+---@param opts {include_end_of_line: boolean}|nil
 ---@return integer start_row, integer start_col, integer end_row, integer end_col
-local function get_selection_range()
+local function get_selection_range(opts)
     local start_row = vim.fn.line("'<")
     local start_col = vim.fn.col("'<")
     local end_row = vim.fn.line("'>")
     local end_col = vim.fn.col("'>")
+
+    if opts and opts.include_end_of_line then
+        local last_line =
+            vim.api.nvim_buf_get_lines(0, end_row - 1, end_row, true)[1]
+        local line_length = vim.str_utfindex(last_line, #last_line)
+        end_col = math.min(end_col, line_length)
+    end
 
     return start_row, start_col, end_row, end_col
 end
@@ -21,9 +29,10 @@ local Region = {}
 Region.__index = Region
 
 --- Get a Region from the current selection
+---@param opts {include_end_of_line: boolean}|nil
 ---@return RefactorRegion
-function Region:from_current_selection()
-    local start_row, start_col, end_row, end_col = get_selection_range()
+function Region:from_current_selection(opts)
+    local start_row, start_col, end_row, end_col = get_selection_range(opts)
 
     return setmetatable({
         bufnr = vim.api.nvim_get_current_buf(),
@@ -144,13 +153,10 @@ end
 --- Convert a region to a treesitter region
 ---@return integer start_row, integer start_col, integer end_row, integer end_col
 function Region:to_ts()
-    -- Need the -2 for end_col to be  correct for `ts_utils.is_in_node_range`
-    -- function results when checking scope for languages like python
     return self.start_row - 1,
         self.start_col - 1,
         self.end_row - 1,
-        -- TODO (TheLeoP): fix: it's possible to wrongly select a node with a shorter range (example: select "foo" instead of "foo()" in golang)
-        self.end_col - 2
+        self.end_col
 end
 
 --- Get the lines contained in the region

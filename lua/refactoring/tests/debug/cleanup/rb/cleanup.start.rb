@@ -1,7 +1,10 @@
-puts('test')  # __AUTO_GENERATED_PRINTF__
+# __AUTO_GENERATED_PRINTF_START__
+puts "test"  # __AUTO_GENERATED_PRINTF_END__
 def main
-  puts('main') # __AUTO_GENERATED_PRINTF__
-  puts('ruby is awesome')
+# __AUTO_GENERATED_PRINTF_START__
+  puts "main 1" # __AUTO_GENERATED_PRINTF_END__
+  puts("ruby is awesome")
   i = 3
-  puts(' i: {str(i)}')  # __AUTO_GENERATED_PRINT_VAR__
+# __AUTO_GENERATED_PRINT_VAR_START__
+  puts "main i: #{i}" # __AUTO_GENERATED_PRINT_VAR_END__
 end

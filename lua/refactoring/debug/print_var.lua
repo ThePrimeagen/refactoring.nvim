@@ -4,7 +4,6 @@ local Region = require("refactoring.region")
 local refactor_setup = require("refactoring.tasks.refactor_setup")
 local post_refactor = require("refactoring.tasks.post_refactor")
 local lsp_utils = require("refactoring.lsp_utils")
-local ts_utils = require("nvim-treesitter.ts_utils")
 local parsers = require("nvim-treesitter.parsers")
 local debug_utils = require("refactoring.debug.debug_utils")
 local ensure_code_gen = require("refactoring.tasks.ensure_code_gen")
@@ -14,7 +13,43 @@ local indent = require("refactoring.indent")
 
 local MAX_COL = 100000
 
-local function get_variable(opts, point)
+local M = {}
+
+---@param opts c
+---@param refactor Refactor
+---@return string
+function M.get_print_var_statement(opts, refactor)
+    local default_print_var_statement =
+        refactor.code.default_print_var_statement()
+
+    local custom_print_var_statements =
+        opts.print_var_statements[refactor.filetype]
+
+    local print_var_statement
+
+    if custom_print_var_statements then
+        if #custom_print_var_statements > 1 then
+            print_var_statement = get_select_input(
+                custom_print_var_statements,
+                "print_var: Select a statement to insert:",
+                function(item)
+                    return item
+                end
+            )
+        else
+            print_var_statement = custom_print_var_statements[1]
+        end
+    else
+        print_var_statement = default_print_var_statement[1]
+    end
+    return print_var_statement
+end
+
+---@param opts table
+---@param point RefactorPoint
+---@param refactor Refactor
+---@return string identifier
+local function get_variable(opts, point, refactor)
     if opts.normal then
         local bufnr = 0
         local root_lang_tree = parsers.get_parser(bufnr)
@@ -32,20 +67,26 @@ local function get_variable(opts, point)
                 root:named_descendant_for_range(row, col, row, col)
             end
         end
-        local node = ts_utils.get_node_at_cursor()
-        local filetype = vim.bo[bufnr].filetype
-        -- TODO: Can we do something with treesitter files here?
-        if filetype == "php" then
-            return "$" .. utils.get_node_text(node)[1]
+        local node = vim.treesitter.get_node()
+
+        local parent_node = node:parent()
+        if
+            refactor.ts.should_check_parent_node
+            and refactor.ts.should_check_parent_node(parent_node:type())
+        then
+            node = parent_node
         end
-        return utils.get_node_text(node)[1]
+
+        return table.concat(utils.get_node_text(node), "")
     end
     local variable_region = Region:from_current_selection()
     return variable_region:get_text()[1]
 end
 
-local function printDebug(bufnr, config)
-    return Pipeline:from_task(refactor_setup(bufnr, config))
+---@param bufnr integer
+---@param config Config
+function M.printDebug(bufnr, config)
+    Pipeline:from_task(refactor_setup(bufnr, config))
         :add_task(
             ---@param refactor Refactor
             function(refactor)
@@ -69,7 +110,7 @@ local function printDebug(bufnr, config)
                 end
 
                 -- Get variable text
-                local variable = get_variable(opts, point)
+                local variable = get_variable(opts, point, refactor)
                 local indentation
                 if refactor.ts.allows_indenting_task then
                     local indent_amount = indent.buf_indent_amount(
@@ -84,29 +125,8 @@ local function printDebug(bufnr, config)
                 local debug_path = debug_utils.get_debug_path(refactor, point)
                 local prefix = string.format("%s %s:", debug_path, variable)
 
-                local default_print_var_statement =
-                    refactor.code.default_print_var_statement()
-
-                local custom_print_var_statements =
-                    opts.print_var_statements[refactor.filetype]
-
-                local print_var_statement
-
-                if custom_print_var_statements then
-                    if #custom_print_var_statements > 1 then
-                        print_var_statement = get_select_input(
-                            custom_print_var_statements,
-                            "print_var: Select a statement to insert:",
-                            function(item)
-                                return item
-                            end
-                        )
-                    else
-                        print_var_statement = custom_print_var_statements[1]
-                    end
-                else
-                    print_var_statement = default_print_var_statement[1]
-                end
+                local print_var_statement =
+                    M.get_print_var_statement(opts, refactor)
 
                 local print_var_opts = {
                     statement = print_var_statement,
@@ -118,10 +138,8 @@ local function printDebug(bufnr, config)
 
                 local statement
                 if indentation ~= nil then
-                    local temp = {}
-                    temp[1] = indentation
-                    temp[2] = print_statement
-                    statement = table.concat(temp, "")
+                    statement =
+                        table.concat({ indentation, print_statement }, "")
                 else
                     statement = print_statement
                 end
@@ -129,10 +147,14 @@ local function printDebug(bufnr, config)
                 refactor.text_edits = {
                     lsp_utils.insert_new_line_text(
                         Region:from_point(point),
-                        statement
+                        refactor.code.comment(
+                            "__AUTO_GENERATED_PRINT_VAR_START__"
+                        )
+                            .. "\n"
+                            .. statement
                             .. " "
                             .. refactor.code.comment(
-                                "__AUTO_GENERATED_PRINT_VAR__"
+                                "__AUTO_GENERATED_PRINT_VAR_END__"
                             ),
                         opts
                     ),
@@ -145,4 +167,4 @@ local function printDebug(bufnr, config)
         :run()
 end
 
-return printDebug
+return M

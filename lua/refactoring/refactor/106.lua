@@ -18,6 +18,9 @@ local M = {}
 
 -- 1.  We need definition set of potential captured variables
 
+---@param bufnr integer
+---@param opts Config
+---@return RefactorPipeline
 local function get_extract_setup_pipeline(bufnr, opts)
     return Pipeline:from_task(refactor_setup(bufnr, opts))
         :add_task(selection_setup)
@@ -459,8 +462,6 @@ local function extract_block_setup(refactor)
     refactor.region = region
     refactor.region_node = region_node
     refactor.scope = scope
-    refactor.whitespace.highlight_start = vim.fn.indent(region.start_row)
-    refactor.whitespace.highlight_end = vim.fn.indent(region.end_row)
 
     if refactor.scope == nil then
         return false, "Scope is nil"
@@ -518,9 +519,6 @@ local function extract_setup(refactor)
     local func_call = get_func_call(refactor, extract_params)
 
     local region_above_scope = get_non_comment_region_above_node(refactor)
-    if is_class then
-        region_above_scope = get_non_comment_region_above_node(refactor)
-    end
 
     local extract_function
     if is_class then
@@ -583,7 +581,7 @@ local function ensure_code_gen_106(refactor)
 end
 
 ---@param bufnr integer
----@param opts c|Config
+---@param opts Config
 M.extract_to_file = function(bufnr, opts)
     bufnr = bufnr or vim.api.nvim_get_current_buf()
     get_extract_setup_pipeline(bufnr, opts)
@@ -595,7 +593,7 @@ M.extract_to_file = function(bufnr, opts)
 end
 
 ---@param bufnr integer
----@param opts c|Config
+---@param opts Config
 M.extract = function(bufnr, opts)
     bufnr = bufnr or vim.api.nvim_get_current_buf()
     get_extract_setup_pipeline(bufnr, opts)
@@ -617,7 +615,7 @@ M.extract = function(bufnr, opts)
 end
 
 ---@param bufnr integer
----@param opts c|Config
+---@param opts Config
 M.extract_block = function(bufnr, opts)
     bufnr = bufnr or vim.api.nvim_get_current_buf()
     Pipeline:from_task(refactor_setup(bufnr, opts))
@@ -629,7 +627,7 @@ M.extract_block = function(bufnr, opts)
 end
 
 ---@param bufnr integer
----@param opts c|Config
+---@param opts Config
 M.extract_block_to_file = function(bufnr, opts)
     bufnr = bufnr or vim.api.nvim_get_current_buf()
     Pipeline:from_task(refactor_setup(bufnr, opts))

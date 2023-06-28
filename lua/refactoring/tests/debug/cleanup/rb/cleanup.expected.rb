@@ -1,5 +1,4 @@
-
 def main
-  puts('ruby is awesome')
+  puts("ruby is awesome")
   i = 3
 end

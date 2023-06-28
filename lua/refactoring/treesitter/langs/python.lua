@@ -98,6 +98,7 @@ function Python.new(bufnr, ft)
                 "(expression_statement (assignment left: ((attribute attribute: ((identifier) @capture)))))"
             ),
         },
+        include_end_of_line = true,
     }
     local ts = TreeSitter:new(config, bufnr)
 

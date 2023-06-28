@@ -1,8 +1,10 @@
 -- stylua: ignore start
 
 local function main()
-    print("main") -- __AUTO_GENERATED_PRINTF__
+-- __AUTO_GENERATED_PRINTF_START__
+    print("main 1") -- __AUTO_GENERATED_PRINTF_END__
     local i = 0
-    print("main i:", vim.inspect(i)) -- __AUTO_GENERATED_PRINT_VAR__
+-- __AUTO_GENERATED_PRINT_VAR_START__
+    print("main i:", vim.inspect(i)) -- __AUTO_GENERATED_PRINT_VAR_END__
     print("poggers")
 end

@@ -4,10 +4,8 @@ local Region = require("refactoring.region")
 local lsp_utils = require("refactoring.lsp_utils")
 local post_refactor = require("refactoring.tasks.post_refactor")
 
-local MAX_COL = 100000
-
 local function cleanup(bufnr, config)
-    return Pipeline:from_task(refactor_setup(bufnr, config))
+    Pipeline:from_task(refactor_setup(bufnr, config))
         :add_task(
             ---@param refactor Refactor
             function(refactor)
@@ -25,49 +23,70 @@ local function cleanup(bufnr, config)
                 end
 
                 for row_num, line in ipairs(lines) do
-                    local region
-                    if row_num ~= 1 then
-                        region = Region:from_values(
-                            bufnr,
-                            row_num - 1,
-                            MAX_COL,
-                            row_num,
-                            MAX_COL
-                        )
-                    else
-                        print(
-                            "NOTE! Can't delete first line of file, leaving blank"
-                        )
-                        region = Region:from_values(
-                            bufnr,
-                            row_num,
-                            1,
-                            row_num,
-                            MAX_COL
-                        )
-                    end
-
                     if opts.printf then
                         if
-                            string.find(line, "__AUTO_GENERATED_PRINTF__")
+                            string.find(line, "__AUTO_GENERATED_PRINTF_END__")
                             ~= nil
                         then
-                            table.insert(
-                                refactor.text_edits,
-                                lsp_utils.delete_text(region)
-                            )
+                            for searched_row_num = row_num, 1, -1 do
+                                local searched_line = lines[searched_row_num]
+
+                                if
+                                    string.find(
+                                        searched_line,
+                                        "__AUTO_GENERATED_PRINTF_START__"
+                                    )
+                                    ~= nil
+                                then
+                                    local region = Region:from_values(
+                                        bufnr,
+                                        searched_row_num,
+                                        1,
+                                        row_num + 1,
+                                        0
+                                    )
+                                    table.insert(
+                                        refactor.text_edits,
+                                        lsp_utils.delete_text(region)
+                                    )
+                                    break
+                                end
+                            end
                         end
                     end
 
                     if opts.print_var then
                         if
-                            string.find(line, "__AUTO_GENERATED_PRINT_VAR__")
+                            string.find(
+                                line,
+                                "__AUTO_GENERATED_PRINT_VAR_END__"
+                            )
                             ~= nil
                         then
-                            table.insert(
-                                refactor.text_edits,
-                                lsp_utils.delete_text(region)
-                            )
+                            for searched_row_num = row_num, 1, -1 do
+                                local searched_line = lines[searched_row_num]
+
+                                if
+                                    string.find(
+                                        searched_line,
+                                        "__AUTO_GENERATED_PRINT_VAR_START__"
+                                    )
+                                    ~= nil
+                                then
+                                    local region = Region:from_values(
+                                        bufnr,
+                                        searched_row_num,
+                                        1,
+                                        row_num + 1,
+                                        0
+                                    )
+                                    table.insert(
+                                        refactor.text_edits,
+                                        lsp_utils.delete_text(region)
+                                    )
+                                    break
+                                end
+                            end
                         end
                     end
                 end
