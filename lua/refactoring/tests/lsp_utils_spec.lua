@@ -21,7 +21,7 @@ describe("lsp_utils", function()
         test_utils.vim_motion("fo")
         assert.are.same(vim.fn.expand("<cWORD>"), "foo")
 
-        local current_node = ts.get_node_at_cursor(0)
+        local current_node = ts.get_node_at_cursor()
         local definition = ts.find_definition(current_node, bufnr)
         local def_region = Region:from_node(definition)
         local references = ts.find_references(definition, nil, bufnr)

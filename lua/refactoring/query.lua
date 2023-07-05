@@ -1,5 +1,3 @@
-local parsers = require("nvim-treesitter.parsers")
-
 --- local myEnum = Enum {
 ---     'Foo',          -- Takes value 1
 ---     'Bar',          -- Takes value 2
@@ -26,7 +24,7 @@ Query.query_type = {
 ---@return TSNode
 function Query.get_root(bufnr, filetype)
     local lang = vim.treesitter.language.get_lang(filetype)
-    local parser = parsers.get_parser(bufnr or 0, lang)
+    local parser = vim.treesitter.get_parser(bufnr or 0, lang)
     if not parser then
         error(
             "No treesitter parser found. Install one using :TSInstall <language>"

@@ -1,12 +1,10 @@
 local ts_locals = require("nvim-treesitter.locals")
-local ts_utils = require("nvim-treesitter.ts_utils")
 
 local M = {}
 
----@param win integer
----@return TSNode
-M.get_node_at_cursor = function(win)
-    return ts_utils.get_node_at_cursor(win)
+---@return TSNode|nil
+M.get_node_at_cursor = function()
+    return vim.treesitter.get_node()
 end
 
 ---@param node TSNode

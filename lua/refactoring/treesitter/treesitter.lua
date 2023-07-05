@@ -1,4 +1,3 @@
-local parsers = require("nvim-treesitter.parsers")
 local Point = require("refactoring.point")
 local utils = require("refactoring.utils")
 local Region = require("refactoring.region")
@@ -428,7 +427,7 @@ end
 ---@return TSNode
 function TreeSitter:get_root()
     local lang = vim.treesitter.language.get_lang(self.filetype)
-    local parser = parsers.get_parser(self.bufnr, lang)
+    local parser = vim.treesitter.get_parser(self.bufnr, lang)
     return parser:parse()[1]:root()
 end
 

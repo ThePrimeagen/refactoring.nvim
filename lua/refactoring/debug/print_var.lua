@@ -4,7 +4,6 @@ local Region = require("refactoring.region")
 local refactor_setup = require("refactoring.tasks.refactor_setup")
 local post_refactor = require("refactoring.tasks.post_refactor")
 local lsp_utils = require("refactoring.lsp_utils")
-local parsers = require("nvim-treesitter.parsers")
 local debug_utils = require("refactoring.debug.debug_utils")
 local ensure_code_gen = require("refactoring.tasks.ensure_code_gen")
 local get_select_input = require("refactoring.get_select_input")
@@ -52,7 +51,7 @@ end
 local function get_variable(opts, point, refactor)
     if opts.normal then
         local bufnr = 0
-        local root_lang_tree = parsers.get_parser(bufnr)
+        local root_lang_tree = vim.treesitter.get_parser(bufnr)
         local row = point.row
         local col = point.col
         local lang_tree = root_lang_tree:language_for_range({

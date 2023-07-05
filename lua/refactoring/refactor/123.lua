@@ -32,7 +32,7 @@ local function determine_declarator_node(refactor, bufnr)
     if declarator_node then
         return declarator_node, false
     else
-        local current_node = ts.get_node_at_cursor(0)
+        local current_node = ts.get_node_at_cursor()
         local definition = ts.find_definition(current_node, bufnr)
         declarator_node =
             refactor.ts.get_container(definition, refactor.ts.variable_scope)
@@ -112,7 +112,7 @@ local function inline_var_setup(refactor, bufnr)
     local node_to_inline, identifier_pos, definition
 
     if node_on_cursor then
-        node_to_inline = ts.get_node_at_cursor(0)
+        node_to_inline = ts.get_node_at_cursor()
         if
             refactor.ts.should_check_parent_node
             and refactor.ts.should_check_parent_node(node_to_inline:type())
