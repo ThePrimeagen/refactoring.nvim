@@ -1,1 +1,1 @@
-:execute "norm! 10jV\<Esc>"
+:execute "norm! 10jV"

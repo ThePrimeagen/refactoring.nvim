@@ -1,7 +1,7 @@
 local Region = require("refactoring.region")
 local lsp_utils = require("refactoring.lsp_utils")
 local test_utils = require("refactoring.tests.utils")
-local ts = require("refactoring.ts")
+local ts_locals = require("refactoring.ts-locals")
 
 local function setup()
     vim.cmd(":new")
@@ -21,10 +21,10 @@ describe("lsp_utils", function()
         test_utils.vim_motion("fo")
         assert.are.same(vim.fn.expand("<cWORD>"), "foo")
 
-        local current_node = ts.get_node_at_cursor(0)
-        local definition = ts.find_definition(current_node, bufnr)
+        local current_node = vim.treesitter.get_node()
+        local definition = ts_locals.find_definition(current_node, bufnr)
         local def_region = Region:from_node(definition)
-        local references = ts.find_references(definition, nil, bufnr)
+        local references = ts_locals.find_usages(definition, nil, bufnr)
 
         assert.are.same(def_region, Region:from_values(bufnr, 2, 11, 2, 13))
         assert.are.same(#references, 1)

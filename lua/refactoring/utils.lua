@@ -233,4 +233,144 @@ function M.region_above_node(node)
     return scope_region
 end
 
+---@param node TSNode|nil
+---@return boolean
+local function is_comment_or_decorator_node(node)
+    if node == nil then
+        return false
+    end
+
+    local comment_and_decorator_node_types = {
+        "comment",
+        "block_comment",
+        "decorator",
+    }
+
+    for _, node_type in ipairs(comment_and_decorator_node_types) do
+        if node_type == node:type() then
+            return true
+        end
+    end
+
+    return false
+end
+
+---@param node TSNode
+---@return TSNode first_node_row, integer start_row
+function M.get_first_node_in_row(node)
+    local start_row, _, _, _ = node:range()
+    local first = node
+    while true do
+        --- @type TSNode
+        local parent = first:parent()
+        if parent == nil then
+            break
+        end
+        local parent_row, _, _, _ = parent:range()
+        if parent_row ~= start_row then
+            break
+        end
+        first = parent
+    end
+    return first, start_row
+end
+
+-- TODO (TheLeoP): clean this up and use some kind of configuration for each language
+---@param refactor Refactor
+function M.get_non_comment_region_above_node(refactor)
+    local prev_sibling = M.get_first_node_in_row(refactor.scope)
+        :prev_named_sibling()
+    if is_comment_or_decorator_node(prev_sibling) then
+        --- @type integer
+        local start_row
+        while true do
+            -- Only want first value
+            start_row = prev_sibling:range()
+            local temp = prev_sibling:prev_sibling()
+            if is_comment_or_decorator_node(temp) then
+                -- Only want first value
+                local temp_row = temp:range()
+                if start_row - temp_row == 1 then
+                    prev_sibling = temp
+                else
+                    break
+                end
+            else
+                break
+            end
+        end
+
+        if start_row > 0 then
+            return M.region_above_node(prev_sibling)
+        else
+            return M.region_above_node(refactor.scope)
+        end
+    else
+        return M.region_above_node(refactor.scope)
+    end
+end
+
+---@param refactor Refactor
+---@param is_class boolean
+---@return string[]
+function M.get_selected_locals(refactor, is_class)
+    local local_defs =
+        refactor.ts:get_local_defs(refactor.scope, refactor.region)
+    local region_refs =
+        refactor.ts:get_region_refs(refactor.scope, refactor.region)
+
+    -- Removing class variables from things being passed to extracted func
+    if is_class then
+        local class_vars =
+            refactor.ts:get_class_vars(refactor.scope, refactor.region)
+
+        if #class_vars > 0 then
+            for _, class_var in ipairs(class_vars) do
+                for i, node in ipairs(local_defs) do
+                    if node == class_var then
+                        table.remove(local_defs, i)
+                        break
+                    end
+                end
+            end
+        end
+    end
+
+    local_defs = vim.tbl_map(
+        ---@param node TSNode
+        ---@return TSNode[]
+        function(node)
+            return M.node_to_parent_if_needed(refactor, node)
+        end,
+        local_defs
+    )
+    region_refs = vim.tbl_map(
+        ---@param node TSNode
+        ---@return TSNode[]
+        function(node)
+            return M.node_to_parent_if_needed(refactor, node)
+        end,
+        region_refs
+    )
+
+    local bufnr = refactor.buffers[1]
+    local local_def_map = M.nodes_to_text_set(bufnr, local_defs)
+    local region_refs_map = M.nodes_to_text_set(bufnr, region_refs)
+    return M.table_key_intersect(local_def_map, region_refs_map)
+end
+
+---@param refactor Refactor
+---@param node TSNode
+---@return TSNode
+function M.node_to_parent_if_needed(refactor, node)
+    local parent = node:parent()
+    if
+        refactor.ts.should_check_parent_node
+        and refactor.ts.should_check_parent_node(parent:type())
+    then
+        return parent
+    end
+    return node
+end
+
 return M

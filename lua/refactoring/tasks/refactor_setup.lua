@@ -6,7 +6,7 @@ local Point = require("refactoring.point")
 -- to have here.  Also make refactor object into a table instead of this
 -- monstrosity
 
----@param input_bufnr number
+---@param input_bufnr integer
 ---@param config Config
 ---@return fun(): true, Refactor
 local function refactor_setup(input_bufnr, config)
@@ -14,7 +14,7 @@ local function refactor_setup(input_bufnr, config)
     config = config or Config.get()
 
     return function()
-        -- Setting bufnr to test bufnr
+        --- @type integer
         local bufnr
         if config:get_test_bufnr() ~= nil then
             bufnr = config:get_test_bufnr()
@@ -32,6 +32,7 @@ local function refactor_setup(input_bufnr, config)
         ---@class Refactor
         ---@field region RefactorRegion|nil
         ---@field region_node TSNode|nil
+        ---@field identifier_node TSNode|nil
         ---@field scope TSNode|nil
         ---@field cursor_col_adjustment integer|nil
         ---@field text_edits LspTextEdit[] | {bufnr: integer|nil}[] | nil

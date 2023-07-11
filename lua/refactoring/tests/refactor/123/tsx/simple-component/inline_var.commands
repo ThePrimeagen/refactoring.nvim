@@ -1,2 +1,2 @@
 :2
-:execute "norm! 2w\<Esc>"
+:execute "norm! 2w"

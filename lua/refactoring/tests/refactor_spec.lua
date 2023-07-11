@@ -9,6 +9,7 @@ local utils = require("refactoring.utils")
 
 local async = require("plenary.async")
 
+---@type table<string, ft>
 local extension_to_filetype = {
     ["lua"] = "lua",
     ["ts"] = "typescript",
@@ -26,7 +27,7 @@ local extension_to_filetype = {
 
 local tests_to_skip = {}
 
-local cwd = vim.loop.cwd()
+local cwd = vim.loop.cwd() --[[@as string]]
 vim.cmd("set rtp+=" .. cwd)
 
 local eq = assert.are.same
@@ -143,6 +144,8 @@ end
 
 -- TODO: make this better for more complex config options
 -- assuming first line is for prompt_func_return_type flag
+---@param filename_prefix string
+---@param filename_extension string
 local function set_config_options(filename_prefix, filename_extension)
     local config_file_name = string.format("%s.config", filename_prefix)
     local config_file =
@@ -151,12 +154,14 @@ local function set_config_options(filename_prefix, filename_extension)
         local config_values =
             test_utils.get_contents(string.format("%s.config", filename_prefix))
 
+        --- @type table<string, boolean>
         local prompt_func_return_type = {}
         local str_to_bool = { ["true"] = true, ["false"] = false }
         prompt_func_return_type[filename_extension] =
             str_to_bool[config_values[1]]
         Config.get():set_prompt_func_return_type(prompt_func_return_type)
 
+        --- @type table<string, boolean>
         local prompt_func_param_type = {}
         prompt_func_param_type[filename_extension] =
             str_to_bool[config_values[2]]
@@ -201,11 +206,6 @@ describe("Refactoring", function()
             )
 
             Config.get():reset()
-            -- TODO: Not sure why I have to call this out, but it's required
-            Config:get():set_extract_var_statement(
-                extension_to_filetype[filename_extension],
-                nil
-            )
 
             set_config_options(filename_prefix, filename_extension)
             test_utils.run_inputs_if_exist(filename_prefix, cwd)

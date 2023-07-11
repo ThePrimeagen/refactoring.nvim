@@ -1,5 +1,3 @@
-local parsers = require("nvim-treesitter.parsers")
-
 --- local myEnum = Enum {
 ---     'Foo',          -- Takes value 1
 ---     'Bar',          -- Takes value 2
@@ -26,7 +24,7 @@ Query.query_type = {
 ---@return TSNode
 function Query.get_root(bufnr, filetype)
     local lang = vim.treesitter.language.get_lang(filetype)
-    local parser = parsers.get_parser(bufnr or 0, lang)
+    local parser = vim.treesitter.get_parser(bufnr, lang)
     if not parser then
         error(
             "No treesitter parser found. Install one using :TSInstall <language>"
@@ -40,7 +38,24 @@ end
 ---@param query_name string
 ---@return RefactorQuery
 function Query.from_query_name(bufnr, filetype, query_name)
-    local query = vim.treesitter.query.get(filetype, query_name)
+    local lang = vim.treesitter.language.get_lang(filetype)
+
+    if lang == nil then
+        error(string.format("No treesitter lang for filetype %s", filetype))
+    end
+
+    local query = vim.treesitter.query.get(lang, query_name)
+
+    if query == nil then
+        error(
+            string.format(
+                "No query for treesiter lang %s and query_name %s",
+                lang,
+                query_name
+            )
+        )
+    end
+
     return Query:new(bufnr, filetype, query)
 end
 
@@ -86,6 +101,7 @@ function Query.find_occurrences(scope, sexpr, bufnr)
     local filetype = vim.bo[bufnr].filetype
 
     if not sexpr:find("@") then
+        --- @type string
         sexpr = sexpr .. " @tmp_capture"
     end
 

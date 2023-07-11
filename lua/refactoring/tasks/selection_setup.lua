@@ -2,6 +2,7 @@ local Region = require("refactoring.region")
 
 ---@param refactor Refactor
 local function selection_setup(refactor)
+    vim.cmd("norm! ")
     local region = Region:from_current_selection({
         include_end_of_line = refactor.ts.include_end_of_line,
     })

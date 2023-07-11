@@ -18,6 +18,11 @@ set rtp+=~/.local/share/nvim/site/pack/packer/start/nvim-treesitter
 set rtp+=~/.local/share/lunarvim/site/pack/packer/start/plenary.nvim
 set rtp+=~/.local/share/lunarvim/site/pack/packer/start/nvim-treesitter
 
+" If you are using lazy
+set rtp+=~/.local/share/nvim/lazy/plenary.nvim
+set rtp+=~/.local/share/nvim/lazy/nvim-treesitter
+
+
 " TODO, support NvChad because we are chad gigathundercock
 
 set autoindent
