@@ -54,10 +54,10 @@ local function command_complete(arg_lead, cmd_line, _cursor_pos)
         return {}
     end
 
-    local options = vim.tbl_map(
+    local options = vim.tbl_filter(
         --- @param option any
         function(option)
-            return tostring(option)
+            return type(option) == "string"
         end,
         vim.tbl_keys(refactors)
     )
