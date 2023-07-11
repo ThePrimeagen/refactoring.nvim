@@ -284,7 +284,7 @@ end
 
 ---@param bufnr integer
 ---@param opts Config
-function M.inline_var_visual(bufnr, opts)
+local function inline_var_visual(bufnr, opts)
     Pipeline:from_task(refactor_setup(bufnr, opts))
         :add_task(selection_setup)
         :add_task(inline_var_setup)
@@ -294,7 +294,7 @@ end
 
 -- bufnr integer
 ---@param opts Config
-function M.inline_var_normal(bufnr, opts)
+local function inline_var_normal(bufnr, opts)
     Pipeline:from_task(refactor_setup(bufnr, opts))
         :add_task(node_on_cursor_setup)
         :add_task(inline_var_normal_setup)
@@ -307,10 +307,9 @@ end
 function M.inline_var(bufnr, opts)
     local mode = vim.api.nvim_get_mode().mode
     if mode == "n" or mode == "c" then
-        M.inline_var_normal(bufnr, opts)
+        inline_var_normal(bufnr, opts)
     else
-        vim.cmd("norm! ")
-        M.inline_var_visual(bufnr, opts)
+        inline_var_visual(bufnr, opts)
     end
 end
 
