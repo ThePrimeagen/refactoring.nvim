@@ -87,6 +87,7 @@ local function get_variable(opts, point, refactor)
 
         return table.concat(utils.get_node_text(node), "")
     end
+    vim.cmd("norm! ")
     local variable_region = Region:from_current_selection()
     return variable_region:get_text()[1]
 end
@@ -113,9 +114,8 @@ function M.printDebug(bufnr, config)
                 opts._end = true
                 point.col = opts.below and MAX_COL or 1
 
-                if opts.normal == nil then
-                    opts.normal = false
-                end
+                local mode = vim.api.nvim_get_mode().mode
+                opts.normal = mode == "n"
 
                 -- Get variable text
                 local variable = get_variable(opts, point, refactor)
