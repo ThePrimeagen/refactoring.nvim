@@ -198,7 +198,7 @@ vim.keymap.set("n", "<leader>rbf", ":Refactor extract_block_to_file")
 ```
 
 The ` ` (space) at the end of some mappings is intentional because those
-mappings expect an additional argument (All of this mappings leave the user in
+mappings expect an additional argument (all of these mappings leave the user in
 command mode to utilize the preview command feature).
 
 #### Lua API <a name="config-refactoring-direct"></a>
