@@ -1,5 +1,5 @@
 function foo(name: string) {
-    const foo = <p>Name: {name}</p>;
+    const foo = <p>Name:{name}</p>;
     return (
         <div>
             < foo />
