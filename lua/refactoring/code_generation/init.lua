@@ -2,6 +2,8 @@ local javascript = require("refactoring.code_generation.langs.javascript")
 local typescript = require("refactoring.code_generation.langs.typescript")
 local typescriptreact =
     require("refactoring.code_generation.langs.typescriptreact")
+local javascriptreact =
+    require("refactoring.code_generation.langs.javascriptreact")
 local lua = require("refactoring.code_generation.langs.lua")
 local go = require("refactoring.code_generation.langs.go")
 local cpp = require("refactoring.code_generation.langs.cpp")
@@ -16,6 +18,7 @@ local M = {
     javascript = javascript,
     typescript = typescript,
     typescriptreact = typescriptreact,
+    javascriptreact = javascriptreact,
     lua = lua,
     go = go,
     cpp = cpp,
