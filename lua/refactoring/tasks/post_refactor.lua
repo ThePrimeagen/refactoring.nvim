@@ -14,7 +14,14 @@ end
 
 -- needed when another file is generated
 M.no_cursor_post_refactor = function()
-    return Pipeline:from_task(apply_text_edits):add_task(format)
+    return Pipeline:from_task(apply_text_edits):add_task(format):add_task(
+        ---@param refactor Refactor
+        ---@return boolean, Refactor
+        function(refactor)
+            vim.api.nvim_set_current_win(refactor.win)
+            return true, refactor
+        end
+    )
 end
 
 return M
