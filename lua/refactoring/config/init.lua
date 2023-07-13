@@ -84,6 +84,7 @@ local default_extract_var_statements = {}
 ---| "ts"
 ---| "js"
 ---| "typescriptreact"
+---| "javascriptreact"
 ---| "typescript"
 ---| "javascript"
 ---| "java"
