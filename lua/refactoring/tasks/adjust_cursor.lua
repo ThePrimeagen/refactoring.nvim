@@ -55,6 +55,7 @@ local function adjust_cursor(refactor)
         col = col + refactor.cursor_col_adjustment
     end
     vim.schedule(function()
+        vim.api.nvim_set_current_win(win)
         vim.api.nvim_win_set_cursor(win, {
             result_row,
             col,

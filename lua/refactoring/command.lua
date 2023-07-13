@@ -5,41 +5,74 @@ local M = {}
 
 --- @alias command_opts {name: string, args: string, fargs: string[], bang: boolean, line1: number, line2: number, range: number, count: number, reg: string, mods: string, smods: string[]}
 
+local DO_NOT_PREVIEW = 0
 local PREVIEW_IN_CURRENT_BUFFER = 1
+
+local _needed_args = {
+    inline_var = 0,
+    extract_to_file = 2,
+    extract_block_to_file = 2,
+    default = 1,
+}
 
 --- @param opts command_opts
 --- @param ns integer
 local function command_preview(opts, ns)
-    local refactor = tonumber(opts.fargs[1]) or opts.fargs[1]
-    local input = opts.fargs[2]
+    local refactor = opts.fargs[1]
 
-    refactor = refactors.refactor_names[refactor]
-        or refactors[refactor] and refactor
+    refactor = refactors[refactor] and refactor
 
-    if refactor then
-        if
-            (refactor ~= 123 and refactor ~= "inline_var")
-            and (not input or input == "")
-        then
-            return PREVIEW_IN_CURRENT_BUFFER
-        end
-        Config:get():automate_input(input)
-        require("refactoring").refactor(refactor, { _preview_namespace = ns })
+    if not refactor then
+        return DO_NOT_PREVIEW
     end
+
+    local aditional_args = #opts.fargs - 1
+    local needed_args = _needed_args[refactor] or _needed_args.default
+
+    if aditional_args ~= needed_args then
+        return DO_NOT_PREVIEW
+    end
+
+    -- TODO (TheLeoP): remove this once a response is given on https://github.com/neovim/neovim/issues/24330
+    if refactor:find("file") then
+        return DO_NOT_PREVIEW
+    end
+
+    for i = 2, needed_args + 1 do
+        if opts.fargs[i] == "" then
+            return DO_NOT_PREVIEW
+        end
+    end
+
+    --- @type string[]
+    local args = {}
+    for i = 2, needed_args + 1 do
+        table.insert(args, opts.fargs[i])
+    end
+    Config:get():automate_input(args)
+
+    require("refactoring").refactor(refactor, { _preview_namespace = ns })
+
     return PREVIEW_IN_CURRENT_BUFFER
 end
 
 --- @param opts command_opts
 local function command(opts)
-    local refactor = tonumber(opts.fargs[1]) or opts.fargs[1]
-    local input = opts.fargs[2]
+    local refactor = opts.fargs[1]
 
-    refactor = refactors.refactor_names[refactor]
-        or refactors[refactor] and refactor
-
-    if input then
-        Config:get():automate_input(input)
+    if not refactor then
+        return
     end
+
+    local needed_args = _needed_args[refactor] or _needed_args.default
+
+    --- @type string[]
+    local args = {}
+    for i = 2, needed_args + 1 do
+        table.insert(args, opts.fargs[i])
+    end
+
+    Config:get():automate_input(args)
     require("refactoring").refactor(refactor)
 end
 
