@@ -13,7 +13,6 @@ M.extract_block = extract.extract_block
 M.extract_block_to_file = extract.extract_block_to_file
 M.extract_var = extract_var.extract_var
 M.inline_var = inline_var.inline_var
-M.inline_var_normal = inline_var.inline_var_normal
 
 --- @type function
 M[106] = extract.extract
