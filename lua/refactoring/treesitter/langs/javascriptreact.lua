@@ -10,9 +10,9 @@ local special_nodes = {
 }
 
 ---@type TreeSitterInstance
-local TypescriptReact = {}
+local JavascriptReact = {}
 
-function TypescriptReact.new(bufnr, ft)
+function JavascriptReact.new(bufnr, ft)
     ---@type TreeSitterLanguageConfig
     local config = {
         filetype = ft,
@@ -116,4 +116,4 @@ function TypescriptReact.new(bufnr, ft)
     return ts
 end
 
-return TypescriptReact
+return JavascriptReact
