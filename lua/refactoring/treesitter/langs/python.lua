@@ -27,10 +27,10 @@ function Python.new(bufnr, ft)
         },
         local_var_names = {
             InlineNode(
-                '((assignment left: (_ (_) @capture)) (#not-eq? @capture "self"))'
+                '((assignment left: (pattern_list (identifier) @capture)) (#not-eq? @capture "self"))'
             ),
             InlineNode(
-                '((assignment left: (_) @capture) (#not-eq? @capture "self"))'
+                '((assignment left: (identifier) @capture) (#not-eq? @capture "self"))'
             ),
             InlineNode(
                 '((for_statement left: (identifier) @capture) (#not-eq? @capture "self"))'
@@ -51,7 +51,9 @@ function Python.new(bufnr, ft)
             ),
         },
         local_var_values = {
-            InlineNode("(assignment right: (_ (_) @tmp_capture))"),
+            InlineNode(
+                "(assignment right: (expression_list (_) @tmp_capture))"
+            ),
             InlineNode("(assignment right: (_) @tmp_capture)"),
         },
         local_declarations = {
