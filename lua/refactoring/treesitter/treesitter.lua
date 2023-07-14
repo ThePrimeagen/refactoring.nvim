@@ -21,11 +21,10 @@ local Region = require("refactoring.region")
 ---@field class_names InlineNodeFunc[]: nodes to get class names
 ---@field class_type InlineNodeFunc[]: nodes to get types for classes
 ---@field class_vars InlineNodeFunc[]: nodes to get class variable assignments in a scope
----@field parameter_list InlineNodeFunc[]: nodes to get list of parameters for a function
+---@field ident_with_type InlineFilteredNodeFunc[]: nodes to get all identifiers and types for a scope
 ---@field function_scopes table<string, string|true>: nodes to find a function declaration
 ---@field require_class_name boolean: flag to require class name for codegen
 ---@field require_class_type boolean: flag to require class type for codegen
----@field argument_type_index 1|2: 1-indexed location of type in function args (int foo= 1, foo int= 2)
 ---@field require_special_var_format boolean: flag to require special variable format for codegen
 ---@field should_check_parent_node fun(parent_type: string): boolean is checking the parent node necesary for context?
 ---@field include_end_of_line boolean flag to indicate if end of line should be included in a region
@@ -52,7 +51,7 @@ function TreeSitter:new(config, bufnr)
         debug_paths = {},
         statements = {},
         indent_scopes = {},
-        parameter_list = {},
+        ident_with_type = {},
         function_scopes = {},
         function_args = {},
         function_body = {},
@@ -61,7 +60,6 @@ function TreeSitter:new(config, bufnr)
         require_class_type = false,
         require_param_types = false,
         require_special_variable_format = false,
-        argument_type_index = 2,
         filetype = config.filetype,
     }
     local c = vim.tbl_extend("force", default_config, config)
@@ -126,6 +124,21 @@ function TreeSitter:loop_thru_nodes(scope, inline_nodes)
     local out = {}
     for _, statement in ipairs(inline_nodes) do
         local temp = statement(scope, self.bufnr, self.filetype)
+        for _, node in ipairs(temp) do
+            table.insert(out, node)
+        end
+    end
+    return out
+end
+
+---@param scope TSNode
+---@param inline_nodes InlineFilteredNodeFunc[]
+---@param filter NodeFilter
+---@return TSNode[]
+function TreeSitter:loop_thru_filtered_nodes(scope, inline_nodes, filter)
+    local out = {}
+    for _, statement in ipairs(inline_nodes) do
+        local temp = statement(scope, self.bufnr, self.filetype, filter)
         for _, node in ipairs(temp) do
             table.insert(out, node)
         end
@@ -296,39 +309,38 @@ local function containing_node_by_type(node, container_map)
 end
 
 ---@param scope TSNode
----@param type_index integer
 ---@return table<string, string>
-function TreeSitter:get_local_parameter_types(scope, type_index)
+function TreeSitter:get_local_types(scope)
     --- @type table<string, string>
-    local parameter_types = {}
-    self:validate_setting("function_scopes")
-    local function_node = containing_node_by_type(scope, self.function_scopes)
+    local all_types = {}
 
-    if function_node == nil then
-        error(
-            "Failed to get function_node in get_local_parameter_types, check `function_scopes` queries"
-        )
-    end
+    self:validate_setting("ident_with_type")
+    local idents = self:loop_thru_filtered_nodes(
+        scope,
+        self.ident_with_type,
+        function(id, _node, query)
+            local name = query.captures[id]
+            return name == "ident"
+        end
+    )
+    local types = self:loop_thru_filtered_nodes(
+        scope,
+        self.ident_with_type,
+        function(id, _node, query)
+            local name = query.captures[id]
+            return name == "type"
+        end
+    )
 
-    -- Get parameter list
-    self:validate_setting("parameter_list")
-    local parameter_list_nodes =
-        self:loop_thru_nodes(function_node, self.parameter_list)
-
-    -- Only if we find something, else empty
-    if #parameter_list_nodes > 0 then
-        for _, node in pairs(parameter_list_nodes) do
-            local region = Region:from_node(node, self.bufnr)
-            local parameter_list = region:get_text()
-            local parameter_split = utils.split_string(parameter_list[1], " ")
-
-            local arg_index = type_index == 2 and 1 or 2
-            parameter_types[parameter_split[arg_index]] =
-                parameter_split[type_index]
+    if #types > 0 then
+        for i = 1, #types do
+            local type = vim.treesitter.get_node_text(types[i], self.bufnr)
+            local ident = vim.treesitter.get_node_text(idents[i], self.bufnr)
+            all_types[ident] = type
         end
     end
 
-    return parameter_types
+    return all_types
 end
 
 ---@param node TSNode

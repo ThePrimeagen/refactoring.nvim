@@ -2,6 +2,7 @@ local TreeSitter = require("refactoring.treesitter.treesitter")
 local Nodes = require("refactoring.treesitter.nodes")
 local FieldNode = Nodes.FieldNode
 local InlineNode = Nodes.InlineNode
+local InlineFilteredNode = Nodes.InlineFilteredNode
 
 ---@type TreeSitterInstance
 local Python = {}
@@ -82,13 +83,8 @@ function Python.new(bufnr, ft)
             if_statement = true,
             module = true,
         },
-        parameter_list = {
-            InlineNode(
-                "(function_definition parameters: (parameters((typed_parameter) @capture)))"
-            ),
-            InlineNode(
-                "(function_definition parameters: (parameters((typed_default_parameter) @capture)))"
-            ),
+        ident_with_type = {
+            InlineFilteredNode("(_ (identifier) @ident type: (type) @type)"),
         },
         function_body = {
             InlineNode("(block (_) @tmp_capture)"),
@@ -101,13 +97,6 @@ function Python.new(bufnr, ft)
         include_end_of_line = true,
     }
     local ts = TreeSitter:new(config, bufnr)
-
-    -- overriding function
-    ---@param arg string
-    ---@return string
-    function ts.get_arg_type_key(arg)
-        return arg .. ":"
-    end
 
     return ts
 end

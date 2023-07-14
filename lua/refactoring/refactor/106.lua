@@ -97,17 +97,16 @@ end
 ---@return table<string, string|nil>
 local function get_function_param_types(refactor, args)
     local args_types = {}
-    local parameter_arg_types = refactor.ts:get_local_parameter_types(
-        refactor.scope,
-        refactor.ts.argument_type_index
-    )
+
+    local local_types = refactor.ts:get_local_types(refactor.scope)
+
     for _, arg in pairs(args) do
         --- @type string|nil
         local function_param_type
         local curr_arg = refactor.ts.get_arg_type_key(arg)
 
-        if parameter_arg_types[curr_arg] ~= nil then
-            function_param_type = parameter_arg_types[curr_arg]
+        if local_types[curr_arg] ~= nil then
+            function_param_type = local_types[curr_arg]
         elseif
             refactor.config:get_prompt_func_param_type(refactor.filetype)
         then

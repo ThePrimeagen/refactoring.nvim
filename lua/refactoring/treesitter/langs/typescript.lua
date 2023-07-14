@@ -3,6 +3,7 @@ local Nodes = require("refactoring.treesitter.nodes")
 local FieldNode = Nodes.FieldNode
 local StringNode = Nodes.StringNode
 local InlineNode = Nodes.InlineNode
+local InlineFilteredNode = Nodes.InlineFilteredNode
 
 ---@type TreeSitterInstance
 local Typescript = {}
@@ -93,21 +94,16 @@ function Typescript.new(bufnr, ft)
             function_declaration = true,
             arrow_function = true,
         },
-        parameter_list = {
-            InlineNode("(formal_parameters (required_parameter) @capture)"),
+        ident_with_type = {
+            InlineFilteredNode(
+                "(_ [name: (identifier) pattern: (identifier)] @ident type: (type_annotation (_) @type))"
+            ),
         },
         function_body = {
             InlineNode("(statement_block (_) @tmp_capture)"),
         },
     }
     local ts = TreeSitter:new(config, bufnr)
-
-    -- overriding function
-    ---@param arg string
-    ---@return string
-    function ts.get_arg_type_key(arg)
-        return arg .. ":"
-    end
 
     return ts
 end

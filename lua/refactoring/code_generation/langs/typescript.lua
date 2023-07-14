@@ -5,9 +5,8 @@ local string_pattern = "{%s}"
 local function build_args(args, arg_types)
     local final_args = {}
     for i, arg in pairs(args) do
-        local arg_key = arg .. ":"
-        if arg_types[arg_key] ~= code_utils.default_func_param_type() then
-            final_args[i] = arg .. ": " .. arg_types[arg_key]
+        if arg_types[arg] ~= code_utils.default_func_param_type() then
+            final_args[i] = arg .. ": " .. arg_types[arg]
         else
             final_args[i] = arg
         end

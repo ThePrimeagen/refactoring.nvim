@@ -6,6 +6,7 @@ local StringNode = Nodes.StringNode
 local TakeFirstNode = Nodes.TakeFirstNode
 local QueryNode = Nodes.QueryNode
 local InlineNode = Nodes.InlineNode
+local InlineFilteredNode = Nodes.InlineFilteredNode
 
 ---@type TreeSitterInstance
 local Java = {}
@@ -75,9 +76,12 @@ function Java.new(bufnr, ft)
             InlineNode("(while_statement) @tmp_capture"),
             InlineNode("(local_variable_declaration) @tmp_capture"),
         },
-        parameter_list = {
-            InlineNode(
-                "(method_declaration parameters: (formal_parameters ((formal_parameter) @tmp_capture)))"
+        ident_with_type = {
+            InlineFilteredNode(
+                "(_ type: (integral_type) @type declarator: (variable_declarator (identifier)@ident))"
+            ),
+            InlineFilteredNode(
+                "(_ type: (integral_type) @type name: (identifier) @ident)"
             ),
         },
         function_body = {
@@ -86,7 +90,6 @@ function Java.new(bufnr, ft)
         require_class_name = true,
         require_class_type = true,
         require_param_types = true,
-        argument_type_index = 1,
     }
     return TreeSitter:new(config, bufnr)
 end

@@ -98,9 +98,6 @@ function JavascriptReact.new(bufnr, ft)
             function_declaration = true,
             arrow_function = true,
         },
-        parameter_list = {
-            InlineNode("(formal_parameters (required_parameter) @capture)"),
-        },
         function_body = {
             InlineNode("(statement_block (_) @tmp_capture)"),
         },

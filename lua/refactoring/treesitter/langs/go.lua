@@ -2,6 +2,7 @@ local TreeSitter = require("refactoring.treesitter.treesitter")
 local Nodes = require("refactoring.treesitter.nodes")
 local FieldNode = Nodes.FieldNode
 local InlineNode = Nodes.InlineNode
+local InlineFilteredNode = Nodes.InlineFilteredNode
 
 ---@type TreeSitterInstance
 local Golang = {}
@@ -70,12 +71,9 @@ function Golang.new(bufnr, ft)
             InlineNode("(call_expression) @tmp_capture"),
             InlineNode("(assignment_statement) @tmp_capture"),
         },
-        parameter_list = {
-            InlineNode(
-                "(function_declaration parameters: (parameter_list ((parameter_declaration) @tmp_capture)))"
-            ),
-            InlineNode(
-                "(method_declaration parameters: (parameter_list ((parameter_declaration) @tmp_capture)))"
+        ident_with_type = {
+            InlineFilteredNode(
+                "(_ name: (identifier) @ident type: (type_identifier) @type)"
             ),
         },
         function_scopes = {

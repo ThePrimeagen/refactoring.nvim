@@ -2,7 +2,7 @@
 
 class Coconut {
 
-void foo(int a, INSERT_PARAM_TYPE test, INSERT_PARAM_TYPE test_other) {
+void foo(int a, int test, int test_other) {
     for (int x = 0; x < test_other + test; x++) {
       std::cout << x << " " << a << std::endl;
     }
