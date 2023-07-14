@@ -25,8 +25,12 @@ end
 ---@param ... string
 ---@return FieldNodeFunc
 local FieldNode = function(...)
+    ---@type string[]
     local fieldnames = to_array(...)
 
+    ---@param node TSNode
+    ---@param fallback string
+    ---@return FieldnameNode
     return function(node, fallback)
         return setmetatable({
             fieldnames = fieldnames,
@@ -34,6 +38,8 @@ local FieldNode = function(...)
         }, {
             __index = BaseFieldNode,
 
+            ---@param self FieldnameNode
+            ---@return string
             __tostring = function(self)
                 if not self.node then
                     return fallback
@@ -41,6 +47,7 @@ local FieldNode = function(...)
 
                 local curr = self.node
                 for idx = 1, #self.fieldnames do
+                    --- @type TSNode[]
                     curr = curr:field(self.fieldnames[idx])
 
                     if not curr[1] then
@@ -93,6 +100,35 @@ local InlineNode = function(sexpr)
     end
 end
 
+---@alias NodeFilter fun(id: integer, node: TSNode, query: Query): boolean
+---@alias InlineFilteredNodeFunc fun(scope: TSNode, bufnr: integer, filetype: string, filter: NodeFilter): TSNode[]
+
+---@param sexpr string sexpr with multiple captures
+---@return InlineFilteredNodeFunc
+local InlineFilteredNode = function(sexpr)
+    return function(scope, bufnr, filetype, filter)
+        local lang = vim.treesitter.language.get_lang(filetype)
+        local ok, result_object = pcall(vim.treesitter.query.parse, lang, sexpr)
+        if not ok then
+            error(
+                string.format(
+                    "Invalid query: '%s'\n error: %s",
+                    sexpr,
+                    result_object
+                )
+            )
+        end
+
+        local out = {}
+        for id, node, _ in result_object:iter_captures(scope, bufnr, 0, -1) do
+            if filter(id, node, result_object) then
+                table.insert(out, node)
+            end
+        end
+        return out
+    end
+end
+
 ---@param sexpr string
 ---@return fun(scope: TSNode, bufnr: integer): string
 local QueryNode = function(sexpr)
@@ -114,9 +150,10 @@ local QueryNode = function(sexpr)
     end
 end
 
----@param  ... function
+---@param  ... fun(... :any): string
 ---@return fun(... :any): string
 local function TakeFirstNode(...)
+    ---@type (fun(... :any): string)[]
     local nodes = to_array(...)
     return function(...)
         local out = ""
@@ -140,4 +177,5 @@ return {
     QueryNode = QueryNode,
     FieldNode = FieldNode,
     InlineNode = InlineNode,
+    InlineFilteredNode = InlineFilteredNode,
 }

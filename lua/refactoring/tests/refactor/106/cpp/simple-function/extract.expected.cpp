@@ -1,6 +1,6 @@
 #include <iostream>
 
-void foo_bar(int a, INSERT_PARAM_TYPE test, INSERT_PARAM_TYPE test_other) {
+void foo_bar(int a, int test, int test_other) {
   for (int idx = test - 1; idx < test_other; idx++) {
     std::cout << idx << " " << a << std::endl;
   }

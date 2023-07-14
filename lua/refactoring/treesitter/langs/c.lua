@@ -6,6 +6,7 @@ local StringNode = Nodes.StringNode
 local TakeFirstNode = Nodes.TakeFirstNode
 local QueryNode = Nodes.QueryNode
 local InlineNode = Nodes.InlineNode
+local InlineFilteredNode = Nodes.InlineFilteredNode
 
 ---@type TreeSitterInstance
 local C = {}
@@ -81,16 +82,18 @@ function C.new(bufnr, ft)
             InlineNode("(while_statement) @tmp_capture"),
             InlineNode("(declaration) @tmp_capture"),
         },
-        parameter_list = {
-            InlineNode(
-                "(function_declarator parameters:(parameter_list ((parameter_declaration) @tmp_capture)))"
+        ident_with_type = {
+            InlineFilteredNode(
+                "(_ type: (primitive_type)@type declarator: (init_declarator (identifier)@ident))"
+            ),
+            InlineFilteredNode(
+                "(_ type: (primitive_type)@type declarator: (identifier) @ident)"
             ),
         },
         function_body = {
             InlineNode("(compound_statement (_) @tmp_capture)"),
         },
         require_param_types = true,
-        argument_type_index = 1,
     }
     return TreeSitter:new(config, bufnr)
 end
