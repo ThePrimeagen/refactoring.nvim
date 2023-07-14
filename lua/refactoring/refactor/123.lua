@@ -233,13 +233,6 @@ local function inline_var_normal_setup(refactor)
 
     local identifiers = refactor.ts:get_local_var_names(declarator_node)
 
-    -- in the event of multiple identifiers, python gives one extra result
-    -- due to multiple queries (all of which are necessary for this to work)
-    if #identifiers > 1 and refactor.filetype == "python" then
-        -- get rid of the last item
-        identifiers[#identifiers] = nil
-    end
-
     if #identifiers == 0 then
         return false, "No declarations in selected area"
     end
