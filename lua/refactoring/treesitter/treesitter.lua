@@ -313,18 +313,10 @@ end
 function TreeSitter:get_local_types(scope)
     --- @type table<string, string>
     local all_types = {}
-    self:validate_setting("function_scopes")
-    local function_node = containing_node_by_type(scope, self.function_scopes)
-
-    if function_node == nil then
-        error(
-            "Failed to get function_node in get_local_parameter_types, check `function_scopes` queries"
-        )
-    end
 
     self:validate_setting("ident_with_type")
     local idents = self:loop_thru_filtered_nodes(
-        function_node,
+        scope,
         self.ident_with_type,
         function(id, _node, query)
             local name = query.captures[id]
@@ -332,7 +324,7 @@ function TreeSitter:get_local_types(scope)
         end
     )
     local types = self:loop_thru_filtered_nodes(
-        function_node,
+        scope,
         self.ident_with_type,
         function(id, _node, query)
             local name = query.captures[id]
