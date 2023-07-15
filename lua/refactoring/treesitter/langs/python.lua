@@ -27,27 +27,39 @@ function Python.new(bufnr, ft)
         },
         local_var_names = {
             InlineNode(
-                '((assignment left: (pattern_list (identifier) @capture)) (#not-eq? @capture "self"))'
+                '(assignment left: (identifier) @capture (#not-eq? @capture "self"))'
             ),
             InlineNode(
-                '((assignment left: (identifier) @capture) (#not-eq? @capture "self"))'
+                '(assignment left: (pattern_list (identifier) @capture) (#not-eq? @capture "self"))'
             ),
             InlineNode(
-                '((for_statement left: (identifier) @capture) (#not-eq? @capture "self"))'
+                '(assignment left: (tuple_pattern (identifier) @capture) (#not-eq? @capture "self"))'
+            ),
+            InlineNode(
+                '(assignment left: (attribute) @capture (#not-match? @capture "^self"))'
+            ),
+            InlineNode(
+                '(for_statement left: (identifier) @capture (#not-eq? @capture "self"))'
+            ),
+            InlineNode(
+                '(for_statement left: (pattern_list (identifier) @capture) (#not-eq? @capture "self"))'
+            ),
+            InlineNode(
+                '(for_statement left: (tuple_pattern (identifier) @capture) (#not-eq? @capture "self"))'
             ),
         },
         function_args = {
             InlineNode(
-                '((function_definition (parameters (identifier) @capture)) (#not-eq? @capture "self"))'
+                '(function_definition (parameters (identifier) @capture) (#not-eq? @capture "self"))'
             ),
             InlineNode(
-                '((function_definition (parameters (default_parameter (identifier) @capture))) (#not-eq? @capture "self"))'
+                '(function_definition (parameters (default_parameter (identifier) @capture)) (#not-eq? @capture "self"))'
             ),
             InlineNode(
-                '((function_definition (parameters (typed_parameter (identifier) @capture))) (#not-eq? @capture "self"))'
+                '(function_definition (parameters (typed_parameter (identifier) @capture)) (#not-eq? @capture "self"))'
             ),
             InlineNode(
-                '((function_definition (parameters (typed_default_parameter (identifier) @capture))) (#not-eq? @capture "self"))'
+                '(function_definition (parameters (typed_default_parameter (identifier) @capture)) (#not-eq? @capture "self"))'
             ),
         },
         local_var_values = {
@@ -57,7 +69,7 @@ function Python.new(bufnr, ft)
             InlineNode("(assignment right: (_) @tmp_capture)"),
         },
         local_declarations = {
-            InlineNode("((assignment) @tmp_capture)"),
+            InlineNode("(assignment) @tmp_capture"),
         },
         valid_class_nodes = {
             class_definition = 0,
@@ -90,11 +102,6 @@ function Python.new(bufnr, ft)
         },
         function_body = {
             InlineNode("(block (_) @tmp_capture)"),
-        },
-        class_vars = {
-            InlineNode(
-                "(expression_statement (assignment left: ((attribute attribute: ((identifier) @capture)))))"
-            ),
         },
         include_end_of_line = true,
     }

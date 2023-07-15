@@ -378,9 +378,8 @@ local function extract_setup(refactor)
 
     -- NOTE: How do we think about this if we have to pass through multiple
     -- functions (method extraction)
-    local is_class = refactor.ts:is_class_function(refactor.scope)
     ---@type string[]
-    local args = vim.tbl_keys(utils.get_selected_locals(refactor, is_class))
+    local args = vim.tbl_keys(utils.get_selected_locals(refactor))
     table.sort(args)
 
     local first_line = function_body[1]
@@ -398,6 +397,8 @@ local function extract_setup(refactor)
             refactor.code["return"](refactor.code.pack(return_vals))
         )
     end
+
+    local is_class = refactor.ts:is_class_function(refactor.scope)
 
     ---@class extract_params
     local extract_params = {
