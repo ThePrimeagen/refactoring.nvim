@@ -78,7 +78,14 @@ function JavaScript.new(bufnr, ft)
             InlineNode("(variable_declaration) @tmp_capture"),
         },
         function_body = {
-            InlineNode("(statement_block (_) @tmp_capture)"),
+            InlineNode(
+                "(method_definition (statement_block (_) @tmp_capture))"
+            ),
+            InlineNode(
+                "(function_declaration (statement_block (_) @tmp_capture))"
+            ),
+
+            InlineNode("(arrow_function (statement_block (_) @tmp_capture))"),
         },
     }
     return TreeSitter:new(config, bufnr)

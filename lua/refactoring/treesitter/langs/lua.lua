@@ -92,7 +92,7 @@ function Lua.new(bufnr, ft)
             InlineNode("(function_call) @tmp_capture"),
         },
         function_body = {
-            InlineNode("(block (_) @tmp_capture)"),
+            InlineNode("(function_declaration (block (_) @tmp_capture))"),
         },
     }
     return TreeSitter:new(config, bufnr)

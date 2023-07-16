@@ -83,7 +83,9 @@ function Php.new(bufnr, ft)
             InlineNode("(assignment_expression) @tmp_capture"),
         },
         function_body = {
-            InlineNode("(compound_statement (_) @tmp_capture)"),
+            InlineNode(
+                "(function_definition body: (compound_statement (_) @tmp_capture))"
+            ),
         },
         should_check_parent_node = function(parent_type)
             return vim.tbl_contains(special_nodes, parent_type)

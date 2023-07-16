@@ -90,7 +90,8 @@ function Golang.new(bufnr, ft)
             ),
         },
         function_body = {
-            InlineNode("(block (_) @tmp_capture)"),
+            InlineNode("(function_declaration (block (_) @tmp_capture))"),
+            InlineNode("(method_declaration (block (_) @tmp_capture))"),
         },
         require_class_name = true,
         require_class_type = true,

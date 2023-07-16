@@ -91,7 +91,9 @@ function C.new(bufnr, ft)
             ),
         },
         function_body = {
-            InlineNode("(compound_statement (_) @tmp_capture)"),
+            InlineNode(
+                "(function_definition (compound_statement (_) @tmp_capture))"
+            ),
         },
         require_param_types = true,
     }

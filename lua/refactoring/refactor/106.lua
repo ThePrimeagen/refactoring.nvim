@@ -332,14 +332,9 @@ local function extract_block_setup(refactor)
         return false, "Scope is nil. Couldn't find scope for current block"
     end
 
-    local block_first_child = refactor.ts:get_function_body(scope)[1]
-    local block_last_child = block_first_child -- starting off here, we're going to find it manually
-
-    -- we have to find the last direct sibling manually because raw queries
-    -- pick up nested children nodes as well
-    while block_last_child:next_named_sibling() do
-        block_last_child = block_last_child:next_named_sibling()
-    end
+    local function_body = refactor.ts:get_function_body(scope)
+    local block_first_child = function_body[1]
+    local block_last_child = function_body[#function_body]
 
     local first_line_region = Region:from_node(block_first_child)
     local last_line_region = Region:from_node(block_last_child)
@@ -413,7 +408,37 @@ local function extract_setup(refactor)
         ---@type string
         region_type = refactor.region:to_ts_node(refactor.ts:get_root()):type(),
     }
+
     local function_code = get_function_code(refactor, extract_params)
+
+    -- local root = refactor.ts:get_root()
+    -- local lang = vim.treesitter.language.get_lang(refactor.filetype)
+
+    -- if not lang then
+    --     return false, "Error: Language not found"
+    -- end
+
+    -- local query =
+    --     vim.treesitter.query.parse(lang, "(function_declaration (block) @temp)")
+
+    -- local body_node
+    -- for _, node in query:iter_captures(root, function_code, 0, -1) do
+    --     if node then
+    --         body_node = node
+    --     end
+    -- end
+    -- body_node = body_node:named_child()
+    -- local body_text = vim.treesitter.get_node_text(body_node, function_code)
+    -- local body_sexpr = body_node:sexpr()
+
+    -- local query2 = vim.treesitter.query.parse("lua", body_sexpr .. " @temp")
+
+    -- for _, node in query2:iter_captures(refactor.root, refactor.bufnr, 0, -1) do
+    --     if node then
+    --         vim.print({ node:range() })
+    --     end
+    -- end
+
     local func_call = get_func_call(refactor, extract_params)
 
     local region_above_scope = utils.get_non_comment_region_above_node(refactor)

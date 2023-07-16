@@ -101,7 +101,7 @@ function Python.new(bufnr, ft)
             InlineFilteredNode("(_ (identifier) @ident type: (type) @type)"),
         },
         function_body = {
-            InlineNode("(block (_) @tmp_capture)"),
+            InlineNode("(function_definition (block (_) @tmp_capture))"),
         },
         include_end_of_line = true,
     }
