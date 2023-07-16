@@ -473,10 +473,15 @@ local function extract_setup(refactor)
                     end_col
                 )
 
-                table.insert(
-                    refactor.text_edits,
-                    lsp_utils.replace_text(region, func_call)
-                )
+                if
+                    table.concat(region:get_text(), "")
+                    == table.concat(refactor.region:get_text(), "")
+                then
+                    table.insert(
+                        refactor.text_edits,
+                        lsp_utils.replace_text(region, func_call)
+                    )
+                end
             end
         end
     else

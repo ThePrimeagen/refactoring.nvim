@@ -8,7 +8,7 @@ function simple_function(a)
     end
 
     for idx = test - 1, test_other do
-        print(idx, a)
+        print(idx, test)
     end
 
     for idx = test - 1, test_other do
