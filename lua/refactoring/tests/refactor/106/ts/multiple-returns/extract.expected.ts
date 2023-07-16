@@ -12,5 +12,6 @@ function return_me(a: number) {
 function multiple_returns(a: number) {
     const {test, test_other} = return_me(a);
 
+
     return {test, test_other};
 }

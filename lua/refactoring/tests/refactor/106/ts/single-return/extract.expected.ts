@@ -12,5 +12,6 @@ function single_return(a: number) {
     let test = 1;
     const test_other = return_me(a, test);
 
+
     return {test, test_other};
 }

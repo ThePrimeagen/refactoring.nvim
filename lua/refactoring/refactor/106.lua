@@ -242,18 +242,16 @@ end
 
 --- @param refactor Refactor
 --- @param extract_params extract_params
+---@return string
 local function get_func_call(refactor, extract_params)
-    --- @type LspTextEdit
+    --- @type string
     local func_call
     if extract_params.is_class then
-        func_call = {
-            range = refactor.region:to_lsp_range_replace(),
-            newText = refactor.code.call_class_function({
-                name = extract_params.function_name,
-                args = extract_params.args,
-                class_type = refactor.ts:get_class_type(refactor.scope),
-            }),
-        }
+        func_call = refactor.code.call_class_function({
+            name = extract_params.function_name,
+            args = extract_params.args,
+            class_type = refactor.ts:get_class_type(refactor.scope),
+        })
     else
         -- TODO (TheLeoP): jsx specific logic
         local ok, ocurrences = pcall(
@@ -263,15 +261,12 @@ local function get_func_call(refactor, extract_params)
             refactor.bufnr
         )
         local contains_jsx = ok and #ocurrences > 0
-        func_call = {
-            range = refactor.region:to_lsp_range_replace(),
-            newText = refactor.code.call_function({
-                name = extract_params.function_name,
-                args = extract_params.args,
-                region_type = extract_params.region_type,
-                contains_jsx = contains_jsx,
-            }),
-        }
+        func_call = refactor.code.call_function({
+            name = extract_params.function_name,
+            args = extract_params.args,
+            region_type = extract_params.region_type,
+            contains_jsx = contains_jsx,
+        })
     end
 
     -- in some languages (like typescript and javascript), you can return
@@ -288,19 +283,19 @@ local function get_func_call(refactor, extract_params)
             #extract_params.return_vals > 1
             and exception_languages[refactor.filetype] == nil
         then
-            func_call.newText = refactor.code.constant({
+            func_call = refactor.code.constant({
                 multiple = true,
                 identifiers = extract_params.return_vals,
-                values = { func_call.newText },
+                values = { func_call },
             })
         else
-            func_call.newText = refactor.code.constant({
+            func_call = refactor.code.constant({
                 name = extract_params.return_vals,
-                value = func_call.newText,
+                value = func_call,
             })
         end
     else
-        func_call.newText = refactor.code.terminate(func_call.newText)
+        func_call = refactor.code.terminate(func_call)
     end
 
     if
@@ -314,8 +309,7 @@ local function get_func_call(refactor, extract_params)
             refactor.bufnr
         )
         local indent_whitespace = indent.indent(indent_amount, refactor.bufnr)
-        func_call.newText =
-            table.concat({ indent_whitespace, func_call.newText }, "")
+        func_call = table.concat({ indent_whitespace, func_call }, "")
     end
 
     return func_call
@@ -410,37 +404,6 @@ local function extract_setup(refactor)
     }
 
     local function_code = get_function_code(refactor, extract_params)
-
-    -- local root = refactor.ts:get_root()
-    -- local lang = vim.treesitter.language.get_lang(refactor.filetype)
-
-    -- if not lang then
-    --     return false, "Error: Language not found"
-    -- end
-
-    -- local query =
-    --     vim.treesitter.query.parse(lang, "(function_declaration (block) @temp)")
-
-    -- local body_node
-    -- for _, node in query:iter_captures(root, function_code, 0, -1) do
-    --     if node then
-    --         body_node = node
-    --     end
-    -- end
-    -- body_node = body_node:named_child()
-    -- local body_text = vim.treesitter.get_node_text(body_node, function_code)
-    -- local body_sexpr = body_node:sexpr()
-
-    -- local query2 = vim.treesitter.query.parse("lua", body_sexpr .. " @temp")
-
-    -- for _, node in query2:iter_captures(refactor.root, refactor.bufnr, 0, -1) do
-    --     if node then
-    --         vim.print({ node:range() })
-    --     end
-    -- end
-
-    local func_call = get_func_call(refactor, extract_params)
-
     local region_above_scope = utils.get_non_comment_region_above_node(refactor)
 
     --- @type LspTextEdit | {bufnr: integer}
@@ -461,12 +424,68 @@ local function extract_setup(refactor)
         extract_function.bufnr = refactor.buffers[2]
     end
 
+    refactor.text_edits = {}
     -- NOTE: there is going to be a bunch of edge cases we haven't thought
     -- about
-    refactor.text_edits = {
-        extract_function,
-        func_call,
-    }
+    table.insert(refactor.text_edits, extract_function)
+
+    local lang = vim.treesitter.language.get_lang(refactor.filetype)
+    if not lang then
+        return false, "Error: Language not found"
+    end
+
+    local selected_code = table.concat(refactor.region:get_text(), "\n")
+    local parser = vim.treesitter.get_string_parser(selected_code, lang)
+    local languagetree = parser:parse()
+    local root = languagetree[1]:root()
+
+    --- @type string[]
+    local body_sexprs = {}
+    local has_error = false
+    do
+        local i = 1
+        for node in root:iter_children() do
+            table.insert(body_sexprs, node:sexpr() .. " @temp" .. i)
+            i = i + 1
+            has_error = node:has_error() --[[@as boolean]]
+        end
+    end
+
+    local func_call = get_func_call(refactor, extract_params)
+    -- PHP parser needs the PHP tag to parse code, so it's imposible to generate
+    -- an adecuate sexpr with only the selected text
+    if not has_error and refactor.filetype ~= "php" then
+        local body_sexpr = "(" .. table.concat(body_sexprs, " . ") .. ")"
+        local query = vim.treesitter.query.parse(lang, body_sexpr)
+
+        for _, match in query:iter_matches(refactor.root, refactor.bufnr, 0, -1) do
+            if match then
+                local first = match[1]
+                local last = match[#match]
+                local start_row, _, _, _ = first:range()
+                local _, _, end_row, end_col = last:range()
+
+                local region = Region:from_values(
+                    refactor.bufnr,
+                    start_row + 1,
+                    1,
+                    end_row + 1,
+                    end_col
+                )
+
+                table.insert(
+                    refactor.text_edits,
+                    lsp_utils.replace_text(region, func_call)
+                )
+            end
+        end
+    else
+        table.insert(
+            refactor.text_edits,
+            lsp_utils.replace_text(refactor.region, func_call)
+        )
+    end
+
     return true, refactor
 end
 

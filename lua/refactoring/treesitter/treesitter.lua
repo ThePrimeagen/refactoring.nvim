@@ -155,6 +155,13 @@ function TreeSitter:get_local_defs(scope, region)
     vim.list_extend(nodes, local_var_names)
 
     nodes = utils.region_complement(nodes, region)
+    nodes = vim.tbl_filter(
+        --- @param node TSNode
+        function(node)
+            return Region:from_node(node):above(region)
+        end,
+        nodes
+    )
     return nodes
 end
 
