@@ -5,7 +5,7 @@ class Test {
         ~Test() {
 
 // __AUTO_GENERATED_PRINTF_START__
-        printf("Test#~Test 1(%d): \n", __LINE__); // __AUTO_GENERATED_PRINTF_END__
+printf("Test#~Test 1(%d): \n", __LINE__); // __AUTO_GENERATED_PRINTF_END__
         }
 };
 

@@ -25,6 +25,11 @@ M.buf_indent_amount = function(point, refactor, below, bufnr)
 
     local scope = refactor.ts:get_scope(region_node)
 
+    if not scope then
+        return refactor.whitespace.cursor / M.buf_indent_width(refactor.bufnr)
+    end
+
+    --- @type TSNode[]
     local nodes = {}
     local statements = refactor.ts:get_statements(scope)
     for _, node in ipairs(statements) do
@@ -39,6 +44,7 @@ M.buf_indent_amount = function(point, refactor, below, bufnr)
         return refactor.whitespace.cursor / M.buf_indent_width(refactor.bufnr)
     end
 
+    --- @type integer[]
     local line_numbers = {}
     for _, node in ipairs(nodes) do
         local start_row, _, end_row, _ = node:range()
@@ -46,25 +52,44 @@ M.buf_indent_amount = function(point, refactor, below, bufnr)
         table.insert(line_numbers, end_row + 1)
     end
 
+    ---@type table<integer, boolean>
     local hash = {}
-    line_numbers = vim.tbl_filter(function(line_number)
-        if hash[line_number] then
-            return false
-        end
-        hash[line_number] = true
-        local distance = point.row - line_number
-        return distance ~= 0
-    end, line_numbers)
+    line_numbers = vim.tbl_filter(
+        ---@param line_number integer
+        ---@return boolean
+        function(line_number)
+            if hash[line_number] then
+                return false
+            end
+            hash[line_number] = true
+            local distance = point.row - line_number
+            return distance ~= 0
+        end,
+        line_numbers
+    )
 
-    local line_numbers_up = vim.tbl_filter(function(line_number)
-        local distance = point.row - line_number
-        return distance > 0
-    end, line_numbers)
-    local line_numbers_down = vim.tbl_filter(function(line_number)
-        local distance = point.row - line_number
-        return distance < 0
-    end, line_numbers)
+    local line_numbers_up = vim.tbl_filter(
+        ---@param line_number integer
+        ---@return boolean
+        function(line_number)
+            local distance = point.row - line_number
+            return distance > 0
+        end,
+        line_numbers
+    )
+    local line_numbers_down = vim.tbl_filter(
+        ---@param line_number integer
+        ---@return boolean
+        function(line_number)
+            local distance = point.row - line_number
+            return distance < 0
+        end,
+        line_numbers
+    )
 
+    ---@param a integer
+    ---@param b integer
+    ---@return boolean
     local sort = function(a, b)
         local a_distance = math.abs(point.row - a)
         local b_distance = math.abs(point.row - b)
@@ -80,6 +105,7 @@ M.buf_indent_amount = function(point, refactor, below, bufnr)
     local line_up_indent = vim.fn.indent(line_up)
     local cursor_indent = vim.fn.indent(point.row)
 
+    --- @type integer
     local indent_scope_whitespace
     if below then
         if cursor_indent == 0 then
@@ -144,8 +170,10 @@ end
 ---@param bufnr number
 ---@return string
 local function space_indent(indent_amount, bufnr)
+    --- @type string[]
     local indent = {}
 
+    --- @type string[]
     local single_indent_table = {}
     for i = 1, M.buf_indent_width(bufnr) do
         single_indent_table[i] = " "
@@ -162,6 +190,7 @@ end
 ---@param indent_amount number
 ---@return string
 local function tab_indent(indent_amount)
+    --- @type string[]
     local indent = {}
     for i = 1, indent_amount do
         indent[i] = "\t"

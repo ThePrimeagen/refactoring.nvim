@@ -311,30 +311,12 @@ function M.get_non_comment_region_above_node(refactor)
 end
 
 ---@param refactor Refactor
----@param is_class boolean
 ---@return string[]
-function M.get_selected_locals(refactor, is_class)
+function M.get_selected_locals(refactor)
     local local_defs =
         refactor.ts:get_local_defs(refactor.scope, refactor.region)
     local region_refs =
         refactor.ts:get_region_refs(refactor.scope, refactor.region)
-
-    -- Removing class variables from things being passed to extracted func
-    if is_class then
-        local class_vars =
-            refactor.ts:get_class_vars(refactor.scope, refactor.region)
-
-        if #class_vars > 0 then
-            for _, class_var in ipairs(class_vars) do
-                for i, node in ipairs(local_defs) do
-                    if node == class_var then
-                        table.remove(local_defs, i)
-                        break
-                    end
-                end
-            end
-        end
-    end
 
     local_defs = vim.tbl_map(
         ---@param node TSNode

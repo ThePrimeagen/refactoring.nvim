@@ -12,6 +12,7 @@ class RefuctorPlease {
         let test: number = 1;
         const test_other = this.return_me(a, test);
 
+
         return {test, test_other};
     }
 }

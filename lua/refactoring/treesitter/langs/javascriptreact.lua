@@ -99,7 +99,13 @@ function JavascriptReact.new(bufnr, ft)
             arrow_function = true,
         },
         function_body = {
-            InlineNode("(statement_block (_) @tmp_capture)"),
+            InlineNode(
+                "(method_definition (statement_block (_) @tmp_capture))"
+            ),
+            InlineNode(
+                "(function_declaration (statement_block (_) @tmp_capture))"
+            ),
+            InlineNode("(arrow_function (statement_block (_) @tmp_capture))"),
         },
         require_special_var_format = true,
         ---@param parent_type string

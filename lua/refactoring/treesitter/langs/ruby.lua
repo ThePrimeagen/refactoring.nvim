@@ -54,15 +54,8 @@ function Ruby.new(bufnr, ft)
             ),
         },
         function_body = {
-            InlineNode(
-                "((method name: (identifier) (method_parameters)? (_)(_)? @tmp_capture))"
-            ),
-            InlineNode("(method !parameters (_)(_) @tmp_capture)"),
-            InlineNode(
-                "((singleton_method name: (identifier) (method_parameters)? (_)(_)? @tmp_capture))"
-            ),
-            InlineNode("(singleton_method !parameters (_)(_) @tmp_capture)"),
-            InlineNode("(body_statement) @tmp_capture"),
+            InlineNode("(method body: (_) @tmp_capture)"),
+            InlineNode("(singleton_method body: (_) @tmp_capture)"),
         },
         valid_class_nodes = {
             class = 1,

@@ -31,13 +31,19 @@ function Lua.new(bufnr, ft)
         },
         local_var_names = {
             InlineNode(
-                "( variable_declaration ( assignment_statement ( variable_list name:((identifier) @definition.local_name)))) "
+                "(variable_declaration (assignment_statement (variable_list name: (identifier) @definition.local_name)))"
             ),
             InlineNode(
-                "( variable_declaration ( variable_list name:((identifier) @definition.local_name))) "
+                "(variable_declaration (variable_list name: (identifier) @definition.local_name))"
             ),
             InlineNode(
-                "( for_generic_clause ( variable_list name:((identifier) @definition.local_name))) "
+                '(assignment_statement (variable_list (dot_index_expression) @capture) (#not-match? @capture "^self"))'
+            ),
+            InlineNode(
+                "(for_generic_clause (variable_list name: (identifier) @definition.local_name))"
+            ),
+            InlineNode(
+                "(for_numeric_clause name: (identifier) @definition.var)"
             ),
         },
         function_args = {
@@ -45,7 +51,7 @@ function Lua.new(bufnr, ft)
         },
         local_var_values = {
             InlineNode(
-                " ( variable_declaration ( assignment_statement ( expression_list value:((_) @definition.local_name)))) "
+                " (variable_declaration (assignment_statement (expression_list value:((_) @definition.local_name)))) "
             ),
         },
         local_declarations = {
@@ -86,7 +92,7 @@ function Lua.new(bufnr, ft)
             InlineNode("(function_call) @tmp_capture"),
         },
         function_body = {
-            InlineNode("(block (_) @tmp_capture)"),
+            InlineNode("(function_declaration (block (_) @tmp_capture))"),
         },
     }
     return TreeSitter:new(config, bufnr)

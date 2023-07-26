@@ -293,6 +293,18 @@ function Region:contains(region)
         and self:get_end_point():geq(region:get_end_point())
 end
 
+--- Returns true if self is above region
+---@param region RefactorRegion
+---@return boolean
+function Region:above(region)
+    if region.bufnr ~= self.bufnr then
+        return false
+    end
+
+    return self:get_start_point():lt(region:get_start_point())
+        and self:get_end_point():lt(region:get_start_point())
+end
+
 --- Returns true if self contains point.
 ---@param point RefactorPoint
 ---@return boolean

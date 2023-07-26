@@ -20,7 +20,6 @@ local Region = require("refactoring.region")
 ---@field valid_class_nodes table<string, 0|1|true>: nodes that mean scope is a class function
 ---@field class_names InlineNodeFunc[]: nodes to get class names
 ---@field class_type InlineNodeFunc[]: nodes to get types for classes
----@field class_vars InlineNodeFunc[]: nodes to get class variable assignments in a scope
 ---@field ident_with_type InlineFilteredNodeFunc[]: nodes to get all identifiers and types for a scope
 ---@field function_scopes table<string, string|true>: nodes to find a function declaration
 ---@field require_class_name boolean: flag to require class name for codegen
@@ -44,7 +43,6 @@ function TreeSitter:new(config, bufnr)
         valid_class_nodes = {},
         class_names = {},
         class_type = {},
-        class_vars = {},
         local_var_names = {},
         local_var_values = {},
         local_declarations = {},
@@ -157,16 +155,14 @@ function TreeSitter:get_local_defs(scope, region)
     vim.list_extend(nodes, local_var_names)
 
     nodes = utils.region_complement(nodes, region)
+    nodes = vim.tbl_filter(
+        --- @param node TSNode
+        function(node)
+            return Region:from_node(node):above(region)
+        end,
+        nodes
+    )
     return nodes
-end
-
----@param scope TSNode
----@param region RefactorRegion
----@return TSNode[]
-function TreeSitter:get_class_vars(scope, region)
-    -- TODO: add validate setting
-    local class_var_nodes = self:loop_thru_nodes(scope, self.class_vars)
-    return utils.region_complement(class_var_nodes, region)
 end
 
 ---@param node TSNode
