@@ -15,6 +15,7 @@
 - [Installation](#installation)
   - [Requirements](#requirements)
   - [Setup Using Packer](#packer)
+  - [Setup Using Lazy](#lazy)
   - [Quickstart](#quickstart)
 - [Features](#features)
   - [Supported Languages](#supported-languages)
