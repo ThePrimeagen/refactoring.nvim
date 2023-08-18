@@ -67,7 +67,7 @@ local special_nodes = {
 ---@return string
 local function tsx_special_var(var, opts)
     if vim.tbl_contains(special_nodes, opts.region_node_type) then
-        return string.format("< %s />", var)
+        return string.format("{%s}", var)
     else
         return var
     end

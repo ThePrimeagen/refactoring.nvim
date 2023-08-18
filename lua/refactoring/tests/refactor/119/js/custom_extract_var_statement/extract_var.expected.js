@@ -2,7 +2,7 @@
 order.quantity * order.itemPrice;
 function orderCalculation(order) {
     foo.blah * nonsense.nonsense;
-    const basePrice = order.quantity*order.itemPrice; // poggers
+    const basePrice = order.quantity * order.itemPrice; // poggers
     basePrice;
     return (
         basePrice -

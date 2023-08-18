@@ -74,6 +74,8 @@ local function extract_var_setup(refactor)
     end
 
     local extract_node_text =
+        vim.treesitter.get_node_text(extract_node, refactor.bufnr)
+    local extract_node_text_without_whitespace =
         table.concat(utils.get_node_text(extract_node), "")
 
     ---@type string
@@ -86,8 +88,10 @@ local function extract_var_setup(refactor)
     local texts = {}
 
     for _, occurrence in pairs(occurrences) do
-        local text = table.concat(utils.get_node_text(occurrence), "")
-        if text == extract_node_text then
+        local text = vim.treesitter.get_node_text(occurrence, refactor.bufnr)
+        local text_without_whitespace =
+            table.concat(utils.get_node_text(occurrence), "")
+        if text_without_whitespace == extract_node_text_without_whitespace then
             table.insert(actual_occurrences, occurrence)
             table.insert(texts, text)
         end

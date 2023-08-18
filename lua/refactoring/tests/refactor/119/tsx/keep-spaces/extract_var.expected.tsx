@@ -1,9 +1,10 @@
 function foo(name: string) {
-    const foo = <p>Name:{name}</p>;
+    const foo = <a download href="/hello.jpg">
+                download
+            </a>;
     return (
         <div>
             {foo}
-            <p>Hello: {name}</p>
         </div>
     );
 }
