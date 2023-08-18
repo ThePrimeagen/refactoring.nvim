@@ -2,7 +2,7 @@
 
 local function orderCalculation(order, a, b)
     local temp = a * b
-    local basePrice = order.quantity*order.itemPrice -- poggers!
+    local basePrice = order.quantity * order.itemPrice -- poggers!
     local blah = (basePrice) - 7
 
     print(string.format("%d %d"), temp, blah)

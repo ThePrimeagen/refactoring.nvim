@@ -13,7 +13,9 @@ class testing
     )
     {
         $blah * $nonsence;
-        const $basePrice = $order->quantity*$order->itemPrice;
+        const $basePrice = $order->quantity
+            *
+            $order->itemPrice;
         $basePrice;
 
         return $basePrice -

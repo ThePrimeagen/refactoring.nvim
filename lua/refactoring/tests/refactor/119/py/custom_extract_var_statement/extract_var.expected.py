@@ -1,6 +1,6 @@
 def orderCalculation(order, a, b):
     temp = a * b
-    basePrice: int = order.quantity*order.itemPrice
+    basePrice: int = order.quantity * order.itemPrice
     blah = (basePrice) - 7
 
     print(temp, blah)

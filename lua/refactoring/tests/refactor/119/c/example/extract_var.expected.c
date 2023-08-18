@@ -21,7 +21,7 @@ struct Order {
 
 double orderCalculation(struct Order order, int a, int b) {
   float temp = a * b;
-  INSERT_TYPE_HERE basePrice = order.quantity*order.itemPrice;
+  INSERT_TYPE_HERE basePrice = order.quantity * order.itemPrice;
   float blah = (basePrice) - 7;
 
   printf("%f %f", temp, blah);
