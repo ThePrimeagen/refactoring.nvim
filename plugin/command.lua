@@ -1,0 +1,1 @@
+require("refactoring.command").setup()

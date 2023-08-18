@@ -1,6 +1,5 @@
 local refactors = require("refactoring.refactor")
 local Config = require("refactoring.config")
-local command = require("refactoring.command")
 local get_select_input = require("refactoring.get_select_input")
 local async = require("plenary.async")
 
@@ -9,7 +8,6 @@ local M = {}
 ---@param config ConfigOpts
 function M.setup(config)
     Config.setup(config)
-    command.setup()
 end
 
 ---@param name string|number
