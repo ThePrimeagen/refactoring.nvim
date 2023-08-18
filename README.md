@@ -15,6 +15,7 @@
 - [Installation](#installation)
   - [Requirements](#requirements)
   - [Setup Using Packer](#packer)
+  - [Setup Using Lazy](#lazy)
   - [Quickstart](#quickstart)
 - [Features](#features)
   - [Supported Languages](#supported-languages)
@@ -51,6 +52,20 @@ use {
         {"nvim-treesitter/nvim-treesitter"}
     }
 }
+```
+
+### Setup Using Lazy<a name="lazy"></a>
+```lua
+  {
+    "ThePrimeagen/refactoring.nvim",
+    dependencies = {
+      "nvim-lua/plenary.nvim",
+      "nvim-treesitter/nvim-treesitter",
+    },
+    config = function()
+      require("refactoring").setup()
+    end,
+  },
 ```
 
 ### Quickstart<a name="quickstart"></a>
