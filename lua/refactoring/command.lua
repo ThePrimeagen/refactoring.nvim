@@ -1,6 +1,3 @@
-local refactors = require("refactoring.refactor")
-local Config = require("refactoring.config")
-
 local M = {}
 
 --- @alias command_opts {name: string, args: string, fargs: string[], bang: boolean, line1: number, line2: number, range: number, count: number, reg: string, mods: string, smods: string[]}
@@ -18,6 +15,8 @@ local _needed_args = {
 --- @param opts command_opts
 --- @param ns integer
 local function command_preview(opts, ns)
+    local refactors = require("refactoring.refactor")
+
     local refactor = opts.fargs[1]
 
     refactor = refactors[refactor] and refactor
@@ -49,7 +48,7 @@ local function command_preview(opts, ns)
     for i = 2, needed_args + 1 do
         table.insert(args, opts.fargs[i])
     end
-    Config:get():automate_input(args)
+    require("refactoring.config"):get():automate_input(args)
 
     require("refactoring").refactor(refactor, { _preview_namespace = ns })
 
@@ -72,7 +71,7 @@ local function command(opts)
         table.insert(args, opts.fargs[i])
     end
 
-    Config:get():automate_input(args)
+    require("refactoring.config"):get():automate_input(args)
     require("refactoring").refactor(refactor)
 end
 
@@ -81,6 +80,8 @@ end
 ---@param _cursor_pos integer
 ---@return string[]
 local function command_complete(arg_lead, cmd_line, _cursor_pos)
+    local refactors = require("refactoring.refactor")
+
     local number_of_arguments = #vim.split(cmd_line, " ")
 
     if number_of_arguments > 2 then
