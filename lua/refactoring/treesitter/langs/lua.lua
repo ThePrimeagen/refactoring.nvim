@@ -5,6 +5,7 @@ local FieldNode = Nodes.FieldNode
 local StringNode = Nodes.StringNode
 local QueryNode = Nodes.QueryNode
 local InlineNode = Nodes.InlineNode
+local utils = require("refactoring.utils")
 
 ---@type TreeSitterInstance
 local Lua = {}
@@ -94,6 +95,27 @@ function Lua.new(bufnr, ft)
         function_body = {
             InlineNode("(function_declaration (block (_) @tmp_capture))"),
         },
+        return_statement = {
+            InlineNode("(return_statement) @tmp_capture"),
+        },
+        return_values = {
+            InlineNode("(return_statement (expression_list (_) @tmp_capture))"),
+        },
+        function_references = {
+            InlineNode("(function_call name: (identifier) @tmp_capture)"),
+        },
+        caller_args = {
+            InlineNode(
+                "(function_call arguments: (arguments (_) @tmp_capture))"
+            ),
+        },
+        is_return_statement = function(statement)
+            -- stylua: ignore start
+            return vim.startswith(
+                utils.trim(statement)--[[@as string]],
+                "return"
+            )
+        end,
     }
     return TreeSitter:new(config, bufnr)
 end
