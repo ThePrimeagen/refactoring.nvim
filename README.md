@@ -102,6 +102,10 @@ are supported (with individual support for each function may vary):
     - Also possible to Extract Block.
     - Both Extract Function and Extract Block have the capability to extract to
       a separate file.
+  - **115: Inline Function**
+    - Inverse of extract function
+    - In normal mode, inline occurrences of the function under the cursor
+    - The function under the cursor has to be the declaration of the function
   - **119: Extract Variable**
     - In visual mode, extracts occurrences of a selected expression to its own
       variable, replacing occurrences of that expression with the variable
@@ -207,6 +211,8 @@ vim.keymap.set("x", "<leader>rv", ":Refactor extract_var ")
 
 vim.keymap.set({ "n", "x" }, "<leader>ri", ":Refactor inline_var")
 
+vim.keymap.set( "n", "<leader>rI", ":Refactor inline_func")
+
 vim.keymap.set("n", "<leader>rb", ":Refactor extract_block")
 vim.keymap.set("n", "<leader>rbf", ":Refactor extract_block_to_file")
 
@@ -227,6 +233,8 @@ vim.keymap.set("x", "<leader>rf", function() require('refactoring').refactor('Ex
 -- Extract function supports only visual mode
 vim.keymap.set("x", "<leader>rv", function() require('refactoring').refactor('Extract Variable') end)
 -- Extract variable supports only visual mode
+vim.keymap.set("n", "<leader>rI", function() require('refactoring').refactor('Inline Function') end)
+-- Inline func supports only normal
 vim.keymap.set({ "n", "x" }, "<leader>ri", function() require('refactoring').refactor('Inline Variable') end)
 -- Inline var supports both normal and visual mode
 
