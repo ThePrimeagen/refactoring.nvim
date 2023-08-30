@@ -153,10 +153,7 @@ local function get_inline_text_edits(
 
         --- @type TSNode
         local parent = ref:parent()
-        if
-            refactor.ts.should_check_parent_node
-            and refactor.ts.should_check_parent_node(parent:type())
-        then
+        if refactor.ts.should_check_parent_node(parent:type()) then
             ref = parent
         end
 
@@ -241,10 +238,7 @@ local function inline_var_normal_setup(refactor)
     if node_to_inline == nil then
         return false, "There is no node on cursor"
     end
-    if
-        refactor.ts.should_check_parent_node
-        and refactor.ts.should_check_parent_node(node_to_inline:type())
-    then
+    if refactor.ts.should_check_parent_node(node_to_inline:type()) then
         --- @type TSNode
         node_to_inline = node_to_inline:named_child()
     end

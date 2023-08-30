@@ -11,7 +11,7 @@ local code = require("refactoring.code_generation")
 local M = {}
 
 ---@param refactor Refactor
----@return TSNode? declarator
+---@return TSNode? scope
 ---@return TSNode? identifier
 local function get_function_declaration(refactor)
     local current_node = vim.treesitter.get_node({ bufnr = refactor.bufnr })
@@ -21,11 +21,11 @@ local function get_function_declaration(refactor)
     end
 
     local definition = ts_locals.find_definition(current_node, refactor.bufnr)
-    local declarator_node =
-        refactor.ts.get_container(definition, refactor.ts.function_scopes)
 
-    if declarator_node and definition then
-        return declarator_node, definition
+    local scope = ts_locals.containing_scope(definition, refactor.bufnr, false)
+
+    if scope and definition then
+        return scope, definition
     end
 end
 
@@ -61,14 +61,7 @@ end
 local function get_function_returned_values(refactor, function_declaration)
     ---@type string[]
     local values = {}
-    for _, value in
-        ipairs(
-            refactor.ts:loop_thru_nodes(
-                function_declaration,
-                refactor.ts.return_values
-            )
-        )
-    do
+    for _, value in ipairs(refactor.ts:get_return_values(function_declaration)) do
         table.insert(
             values,
             vim.treesitter.get_node_text(value, refactor.bufnr)
@@ -83,14 +76,7 @@ end
 local function get_function_parameter_names(refactor, function_declaration)
     ---@type string[]
     local values = {}
-    for _, value in
-        ipairs(
-            refactor.ts:loop_thru_nodes(
-                function_declaration,
-                refactor.ts.function_args
-            )
-        )
-    do
+    for _, value in ipairs(refactor.ts:get_function_args(function_declaration)) do
         table.insert(
             values,
             vim.treesitter.get_node_text(value, refactor.bufnr)
@@ -158,20 +144,18 @@ local function get_params_as_constants(refactor, indent_space, keys, values)
     ---@type string[]
     local constants = {}
     for idx, _ in ipairs(values) do
+        local constant = refactor.code.constant({
+            name = keys[idx],
+            value = values[idx],
+        })
         -- TODO: refactor to a one line constant
         if idx == 1 then
+            table.insert(constants, constant)
+        else
             table.insert(
                 constants,
-                refactor.code.constant({
-                    name = keys[idx],
-                    value = values[idx],
-                })
+                table.concat({ indent_space, constant }, "")
             )
-        else
-            table.insert(constants, indent_space .. refactor.code.constant({
-                name = keys[idx],
-                value = values[idx],
-            }))
         end
     end
     return constants
@@ -181,38 +165,43 @@ end
 ---@return boolean
 ---@return Refactor|string
 local function inline_func_setup(refactor)
-    -- TODO: need to get function declaration no matter if we are at the definition or at any reference
-    local function_declaration, identifier = get_function_declaration(refactor)
+    local scope, identifier = get_function_declaration(refactor)
 
-    if function_declaration == nil or identifier == nil then
+    if scope == nil or identifier == nil then
         return false, "No function declaration found"
     end
 
     local function_references =
-        get_references(refactor, function_declaration:parent(), identifier)
+        get_references(refactor, scope:parent(), identifier)
 
     if #function_references == 0 then
         return false, "Error: no function usages to inline"
     end
 
     local text_edits = {}
-    local function_body_text =
-        get_function_body_text(refactor, function_declaration)
-    local returned_values =
-        get_function_returned_values(refactor, function_declaration)
-    local parameters =
-        get_function_parameter_names(refactor, function_declaration)
+    local function_body_text = get_function_body_text(refactor, scope)
+    local returned_values = get_function_returned_values(refactor, scope)
+    local parameters = get_function_parameter_names(refactor, scope)
+
+    local return_statements = refactor.ts:get_return_statements(scope)
+
+    if #return_statements > 1 then
+        return false,
+            "Inline function of a function with multiple return statements is not supported"
+    end
 
     local refactor_is_possible = false
 
     -- TODO (TheLeoP): check if indenting is suported in all of 115
-    indent.lines_remove_indent(
-        function_body_text,
-        1,
-        #function_body_text,
-        indent.line_indent_amount(function_body_text[1] or "", refactor.bufnr),
-        refactor.bufnr
-    )
+    if not vim.tbl_isempty(function_body_text) then
+        indent.lines_remove_indent(
+            function_body_text,
+            1,
+            #function_body_text,
+            indent.line_indent_amount(function_body_text[1], refactor.bufnr),
+            refactor.bufnr
+        )
+    end
 
     for _, reference in ipairs(function_references) do
         -- TODO (TheLeoP): check if this can be done using `indent.buf_indent_amount`
@@ -230,7 +219,7 @@ local function inline_func_setup(refactor)
             region_with_indent:get_text()[1],
             refactor.bufnr
         )
-        local indent_space = indent.indent(indent_amount, refactor.bufnr)
+        local indentation = indent.indent(indent_amount, refactor.bufnr)
 
         -- inlines function body into the new place (without return statements)
         if
@@ -244,9 +233,8 @@ local function inline_func_setup(refactor)
                     text_edits,
                     lsp_utils.insert_new_line_text(
                         Region:from_node(reference:parent(), refactor.bufnr),
-                        indent_space .. sentence,
-                        -- TODO (TheLeoP): which opts should be used here?
-                        {}
+                        table.concat({ indentation, sentence }, ""),
+                        { below = false, _end = false }
                     )
                 )
             end
@@ -283,8 +271,8 @@ local function inline_func_setup(refactor)
                     text_edits,
                     lsp_utils.insert_new_line_text(
                         utils.region_one_line_up_from_node(reference),
-                        indent_space .. sentence,
-                        {}
+                        table.concat({ indentation, sentence }, ""),
+                        { below = false, _end = false }
                     )
                 )
             end
@@ -316,7 +304,7 @@ local function inline_func_setup(refactor)
                     text_edits,
                     lsp_utils.insert_text(
                         Region:from_node(reference:parent(), refactor.bufnr),
-                        sentence .. comma
+                        table.concat({ sentence, comma }, "")
                     )
                 )
             end
@@ -334,9 +322,9 @@ local function inline_func_setup(refactor)
                     text_edits,
                     lsp_utils.insert_new_line_text(
                         utils.region_one_line_up_from_node(reference),
-                        indent_space .. sentence,
+                        table.concat({ indentation, sentence }, ""),
                         -- TODO: this could be merged into the next one
-                        {}
+                        { below = false, _end = false }
                     )
                 )
             end
@@ -349,7 +337,7 @@ local function inline_func_setup(refactor)
                     text_edits,
                     lsp_utils.insert_text(
                         Region:from_node(reference:parent(), refactor.bufnr),
-                        sentence .. comma
+                        table.concat({ sentence, comma }, "")
                     )
                 )
             end
@@ -366,7 +354,7 @@ local function inline_func_setup(refactor)
                 get_function_arguments(refactor, reference:parent())
             local constants = get_params_as_constants(
                 refactor,
-                indent_space,
+                indentation,
                 parameters,
                 arguments_list
             )
@@ -386,7 +374,7 @@ local function inline_func_setup(refactor)
                     text_edits,
                     lsp_utils.insert_text(
                         Region:from_node(reference:parent(), refactor.bufnr),
-                        indent_space .. sentence .. new_line
+                        table.concat({ indentation, sentence, new_line }, "")
                     )
                 )
             end
@@ -403,7 +391,7 @@ local function inline_func_setup(refactor)
                 get_function_arguments(refactor, reference:parent())
             local constants = get_params_as_constants(
                 refactor,
-                indent_space,
+                indentation,
                 parameters,
                 arguments_list
             )
@@ -412,7 +400,7 @@ local function inline_func_setup(refactor)
                     text_edits,
                     lsp_utils.insert_text(
                         utils.region_one_line_up_from_node(reference),
-                        indent_space .. constant
+                        table.concat({ indentation, constant }, "")
                     )
                 )
             end
@@ -425,7 +413,7 @@ local function inline_func_setup(refactor)
                     text_edits,
                     lsp_utils.insert_text(
                         Region:from_node(reference:parent(), refactor.bufnr),
-                        sentence .. comma
+                        table.concat({ sentence, comma }, "")
                     )
                 )
             end
@@ -443,7 +431,7 @@ local function inline_func_setup(refactor)
                 get_function_arguments(refactor, reference:parent())
             local constants = get_params_as_constants(
                 refactor,
-                indent_space,
+                indentation,
                 parameters,
                 arguments_list
             )
@@ -452,7 +440,7 @@ local function inline_func_setup(refactor)
                     text_edits,
                     lsp_utils.insert_text(
                         utils.region_one_line_up_from_node(reference),
-                        indent_space .. constant
+                        table.concat({ indentation, constant }, "")
                     )
                 )
             end
@@ -461,7 +449,7 @@ local function inline_func_setup(refactor)
                     text_edits,
                     lsp_utils.insert_text(
                         utils.region_one_line_up_from_node(reference),
-                        indent_space .. sentence .. new_line
+                        table.concat({ indentation, sentence, new_line }, "")
                     )
                 )
             end
@@ -474,7 +462,7 @@ local function inline_func_setup(refactor)
                     text_edits,
                     lsp_utils.insert_text(
                         Region:from_node(reference:parent(), refactor.bufnr),
-                        sentence .. comma
+                        table.concat({ sentence, comma }, "")
                     )
                 )
             end
@@ -493,9 +481,7 @@ local function inline_func_setup(refactor)
         -- deletes function declaration
         table.insert(
             text_edits,
-            lsp_utils.delete_text(
-                Region:from_node(function_declaration, refactor.bufnr)
-            )
+            lsp_utils.delete_text(Region:from_node(scope, refactor.bufnr))
         )
     else
         vim.print({

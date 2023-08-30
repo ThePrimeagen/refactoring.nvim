@@ -3,34 +3,34 @@ local utils = require("refactoring.utils")
 local Region = require("refactoring.region")
 
 ---@class TreeSitterLanguageConfig
----@field bufnr integer: the bufnr to which this belongs
----@field filetype string: the filetype
----@field scope_names table<string, string>: nodes that are scopes in current buffer
----@field block_scope table<string, true>: scopes that are blocks in current buffer
----@field variable_scope table<string, true>: scopes that contain variables in current buffer
----@field local_var_names InlineNodeFunc[]: list of inline nodes for local variable names
----@field function_args InlineNodeFunc[]: nodes to find args for a function
----@field local_var_values InlineNodeFunc[]: list of inline nodes for local variable values
----@field local_declarations InlineNodeFunc[]: list of inline nodes for local declarations
----@field indent_scopes table<string, true>: nodes where code has addition indent inside
----@field debug_paths table<string, FieldNodeFunc>: nodes to know path for debug strings
----@field statements InlineNodeFunc[]: statements in current scope
----@field function_body InlineNodeFunc[]: nodes to find body for a function
----@field require_param_types boolean: flag to require parameter types for codegen
----@field valid_class_nodes table<string, 0|1|true>: nodes that mean scope is a class function
----@field class_names InlineNodeFunc[]: nodes to get class names
----@field class_type InlineNodeFunc[]: nodes to get types for classes
----@field ident_with_type InlineFilteredNodeFunc[]: nodes to get all identifiers and types for a scope
----@field function_scopes table<string, string|true>: nodes to find a function declaration
----@field require_class_name boolean: flag to require class name for codegen
----@field require_class_type boolean: flag to require class type for codegen
+---@field bufnr integer bufnr to which this belongs
+---@field filetype string filetype
+---@field scope_names table<string, string> nodes that are scopes in current buffer
+---@field block_scope table<string, true> scopes that are blocks in current buffer
+---@field variable_scope table<string, true> scopes that contain variables in current buffer
+---@field local_var_names InlineNodeFunc[] nodes for local variable names
+---@field function_args InlineNodeFunc[] nodes to find args for a function
+---@field local_var_values InlineNodeFunc[] nodes for local variable values
+---@field local_declarations InlineNodeFunc[] nodes for local declarations
+---@field indent_scopes table<string, true> nodes where code has addition indent inside
+---@field debug_paths table<string, FieldNodeFunc> nodes to know path for debug strings
+---@field statements InlineNodeFunc[] nodes of statements in current scope
+---@field function_body InlineNodeFunc[] nodes to find body for a function
+---@field require_param_types? boolean flag to require parameter types for codegen
+---@field valid_class_nodes? table<string, 0|1|true> nodes that mean scope is a class function
+---@field class_names? InlineNodeFunc[] nodes to get class names
+---@field class_type? InlineNodeFunc[] nodes to get types for classes
+---@field ident_with_type? InlineFilteredNodeFunc[] nodes to get all identifiers and types for a scope
+---@field require_class_name? boolean flag to require class name for codegen
+---@field require_class_type? boolean flag to require class type for codegen
 ---@field require_special_var_format? boolean: flag to require special variable format for codegen
----@field should_check_parent_node? fun(parent_type: string): boolean is checking the parent node necesary for context?
+---@field should_check_parent_node? fun(parent_type: string): boolean function to check if it's necesary to check the parent node
 ---@field include_end_of_line? boolean flag to indicate if end of line should be included in a region
----@field return_values? InlineNodeFunc[] TODO (TheLeoP): is this needed?
----@field function_references? InlineNodeFunc[] TODO (TheLeoP): is this needed?
----@field caller_args? InlineNodeFunc[] TODO (TheLeoP): is this needed?
----@field is_return_statement? fun(statement: string): boolean
+---@field return_values InlineNodeFunc[] nodes that are return values
+---@field function_references InlineNodeFunc[] nodes that are references of function
+---@field caller_args InlineNodeFunc[] nodes that are arguments passed to a function when it's called
+---@field return_statement InlineNodeFunc[] nodes that are return statements
+---@field is_return_statement fun(statement: string): boolean function to check if a statement is a return statement
 
 --- The following fields act similar to a cursor
 ---@class TreeSitter: TreeSitterLanguageConfig
@@ -54,14 +54,22 @@ function TreeSitter:new(config, bufnr)
         statements = {},
         indent_scopes = {},
         ident_with_type = {},
-        function_scopes = {},
         function_args = {},
         function_body = {},
+        return_values = {},
+        function_references = {},
+        caller_args = {},
+        return_statement = {},
         bufnr = bufnr,
         require_class_name = false,
         require_class_type = false,
         require_param_types = false,
         require_special_variable_format = false,
+        require_special_var_format = false,
+        should_check_parent_node = function(_parent_type)
+            return false
+        end,
+        include_end_of_line = false,
         filetype = config.filetype,
     }
     local c = vim.tbl_extend("force", default_config, config)
@@ -195,6 +203,27 @@ end
 function TreeSitter:get_function_body(scope)
     self:validate_setting("function_body")
     return self:loop_thru_nodes(scope, self.function_body)
+end
+
+---@param scope TSNode
+---@return TSNode[]
+function TreeSitter:get_return_values(scope)
+    self:validate_setting("return_values")
+    return self:loop_thru_nodes(scope, self.return_values)
+end
+
+---@param scope TSNode
+---@return TSNode[]
+function TreeSitter:get_function_args(scope)
+    self:validate_setting("function_args")
+    return self:loop_thru_nodes(scope, self.function_args)
+end
+
+---@param scope TSNode
+---@return TSNode[]
+function TreeSitter:get_return_statements(scope)
+    self:validate_setting("return_statement")
+    return self:loop_thru_nodes(scope, self.return_statement)
 end
 
 ---@param scope TSNode

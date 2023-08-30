@@ -3,10 +3,6 @@ package main
 import "fmt"
 
 func extracted() (bool, error) {
-    // res := false
-    // if !res {
-    // 	return false, fmt.Errorf("an error")
-    // }
     return true, fmt.Errorf("an error")
 }
 

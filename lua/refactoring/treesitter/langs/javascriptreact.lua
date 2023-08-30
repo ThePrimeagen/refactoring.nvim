@@ -93,11 +93,6 @@ function JavascriptReact.new(bufnr, ft)
             InlineNode("(while_statement) @tmp_capture"),
             InlineNode("(lexical_declaration) @tmp_capture"),
         },
-        function_scopes = {
-            method_definition = true,
-            function_declaration = true,
-            arrow_function = true,
-        },
         function_body = {
             InlineNode(
                 "(method_definition (statement_block (_) @tmp_capture))"

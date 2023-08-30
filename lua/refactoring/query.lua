@@ -6,7 +6,7 @@
 --- }
 
 ---@class RefactorQuery
----@field query Query|nil
+---@field query? Query
 ---@field bufnr integer
 ---@field filetype string
 ---@field root TSNode

@@ -55,10 +55,6 @@ function C.new(bufnr, ft)
             do_statement = true,
         },
 
-        function_scopes = {
-            function_definition = true,
-            translation_unit = true,
-        },
         debug_paths = {
             class_specifier = FieldNode("name"),
             function_definition = TakeFirstNode(

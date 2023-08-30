@@ -77,11 +77,6 @@ function Golang.new(bufnr, ft)
                 "(_ name: (identifier) @ident type: (type_identifier) @type)"
             ),
         },
-        function_scopes = {
-            function_declaration = "function",
-            method_declaration = "function",
-            if_statement = true,
-        },
         function_args = {
             InlineNode(
                 "(function_declaration parameters: (parameter_list (parameter_declaration (identifier) @tmp_capture)))"
@@ -94,17 +89,15 @@ function Golang.new(bufnr, ft)
             InlineNode("(function_declaration (block (_) @tmp_capture))"),
             InlineNode("(method_declaration (block (_) @tmp_capture))"),
         },
-        -- TODO (TheLeoP): is this needed?
+        return_statement = {
+            InlineNode("(return_statement) @tmp_capture"),
+        },
         return_values = {
             InlineNode("(return_statement (expression_list (_) @tmp_capture))"),
         },
-        -- TODO (TheLeoP): is this needed?
         function_references = {
-            InlineNode(
-                "(call_expression function: (identifier) @temp_capture)"
-            ),
+            InlineNode("(call_expression function: (identifier) @tmp_capture)"),
         },
-        -- TODO (TheLeoP): is this needed?
         caller_args = {
             InlineNode(
                 "(call_expression arguments: (argument_list (_) @tmp_capture))"
@@ -114,7 +107,11 @@ function Golang.new(bufnr, ft)
         require_class_type = true,
         require_param_types = true,
         is_return_statement = function(statement)
-            return vim.startswith(utils.trim(statement), "return")
+            -- stylua: ignore start
+            return vim.startswith(
+                utils.trim(statement)--[[@as string]],
+                "return"
+            )
         end,
     }
     return TreeSitter:new(config, bufnr)

@@ -79,7 +79,7 @@ local default_extract_var_statements = {}
 ---@field class_function_return fun(opts: {body: string, classname: string, name: string, return_type: string}): string
 ---@field call_class_function fun(opts: {args: string[], class_type: string|nil, name: string}): string
 ---@field special_var? fun(var: string, opts: special_var_opts): string
----@field var_declaration? fun(opts: constant_opts): string TODO (TheLeoP): is this required?
+---@field var_declaration? fun(opts: constant_opts): string
 
 ---@alias ft
 ---| "ts"

@@ -30,12 +30,12 @@ local function refactor_setup(input_bufnr, config)
         local cursor = Point:from_cursor()
 
         ---@class Refactor
-        ---@field region RefactorRegion|nil
-        ---@field region_node TSNode|nil
-        ---@field identifier_node TSNode|nil
-        ---@field scope TSNode|nil
-        ---@field cursor_col_adjustment integer|nil
-        ---@field text_edits LspTextEdit[] | {bufnr: integer|nil}[] | nil
+        ---@field region? RefactorRegion
+        ---@field region_node? TSNode
+        ---@field identifier_node? TSNode
+        ---@field scope? TSNode
+        ---@field cursor_col_adjustment? integer
+        ---@field text_edits? LspTextEdit[] | {bufnr?: integer}[]
         ---@field code code_generation
         ---@field return_value string used by debug.get_path
         local refactor = {
