@@ -24,9 +24,13 @@ local Region = require("refactoring.region")
 ---@field function_scopes table<string, string|true>: nodes to find a function declaration
 ---@field require_class_name boolean: flag to require class name for codegen
 ---@field require_class_type boolean: flag to require class type for codegen
----@field require_special_var_format boolean: flag to require special variable format for codegen
----@field should_check_parent_node fun(parent_type: string): boolean is checking the parent node necesary for context?
----@field include_end_of_line boolean flag to indicate if end of line should be included in a region
+---@field require_special_var_format? boolean: flag to require special variable format for codegen
+---@field should_check_parent_node? fun(parent_type: string): boolean is checking the parent node necesary for context?
+---@field include_end_of_line? boolean flag to indicate if end of line should be included in a region
+---@field return_values? InlineNodeFunc[] TODO (TheLeoP): is this needed?
+---@field function_references? InlineNodeFunc[] TODO (TheLeoP): is this needed?
+---@field caller_args? InlineNodeFunc[] TODO (TheLeoP): is this needed?
+---@field is_return_statement? fun(statement: string): boolean
 
 --- The following fields act similar to a cursor
 ---@class TreeSitter: TreeSitterLanguageConfig

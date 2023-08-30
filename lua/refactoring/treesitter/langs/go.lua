@@ -3,6 +3,7 @@ local Nodes = require("refactoring.treesitter.nodes")
 local FieldNode = Nodes.FieldNode
 local InlineNode = Nodes.InlineNode
 local InlineFilteredNode = Nodes.InlineFilteredNode
+local utils = require("refactoring.utils")
 
 ---@type TreeSitterInstance
 local Golang = {}
@@ -93,9 +94,28 @@ function Golang.new(bufnr, ft)
             InlineNode("(function_declaration (block (_) @tmp_capture))"),
             InlineNode("(method_declaration (block (_) @tmp_capture))"),
         },
+        -- TODO (TheLeoP): is this needed?
+        return_values = {
+            InlineNode("(return_statement (expression_list (_) @tmp_capture))"),
+        },
+        -- TODO (TheLeoP): is this needed?
+        function_references = {
+            InlineNode(
+                "(call_expression function: (identifier) @temp_capture)"
+            ),
+        },
+        -- TODO (TheLeoP): is this needed?
+        caller_args = {
+            InlineNode(
+                "(call_expression arguments: (argument_list (_) @tmp_capture))"
+            ),
+        },
         require_class_name = true,
         require_class_type = true,
         require_param_types = true,
+        is_return_statement = function(statement)
+            return vim.startswith(utils.trim(statement), "return")
+        end,
     }
     return TreeSitter:new(config, bufnr)
 end
