@@ -92,11 +92,6 @@ function Python.new(bufnr, ft)
             for_statement = true,
             if_statement = true,
         },
-        function_scopes = {
-            function_definition = true,
-            if_statement = true,
-            module = true,
-        },
         ident_with_type = {
             InlineFilteredNode("(_ (identifier) @ident type: (type) @type)"),
         },

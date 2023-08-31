@@ -68,8 +68,8 @@ local default_extract_var_statements = {}
 ---@field print_var fun(opts: {statement:string, prefix:string , var:string}): string
 ---@field comment fun(statement: string): string
 ---@field constant fun(opts: constant_opts): string
----@field pack fun(names: string|table):string This is for returning multiple arguments from a function
----@field unpack fun(names: string|table):string This is for consuming one or more arguments from a function call.
+---@field pack? fun(names: string|table):string This is for returning multiple arguments from a function
+---@field unpack? fun(names: string|table):string This is for consuming one or more arguments from a function call.
 ---@field return fun(code: string[]|string):string
 ---@field function fun(opts: function_opts):string
 ---@field function_return fun(opts: function_opts): string
@@ -78,7 +78,8 @@ local default_extract_var_statements = {}
 ---@field class_function fun(opts: call_function_opts):string
 ---@field class_function_return fun(opts: {body: string, classname: string, name: string, return_type: string}): string
 ---@field call_class_function fun(opts: {args: string[], class_type: string|nil, name: string}): string
----@field special_var fun(var: string, opts: special_var_opts): string
+---@field special_var? fun(var: string, opts: special_var_opts): string
+---@field var_declaration? fun(opts: constant_opts): string
 
 ---@alias ft
 ---| "ts"

@@ -346,10 +346,7 @@ end
 ---@return TSNode
 function M.node_to_parent_if_needed(refactor, node)
     local parent = node:parent()
-    if
-        refactor.ts.should_check_parent_node
-        and refactor.ts.should_check_parent_node(parent:type())
-    then
+    if refactor.ts.should_check_parent_node(parent:type()) then
         return parent
     end
     return node

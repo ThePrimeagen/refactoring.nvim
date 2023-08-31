@@ -78,10 +78,7 @@ local function get_variable(opts, point, refactor)
 
         --- @type TSNode
         local parent_node = node:parent()
-        if
-            refactor.ts.should_check_parent_node
-            and refactor.ts.should_check_parent_node(parent_node:type())
-        then
+        if refactor.ts.should_check_parent_node(parent_node:type()) then
             node = parent_node
         end
 

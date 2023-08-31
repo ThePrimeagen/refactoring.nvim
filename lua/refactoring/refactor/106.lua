@@ -187,8 +187,8 @@ end
 ---@return func_params
 local function get_func_params(extract_params, refactor)
     ---@class func_params
-    ---@field func_header string|nil
-    ---@field contains_jsx boolean|nil
+    ---@field func_header? string
+    ---@field contains_jsx? boolean
     local func_params = {
         name = extract_params.function_name,
         args = extract_params.args,

@@ -94,11 +94,6 @@ function TypescriptReact.new(bufnr, ft)
             InlineNode("(while_statement) @tmp_capture"),
             InlineNode("(lexical_declaration) @tmp_capture"),
         },
-        function_scopes = {
-            method_definition = true,
-            function_declaration = true,
-            arrow_function = true,
-        },
         ident_with_type = {
             InlineFilteredNode(
                 "(_ [name: (identifier) pattern: (identifier)] @ident type: (type_annotation (_) @type))"

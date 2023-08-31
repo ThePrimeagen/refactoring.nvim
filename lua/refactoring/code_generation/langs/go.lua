@@ -105,6 +105,21 @@ local function go_call_class_func(opts)
     )
 end
 
+local function var_declaration(opts)
+    local result
+    if not opts.statement then
+        opts.statement = "var %s %s"
+    end
+
+    result = string.format(
+        opts.statement .. "\n",
+        code_utils.returnify(opts.name, string_pattern),
+        opts.value
+    )
+
+    return result
+end
+
 local function constant(opts)
     local result
     if not opts.statement then
@@ -175,5 +190,6 @@ local go = {
     terminate = function(code)
         return code
     end,
+    var_declaration = var_declaration,
 }
 return go

@@ -3,6 +3,7 @@ local Nodes = require("refactoring.treesitter.nodes")
 local FieldNode = Nodes.FieldNode
 local InlineNode = Nodes.InlineNode
 local InlineFilteredNode = Nodes.InlineFilteredNode
+local utils = require("refactoring.utils")
 
 ---@type TreeSitterInstance
 local Golang = {}
@@ -76,11 +77,6 @@ function Golang.new(bufnr, ft)
                 "(_ name: (identifier) @ident type: (type_identifier) @type)"
             ),
         },
-        function_scopes = {
-            function_declaration = "function",
-            method_declaration = "function",
-            if_statement = true,
-        },
         function_args = {
             InlineNode(
                 "(function_declaration parameters: (parameter_list (parameter_declaration (identifier) @tmp_capture)))"
@@ -93,9 +89,30 @@ function Golang.new(bufnr, ft)
             InlineNode("(function_declaration (block (_) @tmp_capture))"),
             InlineNode("(method_declaration (block (_) @tmp_capture))"),
         },
+        return_statement = {
+            InlineNode("(return_statement) @tmp_capture"),
+        },
+        return_values = {
+            InlineNode("(return_statement (expression_list (_) @tmp_capture))"),
+        },
+        function_references = {
+            InlineNode("(call_expression function: (identifier) @tmp_capture)"),
+        },
+        caller_args = {
+            InlineNode(
+                "(call_expression arguments: (argument_list (_) @tmp_capture))"
+            ),
+        },
         require_class_name = true,
         require_class_type = true,
         require_param_types = true,
+        is_return_statement = function(statement)
+            -- stylua: ignore start
+            return vim.startswith(
+                utils.trim(statement)--[[@as string]],
+                "return"
+            )
+        end,
     }
     return TreeSitter:new(config, bufnr)
 end

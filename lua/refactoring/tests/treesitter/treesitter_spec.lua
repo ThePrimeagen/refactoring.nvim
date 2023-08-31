@@ -55,10 +55,8 @@ describe("TreeSitter", function()
         local ts = init()
         local indent_scope = get_indent_scope(ts, 39)
 
-        local indent_count = ts:indent_scope_difference(
-            indent_scope,
-            indent_scope
-        )
+        local indent_count =
+            ts:indent_scope_difference(indent_scope, indent_scope)
         assert.are.same(indent_count, 0)
     end)
 
@@ -127,7 +125,10 @@ describe("TreeSitter", function()
         set_position(33, 10)
         local node = ts:local_declarations_under_cursor()
 
-        assert.are.same("const bar = 5;", vim.treesitter.get_node_text(node, vim.api.nvim_get_current_buf()))
+        assert.are.same(
+            "const bar = 5;",
+            vim.treesitter.get_node_text(node, vim.api.nvim_get_current_buf())
+        )
     end)
 
     it("Inline Node basic test root scope", function()
@@ -225,16 +226,13 @@ describe("TreeSitter", function()
         local scope = get_scope(ts, 3)
         local failingInlineNode = Nodes.InlineNode("This should fail")
 
-        local status, err = pcall(
-            failingInlineNode,
-            scope,
-            ts.bufnr,
-            ts.filetype
-        )
+        local status, err =
+            pcall(failingInlineNode, scope, ts.bufnr, ts.filetype)
         assert.are.same(false, status)
         local user_error = string.find(err, "Invalid query: 'This should fail'")
         assert(user_error ~= nil)
-        local query_error = string.find(err, "invalid syntax at position 0")
+        local query_error =
+            string.find(err, "Query error at 1:1. Invalid syntax")
         assert(query_error ~= nil)
     end)
 
@@ -243,30 +241,21 @@ describe("TreeSitter", function()
         local scope = get_scope(ts, 3)
         local failingQueryNode = Nodes.QueryNode("This should fail")
 
-        local status, err = pcall(
-            failingQueryNode,
-            scope,
-            ts.bufnr,
-            ts.filetype
-        )
+        local status, err =
+            pcall(failingQueryNode, scope, ts.bufnr, ts.filetype)
         assert.are.same(false, status)
-        local user_error = string.find(
-            err,
-            "Invalid query: 'This should fail @tmp_capture'"
-        )
+        local user_error =
+            string.find(err, "Invalid query: 'This should fail @tmp_capture'")
         assert(user_error ~= nil)
-        local query_error = string.find(err, "invalid syntax at position 0")
+        local query_error =
+            string.find(err, "Query error at 1:1. Invalid syntax")
         assert(query_error ~= nil)
     end)
 
     it("Validate setting is on treesitter success", function()
         local ts = init()
 
-        local status, err = pcall(
-            ts_valid,
-            ts,
-            "scope_names"
-        )
+        local status, err = pcall(ts_valid, ts, "scope_names")
         assert(status == true)
         assert(err == nil)
     end)
@@ -276,16 +265,16 @@ describe("TreeSitter", function()
         local setting = "thisShouldFail"
         ts[setting] = {}
 
-        local status, err = pcall(
-            ts_valid,
-            ts,
-            setting
-        )
+        local status, err = pcall(ts_valid, ts, setting)
 
         assert(status == false)
-        local query_error = string.find(err, string.format(
-            "%s setting is empty in treesitter for this language",
-            setting))
+        local query_error = string.find(
+            err,
+            string.format(
+                "%s setting is empty in treesitter for this language",
+                setting
+            )
+        )
         assert(query_error ~= nil)
     end)
 
@@ -293,16 +282,16 @@ describe("TreeSitter", function()
         local ts = init()
         local setting = "doesNotExist"
 
-        local status, err = pcall(
-            ts_valid,
-            ts,
-            setting
-        )
+        local status, err = pcall(ts_valid, ts, setting)
 
         assert(status == false)
-        local query_error = string.find(err, string.format(
-            "%s setting does not exist on treesitter class",
-            setting))
+        local query_error = string.find(
+            err,
+            string.format(
+                "%s setting does not exist on treesitter class",
+                setting
+            )
+        )
         assert(query_error ~= nil)
     end)
 end)

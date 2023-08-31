@@ -7,6 +7,7 @@ local TakeFirstNode = Nodes.TakeFirstNode
 local QueryNode = Nodes.QueryNode
 local InlineNode = Nodes.InlineNode
 local InlineFilteredNode = Nodes.InlineFilteredNode
+local utils = require("refactoring.utils")
 
 ---@type TreeSitterInstance
 local C = {}
@@ -55,10 +56,6 @@ function C.new(bufnr, ft)
             do_statement = true,
         },
 
-        function_scopes = {
-            function_definition = true,
-            translation_unit = true,
-        },
         debug_paths = {
             class_specifier = FieldNode("name"),
             function_definition = TakeFirstNode(
@@ -95,7 +92,28 @@ function C.new(bufnr, ft)
                 "(function_definition (compound_statement (_) @tmp_capture))"
             ),
         },
+        return_statement = {
+            InlineNode("(return_statement) @tmp_capture"),
+        },
+        return_values = {
+            InlineNode("(return_statement (_) @tmp_capture)"),
+        },
+        function_references = {
+            InlineNode("(call_expression function: (identifier) @tmp_capture)"),
+        },
+        caller_args = {
+            InlineNode(
+                "(call_expression arguments: (argument_list (_) @tmp_capture))"
+            ),
+        },
         require_param_types = true,
+        is_return_statement = function(statement)
+            -- stylua: ignore start
+            return vim.startswith(
+                utils.trim(statement)--[[@as string]],
+                "return"
+            )
+        end,
     }
     return TreeSitter:new(config, bufnr)
 end
