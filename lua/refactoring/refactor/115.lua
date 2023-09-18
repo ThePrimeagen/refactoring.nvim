@@ -144,18 +144,22 @@ local function get_params_as_constants(refactor, indent_space, keys, values)
     ---@type string[]
     local constants = {}
     for idx, _ in ipairs(values) do
-        local constant = refactor.code.constant({
-            name = keys[idx],
-            value = values[idx],
-        })
-        -- TODO: refactor to a one line constant
-        if idx == 1 then
-            table.insert(constants, constant)
-        else
-            table.insert(
-                constants,
-                table.concat({ indent_space, constant }, "")
-            )
+        local name = keys[idx]
+        local value = values[idx]
+        if name ~= value then
+            local constant = refactor.code.constant({
+                name = name,
+                value = value,
+            })
+            -- TODO: refactor to a one line constant
+            if idx == 1 then
+                table.insert(constants, constant)
+            else
+                table.insert(
+                    constants,
+                    table.concat({ indent_space, constant }, "")
+                )
+            end
         end
     end
     return constants
