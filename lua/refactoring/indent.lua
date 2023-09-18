@@ -4,14 +4,14 @@ local M = {}
 
 ---Returns the indent width of a given buffer
 ---
----This depends on the values of `expandtab`, `shiftwidth` and `tabstop` for the buffer
+---This depends on the values of `shiftwidth` and `tabstop` for the buffer
 ---@param bufnr number
 ---@return number
 M.buf_indent_width = function(bufnr)
-    local exective_shiftwidth = vim.bo[bufnr].shiftwidth > 0
+    local efective_shiftwidth = vim.bo[bufnr].shiftwidth > 0
             and vim.bo[bufnr].shiftwidth
         or vim.bo[bufnr].tabstop
-    return vim.bo[bufnr].expandtab and exective_shiftwidth or 1
+    return efective_shiftwidth
 end
 
 ---@param point RefactorPoint
