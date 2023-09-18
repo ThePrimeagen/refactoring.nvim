@@ -1,7 +1,7 @@
 module SimpleModule
     class SimpleClass
         def simple_function(a)
-# __AUTO_GENERATED_PRINTF_START__
+            # __AUTO_GENERATED_PRINTF_START__
             puts "SimpleModule#SimpleClass#simple_function 1" # __AUTO_GENERATED_PRINTF_END__
             test = 1
             test_other = 11
