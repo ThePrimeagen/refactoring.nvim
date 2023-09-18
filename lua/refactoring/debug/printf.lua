@@ -75,15 +75,17 @@ local function text_edit_insert(
         )
         indentation = indent.indent(indent_amount, refactor.bufnr)
     end
+
+    local start_comment =
+        refactor.code.comment("__AUTO_GENERATED_PRINTF_START__")
+    local end_comment = refactor.code.comment("__AUTO_GENERATED_PRINTF_END__")
+
     if indentation ~= nil then
         text = table.concat({ indentation, text }, "")
+        start_comment = table.concat({ indentation, start_comment }, "")
     end
-    text = refactor.code.comment("__AUTO_GENERATED_PRINTF_START__")
-        .. "\n"
-        .. text
-        .. " "
-        .. refactor.code.comment("__AUTO_GENERATED_PRINTF_END__")
 
+    text = table.concat({ start_comment, "\n", text, " ", end_comment }, "")
     local range = Region:from_point(point, bufnr)
     table.insert(
         refactor.text_edits,

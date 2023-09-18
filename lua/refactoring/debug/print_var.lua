@@ -148,28 +148,26 @@ function M.printDebug(bufnr, config)
                     prefix = prefix,
                     var = variable,
                 })
+                local start_comment =
+                    refactor.code.comment("__AUTO_GENERATED_PRINT_VAR_START__")
+                local end_comment =
+                    refactor.code.comment("__AUTO_GENERATED_PRINT_VAR_END__")
 
-                --- @type string
-                local statement
                 if indentation ~= nil then
-                    statement =
+                    print_statement =
                         table.concat({ indentation, print_statement }, "")
-                else
-                    statement = print_statement
+                    start_comment =
+                        table.concat({ indentation, start_comment }, "")
                 end
 
+                local text = table.concat(
+                    { start_comment, "\n", print_statement, " ", end_comment },
+                    ""
+                )
                 refactor.text_edits = {
                     lsp_utils.insert_new_line_text(
                         Region:from_point(point),
-                        refactor.code.comment(
-                            "__AUTO_GENERATED_PRINT_VAR_START__"
-                        )
-                            .. "\n"
-                            .. statement
-                            .. " "
-                            .. refactor.code.comment(
-                                "__AUTO_GENERATED_PRINT_VAR_END__"
-                            ),
+                        text,
                         opts
                     ),
                 }
