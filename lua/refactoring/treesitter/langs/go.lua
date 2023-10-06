@@ -71,6 +71,7 @@ function Golang.new(bufnr, ft)
             InlineNode("(for_statement) @tmp_capture"),
             InlineNode("(call_expression) @tmp_capture"),
             InlineNode("(assignment_statement) @tmp_capture"),
+            InlineNode("(expression_statement) @tmp_capture"),
         },
         ident_with_type = {
             InlineFilteredNode(
