@@ -31,13 +31,14 @@ local function php_class_function(opts)
 
     return string.format(
         [[
-%spublic function %s (
+%s%s function %s (
 %s    %s
 %s) {
 %s
 %s}
 ]],
         opts.func_header,
+        opts.visibility,
         opts.name,
         opts.func_header,
         table.concat(opts.args, ", "),
