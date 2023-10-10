@@ -196,6 +196,7 @@ local function get_func_params(extract_params, refactor)
         scope_type = extract_params.scope_type,
         ---@type string
         region_type = refactor.region:to_ts_node(refactor.ts:get_root()):type(),
+        visibility = refactor.config:get_visibility_for(refactor.filetype),
     }
 
     if refactor.ts.require_param_types then
@@ -227,6 +228,8 @@ local function get_function_code(refactor, extract_params)
 
     if extract_params.is_class then
         func_params.className = refactor.ts:get_class_name(refactor.scope)
+        func_params.visibility =
+            refactor.config:get_visibility_for(refactor.filetype)
         if extract_params.has_return_vals then
             function_code = refactor.code.class_function_return(func_params)
         else
