@@ -51,6 +51,11 @@ local default_prompt_func_return_type = {
     cxx = false,
 }
 
+local default_visibility = {
+    php = "public",
+    default = false,
+}
+
 local default_printf_statements = {}
 local default_print_var_statements = {}
 local default_extract_var_statements = {}
@@ -108,6 +113,7 @@ local default_extract_var_statements = {}
 ---@field printf_statements? table<ft, string[]>
 ---@field print_var_statements? table<ft, string[]>
 ---@field extract_var_statements? table<ft, string>
+---@field visibility? table<ft, string>
 ---@field below? boolean
 ---@field _end? boolean
 
@@ -135,6 +141,7 @@ function Config:new(...)
         printf_statements = vim.deepcopy(default_printf_statements),
         print_var_statements = vim.deepcopy(default_print_var_statements),
         extract_var_statements = vim.deepcopy(default_extract_var_statements),
+        visibility = vim.deepcopy(default_visibility),
     })
 
     for idx = 1, select("#", ...) do
@@ -166,6 +173,7 @@ function Config:reset()
     c.printf_statements = vim.deepcopy(default_printf_statements)
     c.print_var_statements = vim.deepcopy(default_print_var_statements)
     c.extract_var_statements = vim.deepcopy(default_extract_var_statements)
+    c.visibility = vim.deepcopy(default_visibility)
 end
 
 ---@param inputs string|string[]
@@ -284,6 +292,13 @@ end
 function Config:get_formatting_for(filetype)
     filetype = filetype or vim.bo[0].ft
     return self.config.formatting[filetype] or self.config.formatting["default"]
+end
+
+---@param filetype ft
+---@return string
+function Config:get_visibility_for(filetype)
+    filetype = filetype or vim.bo[0].ft
+    return self.config.visibility[filetype] or self.config.visibility["default"]
 end
 
 local config = Config:new()
