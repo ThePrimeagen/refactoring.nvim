@@ -451,6 +451,9 @@ local function extract_setup(refactor)
             table.insert(body_sexprs, node:sexpr() .. " @temp" .. i)
             i = i + 1
             has_error = node:has_error() --[[@as boolean]]
+            if has_error then
+                break
+            end
         end
     end
 
