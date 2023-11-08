@@ -441,26 +441,23 @@ local function extract_setup(refactor)
     local parser = vim.treesitter.get_string_parser(selected_code, lang)
     local languagetree = parser:parse()
     local root = languagetree[1]:root()
-
-    --- @type string[]
-    local body_sexprs = {}
-    local has_error = false
-    do
-        local i = 1
-        for node in root:iter_children() do
-            table.insert(body_sexprs, node:sexpr() .. " @temp" .. i)
-            i = i + 1
-            has_error = node:has_error() --[[@as boolean]]
-            if has_error then
-                break
-            end
-        end
-    end
+    local has_error = root:has_error() --[[@as boolean]]
 
     local func_call = get_func_call(refactor, extract_params)
+
     -- PHP parser needs the PHP tag to parse code, so it's imposible to generate
     -- an adecuate sexpr with only the selected text
     if not has_error and refactor.filetype ~= "php" then
+        --- @type string[]
+        local body_sexprs = {}
+        do
+            local i = 1
+            for node in root:iter_children() do
+                table.insert(body_sexprs, node:sexpr() .. " @temp" .. i)
+                i = i + 1
+            end
+        end
+
         local body_sexpr = "(" .. table.concat(body_sexprs, " . ") .. ")"
         local query = vim.treesitter.query.parse(lang, body_sexpr)
 
