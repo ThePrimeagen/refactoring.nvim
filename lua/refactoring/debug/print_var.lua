@@ -105,10 +105,12 @@ function M.printDebug(bufnr, config)
                 local opts = refactor.config:get()
                 local point = Point:from_cursor()
 
-                -- always go below for text
-                opts.below = true
-                -- always go end for text
-                opts._end = true
+                -- set default `below` behavior
+                if opts.below == nil then
+                    opts.below = true
+                end
+                -- set default `end` behavior
+                opts._end = opts.below
                 point.col = opts.below and MAX_COL or 1
 
                 local mode = vim.api.nvim_get_mode().mode
