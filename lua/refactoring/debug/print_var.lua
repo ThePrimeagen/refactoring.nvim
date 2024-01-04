@@ -7,7 +7,6 @@ local lsp_utils = require("refactoring.lsp_utils")
 local debug_utils = require("refactoring.debug.debug_utils")
 local ensure_code_gen = require("refactoring.tasks.ensure_code_gen")
 local get_select_input = require("refactoring.get_select_input")
-local utils = require("refactoring.utils")
 local indent = require("refactoring.indent")
 
 local MAX_COL = 100000
