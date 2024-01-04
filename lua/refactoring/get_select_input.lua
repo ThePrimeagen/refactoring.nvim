@@ -2,7 +2,7 @@ local Config = require("refactoring.config")
 
 local async = require("plenary.async")
 
----@type fun(items: string[], prompt: string|nil, format: nil|function, kind: string|nil) : string|nil, integer|nil
+---@type fun(items: string[], prompt?: string, format?: function, kind?: string) : string?, integer?
 local select_input = async.wrap(function(items, prompt, format, kind, callback)
     vim.ui.select(items, {
         prompt = prompt,
@@ -13,8 +13,9 @@ end, 5)
 
 ---@param items unknown[]
 ---@param question string
----@param format nil|fun(item: unknown) : string
----@return unknown|nil, integer|nil
+---@param format? fun(item: unknown) : string
+---@return string?
+---@return integer?
 local function get_select_input(items, question, format)
     -- TODO: Extract to class
     local automation_input = Config.get():get_automated_input()

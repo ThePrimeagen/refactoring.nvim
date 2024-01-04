@@ -47,48 +47,6 @@ function M.get_print_var_statement(opts, refactor)
     return print_var_statement
 end
 
----@param opts table
----@param point RefactorPoint
----@param refactor Refactor
----@return string|nil identifier
-local function get_variable(opts, point, refactor)
-    if opts.normal then
-        local bufnr = 0
-        local lang = vim.treesitter.language.get_lang(refactor.filetype)
-        local root_lang_tree = vim.treesitter.get_parser(bufnr, lang)
-        local row = point.row
-        local col = point.col
-        local lang_tree = root_lang_tree:language_for_range({
-            point.row,
-            point.col,
-            point.row,
-            point.col,
-        })
-        for _, tree in ipairs(lang_tree:trees()) do
-            local root = tree:root()
-            if root and vim.treesitter.is_in_node_range(root, row, col) then
-                root:named_descendant_for_range(row, col, row, col)
-            end
-        end
-        local node = vim.treesitter.get_node()
-
-        if node == nil then
-            return nil
-        end
-
-        --- @type TSNode
-        local parent_node = node:parent()
-        if refactor.ts.should_check_parent_node(parent_node:type()) then
-            node = parent_node
-        end
-
-        return table.concat(utils.get_node_text(node), "")
-    end
-    vim.cmd("norm! ")
-    local variable_region = Region:from_current_selection()
-    return variable_region:get_text()[1]
-end
-
 ---@param bufnr integer
 ---@param config Config
 function M.printDebug(bufnr, config)
@@ -113,11 +71,9 @@ function M.printDebug(bufnr, config)
                 opts._end = opts.below
                 point.col = opts.below and MAX_COL or 1
 
-                local mode = vim.api.nvim_get_mode().mode
-                opts.normal = mode == "n"
-
                 -- Get variable text
-                local variable = get_variable(opts, point, refactor)
+                local variable_region = Region:from_motion()
+                local variable = variable_region:get_text()[1]
 
                 if variable == nil then
                     return false, "variable is nil"
