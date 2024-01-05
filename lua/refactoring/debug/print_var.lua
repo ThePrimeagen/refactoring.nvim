@@ -74,6 +74,29 @@ function M.printDebug(bufnr, config)
                 local variable_region = Region:from_motion()
                 local variable = variable_region:get_text()[1]
 
+                -- use treesitter for languges like PHP
+                -- NOTE: remove in case of allowing more than simply iw as a motion
+                local node = vim.treesitter.get_node()
+                if node == nil then
+                    return false, "node is nil"
+                end
+                local node_text =
+                    vim.treesitter.get_node_text(node, refactor.bufnr)
+                if node_text == variable then
+                    local parent_node = node:parent()
+                    if parent_node == nil then
+                        return false, "parent_node is nil"
+                    end
+                    if
+                        refactor.ts.should_check_parent_node(parent_node:type())
+                    then
+                        variable = vim.treesitter.get_node_text(
+                            parent_node,
+                            refactor.bufnr
+                        )
+                    end
+                end
+
                 if variable == nil then
                     return false, "variable is nil"
                 end
