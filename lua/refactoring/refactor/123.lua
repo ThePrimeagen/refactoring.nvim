@@ -147,6 +147,20 @@ local function get_inline_text_edits(
     local value_text =
         vim.treesitter.get_node_text(value_node_to_inline, refactor.bufnr)
 
+    if
+        refactor.filetype == "cpp"
+        and value_node_to_inline:type() == "initializer_list"
+    then
+        -- HACK: The text contains the surrounding brackets. Since the parser does not
+        -- expose a node that includes everything inside the brackets, we need
+        -- to manually remove them.
+        --
+        -- {1} -> 1
+        --
+        -- https://github.com/ThePrimeagen/refactoring.nvim/issues/427
+        value_text = value_text:sub(2, #value_text - 1)
+    end
+
     for _, ref in pairs(references) do
         -- TODO: In my mind, if nothing is left on the line when you remove, it should get deleted.
         -- Could be done via opts into replace_text.
@@ -239,8 +253,11 @@ local function inline_var_normal_setup(refactor)
         return false, "There is no node on cursor"
     end
     if refactor.ts.should_check_parent_node(node_to_inline:type()) then
-        --- @type TSNode
-        node_to_inline = node_to_inline:named_child()
+        --- @type TSNode?
+        node_to_inline = node_to_inline:named_child(0)
+        if node_to_inline == nil then
+            return false, "There is no node on cursor"
+        end
     end
     local definition = ts_locals.find_definition(node_to_inline, refactor.bufnr)
     local identifier_pos =
