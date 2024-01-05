@@ -357,8 +357,8 @@ end
 
 -- Finds usages of a node in a given scope.
 ---@param node TSNode the node to find usages for
----@param scope_node TSNode|nil the node to look within
----@param bufnr integer|nil the bufnr to look into
+---@param scope_node TSNode? the node to look within
+---@param bufnr integer? the bufnr to look into
 ---@return TSNode[]: a list of nodes
 function M.find_usages(node, scope_node, bufnr)
     bufnr = bufnr or api.nvim_get_current_buf()

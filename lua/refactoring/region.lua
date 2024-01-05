@@ -43,6 +43,23 @@ function Region:from_current_selection(opts)
     }, self)
 end
 
+--- Get a Region from motion (marks [ and ])
+---@return RefactorRegion
+function Region:from_motion()
+    local start_row = vim.fn.line("'[")
+    local start_col = vim.fn.col("'[")
+    local end_row = vim.fn.line("']")
+    local end_col = vim.fn.col("']")
+
+    return setmetatable({
+        bufnr = vim.api.nvim_get_current_buf(),
+        start_row = start_row,
+        start_col = start_col,
+        end_row = end_row,
+        end_col = end_col,
+    }, self)
+end
+
 ---@param bufnr integer
 ---@param start_row integer
 ---@param start_col integer

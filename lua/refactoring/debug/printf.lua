@@ -21,17 +21,16 @@ function M.get_printf_statement(opts, refactor)
 
     local custom_printf_statements = opts.printf_statements[refactor.filetype]
 
-    local printf_statement
+    local printf_statement ---@type string
 
     -- if there's a set of statements given for this one
     if custom_printf_statements then
         if #custom_printf_statements > 1 then
-            printf_statement = get_select_input(
-                custom_printf_statements,
-                "printf: Select a statement to insert:",
-                function(item)
-                    return item
-                end
+            printf_statement = assert(
+                get_select_input(
+                    custom_printf_statements,
+                    "printf: Select a statement to insert:"
+                )
             )
         else
             printf_statement = custom_printf_statements[1]
@@ -146,8 +145,10 @@ local function text_edits_replace(
     end
 end
 
+---@param bufnr integer
+---@param config Config
 function M.printDebug(bufnr, config)
-    return Pipeline:from_task(refactor_setup(bufnr, config))
+    Pipeline:from_task(refactor_setup(bufnr, config))
         :add_task(
             ---@param refactor Refactor
             function(refactor)
