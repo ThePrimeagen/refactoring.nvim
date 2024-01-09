@@ -113,6 +113,9 @@ local function extract_var_setup(refactor)
             )
         )
     end
+    refactor.success_message = ("[Refactor] Extracted %s variable occurrences"):format(
+        #actual_occurrences
+    )
 
     --- @type TSNode[]
     local block_scopes = {}

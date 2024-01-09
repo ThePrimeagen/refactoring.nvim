@@ -38,10 +38,11 @@ local function refactor_setup(input_bufnr, config)
         ---@field text_edits? LspTextEdit[] | {bufnr?: integer}[]
         ---@field code code_generation
         ---@field return_value string used by debug.get_path
+        ---@field success_message? string
         local refactor = {
             ---@type {cursor: integer, func_call: integer|nil}
             whitespace = {
-                cursor = vim.fn.indent(cursor.row),
+                cursor = assert(vim.fn.indent(cursor.row)),
             },
             cursor = cursor,
             code = config:get_code_generation_for(filetype),
