@@ -178,9 +178,9 @@ require('refactoring').setup({
         cxx = false,
     },
     printf_statements = {},
-    print_var_statements = {}, -- shows a message with information about the refactor on success
-                               -- i.e. [Refactor] Inlined 3 variable occurrences
-    show_success_message = false,
+    print_var_statements = {},
+    show_success_message = false, -- shows a message with information about the refactor on success
+                                  -- i.e. [Refactor] Inlined 3 variable occurrences
 })
 ```
 
