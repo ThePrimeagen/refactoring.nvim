@@ -447,6 +447,7 @@ local function extract_setup(refactor)
 
     -- PHP parser needs the PHP tag to parse code, so it's imposible to generate
     -- an adecuate sexpr with only the selected text
+    local number_of_function_calls = 0
     if not has_error and refactor.filetype ~= "php" then
         --- @type string[]
         local body_sexprs = {}
@@ -480,6 +481,7 @@ local function extract_setup(refactor)
                     table.concat(region:get_text(), "")
                     == table.concat(refactor.region:get_text(), "")
                 then
+                    number_of_function_calls = number_of_function_calls + 1
                     table.insert(
                         refactor.text_edits,
                         lsp_utils.replace_text(region, func_call)
@@ -488,11 +490,15 @@ local function extract_setup(refactor)
             end
         end
     else
+        number_of_function_calls = 1
         table.insert(
             refactor.text_edits,
             lsp_utils.replace_text(refactor.region, func_call)
         )
     end
+    refactor.success_message = ("[Refactor] Function extracted. Inlined %s funcion calls"):format(
+        number_of_function_calls
+    )
 
     return true, refactor
 end

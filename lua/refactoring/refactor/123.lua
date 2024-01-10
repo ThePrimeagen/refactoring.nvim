@@ -165,11 +165,14 @@ local function get_inline_text_edits(
         -- TODO: In my mind, if nothing is left on the line when you remove, it should get deleted.
         -- Could be done via opts into replace_text.
 
-        --- @type TSNode
-        local parent = ref:parent()
+        local parent = assert(ref:parent()) ---@type TSNode
         if refactor.ts.should_check_parent_node(parent:type()) then
             ref = parent
         end
+
+        refactor.success_message = ("[Refactor] Inlined %d variable occurrences"):format(
+            #references
+        )
 
         table.insert(
             text_edits,

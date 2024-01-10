@@ -115,6 +115,7 @@ local default_extract_var_statements = {}
 ---@field extract_var_statements? table<ft, string>
 ---@field visibility? table<ft, string>
 ---@field below? boolean
+---@field show_success_message boolean
 ---@field _end? boolean
 
 ---@class c: ConfigOpts
@@ -142,6 +143,7 @@ function Config:new(...)
         print_var_statements = vim.deepcopy(default_print_var_statements),
         extract_var_statements = vim.deepcopy(default_extract_var_statements),
         visibility = vim.deepcopy(default_visibility),
+        show_success_message = false,
     })
 
     for idx = 1, select("#", ...) do
