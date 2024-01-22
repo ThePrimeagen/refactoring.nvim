@@ -14,9 +14,9 @@ local Query = {}
 Query.__index = Query
 
 Query.query_type = {
-    FunctionArgument = "definition.function_argument",
-    LocalVarName = "definition.local_name",
-    Reference = "reference",
+    FunctionArgument = "local.definition.function_argument",
+    LocalVarName = "local.definition.local_name",
+    Reference = "local.reference",
 }
 
 ---@param bufnr integer
