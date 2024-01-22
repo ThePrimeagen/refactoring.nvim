@@ -7,6 +7,11 @@
 local api = vim.api
 local ts = vim.treesitter
 
+local local_reference = "local.reference"
+local local_scope = "local.scope"
+local local_definition = "local.definition"
+local local_statement = "local.statement"
+
 local M = {}
 
 local function get_named_children(node)
@@ -92,8 +97,8 @@ end
 -- The accumulator function is given
 -- * The table of the node
 -- * The node
--- * The full definition match `@definition.var.something` -> 'var.something'
--- * The last definition match `@definition.var.something` -> 'something'
+-- * The full definition match `@local.definition.var.something` -> 'var.something'
+-- * The last definition match `@local.definition.var.something` -> 'something'
 ---@param local_def TSLocal The locals result
 ---@param accumulator function The accumulator function
 ---@param full_match? string The full match path to append to
@@ -206,30 +211,30 @@ M.get = memoize(function(bufnr)
 
         local scope = "local" ---@type string
         for k, v in pairs(metadata) do
-            if type(k) == "string" and vim.endswith(k, "scope") then
+            if type(k) == "string" and vim.endswith(k, local_scope) then
                 scope = v
             end
         end
 
-        if node and vim.startswith(kind, "definition") then
+        if node and vim.startswith(kind, local_definition) then
             table.insert(
                 definitions,
                 { kind = kind, node = node, scope = scope }
             )
         end
 
-        if node and kind == "scope" then
+        if node and kind == local_scope then
             table.insert(scopes, node)
         end
 
-        if node and kind == "reference" then
+        if node and kind == local_reference then
             table.insert(
                 references,
                 { kind = kind, node = node, scope = scope }
             )
         end
 
-        if node and kind == "statement" then
+        if node and kind == local_statement then
             table.insert(statements, node)
         end
     end
@@ -381,7 +386,7 @@ function M.find_usages(node, scope_node, bufnr)
         local kind = query.captures[id]
         if
             node_capture
-            and kind == "reference"
+            and kind == local_reference
             and ts.get_node_text(node_capture, bufnr) == node_text
             and M.find_definition(node_capture, bufnr):equal(definition)
             and not node_capture:equal(definition)
