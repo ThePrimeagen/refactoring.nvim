@@ -1,6 +1,7 @@
 local Point = require("refactoring.point")
 local utils = require("refactoring.utils")
 local Region = require("refactoring.region")
+local ts_locals = require("refactoring.ts-locals")
 
 ---@class TreeSitterLanguageConfig
 ---@field bufnr integer bufnr to which this belongs
@@ -267,7 +268,7 @@ function TreeSitter:get_references(scope)
     local out = {}
     for id, node, _ in query:iter_captures(scope, self.bufnr, 0, -1) do
         local n_capture = query.captures[id]
-        if n_capture == "reference" then
+        if n_capture == ts_locals.local_reference then
             table.insert(out, node)
         end
     end
