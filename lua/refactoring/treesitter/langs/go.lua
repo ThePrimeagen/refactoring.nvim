@@ -6,7 +6,7 @@ local InlineFilteredNode = Nodes.InlineFilteredNode
 local utils = require("refactoring.utils")
 
 local special_nodes = {
-	"selector_expression",
+    "selector_expression",
 }
 
 ---@class TreeSitterInstance
