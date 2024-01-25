@@ -4,7 +4,7 @@ local InlineNode = Nodes.InlineNode
 local StringNode = Nodes.StringNode
 local FieldNode = Nodes.FieldNode
 
----@type TreeSitterInstance
+---@class TreeSitterInstance
 local JavaScript = {}
 
 function JavaScript.new(bufnr, ft)

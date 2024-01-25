@@ -8,7 +8,7 @@ local QueryNode = Nodes.QueryNode
 local InlineNode = Nodes.InlineNode
 local InlineFilteredNode = Nodes.InlineFilteredNode
 
----@type TreeSitterInstance
+---@class TreeSitterInstance
 local Java = {}
 
 function Java.new(bufnr, ft)

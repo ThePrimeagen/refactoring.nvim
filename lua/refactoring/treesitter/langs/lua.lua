@@ -7,7 +7,12 @@ local QueryNode = Nodes.QueryNode
 local InlineNode = Nodes.InlineNode
 local utils = require("refactoring.utils")
 
----@type TreeSitterInstance
+local special_nodes = {
+    "method_index_expression",
+    "dot_index_expression",
+}
+
+---@class TreeSitterInstance
 local Lua = {}
 
 function Lua.new(bufnr, ft)
@@ -115,6 +120,9 @@ function Lua.new(bufnr, ft)
                 utils.trim(statement)--[[@as string]],
                 "return"
             )
+        end,
+        should_check_parent_node = function(parent_type)
+            return vim.tbl_contains(special_nodes, parent_type)
         end,
     }
     return TreeSitter:new(config, bufnr)

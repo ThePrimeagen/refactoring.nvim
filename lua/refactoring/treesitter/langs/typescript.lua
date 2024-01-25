@@ -5,7 +5,7 @@ local StringNode = Nodes.StringNode
 local InlineNode = Nodes.InlineNode
 local InlineFilteredNode = Nodes.InlineFilteredNode
 
----@type TreeSitterInstance
+---@class TreeSitterInstance
 local Typescript = {}
 
 function Typescript.new(bufnr, ft)
