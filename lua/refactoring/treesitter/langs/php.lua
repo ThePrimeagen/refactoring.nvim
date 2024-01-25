@@ -8,7 +8,7 @@ local special_nodes = {
     "variable_name",
 }
 
----@type TreeSitterInstance
+---@class TreeSitterInstance
 local Php = {}
 
 function Php.new(bufnr, ft)

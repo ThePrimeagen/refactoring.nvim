@@ -10,7 +10,7 @@ local special_nodes = {
     "jsx_self_closing_element",
 }
 
----@type TreeSitterInstance
+---@class TreeSitterInstance
 local TypescriptReact = {}
 
 function TypescriptReact.new(bufnr, ft)

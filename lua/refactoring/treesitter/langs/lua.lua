@@ -7,7 +7,7 @@ local QueryNode = Nodes.QueryNode
 local InlineNode = Nodes.InlineNode
 local utils = require("refactoring.utils")
 
----@type TreeSitterInstance
+---@class TreeSitterInstance
 local Lua = {}
 
 function Lua.new(bufnr, ft)

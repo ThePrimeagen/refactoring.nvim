@@ -5,7 +5,7 @@ local InlineNode = Nodes.InlineNode
 local InlineFilteredNode = Nodes.InlineFilteredNode
 local utils = require("refactoring.utils")
 
----@type TreeSitterInstance
+---@class TreeSitterInstance
 local Golang = {}
 
 function Golang.new(bufnr, ft)

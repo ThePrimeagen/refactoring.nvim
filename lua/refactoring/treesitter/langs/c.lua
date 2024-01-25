@@ -9,7 +9,7 @@ local InlineNode = Nodes.InlineNode
 local InlineFilteredNode = Nodes.InlineFilteredNode
 local utils = require("refactoring.utils")
 
----@type TreeSitterInstance
+---@class TreeSitterInstance
 local C = {}
 
 function C.new(bufnr, ft)

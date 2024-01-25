@@ -4,7 +4,7 @@ local FieldNode = Nodes.FieldNode
 local InlineNode = Nodes.InlineNode
 local InlineFilteredNode = Nodes.InlineFilteredNode
 
----@type TreeSitterInstance
+---@class TreeSitterInstance
 local Python = {}
 
 function Python.new(bufnr, ft)
