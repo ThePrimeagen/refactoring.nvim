@@ -45,13 +45,13 @@ local lua = {
         return string.format("-- %s", statement)
     end,
     default_printf_statement = function()
-        return { 'print("%s")' }
+        return { 'print([==[%s]==])' }
     end,
     print = function(opts)
         return string.format(opts.statement, opts.content)
     end,
     default_print_var_statement = function()
-        return { 'print("%s", vim.inspect(%s))' }
+        return { 'print([==[%s]==], vim.inspect(%s))' }
     end,
     print_var = function(opts)
         return string.format(opts.statement, opts.prefix, opts.var)
