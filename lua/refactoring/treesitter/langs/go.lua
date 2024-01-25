@@ -5,6 +5,10 @@ local InlineNode = Nodes.InlineNode
 local InlineFilteredNode = Nodes.InlineFilteredNode
 local utils = require("refactoring.utils")
 
+local special_nodes = {
+	"selector_expression",
+}
+
 ---@class TreeSitterInstance
 local Golang = {}
 
@@ -113,6 +117,9 @@ function Golang.new(bufnr, ft)
                 utils.trim(statement)--[[@as string]],
                 "return"
             )
+        end,
+        should_check_parent_node = function(parent_type)
+            return vim.tbl_contains(special_nodes, parent_type)
         end,
     }
     return TreeSitter:new(config, bufnr)
