@@ -98,7 +98,7 @@ end
 --- Checks if each line should be modified and only adds a text_edit if its needed
 ---@param refactor Refactor
 ---@param debug_path string
----@param scaped_printf_statement string
+---@param escaped_printf_statement string
 ---@param lines string[]
 ---@param row_num integer
 ---@param i integer
@@ -106,7 +106,7 @@ end
 local function text_edits_replace(
     refactor,
     debug_path,
-    scaped_printf_statement,
+    escaped_printf_statement,
     lines,
     row_num,
     i,
@@ -121,15 +121,15 @@ local function text_edits_replace(
             and debug_path .. " " .. "%d+()"
         or "%d+()"
     local pattern_count = refactor.code.print({
-        statement = scaped_printf_statement,
+        statement = escaped_printf_statement,
         content = count_pattern,
     })
     local pattern_before = refactor.code.print({
-        statement = scaped_printf_statement,
+        statement = escaped_printf_statement,
         content = before_count_pattern,
     })
     local pattern_after = refactor.code.print({
-        statement = scaped_printf_statement,
+        statement = escaped_printf_statement,
         content = after_count_pattern,
     })
 
@@ -174,13 +174,18 @@ function M.printDebug(bufnr, config)
 
                 local printf_statement = M.get_printf_statement(opts, refactor)
 
-                local scaped_printf_statement =
-                    printf_statement:gsub("([%(%)])", "%%%%%1")
+                -- magic characters in lua
+                -- ^$()%.[]*+-?
+                -- we do not escape `%` because we need patterns like `%s` to work
+                -- but, we escape `%%` because we need patterns like `%%d` to be ignored
+                local escaped_printf_statement = printf_statement
+                    :gsub("%%%%", "%%%%%1")
+                    :gsub("([%^%$%(%)%[%]%*%+%-%?])", "%%%%%1")
                 local text_to_count_pattern = debug_path ~= ""
                         and debug_path .. " " .. "%d+"
                     or "%d+"
                 local text_to_count = refactor.code.print({
-                    statement = scaped_printf_statement,
+                    statement = escaped_printf_statement,
                     content = text_to_count_pattern,
                 })
 
@@ -226,7 +231,7 @@ function M.printDebug(bufnr, config)
                         text_edits_replace(
                             refactor,
                             debug_path,
-                            scaped_printf_statement,
+                            escaped_printf_statement,
                             lines,
                             row_num,
                             i,
