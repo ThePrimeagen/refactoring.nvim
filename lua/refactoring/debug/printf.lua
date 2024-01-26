@@ -48,15 +48,13 @@ end
 ---@param printf_statement string
 ---@param content string
 ---@param point RefactorPoint
----@param bufnr integer
 ---@param row_num integer
-local function text_edit_insert(
+local function text_edit_insert_text(
     refactor,
     opts,
     printf_statement,
     content,
     point,
-    bufnr,
     row_num
 )
     local text = refactor.code.print({
@@ -64,6 +62,7 @@ local function text_edit_insert(
         content = content,
     })
 
+    ---@type string
     local indentation
     if refactor.ts:allows_indenting_task() then
         local indent_amount = indent.buf_indent_amount(
@@ -85,7 +84,7 @@ local function text_edit_insert(
     end
 
     text = table.concat({ start_comment, "\n", text, " ", end_comment }, "")
-    local range = Region:from_point(point, bufnr)
+    local range = Region:from_point(point, refactor.bufnr)
     table.insert(
         refactor.text_edits,
         lsp_utils.insert_new_line_text(range, text, opts)
@@ -102,15 +101,13 @@ end
 ---@param lines string[]
 ---@param row_num integer
 ---@param i integer
----@param bufnr integer
-local function text_edits_replace(
+local function text_edits_modify_count(
     refactor,
     debug_path,
     escaped_printf_statement,
     lines,
     row_num,
-    i,
-    bufnr
+    i
 )
     local count_pattern = debug_path ~= "" and debug_path .. " " .. "(%d+)"
         or "(%d+)"
@@ -139,8 +136,13 @@ local function text_edits_replace(
 
     local text = tostring(i)
     if current_count ~= text then
-        local range =
-            Region:from_values(bufnr, row_num, _start, row_num, _end - 1)
+        local range = Region:from_values(
+            refactor.bufnr,
+            row_num,
+            _start,
+            row_num,
+            _end - 1
+        )
         table.insert(refactor.text_edits, lsp_utils.replace_text(range, text))
     end
 end
@@ -189,8 +191,10 @@ function M.printDebug(bufnr, config)
                     content = text_to_count_pattern,
                 })
 
-                local lines = vim.api.nvim_buf_get_lines(bufnr, 0, -1, false)
+                local lines =
+                    vim.api.nvim_buf_get_lines(refactor.bufnr, 0, -1, false)
 
+                ---@type integer[]
                 local current_lines_with_text = {}
                 for row_num, line in ipairs(lines) do
                     if string.find(line, text_to_count) ~= nil then
@@ -206,6 +210,7 @@ function M.printDebug(bufnr, config)
 
                 refactor.text_edits = {}
                 for i, row_num in ipairs(current_lines_with_text) do
+                    ---@type string
                     local content
                     if debug_path ~= "" then
                         content = table.concat({ debug_path, tostring(i) }, " ")
@@ -215,27 +220,25 @@ function M.printDebug(bufnr, config)
 
                     if row_num == point.row and not should_replace then
                         should_replace = true
-                        text_edit_insert(
+                        text_edit_insert_text(
                             refactor,
                             opts,
                             printf_statement,
                             content,
                             point,
-                            bufnr,
                             row_num
                         )
                     else
                         if row_num == point.row then
                             should_replace = false
                         end
-                        text_edits_replace(
+                        text_edits_modify_count(
                             refactor,
                             debug_path,
                             escaped_printf_statement,
                             lines,
                             row_num,
-                            i,
-                            bufnr
+                            i
                         )
                     end
                 end
