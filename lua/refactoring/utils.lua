@@ -230,6 +230,21 @@ function M.region_above_node(node)
     scope_region.end_row = scope_region.start_row
     scope_region.end_col = scope_region.start_col
 
+    local node_for_region =
+        assert(node:named_descendant_for_range(scope_region:to_ts()))
+
+    local import_nodes = {
+        "import_statement",
+    }
+
+    for _, import_node in ipairs(import_nodes) do
+        if node_for_region:type() == import_node then
+            scope_region = M.region_above_node(
+                assert(node_for_region:next_named_sibling())
+            )
+        end
+    end
+
     return scope_region
 end
 
@@ -301,7 +316,7 @@ function M.get_non_comment_region_above_node(refactor)
         end
 
         if start_row > 0 then
-            return M.region_above_node(prev_sibling)
+            return M.region_above_node(assert(prev_sibling))
         else
             return M.region_above_node(refactor.scope)
         end
