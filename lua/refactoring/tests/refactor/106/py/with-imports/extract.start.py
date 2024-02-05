@@ -1,6 +1,6 @@
 import json
 
-def foo():
+if __name__ == "main":
     bad_doc_ids = []
 
     with open("./some/path/full_bad.jsonl", 'r', encoding='utf-8') as f:
@@ -9,13 +9,6 @@ def foo():
             if not id:
                 break
             bad_doc_ids.append(id)
-    return bad_doc_ids, id
-
-
-
-if __name__ == "main":
-    bad_doc_ids, id = foo()
-
 
     bad_docs = []
     with open("./some/path/full.jsonl", 'r', encoding='utf-8') as f:
