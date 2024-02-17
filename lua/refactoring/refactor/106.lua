@@ -496,7 +496,7 @@ local function extract_setup(refactor)
             lsp_utils.replace_text(refactor.region, func_call)
         )
     end
-    refactor.success_message = ("[Refactor] Function extracted. Inlined %s funcion calls"):format(
+    refactor.success_message = ("Function extracted. Inlined %s function calls"):format(
         number_of_function_calls
     )
 

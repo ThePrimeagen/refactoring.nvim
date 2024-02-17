@@ -170,7 +170,7 @@ local function get_inline_text_edits(
             ref = parent
         end
 
-        refactor.success_message = ("[Refactor] Inlined %d variable occurrences"):format(
+        refactor.success_message = ("Inlined %d variable occurrences"):format(
             #references
         )
 

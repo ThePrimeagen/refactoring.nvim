@@ -9,7 +9,11 @@ local M = {}
 local function success_message(refactor)
     local config = refactor.config:get()
     if refactor.success_message and config.show_success_message then
-        vim.notify(refactor.success_message, vim.log.levels.INFO)
+        vim.notify(
+            refactor.success_message,
+            vim.log.levels.INFO,
+            { title = "refactoring.nvim" }
+        )
     end
     return true, refactor
 end

@@ -113,7 +113,7 @@ local function extract_var_setup(refactor)
             )
         )
     end
-    refactor.success_message = ("[Refactor] Extracted %s variable occurrences"):format(
+    refactor.success_message = ("Extracted %s variable occurrences"):format(
         #actual_occurrences
     )
 
