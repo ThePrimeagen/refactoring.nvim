@@ -118,7 +118,7 @@ function Lua.new(bufnr, ft)
             -- stylua: ignore start
             return vim.startswith(
                 utils.trim(statement)--[[@as string]],
-                "return"
+                "return "
             )
         end,
         should_check_parent_node = function(parent_type)
