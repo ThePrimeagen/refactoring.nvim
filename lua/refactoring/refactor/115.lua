@@ -6,6 +6,7 @@ local Region = require("refactoring.region")
 local lsp_utils = require("refactoring.lsp_utils")
 local utils = require("refactoring.utils")
 local indent = require("refactoring.indent")
+local ensure_code_gen = require("refactoring.tasks.ensure_code_gen")
 local code = require("refactoring.code_generation")
 
 local M = {}
@@ -166,9 +167,26 @@ local function get_params_as_constants(refactor, indent_space, keys, values)
 end
 
 ---@param refactor Refactor
+local function supports_115(refactor)
+    local ts = refactor.ts
+    return ts.return_statement
+        and ts.return_values
+        and ts.function_references
+        and ts.caller_args
+        and ts.is_return_statement
+end
+
+---@param refactor Refactor
 ---@return boolean
 ---@return Refactor|string
 local function inline_func_setup(refactor)
+    if not supports_115(refactor) then
+        return false,
+            ("inline function is not supported for filetype `%s`. Please open an issue asking for support for it or a PR adding support to it."):format(
+                refactor.filetype
+            )
+    end
+
     local scope, identifier = get_function_declaration(refactor)
 
     if scope == nil or identifier == nil then
@@ -242,11 +260,10 @@ local function inline_func_setup(refactor)
                     )
                 )
             end
-        end
 
         -- replaces the function call with the returned value
         -- TODO: this could be merged into next one
-        if
+        elseif
             #parameters == 0
             and #returned_values == 1
             and #function_body_text == 0
@@ -261,10 +278,9 @@ local function inline_func_setup(refactor)
                     )
                 )
             end
-        end
 
         -- replaces the function call with the returned value and inlines the function body
-        if
+        elseif
             #parameters == 0
             and #returned_values == 1
             and #function_body_text > 0
@@ -289,11 +305,10 @@ local function inline_func_setup(refactor)
                     )
                 )
             end
-        end
 
         -- replaces the function call with the returned values (multiple)
         -- TODO: this could be merged into the next one
-        if
+        elseif
             #parameters == 0
             and #returned_values > 1
             and #function_body_text == 0
@@ -312,10 +327,9 @@ local function inline_func_setup(refactor)
                     )
                 )
             end
-        end
 
         -- replaces the function call with the returned values (multiple) and alse function body (multiple lines)
-        if
+        elseif
             #parameters == 0
             and #returned_values > 1
             and #function_body_text > 1
@@ -345,10 +359,9 @@ local function inline_func_setup(refactor)
                     )
                 )
             end
-        end
 
         -- replaces the function call with the body and creates a constant to store the function arguments
-        if
+        elseif
             #parameters > 0
             and #returned_values == 0
             and #function_body_text > 0
@@ -382,10 +395,9 @@ local function inline_func_setup(refactor)
                     )
                 )
             end
-        end
 
         -- replaces the function call with all params and create constants for the given param
-        if
+        elseif
             #parameters > 0
             and #returned_values > 0
             and #function_body_text == 0
@@ -421,9 +433,7 @@ local function inline_func_setup(refactor)
                     )
                 )
             end
-        end
-
-        if
+        elseif
             #parameters > 0
             and #returned_values > 0
             and #function_body_text > 0
@@ -488,22 +498,28 @@ local function inline_func_setup(refactor)
             lsp_utils.delete_text(Region:from_node(scope, refactor.bufnr))
         )
     else
-        vim.print({
-            returned_values = returned_values,
-            function_body_text = function_body_text,
-            parameters_names = parameters,
-        })
-        return false, "inline function is not possible"
+        return false,
+            "inline function is not possible. If you think this is a bug, please open an issue including the exact code you encountered this error with"
     end
 
     refactor.text_edits = text_edits
     return true, refactor
 end
 
+local ensure_code_gen_list = {
+    "constant",
+}
+
+--- @param refactor Refactor
+local function ensure_code_gen_115(refactor)
+    return ensure_code_gen(refactor, ensure_code_gen_list)
+end
+
 ---@param bufnr integer
 ---@param opts Config
 function M.inline_func(bufnr, opts)
     Pipeline:from_task(refactor_setup(bufnr, opts))
+        :add_task(ensure_code_gen_115)
         :add_task(inline_func_setup)
         :after(post_refactor.post_refactor)
         :run(nil, vim.notify)
