@@ -3,6 +3,7 @@ local Nodes = require("refactoring.treesitter.nodes")
 local FieldNode = Nodes.FieldNode
 local InlineNode = Nodes.InlineNode
 local InlineFilteredNode = Nodes.InlineFilteredNode
+local utils = require("refactoring.utils")
 
 ---@class TreeSitterInstance
 local Python = {}
@@ -98,6 +99,27 @@ function Python.new(bufnr, ft)
         function_body = {
             InlineNode("(function_definition (block (_) @tmp_capture))"),
         },
+        return_statement = {
+            InlineNode("(return_statement) @tmp_capture"),
+        },
+        return_values = {
+            InlineNode("(return_statement (expression_list (_) @tmp_capture))"),
+        },
+        function_references = {
+            InlineNode("(call function: (identifier) @tmp_capture)"),
+        },
+        caller_args = {
+            InlineNode(
+                "(call function: (identifier) arguments: (argument_list (_) @tmp_capture))"
+            ),
+        },
+        is_return_statement = function(statement)
+            -- stylua: ignore start
+            return vim.startswith(
+                utils.trim(statement)--[[@as string]],
+                "return "
+            )
+        end,
         include_end_of_line = true,
     }
     local ts = TreeSitter:new(config, bufnr)
