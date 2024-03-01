@@ -3,7 +3,7 @@ local Point = require("refactoring.point")
 local Region = require("refactoring.region")
 local refactor_setup = require("refactoring.tasks.refactor_setup")
 local post_refactor = require("refactoring.tasks.post_refactor")
-local lsp_utils = require("refactoring.lsp_utils")
+local text_edits_utils = require("refactoring.text_edits_utils")
 local debug_utils = require("refactoring.debug.debug_utils")
 local ensure_code_gen = require("refactoring.tasks.ensure_code_gen")
 local get_select_input = require("refactoring.get_select_input")
@@ -147,7 +147,7 @@ function M.printDebug(bufnr, config)
                     ""
                 )
                 refactor.text_edits = {
-                    lsp_utils.insert_new_line_text(
+                    text_edits_utils.insert_new_line_text(
                         Region:from_point(point),
                         text,
                         opts

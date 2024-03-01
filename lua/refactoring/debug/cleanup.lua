@@ -1,7 +1,7 @@
 local Pipeline = require("refactoring.pipeline")
 local refactor_setup = require("refactoring.tasks.refactor_setup")
 local Region = require("refactoring.region")
-local lsp_utils = require("refactoring.lsp_utils")
+local text_edits_utils = require("refactoring.text_edits_utils")
 local post_refactor = require("refactoring.tasks.post_refactor")
 
 local function cleanup(bufnr, config)
@@ -47,7 +47,7 @@ local function cleanup(bufnr, config)
                                     )
                                     table.insert(
                                         refactor.text_edits,
-                                        lsp_utils.delete_text(region)
+                                        text_edits_utils.delete_text(region)
                                     )
                                     break
                                 end
@@ -82,7 +82,7 @@ local function cleanup(bufnr, config)
                                     )
                                     table.insert(
                                         refactor.text_edits,
-                                        lsp_utils.delete_text(region)
+                                        text_edits_utils.delete_text(region)
                                     )
                                     break
                                 end

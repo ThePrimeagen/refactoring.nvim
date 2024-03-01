@@ -1,5 +1,7 @@
 local Query = require("refactoring.query")
 
+local M = {}
+
 local BaseFieldNode = {}
 BaseFieldNode.__index = BaseFieldNode
 
@@ -24,7 +26,7 @@ end
 
 ---@param ... string
 ---@return FieldNodeFunc
-local FieldNode = function(...)
+function M.FieldNode(...)
     ---@type string[]
     local fieldnames = to_array(...)
 
@@ -64,7 +66,7 @@ end
 
 ---@param text string
 ---@return fun(): table
-local StringNode = function(text)
+function M.StringNode(text)
     return function()
         return setmetatable({}, {
             __tostring = function()
@@ -78,7 +80,7 @@ end
 
 ---@param sexpr string sexpr of a capture
 ---@return InlineNodeFunc
-local InlineNode = function(sexpr)
+function M.InlineNode(sexpr)
     return function(scope, bufnr, filetype)
         local lang = vim.treesitter.language.get_lang(filetype)
         local ok, result_object = pcall(vim.treesitter.query.parse, lang, sexpr)
@@ -100,12 +102,12 @@ local InlineNode = function(sexpr)
     end
 end
 
----@alias NodeFilter fun(id: integer, node: TSNode, query: Query): boolean
+---@alias NodeFilter fun(id: integer, node: TSNode, query: vim.treesitter.Query): boolean
 ---@alias InlineFilteredNodeFunc fun(scope: TSNode, bufnr: integer, filetype: string, filter: NodeFilter): TSNode[]
 
 ---@param sexpr string sexpr with multiple captures
 ---@return InlineFilteredNodeFunc
-local InlineFilteredNode = function(sexpr)
+function M.InlineFilteredNode(sexpr)
     return function(scope, bufnr, filetype, filter)
         local lang = vim.treesitter.language.get_lang(filetype)
         local ok, result_object = pcall(vim.treesitter.query.parse, lang, sexpr)
@@ -131,7 +133,7 @@ end
 
 ---@param sexpr string
 ---@return fun(scope: TSNode, bufnr: integer): string
-local QueryNode = function(sexpr)
+function M.QueryNode(sexpr)
     -- The reason why this works is because __tostring method is already
     -- implemented on string
     return function(scope, bufnr)
@@ -152,7 +154,7 @@ end
 
 ---@param  ... fun(... :any): string
 ---@return fun(... :any): string
-local function TakeFirstNode(...)
+function M.TakeFirstNode(...)
     ---@type (fun(... :any): string)[]
     local nodes = to_array(...)
     return function(...)
@@ -170,12 +172,4 @@ local function TakeFirstNode(...)
     end
 end
 
-return {
-    BaseFieldNode = BaseFieldNode,
-    TakeFirstNode = TakeFirstNode,
-    StringNode = StringNode,
-    QueryNode = QueryNode,
-    FieldNode = FieldNode,
-    InlineNode = InlineNode,
-    InlineFilteredNode = InlineFilteredNode,
-}
+return M

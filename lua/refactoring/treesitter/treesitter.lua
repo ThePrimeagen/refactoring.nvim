@@ -14,7 +14,7 @@ local ts_locals = require("refactoring.ts-locals")
 ---@field local_var_values InlineNodeFunc[] nodes for local variable values
 ---@field local_declarations InlineNodeFunc[] nodes for local declarations
 ---@field indent_scopes table<string, true> nodes where code has addition indent inside
----@field debug_paths table<string, FieldNodeFunc> nodes to know path for debug strings
+---@field debug_paths table<string, FieldNodeFunc> map of node types to FieldNodeFunc
 ---@field statements InlineNodeFunc[] nodes of statements in current scope
 ---@field function_body InlineNodeFunc[] nodes to find body for a function
 ---@field require_param_types? boolean flag to require parameter types for codegen
@@ -26,6 +26,7 @@ local ts_locals = require("refactoring.ts-locals")
 ---@field require_class_type? boolean flag to require class type for codegen
 ---@field require_special_var_format? boolean: flag to require special variable format for codegen
 ---@field should_check_parent_node? fun(parent_type: string): boolean function to check if it's necesary to check the parent node
+---@field should_check_parent_node_print_var? fun(parent_type: string): boolean function to check if it's necesary to check the parent node for print_var
 ---@field include_end_of_line? boolean flag to indicate if end of line should be included in a region
 ---@field return_values InlineNodeFunc[] nodes that are return values
 ---@field function_references InlineNodeFunc[] nodes that are references of function
@@ -68,6 +69,9 @@ function TreeSitter:new(config, bufnr)
         require_special_variable_format = false,
         require_special_var_format = false,
         should_check_parent_node = function(_parent_type)
+            return false
+        end,
+        should_check_parent_node_print_var = function(_parent_type)
             return false
         end,
         include_end_of_line = false,
@@ -314,7 +318,7 @@ function TreeSitter:get_class_type(scope)
     return nil
 end
 
----@param node TSNode
+---@param node? TSNode
 ---@param container_map table<string, any>
 ---@return TSNode|nil
 local function containing_node_by_type(node, container_map)

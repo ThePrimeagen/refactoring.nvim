@@ -3,7 +3,7 @@ local refactor_setup = require("refactoring.tasks.refactor_setup")
 local post_refactor = require("refactoring.tasks.post_refactor")
 local ts_locals = require("refactoring.ts-locals")
 local Region = require("refactoring.region")
-local lsp_utils = require("refactoring.lsp_utils")
+local text_edits_utils = require("refactoring.text_edits_utils")
 local utils = require("refactoring.utils")
 local indent = require("refactoring.indent")
 local ensure_code_gen = require("refactoring.tasks.ensure_code_gen")
@@ -253,7 +253,7 @@ local function inline_func_setup(refactor)
             for _, sentence in ipairs(function_body_text) do
                 table.insert(
                     text_edits,
-                    lsp_utils.insert_new_line_text(
+                    text_edits_utils.insert_new_line_text(
                         Region:from_node(reference:parent(), refactor.bufnr),
                         table.concat({ indentation, sentence }, ""),
                         { below = false, _end = false }
@@ -272,7 +272,7 @@ local function inline_func_setup(refactor)
             for _, sentence in ipairs(returned_values) do
                 table.insert(
                     text_edits,
-                    lsp_utils.insert_text(
+                    text_edits_utils.insert_text(
                         Region:from_node(reference:parent(), refactor.bufnr),
                         sentence
                     )
@@ -289,7 +289,7 @@ local function inline_func_setup(refactor)
             for _, sentence in ipairs(function_body_text) do
                 table.insert(
                     text_edits,
-                    lsp_utils.insert_new_line_text(
+                    text_edits_utils.insert_new_line_text(
                         utils.region_one_line_up_from_node(reference),
                         table.concat({ indentation, sentence }, ""),
                         { below = false, _end = false }
@@ -299,7 +299,7 @@ local function inline_func_setup(refactor)
             for _, sentence in ipairs(returned_values) do
                 table.insert(
                     text_edits,
-                    lsp_utils.insert_text(
+                    text_edits_utils.insert_text(
                         Region:from_node(reference:parent(), refactor.bufnr),
                         sentence
                     )
@@ -321,7 +321,7 @@ local function inline_func_setup(refactor)
                 end
                 table.insert(
                     text_edits,
-                    lsp_utils.insert_text(
+                    text_edits_utils.insert_text(
                         Region:from_node(reference:parent(), refactor.bufnr),
                         table.concat({ sentence, comma }, "")
                     )
@@ -338,7 +338,7 @@ local function inline_func_setup(refactor)
             for _, sentence in ipairs(function_body_text) do
                 table.insert(
                     text_edits,
-                    lsp_utils.insert_new_line_text(
+                    text_edits_utils.insert_new_line_text(
                         utils.region_one_line_up_from_node(reference),
                         table.concat({ indentation, sentence }, ""),
                         -- TODO: this could be merged into the next one
@@ -353,7 +353,7 @@ local function inline_func_setup(refactor)
                 end
                 table.insert(
                     text_edits,
-                    lsp_utils.insert_text(
+                    text_edits_utils.insert_text(
                         Region:from_node(reference:parent(), refactor.bufnr),
                         table.concat({ sentence, comma }, "")
                     )
@@ -376,7 +376,7 @@ local function inline_func_setup(refactor)
                 arguments_list
             )
             for _, constant in ipairs(constants) do
-                local insert_text = lsp_utils.insert_text(
+                local insert_text = text_edits_utils.insert_text(
                     Region:from_node(reference:parent(), refactor.bufnr),
                     constant
                 )
@@ -389,7 +389,7 @@ local function inline_func_setup(refactor)
                 end
                 table.insert(
                     text_edits,
-                    lsp_utils.insert_text(
+                    text_edits_utils.insert_text(
                         Region:from_node(reference:parent(), refactor.bufnr),
                         table.concat({ indentation, sentence, new_line }, "")
                     )
@@ -414,7 +414,7 @@ local function inline_func_setup(refactor)
             for _, constant in ipairs(constants) do
                 table.insert(
                     text_edits,
-                    lsp_utils.insert_text(
+                    text_edits_utils.insert_text(
                         utils.region_one_line_up_from_node(reference),
                         table.concat({ indentation, constant }, "")
                     )
@@ -427,7 +427,7 @@ local function inline_func_setup(refactor)
                 end
                 table.insert(
                     text_edits,
-                    lsp_utils.insert_text(
+                    text_edits_utils.insert_text(
                         Region:from_node(reference:parent(), refactor.bufnr),
                         table.concat({ sentence, comma }, "")
                     )
@@ -452,7 +452,7 @@ local function inline_func_setup(refactor)
             for _, constant in ipairs(constants) do
                 table.insert(
                     text_edits,
-                    lsp_utils.insert_text(
+                    text_edits_utils.insert_text(
                         utils.region_one_line_up_from_node(reference),
                         table.concat({ indentation, constant }, "")
                     )
@@ -461,7 +461,7 @@ local function inline_func_setup(refactor)
             for _, sentence in ipairs(function_body_text) do
                 table.insert(
                     text_edits,
-                    lsp_utils.insert_text(
+                    text_edits_utils.insert_text(
                         utils.region_one_line_up_from_node(reference),
                         table.concat({ indentation, sentence, new_line }, "")
                     )
@@ -474,7 +474,7 @@ local function inline_func_setup(refactor)
                 end
                 table.insert(
                     text_edits,
-                    lsp_utils.insert_text(
+                    text_edits_utils.insert_text(
                         Region:from_node(reference:parent(), refactor.bufnr),
                         table.concat({ sentence, comma }, "")
                     )
@@ -484,7 +484,7 @@ local function inline_func_setup(refactor)
 
         if refactor_is_possible then
             -- Delete original reference
-            local delete_text = lsp_utils.delete_text(
+            local delete_text = text_edits_utils.delete_text(
                 Region:from_node(reference:parent(), refactor.bufnr)
             )
             table.insert(text_edits, delete_text)
@@ -495,7 +495,9 @@ local function inline_func_setup(refactor)
         -- deletes function declaration
         table.insert(
             text_edits,
-            lsp_utils.delete_text(Region:from_node(scope, refactor.bufnr))
+            text_edits_utils.delete_text(
+                Region:from_node(scope, refactor.bufnr)
+            )
         )
     else
         return false,
