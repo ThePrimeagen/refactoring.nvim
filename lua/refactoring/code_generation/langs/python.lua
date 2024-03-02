@@ -55,6 +55,9 @@ local function python_class_function_return(opts)
     if opts.func_header == nil then
         opts.func_header = ""
     end
+    if opts.return_type == nil then
+        opts.return_type = "None"
+    end
     return string.format(
         [[
 %sdef %s(self, %s) -> %s:
