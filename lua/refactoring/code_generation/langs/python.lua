@@ -50,6 +50,26 @@ local function python_class_function(opts)
     )
 end
 
+local function python_class_function_return(opts)
+    local args = build_args(opts.args, opts.args_types)
+    if opts.func_header == nil then
+        opts.func_header = ""
+    end
+    return string.format(
+        [[
+%sdef %s(self, %s) -> %s:
+%s
+
+
+]],
+        opts.func_header,
+        opts.name,
+        table.concat(args, ", "),
+        opts.return_type,
+        code_utils.stringify_code(opts.body)
+    )
+end
+
 local function python_constant(opts)
     local constant_string_pattern
 
@@ -99,7 +119,7 @@ local python = {
         return python_class_function(opts)
     end,
     class_function_return = function(opts)
-        return python_class_function(opts)
+        return python_class_function_return(opts)
     end,
     call_class_function = function(opts)
         return string.format(
