@@ -3,7 +3,7 @@ local Point = require("refactoring.point")
 local Region = require("refactoring.region")
 local refactor_setup = require("refactoring.tasks.refactor_setup")
 local post_refactor = require("refactoring.tasks.post_refactor")
-local lsp_utils = require("refactoring.lsp_utils")
+local text_edits_utils = require("refactoring.text_edits_utils")
 local debug_utils = require("refactoring.debug.debug_utils")
 local ensure_code_gen = require("refactoring.tasks.ensure_code_gen")
 local get_select_input = require("refactoring.get_select_input")
@@ -87,7 +87,7 @@ local function text_edit_insert_text(
     local range = Region:from_point(point, refactor.bufnr)
     table.insert(
         refactor.text_edits,
-        lsp_utils.insert_new_line_text(range, text, opts)
+        text_edits_utils.insert_new_line_text(range, text, opts)
     )
 end
 
@@ -143,7 +143,10 @@ local function text_edits_modify_count(
             row_num,
             _end - 1
         )
-        table.insert(refactor.text_edits, lsp_utils.replace_text(range, text))
+        table.insert(
+            refactor.text_edits,
+            text_edits_utils.replace_text(range, text)
+        )
     end
 end
 

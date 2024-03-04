@@ -5,7 +5,7 @@ local ensure_code_gen = require("refactoring.tasks.ensure_code_gen")
 local code_utils = require("refactoring.code_generation.utils")
 local Region = require("refactoring.region")
 local Point = require("refactoring.point")
-local lsp_utils = require("refactoring.lsp_utils")
+local text_edits_utils = require("refactoring.text_edits_utils")
 local Query = require("refactoring.query")
 
 local refactor_setup = require("refactoring.tasks.refactor_setup")
@@ -412,13 +412,13 @@ local function extract_setup(refactor)
     --- @type LspTextEdit | {bufnr: integer}
     local extract_function
     if is_class then
-        extract_function = lsp_utils.insert_new_line_text(
+        extract_function = text_edits_utils.insert_new_line_text(
             region_above_scope,
             function_code,
             { below = true, _end = true }
         )
     else
-        extract_function = lsp_utils.insert_new_line_text(
+        extract_function = text_edits_utils.insert_new_line_text(
             region_above_scope,
             function_code,
             { below = true }
@@ -484,7 +484,7 @@ local function extract_setup(refactor)
                     number_of_function_calls = number_of_function_calls + 1
                     table.insert(
                         refactor.text_edits,
-                        lsp_utils.replace_text(region, func_call)
+                        text_edits_utils.replace_text(region, func_call)
                     )
                 end
             end
@@ -493,7 +493,7 @@ local function extract_setup(refactor)
         number_of_function_calls = 1
         table.insert(
             refactor.text_edits,
-            lsp_utils.replace_text(refactor.region, func_call)
+            text_edits_utils.replace_text(refactor.region, func_call)
         )
     end
     refactor.success_message = ("Function extracted. Inlined %s function calls"):format(

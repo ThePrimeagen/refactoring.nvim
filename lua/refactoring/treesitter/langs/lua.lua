@@ -121,7 +121,7 @@ function Lua.new(bufnr, ft)
                 "return "
             )
         end,
-        should_check_parent_node = function(parent_type)
+        should_check_parent_node_print_var = function(parent_type)
             return vim.tbl_contains(special_nodes, parent_type)
         end,
     }

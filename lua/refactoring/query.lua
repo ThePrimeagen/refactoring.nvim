@@ -6,7 +6,7 @@
 --- }
 
 ---@class RefactorQuery
----@field query? Query
+---@field query? vim.treesitter.Query
 ---@field bufnr integer
 ---@field filetype string
 ---@field root TSNode
@@ -61,7 +61,7 @@ end
 
 ---@param bufnr integer
 ---@param filetype string
----@param query Query
+---@param query vim.treesitter.Query
 ---@return RefactorQuery
 function Query:new(bufnr, filetype, query)
     return setmetatable({

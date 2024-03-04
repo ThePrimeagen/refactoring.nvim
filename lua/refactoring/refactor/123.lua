@@ -1,7 +1,3 @@
--- Some other suggestions
--- You should remove lsp_utils and change it to: text_edits.*
---  this will make it much less confusing. It's not really about LSP,
---  it's just about using one of the data structures.
 local Pipeline = require("refactoring.pipeline")
 local Region = require("refactoring.region")
 local post_refactor = require("refactoring.tasks.post_refactor")
@@ -10,7 +6,7 @@ local selection_setup = require("refactoring.tasks.selection_setup")
 local node_on_cursor_setup = require("refactoring.tasks.node_on_cursor_setup")
 local get_select_input = require("refactoring.get_select_input")
 
-local lsp_utils = require("refactoring.lsp_utils")
+local text_edits_utils = require("refactoring.text_edits_utils")
 
 local ts_locals = require("refactoring.ts-locals")
 
@@ -119,7 +115,7 @@ local function get_inline_text_edits(
     if #identifiers == 1 then
         table.insert(
             text_edits,
-            lsp_utils.delete_text(
+            text_edits_utils.delete_text(
                 Region:from_node(declarator_node, refactor.bufnr)
             )
         )
@@ -133,7 +129,7 @@ local function get_inline_text_edits(
 
         table.insert(
             text_edits,
-            lsp_utils.replace_text(
+            text_edits_utils.replace_text(
                 Region:from_node(declarator_node, refactor.bufnr),
                 refactor.code.constant({
                     multiple = true,
@@ -176,7 +172,7 @@ local function get_inline_text_edits(
 
         table.insert(
             text_edits,
-            lsp_utils.replace_text(Region:from_node(ref), value_text)
+            text_edits_utils.replace_text(Region:from_node(ref), value_text)
         )
     end
     return text_edits

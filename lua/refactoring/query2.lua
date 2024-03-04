@@ -2,8 +2,8 @@ local utils = require("refactoring.utils")
 local Query = require("refactoring.query")
 
 --- @class Query2
---- @field query Query
---- @field types Query
+--- @field query vim.treesitter.Query
+--- @field types vim.treesitter.Query
 --- @field scope TSNode
 --- @field region RefactorRegion
 --- @field filter function
