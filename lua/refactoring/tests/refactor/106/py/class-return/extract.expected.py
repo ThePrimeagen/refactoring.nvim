@@ -1,6 +1,6 @@
 class Poggers:
 
-    def foo(self, a, test):
+    def foo(self, a, test) -> None:
         test_other = 11
         for x in range(test_other + test):
             print(x, a)

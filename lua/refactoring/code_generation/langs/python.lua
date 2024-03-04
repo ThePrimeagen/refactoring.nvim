@@ -31,6 +31,29 @@ local function python_function(opts)
     )
 end
 
+local function python_function_return(opts)
+    local args = build_args(opts.args, opts.args_types)
+    if opts.func_header == nil then
+        opts.func_header = ""
+    end
+    if opts.return_type == nil then
+        opts.return_type = "None"
+    end
+    return string.format(
+        [[
+%sdef %s(%s) -> %s:
+%s
+
+
+]],
+        opts.func_header,
+        opts.name,
+        table.concat(args, ", "),
+        opts.return_type,
+        code_utils.stringify_code(opts.body)
+    )
+end
+
 local function python_class_function(opts)
     local args = build_args(opts.args, opts.args_types)
     if opts.func_header == nil then
@@ -46,6 +69,29 @@ local function python_class_function(opts)
         opts.func_header,
         opts.name,
         table.concat(args, ", "),
+        code_utils.stringify_code(opts.body)
+    )
+end
+
+local function python_class_function_return(opts)
+    local args = build_args(opts.args, opts.args_types)
+    if opts.func_header == nil then
+        opts.func_header = ""
+    end
+    if opts.return_type == nil then
+        opts.return_type = "None"
+    end
+    return string.format(
+        [[
+%sdef %s(self, %s) -> %s:
+%s
+
+
+]],
+        opts.func_header,
+        opts.name,
+        table.concat(args, ", "),
+        opts.return_type,
         code_utils.stringify_code(opts.body)
     )
 end
@@ -90,7 +136,7 @@ local python = {
         return python_function(opts)
     end,
     function_return = function(opts)
-        return python_function(opts)
+        return python_function_return(opts)
     end,
     call_function = function(opts)
         return string.format("%s(%s)", opts.name, table.concat(opts.args, ", "))
@@ -99,7 +145,7 @@ local python = {
         return python_class_function(opts)
     end,
     class_function_return = function(opts)
-        return python_class_function(opts)
+        return python_class_function_return(opts)
     end,
     call_class_function = function(opts)
         return string.format(
