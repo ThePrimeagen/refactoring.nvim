@@ -1,6 +1,6 @@
 import json
 
-def foo():
+def foo() -> None:
     bad_doc_ids = []
 
     with open("./some/path/full_bad.jsonl", 'r', encoding='utf-8') as f:

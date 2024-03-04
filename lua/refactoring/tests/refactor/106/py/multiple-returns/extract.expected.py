@@ -1,5 +1,5 @@
 
-def extracted_func():
+def extracted_func() -> None:
     a = 1
     b = 1
     return a, b
