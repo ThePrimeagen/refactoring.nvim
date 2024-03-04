@@ -8,6 +8,10 @@ local special_nodes = {
     "variable_name",
 }
 
+local function should_check_parent_node(parent_type)
+    return vim.tbl_contains(special_nodes, parent_type)
+end
+
 ---@class TreeSitterInstance
 local Php = {}
 
@@ -87,9 +91,8 @@ function Php.new(bufnr, ft)
                 "(function_definition body: (compound_statement (_) @tmp_capture))"
             ),
         },
-        should_check_parent_node = function(parent_type)
-            return vim.tbl_contains(special_nodes, parent_type)
-        end,
+        should_check_parent_node = should_check_parent_node,
+        should_check_parent_node_print_var = should_check_parent_node,
     }
     return TreeSitter:new(config, bufnr)
 end
