@@ -8,6 +8,7 @@ local utils = require("refactoring.utils")
 local indent = require("refactoring.indent")
 local ensure_code_gen = require("refactoring.tasks.ensure_code_gen")
 local code = require("refactoring.code_generation")
+local notify = require("refactoring.notify")
 
 local M = {}
 
@@ -201,11 +202,27 @@ local function inline_func_setup(refactor)
     end
 
     local text_edits = {}
-    local function_body_text = get_function_body_text(refactor, scope)
-    local returned_values = get_function_returned_values(refactor, scope)
-    local parameters = get_function_parameter_names(refactor, scope)
+    local ok, function_body_text =
+        pcall(get_function_body_text, refactor, scope)
+    if not ok then
+        return ok, function_body_text
+    end
+    local ok2, returned_values =
+        pcall(get_function_returned_values, refactor, scope)
+    if not ok2 then
+        return ok2, returned_values
+    end
+    local ok3, parameters = pcall(get_function_parameter_names, refactor, scope)
+    if not ok3 then
+        return ok3, parameters
+    end
 
-    local return_statements = refactor.ts:get_return_statements(scope)
+    local ok4, return_statements =
+        pcall(refactor.ts.get_return_statements, refactor.ts, scope)
+
+    if not ok4 then
+        return ok4, return_statements
+    end
 
     if #return_statements > 1 then
         return false,
@@ -524,7 +541,7 @@ function M.inline_func(bufnr, opts)
         :add_task(ensure_code_gen_115)
         :add_task(inline_func_setup)
         :after(post_refactor.post_refactor)
-        :run(nil, vim.notify)
+        :run(nil, notify.error)
 end
 
 return M

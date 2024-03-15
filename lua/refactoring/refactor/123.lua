@@ -5,6 +5,7 @@ local refactor_setup = require("refactoring.tasks.refactor_setup")
 local selection_setup = require("refactoring.tasks.selection_setup")
 local node_on_cursor_setup = require("refactoring.tasks.node_on_cursor_setup")
 local get_select_input = require("refactoring.get_select_input")
+local notify = require("refactoring.notify")
 
 local text_edits_utils = require("refactoring.text_edits_utils")
 
@@ -181,12 +182,18 @@ end
 ---@param refactor Refactor
 ---@return boolean, Refactor|string
 local function inline_var_setup(refactor)
-    -- only deal with first declaration
-    --- @type TSNode|nil
-    local declarator_node = refactor.ts:local_declarations_in_region(
+    --- @type boolean
+    local ok, declarator_nodes = pcall(
+        refactor.ts.local_declarations_in_region,
+        refactor.ts,
         refactor.scope,
         refactor.region
-    )[1]
+    )
+    if not ok then
+        return ok, declarator_nodes
+    end
+    -- only deal with first declaration
+    local declarator_node = declarator_nodes[1]
 
     if declarator_node == nil then
         -- if the visual selection does not contain a declaration and it only contains a reference
@@ -205,7 +212,11 @@ local function inline_var_setup(refactor)
         end
     end
 
-    local identifiers = refactor.ts:get_local_var_names(declarator_node)
+    local ok2, identifiers =
+        pcall(refactor.ts.get_local_var_names, refactor.ts, declarator_node)
+    if not ok2 then
+        return ok2, identifiers
+    end
 
     if #identifiers == 0 then
         return false, "No declarations in selected area"
@@ -220,7 +231,8 @@ local function inline_var_setup(refactor)
 
     local definition = ts_locals.find_definition(node_to_inline, refactor.bufnr)
 
-    local text_edits = get_inline_text_edits(
+    local ok3, text_edits = pcall(
+        get_inline_text_edits,
         declarator_node,
         identifiers,
         node_to_inline,
@@ -228,6 +240,9 @@ local function inline_var_setup(refactor)
         definition,
         identifier_pos
     )
+    if not ok3 then
+        return ok3, identifiers
+    end
 
     refactor.text_edits = text_edits
     return true, refactor
@@ -241,7 +256,11 @@ local function inline_var_normal_setup(refactor)
         return false, "Couldn't determine declarator node"
     end
 
-    local identifiers = refactor.ts:get_local_var_names(declarator_node)
+    local ok, identifiers =
+        pcall(refactor.ts.get_local_var_names, refactor.ts, declarator_node)
+    if not ok then
+        return ok, identifiers
+    end
 
     if #identifiers == 0 then
         return false, "No declarations in selected area"
@@ -286,7 +305,7 @@ local function inline_var_visual(bufnr, opts)
         :add_task(selection_setup)
         :add_task(inline_var_setup)
         :after(post_refactor.post_refactor)
-        :run(nil, vim.notify)
+        :run(nil, notify.error)
 end
 
 -- bufnr integer
@@ -296,7 +315,7 @@ local function inline_var_normal(bufnr, opts)
         :add_task(node_on_cursor_setup)
         :add_task(inline_var_normal_setup)
         :after(post_refactor.post_refactor)
-        :run(nil, vim.notify)
+        :run(nil, notify.error)
 end
 
 ---@param bufnr integer

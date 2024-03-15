@@ -13,6 +13,7 @@ local get_input = require("refactoring.get_input")
 local create_file = require("refactoring.tasks.create_file")
 local post_refactor = require("refactoring.tasks.post_refactor")
 local indent = require("refactoring.indent")
+local notify = require("refactoring.notify")
 
 local M = {}
 
@@ -189,6 +190,8 @@ local function get_func_params(extract_params, refactor)
     ---@class func_params
     ---@field func_header? string
     ---@field contains_jsx? boolean
+    ---@field class_name? string
+    ---@field visibility? string
     local func_params = {
         name = extract_params.function_name,
         args = extract_params.args,
@@ -227,7 +230,7 @@ local function get_function_code(refactor, extract_params)
     local func_params = get_func_params(extract_params, refactor)
 
     if extract_params.is_class then
-        func_params.className = refactor.ts:get_class_name(refactor.scope)
+        func_params.class_name = refactor.ts:get_class_name(refactor.scope)
         func_params.visibility =
             refactor.config:get_visibility_for(refactor.filetype)
         if extract_params.has_return_vals then
@@ -323,13 +326,21 @@ end
 local function extract_block_setup(refactor)
     local region = Region:from_point(Point:from_cursor(), refactor.bufnr)
     local region_node = region:to_ts_node(refactor.ts:get_root())
-    local scope = refactor.ts:get_scope(region_node)
+    local ok, scope = pcall(refactor.ts.get_scope, refactor.ts, region_node)
+    if not ok then
+        ---@cast scope string
+        return ok, scope
+    end
 
     if scope == nil then
         return false, "Scope is nil. Couldn't find scope for current block"
     end
 
-    local function_body = refactor.ts:get_function_body(scope)
+    local ok2, function_body =
+        pcall(refactor.ts.get_function_body, refactor.ts, scope)
+    if not ok2 then
+        return ok2, function_body
+    end
     local block_first_child = function_body[1]
     local block_last_child = function_body[#function_body]
 
@@ -370,8 +381,11 @@ local function extract_setup(refactor)
 
     -- NOTE: How do we think about this if we have to pass through multiple
     -- functions (method extraction)
-    ---@type string[]
-    local args = vim.tbl_keys(utils.get_selected_locals(refactor))
+    local ok, locals = pcall(utils.get_selected_locals, refactor)
+    if not ok then
+        return ok, locals
+    end
+    local args = vim.tbl_keys(locals)
     table.sort(args)
 
     local first_line = function_body[1]
@@ -381,7 +395,10 @@ local function extract_setup(refactor)
             indent.line_indent_amount(first_line, refactor.bufnr)
     end
 
-    local return_vals = get_return_vals(refactor)
+    local ok2, return_vals = pcall(get_return_vals, refactor)
+    if not ok2 then
+        return ok2, return_vals
+    end
     local has_return_vals = #return_vals > 0
     if has_return_vals then
         table.insert(
@@ -406,7 +423,11 @@ local function extract_setup(refactor)
         region_type = refactor.region:to_ts_node(refactor.ts:get_root()):type(),
     }
 
-    local function_code = get_function_code(refactor, extract_params)
+    local ok3, function_code =
+        pcall(get_function_code, refactor, extract_params)
+    if not ok3 then
+        return ok3, function_code
+    end
     local region_above_scope = utils.get_non_comment_region_above_node(refactor)
 
     --- @type LspTextEdit | {bufnr: integer}
@@ -443,7 +464,10 @@ local function extract_setup(refactor)
     local root = languagetree[1]:root()
     local has_error = root:has_error() --[[@as boolean]]
 
-    local func_call = get_func_call(refactor, extract_params)
+    local ok4, func_call = pcall(get_func_call, refactor, extract_params)
+    if not ok4 then
+        return ok4, func_call
+    end
 
     -- PHP parser needs the PHP tag to parse code, so it's imposible to generate
     -- an adecuate sexpr with only the selected text
@@ -547,7 +571,7 @@ M.extract_to_file = function(bufnr, opts)
         :add_task(create_file.from_input)
         :add_task(extract_setup)
         :after(post_refactor.no_cursor_post_refactor)
-        :run(nil, vim.notify)
+        :run(nil, notify.error)
 end
 
 ---@param bufnr integer
@@ -569,7 +593,7 @@ M.extract = function(bufnr, opts)
         )
         :add_task(extract_setup)
         :after(post_refactor.post_refactor)
-        :run(nil, vim.notify)
+        :run(nil, notify.error)
 end
 
 ---@param bufnr integer
@@ -581,7 +605,7 @@ M.extract_block = function(bufnr, opts)
         :add_task(extract_block_setup)
         :add_task(extract_setup)
         :after(post_refactor.post_refactor)
-        :run(nil, vim.notify)
+        :run(nil, notify.error)
 end
 
 ---@param bufnr integer
@@ -594,7 +618,7 @@ M.extract_block_to_file = function(bufnr, opts)
         :add_task(create_file.from_input)
         :add_task(extract_setup)
         :after(post_refactor.no_cursor_post_refactor)
-        :run(nil, vim.notify)
+        :run(nil, notify.error)
 end
 
 return M

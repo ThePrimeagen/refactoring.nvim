@@ -8,6 +8,7 @@ local debug_utils = require("refactoring.debug.debug_utils")
 local ensure_code_gen = require("refactoring.tasks.ensure_code_gen")
 local get_select_input = require("refactoring.get_select_input")
 local indent = require("refactoring.indent")
+local notify = require("refactoring.notify")
 
 local MAX_COL = 100000
 
@@ -106,16 +107,24 @@ function M.printDebug(bufnr, config)
                 --- @type string
                 local indentation
                 if refactor.ts.allows_indenting_task then
-                    local indent_amount = indent.buf_indent_amount(
+                    local ok, indent_amount = pcall(
+                        indent.buf_indent_amount,
                         refactor.cursor,
                         refactor,
                         opts.below,
                         refactor.bufnr
                     )
+                    if not ok then
+                        return ok, indent_amount
+                    end
                     indentation = indent.indent(indent_amount, refactor.bufnr)
                 end
 
-                local debug_path = debug_utils.get_debug_path(refactor, point)
+                local ok, debug_path =
+                    pcall(debug_utils.get_debug_path, refactor, point)
+                if not ok then
+                    return ok, debug_path
+                end
                 local prefix = string.format("%s %s:", debug_path, variable)
 
                 local print_var_statement =
@@ -158,7 +167,7 @@ function M.printDebug(bufnr, config)
             end
         )
         :after(post_refactor.post_refactor)
-        :run()
+        :run(nil, notify.error)
 end
 
 return M

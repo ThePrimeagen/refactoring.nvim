@@ -286,7 +286,8 @@ end
 ---@return code_generation
 function Config:get_code_generation_for(filetype)
     filetype = filetype or vim.bo[0].ft
-    return self.config.code_generation[filetype] --[[@as code_generation]]
+    return self.config.code_generation[filetype]
+        or self.config.code_generation["default"]
 end
 
 ---@param filetype ft

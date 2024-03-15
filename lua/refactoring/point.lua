@@ -36,6 +36,7 @@ function Point:to_ts()
     return self.row - 1, self.col
 end
 
+---@param root TSNode
 function Point:to_ts_node(root)
     local s_row, s_col = self:to_ts()
     return root:descendant_for_range(s_row, s_col, self:to_ts())
