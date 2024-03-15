@@ -27,6 +27,7 @@ local M = {
     php = php,
     java = java,
     ruby = ruby,
+    default = {},
 
     -- TODO: Take this and make all code generation subclassed.
     -- This should just be a function of code generation.
