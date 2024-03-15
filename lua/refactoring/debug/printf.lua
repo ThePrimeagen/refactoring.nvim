@@ -175,7 +175,11 @@ function M.printDebug(bufnr, config)
 
                 point.col = opts.below and MAX_COL or 1
 
-                local debug_path = debug_utils.get_debug_path(refactor, point)
+                local ok, debug_path =
+                    pcall(debug_utils.get_debug_path, refactor, point)
+                if not ok then
+                    return ok, debug_path
+                end
 
                 local printf_statement = M.get_printf_statement(opts, refactor)
 
@@ -223,7 +227,8 @@ function M.printDebug(bufnr, config)
 
                     if row_num == point.row and not should_replace then
                         should_replace = true
-                        text_edit_insert_text(
+                        local ok, error = pcall(
+                            text_edit_insert_text,
                             refactor,
                             opts,
                             printf_statement,
@@ -231,6 +236,9 @@ function M.printDebug(bufnr, config)
                             point,
                             row_num
                         )
+                        if not ok then
+                            return ok, error
+                        end
                     else
                         if row_num == point.row then
                             should_replace = false

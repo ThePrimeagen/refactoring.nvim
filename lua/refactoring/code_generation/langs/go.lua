@@ -70,7 +70,7 @@ func %s %s(%s) {
 %s
 }
 ]],
-        opts.className,
+        opts.class_name,
         opts.name,
         go_func_args(opts),
         code_utils.stringify_code(opts.body)
@@ -88,7 +88,7 @@ func %s %s(%s) %s {
 %s
 }
 ]],
-        opts.className,
+        opts.class_name,
         opts.name,
         go_func_args(opts),
         opts.return_type,

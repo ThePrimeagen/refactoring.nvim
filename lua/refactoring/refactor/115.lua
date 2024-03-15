@@ -201,11 +201,27 @@ local function inline_func_setup(refactor)
     end
 
     local text_edits = {}
-    local function_body_text = get_function_body_text(refactor, scope)
-    local returned_values = get_function_returned_values(refactor, scope)
-    local parameters = get_function_parameter_names(refactor, scope)
+    local ok, function_body_text =
+        pcall(get_function_body_text, refactor, scope)
+    if not ok then
+        return ok, function_body_text
+    end
+    local ok, returned_values =
+        pcall(get_function_returned_values, refactor, scope)
+    if not ok then
+        return ok, returned_values
+    end
+    local ok, parameters = pcall(get_function_parameter_names, refactor, scope)
+    if not ok then
+        return ok, parameters
+    end
 
-    local return_statements = refactor.ts:get_return_statements(scope)
+    local ok, return_statements =
+        pcall(refactor.ts.get_return_statements, refactor.ts, scope)
+
+    if not ok then
+        return ok, return_statements
+    end
 
     if #return_statements > 1 then
         return false,

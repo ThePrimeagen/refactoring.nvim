@@ -12,7 +12,10 @@ local function selection_setup(refactor)
         include_end_of_line = refactor.ts.include_end_of_line,
     })
     local region_node = region:to_ts_node(refactor.ts:get_root())
-    local scope = refactor.ts:get_scope(region_node)
+    local ok, scope = pcall(refactor.ts.get_scope, refactor.ts, region_node)
+    if not ok then
+        return ok, scope
+    end
 
     refactor.region = region
     refactor.region_node = region_node

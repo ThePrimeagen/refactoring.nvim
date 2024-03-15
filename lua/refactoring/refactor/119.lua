@@ -140,7 +140,11 @@ local function extract_var_setup(refactor)
         return false, "block_scope is nil! Something went wrong"
     end
 
-    local unfiltered_statements = refactor.ts:get_statements(block_scopes[1])
+    local ok, unfiltered_statements =
+        pcall(refactor.ts.get_statements, refactor.ts, block_scopes[1])
+    if not ok then
+        return ok, unfiltered_statements
+    end
 
     -- TODO: Add test for unfiltered_statements being nil
     if #unfiltered_statements < 1 then
@@ -182,12 +186,14 @@ local function extract_var_setup(refactor)
     end
 
     local region = utils.region_one_line_up_from_node(contained)
+    local ok, new_var_text =
+        pcall(get_new_var_text, extract_node_text, refactor, var_name, region)
+    if not ok then
+        return ok, new_var_text
+    end
     table.insert(
         refactor.text_edits,
-        text_edits_utils.insert_text(
-            region,
-            get_new_var_text(extract_node_text, refactor, var_name, region)
-        )
+        text_edits_utils.insert_text(region, new_var_text)
     )
     return true, refactor
 end

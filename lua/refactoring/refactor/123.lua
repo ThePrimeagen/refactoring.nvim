@@ -181,12 +181,18 @@ end
 ---@param refactor Refactor
 ---@return boolean, Refactor|string
 local function inline_var_setup(refactor)
-    -- only deal with first declaration
-    --- @type TSNode|nil
-    local declarator_node = refactor.ts:local_declarations_in_region(
+    --- @type boolean
+    local ok, declarator_nodes = pcall(
+        refactor.ts.local_declarations_in_region,
+        refactor.ts,
         refactor.scope,
         refactor.region
-    )[1]
+    )
+    if not ok then
+        return ok, declarator_nodes
+    end
+    -- only deal with first declaration
+    local declarator_node = declarator_nodes[1]
 
     if declarator_node == nil then
         -- if the visual selection does not contain a declaration and it only contains a reference
@@ -205,7 +211,11 @@ local function inline_var_setup(refactor)
         end
     end
 
-    local identifiers = refactor.ts:get_local_var_names(declarator_node)
+    local ok, identifiers =
+        pcall(refactor.ts.get_local_var_names, refactor.ts, declarator_node)
+    if not ok then
+        return ok, identifiers
+    end
 
     if #identifiers == 0 then
         return false, "No declarations in selected area"
@@ -220,7 +230,8 @@ local function inline_var_setup(refactor)
 
     local definition = ts_locals.find_definition(node_to_inline, refactor.bufnr)
 
-    local text_edits = get_inline_text_edits(
+    local ok, text_edits = pcall(
+        get_inline_text_edits,
         declarator_node,
         identifiers,
         node_to_inline,
@@ -228,6 +239,9 @@ local function inline_var_setup(refactor)
         definition,
         identifier_pos
     )
+    if not ok then
+        return ok, identifiers
+    end
 
     refactor.text_edits = text_edits
     return true, refactor
@@ -241,7 +255,11 @@ local function inline_var_normal_setup(refactor)
         return false, "Couldn't determine declarator node"
     end
 
-    local identifiers = refactor.ts:get_local_var_names(declarator_node)
+    local ok, identifiers =
+        pcall(refactor.ts.get_local_var_names, refactor.ts, declarator_node)
+    if not ok then
+        return ok, identifiers
+    end
 
     if #identifiers == 0 then
         return false, "No declarations in selected area"

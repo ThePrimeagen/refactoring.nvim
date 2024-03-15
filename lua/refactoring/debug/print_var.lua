@@ -106,16 +106,24 @@ function M.printDebug(bufnr, config)
                 --- @type string
                 local indentation
                 if refactor.ts.allows_indenting_task then
-                    local indent_amount = indent.buf_indent_amount(
+                    local ok, indent_amount = pcall(
+                        indent.buf_indent_amount,
                         refactor.cursor,
                         refactor,
                         opts.below,
                         refactor.bufnr
                     )
+                    if not ok then
+                        return ok, indent_amount
+                    end
                     indentation = indent.indent(indent_amount, refactor.bufnr)
                 end
 
-                local debug_path = debug_utils.get_debug_path(refactor, point)
+                local ok, debug_path =
+                    pcall(debug_utils.get_debug_path, refactor, point)
+                if not ok then
+                    return ok, debug_path
+                end
                 local prefix = string.format("%s %s:", debug_path, variable)
 
                 local print_var_statement =

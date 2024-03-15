@@ -13,7 +13,11 @@ local function get_path(bufnr, config)
             ---@param refactor Refactor
             function(refactor)
                 local point = Point:from_cursor()
-                local debug_path = debug_utils.get_debug_path(refactor, point)
+                local ok, debug_path =
+                    pcall(debug_utils.get_debug_path, refactor, point)
+                if not ok then
+                    return ok, debug_path
+                end
                 refactor.return_value = debug_path
 
                 return true, refactor
