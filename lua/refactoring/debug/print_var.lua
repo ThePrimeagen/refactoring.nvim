@@ -8,6 +8,7 @@ local debug_utils = require("refactoring.debug.debug_utils")
 local ensure_code_gen = require("refactoring.tasks.ensure_code_gen")
 local get_select_input = require("refactoring.get_select_input")
 local indent = require("refactoring.indent")
+local notify = require("refactoring.notify")
 
 local MAX_COL = 100000
 
@@ -166,7 +167,7 @@ function M.printDebug(bufnr, config)
             end
         )
         :after(post_refactor.post_refactor)
-        :run(nil, vim.notify)
+        :run(nil, notify.error)
 end
 
 return M

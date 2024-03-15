@@ -5,6 +5,7 @@ local refactor_setup = require("refactoring.tasks.refactor_setup")
 local selection_setup = require("refactoring.tasks.selection_setup")
 local node_on_cursor_setup = require("refactoring.tasks.node_on_cursor_setup")
 local get_select_input = require("refactoring.get_select_input")
+local notify = require("refactoring.notify")
 
 local text_edits_utils = require("refactoring.text_edits_utils")
 
@@ -304,7 +305,7 @@ local function inline_var_visual(bufnr, opts)
         :add_task(selection_setup)
         :add_task(inline_var_setup)
         :after(post_refactor.post_refactor)
-        :run(nil, vim.notify)
+        :run(nil, notify.error)
 end
 
 -- bufnr integer
@@ -314,7 +315,7 @@ local function inline_var_normal(bufnr, opts)
         :add_task(node_on_cursor_setup)
         :add_task(inline_var_normal_setup)
         :after(post_refactor.post_refactor)
-        :run(nil, vim.notify)
+        :run(nil, notify.error)
 end
 
 ---@param bufnr integer

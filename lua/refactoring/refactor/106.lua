@@ -13,6 +13,7 @@ local get_input = require("refactoring.get_input")
 local create_file = require("refactoring.tasks.create_file")
 local post_refactor = require("refactoring.tasks.post_refactor")
 local indent = require("refactoring.indent")
+local notify = require("refactoring.notify")
 
 local M = {}
 
@@ -570,7 +571,7 @@ M.extract_to_file = function(bufnr, opts)
         :add_task(create_file.from_input)
         :add_task(extract_setup)
         :after(post_refactor.no_cursor_post_refactor)
-        :run(nil, vim.notify)
+        :run(nil, notify.error)
 end
 
 ---@param bufnr integer
@@ -592,7 +593,7 @@ M.extract = function(bufnr, opts)
         )
         :add_task(extract_setup)
         :after(post_refactor.post_refactor)
-        :run(nil, vim.notify)
+        :run(nil, notify.error)
 end
 
 ---@param bufnr integer
@@ -604,7 +605,7 @@ M.extract_block = function(bufnr, opts)
         :add_task(extract_block_setup)
         :add_task(extract_setup)
         :after(post_refactor.post_refactor)
-        :run(nil, vim.notify)
+        :run(nil, notify.error)
 end
 
 ---@param bufnr integer
@@ -617,7 +618,7 @@ M.extract_block_to_file = function(bufnr, opts)
         :add_task(create_file.from_input)
         :add_task(extract_setup)
         :after(post_refactor.no_cursor_post_refactor)
-        :run(nil, vim.notify)
+        :run(nil, notify.error)
 end
 
 return M

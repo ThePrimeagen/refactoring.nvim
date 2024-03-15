@@ -8,6 +8,7 @@ local utils = require("refactoring.utils")
 local indent = require("refactoring.indent")
 local ensure_code_gen = require("refactoring.tasks.ensure_code_gen")
 local code = require("refactoring.code_generation")
+local notify = require("refactoring.notify")
 
 local M = {}
 
@@ -540,7 +541,7 @@ function M.inline_func(bufnr, opts)
         :add_task(ensure_code_gen_115)
         :add_task(inline_func_setup)
         :after(post_refactor.post_refactor)
-        :run(nil, vim.notify)
+        :run(nil, notify.error)
 end
 
 return M

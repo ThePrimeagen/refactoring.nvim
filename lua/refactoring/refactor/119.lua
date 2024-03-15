@@ -9,6 +9,7 @@ local post_refactor = require("refactoring.tasks.post_refactor")
 local ensure_code_gen = require("refactoring.tasks.ensure_code_gen")
 local indent = require("refactoring.indent")
 local text_edits_utils = require("refactoring.text_edits_utils")
+local notify = require("refactoring.notify")
 
 local M = {}
 
@@ -213,7 +214,7 @@ function M.extract_var(bufnr, config)
         :add_task(selection_setup)
         :add_task(extract_var_setup)
         :after(post_refactor.post_refactor)
-        :run(nil, vim.notify)
+        :run(nil, notify.error)
 end
 
 return M
