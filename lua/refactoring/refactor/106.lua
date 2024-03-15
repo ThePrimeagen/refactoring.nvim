@@ -335,10 +335,10 @@ local function extract_block_setup(refactor)
         return false, "Scope is nil. Couldn't find scope for current block"
     end
 
-    local ok, function_body =
+    local ok2, function_body =
         pcall(refactor.ts.get_function_body, refactor.ts, scope)
-    if not ok then
-        return ok, function_body
+    if not ok2 then
+        return ok2, function_body
     end
     local block_first_child = function_body[1]
     local block_last_child = function_body[#function_body]
@@ -394,9 +394,9 @@ local function extract_setup(refactor)
             indent.line_indent_amount(first_line, refactor.bufnr)
     end
 
-    local ok, return_vals = pcall(get_return_vals, refactor)
-    if not ok then
-        return ok, return_vals
+    local ok2, return_vals = pcall(get_return_vals, refactor)
+    if not ok2 then
+        return ok2, return_vals
     end
     local has_return_vals = #return_vals > 0
     if has_return_vals then
@@ -422,9 +422,10 @@ local function extract_setup(refactor)
         region_type = refactor.region:to_ts_node(refactor.ts:get_root()):type(),
     }
 
-    local ok, function_code = pcall(get_function_code, refactor, extract_params)
-    if not ok then
-        return ok, function_code
+    local ok3, function_code =
+        pcall(get_function_code, refactor, extract_params)
+    if not ok3 then
+        return ok3, function_code
     end
     local region_above_scope = utils.get_non_comment_region_above_node(refactor)
 
@@ -462,9 +463,9 @@ local function extract_setup(refactor)
     local root = languagetree[1]:root()
     local has_error = root:has_error() --[[@as boolean]]
 
-    local ok, func_call = pcall(get_func_call, refactor, extract_params)
-    if not ok then
-        return ok, func_call
+    local ok4, func_call = pcall(get_func_call, refactor, extract_params)
+    if not ok4 then
+        return ok4, func_call
     end
 
     -- PHP parser needs the PHP tag to parse code, so it's imposible to generate

@@ -186,10 +186,10 @@ local function extract_var_setup(refactor)
     end
 
     local region = utils.region_one_line_up_from_node(contained)
-    local ok, new_var_text =
+    local ok2, new_var_text =
         pcall(get_new_var_text, extract_node_text, refactor, var_name, region)
-    if not ok then
-        return ok, new_var_text
+    if not ok2 then
+        return ok2, new_var_text
     end
     table.insert(
         refactor.text_edits,

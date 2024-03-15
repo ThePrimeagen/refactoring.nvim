@@ -206,21 +206,21 @@ local function inline_func_setup(refactor)
     if not ok then
         return ok, function_body_text
     end
-    local ok, returned_values =
+    local ok2, returned_values =
         pcall(get_function_returned_values, refactor, scope)
-    if not ok then
-        return ok, returned_values
+    if not ok2 then
+        return ok2, returned_values
     end
-    local ok, parameters = pcall(get_function_parameter_names, refactor, scope)
-    if not ok then
-        return ok, parameters
+    local ok3, parameters = pcall(get_function_parameter_names, refactor, scope)
+    if not ok3 then
+        return ok3, parameters
     end
 
-    local ok, return_statements =
+    local ok4, return_statements =
         pcall(refactor.ts.get_return_statements, refactor.ts, scope)
 
-    if not ok then
-        return ok, return_statements
+    if not ok4 then
+        return ok4, return_statements
     end
 
     if #return_statements > 1 then

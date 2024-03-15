@@ -211,10 +211,10 @@ local function inline_var_setup(refactor)
         end
     end
 
-    local ok, identifiers =
+    local ok2, identifiers =
         pcall(refactor.ts.get_local_var_names, refactor.ts, declarator_node)
-    if not ok then
-        return ok, identifiers
+    if not ok2 then
+        return ok2, identifiers
     end
 
     if #identifiers == 0 then
@@ -230,7 +230,7 @@ local function inline_var_setup(refactor)
 
     local definition = ts_locals.find_definition(node_to_inline, refactor.bufnr)
 
-    local ok, text_edits = pcall(
+    local ok3, text_edits = pcall(
         get_inline_text_edits,
         declarator_node,
         identifiers,
@@ -239,8 +239,8 @@ local function inline_var_setup(refactor)
         definition,
         identifier_pos
     )
-    if not ok then
-        return ok, identifiers
+    if not ok3 then
+        return ok3, identifiers
     end
 
     refactor.text_edits = text_edits

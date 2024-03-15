@@ -227,7 +227,7 @@ function M.printDebug(bufnr, config)
 
                     if row_num == point.row and not should_replace then
                         should_replace = true
-                        local ok, error = pcall(
+                        local ok2, error = pcall(
                             text_edit_insert_text,
                             refactor,
                             opts,
@@ -236,8 +236,8 @@ function M.printDebug(bufnr, config)
                             point,
                             row_num
                         )
-                        if not ok then
-                            return ok, error
+                        if not ok2 then
+                            return ok2, error
                         end
                     else
                         if row_num == point.row then
