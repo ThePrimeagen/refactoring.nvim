@@ -166,7 +166,7 @@ function M.printDebug(bufnr, config)
             end
         )
         :after(post_refactor.post_refactor)
-        :run()
+        :run(nil, vim.notify)
 end
 
 return M
