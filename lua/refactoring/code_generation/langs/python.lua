@@ -66,7 +66,6 @@ local function python_class_function(opts)
 %sdef %s(%s):
 %s
 
-
 ]],
         opts.func_header,
         opts.name,
@@ -88,7 +87,6 @@ local function python_class_function_return(opts)
         [[
 %sdef %s(%s) -> %s:
 %s
-
 
 ]],
         opts.func_header,
@@ -179,4 +177,5 @@ local python = {
         return string.format(opts.statement, opts.prefix, opts.var)
     end,
 }
+
 return python
