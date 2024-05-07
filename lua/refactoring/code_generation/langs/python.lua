@@ -55,7 +55,7 @@ end
 
 local function python_class_function(opts)
     local args = build_args(opts.args, opts.args_types)
-    args = vim.list_extend({'self'}, args)
+    args = vim.list_extend({ "self" }, args)
     if opts.func_header == nil then
         opts.func_header = ""
     end
@@ -74,7 +74,7 @@ end
 
 local function python_class_function_return(opts)
     local args = build_args(opts.args, opts.args_types)
-    args = vim.list_extend({'self'}, args)
+    args = vim.list_extend({ "self" }, args)
     if opts.func_header == nil then
         opts.func_header = ""
     end
