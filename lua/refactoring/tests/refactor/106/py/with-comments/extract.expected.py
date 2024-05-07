@@ -4,7 +4,6 @@ def foo_bar(a, test, test_other):
         print(x, a)
 
 
-
 # This is a comment
 # I use arch btw
 # wow!

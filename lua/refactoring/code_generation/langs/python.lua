@@ -21,8 +21,6 @@ local function python_function(opts)
         [[
 %sdef %s(%s):
 %s
-
-
 ]],
         opts.func_header,
         opts.name,
@@ -43,8 +41,6 @@ local function python_function_return(opts)
         [[
 %sdef %s(%s) -> %s:
 %s
-
-
 ]],
         opts.func_header,
         opts.name,
@@ -63,7 +59,6 @@ local function python_class_function(opts)
         [[
 %sdef %s(self, %s):
 %s
-
 
 ]],
         opts.func_header,
@@ -85,7 +80,6 @@ local function python_class_function_return(opts)
         [[
 %sdef %s(self, %s) -> %s:
 %s
-
 
 ]],
         opts.func_header,

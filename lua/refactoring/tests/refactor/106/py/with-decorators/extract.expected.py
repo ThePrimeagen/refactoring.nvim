@@ -5,8 +5,6 @@ def extracted_fun():
     for i in range(10):
         dont_do_much += i
 
-
-
 @my_decorator
 @my_decorator
 @my_decorator

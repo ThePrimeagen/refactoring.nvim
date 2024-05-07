@@ -4,7 +4,6 @@ def extracted_func() -> None:
     b = 1
     return a, b
 
-
 def simple_function():
     a, b = extracted_func()
 
