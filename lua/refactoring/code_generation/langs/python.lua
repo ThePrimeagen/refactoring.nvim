@@ -164,7 +164,7 @@ local python = {
         return string.format("# %s", statement)
     end,
     default_printf_statement = function()
-        return { 'print(f"%s")' }
+        return { 'print("%s")' }
     end,
     print = function(opts)
         return string.format(opts.statement, opts.content)
