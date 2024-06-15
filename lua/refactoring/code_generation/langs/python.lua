@@ -1,7 +1,10 @@
 local code_utils = require("refactoring.code_generation.utils")
 
+---@param args string[]
+---@param arg_types string[]
+---@return string[]
 local function build_args(args, arg_types)
-    local final_args = {}
+    local final_args = {} ---@type string[]
     for i, arg in pairs(args) do
         if arg_types[arg] ~= code_utils.default_func_param_type() then
             final_args[i] = arg .. ": " .. arg_types[arg]
@@ -21,7 +24,6 @@ local function python_function(opts)
         [[
 %sdef %s(%s):
 %s
-
 
 ]],
         opts.func_header,
@@ -44,7 +46,6 @@ local function python_function_return(opts)
 %sdef %s(%s) -> %s:
 %s
 
-
 ]],
         opts.func_header,
         opts.name,
@@ -56,14 +57,14 @@ end
 
 local function python_class_function(opts)
     local args = build_args(opts.args, opts.args_types)
+    args = vim.list_extend({ "self" }, args)
     if opts.func_header == nil then
         opts.func_header = ""
     end
     return string.format(
         [[
-%sdef %s(self, %s):
+%sdef %s(%s):
 %s
-
 
 ]],
         opts.func_header,
@@ -75,6 +76,7 @@ end
 
 local function python_class_function_return(opts)
     local args = build_args(opts.args, opts.args_types)
+    args = vim.list_extend({ "self" }, args)
     if opts.func_header == nil then
         opts.func_header = ""
     end
@@ -83,9 +85,8 @@ local function python_class_function_return(opts)
     end
     return string.format(
         [[
-%sdef %s(self, %s) -> %s:
+%sdef %s(%s) -> %s:
 %s
-
 
 ]],
         opts.func_header,
@@ -176,4 +177,5 @@ local python = {
         return string.format(opts.statement, opts.prefix, opts.var)
     end,
 }
+
 return python

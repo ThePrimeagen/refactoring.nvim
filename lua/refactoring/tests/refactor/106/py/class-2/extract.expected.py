@@ -5,7 +5,6 @@ class Poggers:
             print(x, a)
 
 
-
     def simple_function(self, a):
         self.test = 1
         self.test_other = 11

@@ -12,7 +12,6 @@ def foo() -> None:
     return bad_doc_ids, id
 
 
-
 if __name__ == "main":
     bad_doc_ids, id = foo()
 
