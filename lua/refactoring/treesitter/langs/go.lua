@@ -22,6 +22,7 @@ function Golang.new(bufnr, ft)
         },
         variable_scope = {
             short_var_declaration = true,
+            var_declaration = true,
         },
         indent_scopes = {
             function_declaration = true,
