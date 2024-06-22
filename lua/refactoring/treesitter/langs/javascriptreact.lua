@@ -17,7 +17,6 @@ function JavascriptReact.new(bufnr, ft)
     local config = {
         filetype = ft,
         bufnr = bufnr,
-        require_param_types = true,
         scope_names = {
             program = "program",
             function_declaration = "function",
@@ -27,8 +26,10 @@ function JavascriptReact.new(bufnr, ft)
         },
         block_scope = {
             statement_block = true,
+            function_declaration = true,
         },
         variable_scope = {
+            variable_declaration = true,
             lexical_declaration = true,
         },
         indent_scopes = {
@@ -54,10 +55,10 @@ function JavascriptReact.new(bufnr, ft)
         },
         function_args = {
             InlineNode(
-                "((formal_parameters (required_parameter (identifier) @tmp_capture)))"
+                "(formal_parameters (identifier) @definition.function_argument)"
             ),
             InlineNode(
-                "((formal_parameters (optional_parameter (identifier) @tmp_capture)))"
+                "(formal_parameters (assignment_pattern (identifier) @tmp_capture))"
             ),
             InlineNode("(for_in_statement left: (identifier) @tmp_capture)"),
         },
@@ -73,7 +74,6 @@ function JavascriptReact.new(bufnr, ft)
             function_declaration = FieldNode("name"),
             method_definition = FieldNode("name"),
             class_declaration = FieldNode("name"),
-            abstract_class_declaration = FieldNode("name"),
             arrow_function = function(node)
                 return FieldNode("name")(node:parent(), "(anon)")
             end,
@@ -92,6 +92,7 @@ function JavascriptReact.new(bufnr, ft)
             InlineNode("(do_statement) @tmp_capture"),
             InlineNode("(while_statement) @tmp_capture"),
             InlineNode("(lexical_declaration) @tmp_capture"),
+            InlineNode("(variable_declaration) @tmp_capture"),
         },
         function_body = {
             InlineNode(
