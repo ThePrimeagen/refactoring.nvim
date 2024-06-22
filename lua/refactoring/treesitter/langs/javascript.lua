@@ -34,9 +34,15 @@ function JavaScript.new(bufnr, ft)
             InlineNode(
                 "(formal_parameters (identifier) @definition.function_argument)"
             ),
+            InlineNode(
+                "(formal_parameters (assignment_pattern (identifier) @tmp_capture))"
+            ),
+            InlineNode("(for_in_statement left: (identifier) @tmp_capture)"),
         },
         local_var_values = {
-            InlineNode("(variable_declarator value: (_) @tmp_capture)"),
+            InlineNode(
+                "(lexical_declaration (variable_declarator value: (_) @tmp_capture))"
+            ),
         },
         local_declarations = {
             InlineNode("(lexical_declaration) @definition.local_declarator"),
