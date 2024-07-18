@@ -103,6 +103,14 @@ local function get_func_opts(filename_prefix)
     return opts
 end
 
+
+local function buf_setlocal_options(filename_extension)
+    if filename_extension == "go" then
+        vim.cmd([[setlocal shiftwidth=4 expandtab]])
+    end
+end
+
+
 describe("Debug", function()
     for_each_file(function(file)
         a.it(string.format("printf: %s", file), function()
@@ -121,6 +129,9 @@ describe("Debug", function()
             )
 
             Config:get():reset()
+
+            -- Needed for local testing
+            buf_setlocal_options(filename_extension)
 
             set_config_options(filename_prefix, filename_extension)
 

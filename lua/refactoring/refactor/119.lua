@@ -13,19 +13,6 @@ local notify = require("refactoring.notify")
 
 local M = {}
 
----@param refactor Refactor
----@param region RefactorRegion
----@return string
-local function get_func_call_prefix(refactor, region)
-    local indent_amount = indent.buf_indent_amount(
-        region:get_start_point(),
-        refactor,
-        false,
-        refactor.bufnr
-    )
-    return indent.indent(indent_amount, refactor.bufnr)
-end
-
 ---@param extract_node_text string
 ---@param refactor Refactor
 ---@param var_name string
@@ -44,7 +31,13 @@ local function get_new_var_text(extract_node_text, refactor, var_name, region)
         refactor.ts:is_indent_scope(refactor.scope)
         and refactor.ts:allows_indenting_task()
     then
-        local indent_whitespace = get_func_call_prefix(refactor, region)
+        local indent_amount = indent.buf_indent_amount(
+            region:get_start_point(),
+            refactor,
+            false,
+            refactor.bufnr
+        )
+        local indent_whitespace = indent.indent(indent_amount, refactor.bufnr)
         return table.concat({ indent_whitespace, base_text }, "")
     end
 

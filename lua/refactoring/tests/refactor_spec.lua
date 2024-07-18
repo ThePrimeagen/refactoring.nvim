@@ -194,12 +194,12 @@ local function set_config_options(filename_prefix, filename_extension)
     end
 end
 
-local function set_bufnr_shiftwidth(filename_extension)
+local function buf_setlocal_options(filename_extension)
     if filename_extension == "java" then
         vim.cmd([[setlocal shiftwidth=4]])
-    end
-
-    if filename_extension == "cpp" or filename_extension == "c" then
+    elseif filename_extension == "go" then
+        vim.cmd([[setlocal shiftwidth=4 expandtab]])
+    elseif filename_extension == "cpp" or filename_extension == "c" then
         vim.cmd([[setlocal shiftwidth=2]])
     end
 end
@@ -229,7 +229,7 @@ describe("Refactoring", function()
             test_utils.run_inputs_if_exist(filename_prefix, cwd)
 
             -- Needed for local testing
-            set_bufnr_shiftwidth(filename_extension)
+            buf_setlocal_options(filename_extension)
 
             test_utils.run_commands(filename_prefix)
             local _, err = pcall(refactoring.refactor, refactor)
