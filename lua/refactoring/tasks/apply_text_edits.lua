@@ -77,7 +77,7 @@ local function refactor_apply_text_edits(refactor)
         if ns then
             preview_highlight(bufnr, ns, edit_set)
         end
-        if vim.fn.has("nvim-0.11") then
+        if vim.fn.has("nvim-0.11") == 1 then
             -- HACK: because of https://github.com/neovim/neovim/pull/29212
             edit_set = vim.iter(edit_set):rev():totable()
         end
