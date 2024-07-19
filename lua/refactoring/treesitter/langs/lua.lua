@@ -124,6 +124,16 @@ function Lua.new(bufnr, ft)
         should_check_parent_node_print_var = function(parent_type)
             return vim.tbl_contains(special_nodes, parent_type)
         end,
+        reference_filter = function(node)
+            local parent = node:parent()
+            if not parent then
+                return true
+            end
+            if parent:type() == "dot_index_expression" then
+                return parent:field("table")[1] == node
+            end
+            return true
+        end,
     }
     return TreeSitter:new(config, bufnr)
 end

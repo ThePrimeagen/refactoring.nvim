@@ -27,6 +27,7 @@ local ts_locals = require("refactoring.ts-locals")
 ---@field require_special_var_format? boolean: flag to require special variable format for codegen
 ---@field should_check_parent_node? fun(parent_type: string): boolean function to check if it's necesary to check the parent node
 ---@field should_check_parent_node_print_var? fun(parent_type: string): boolean function to check if it's necesary to check the parent node for print_var
+---@field reference_filter? fun(node: TSNode): boolean
 ---@field include_end_of_line? boolean flag to indicate if end of line should be included in a region
 ---@field return_values InlineNodeFunc[] nodes that are return values
 ---@field function_references InlineNodeFunc[] nodes that are references of function
@@ -73,6 +74,9 @@ function TreeSitter:new(config, bufnr)
         end,
         should_check_parent_node_print_var = function(_parent_type)
             return false
+        end,
+        reference_filter = function(_node)
+            return true
         end,
         include_end_of_line = false,
         filetype = config.filetype,
