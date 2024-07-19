@@ -98,6 +98,8 @@ local function get_inline_text_edits(
 
     local references =
         ts_locals.find_usages(definition, refactor.scope, refactor.bufnr)
+    references =
+        vim.iter(references):filter(refactor.ts.reference_filter):totable()
 
     local all_values = refactor.ts:get_local_var_values(declarator_node)
 
