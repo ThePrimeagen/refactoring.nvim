@@ -1,6 +1,5 @@
 local Path = require("plenary.path")
 local Config = require("refactoring.config")
-local utils = require("refactoring.utils")
 
 local M = {}
 
@@ -18,7 +17,11 @@ end
 ---@param file string
 ---@return string[]
 function M.get_contents(file)
-    return utils.split_string(M.read_file(file), "\n")
+    local contents = vim.split(M.read_file(file), "\n")
+    if contents[#contents] == '' then
+        contents[#contents] = nil
+    end
+return contents
 end
 
 ---@param filename_prefix string
@@ -37,9 +40,10 @@ end
 ---@param filename_prefix string
 ---@return string[]
 local function get_commands(filename_prefix)
-    return utils.split_string(
+    return vim.split(
         M.read_file(string.format("%s.commands", filename_prefix)),
-        "\n"
+        "\n",
+        { trimempty = true }
     )
 end
 

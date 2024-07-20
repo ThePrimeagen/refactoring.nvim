@@ -89,6 +89,7 @@ end
 ---@param setting table
 ---@return boolean
 local function setting_present(setting)
+    ---@diagnostic disable-next-line: no-unknown
     for _ in pairs(setting) do
         return true
     end
@@ -175,14 +176,18 @@ function TreeSitter:get_local_defs(scope, region)
 
     vim.list_extend(nodes, local_var_names)
 
-    nodes = utils.region_complement(nodes, region)
-    nodes = vim.tbl_filter(
-        --- @param node TSNode
-        function(node)
-            return Region:from_node(node):above(region)
-        end,
-        nodes
-    )
+    nodes = vim.iter(nodes)
+        :filter(function(node)
+            return utils.region_complement(node, region)
+        end)
+        :filter(
+            --- @param node TSNode
+            ---@return boolean
+            function(node)
+                return Region:from_node(node):above(region)
+            end
+        )
+        :totable()
     return nodes
 end
 
@@ -238,7 +243,7 @@ end
 ---@param scope TSNode
 ---@return boolean
 function TreeSitter:is_class_function(scope)
-    local node = scope
+    local node = scope ---@type TSNode?
     while node ~= nil do
         if self.valid_class_nodes[node:type()] ~= nil then
             return true
@@ -287,9 +292,12 @@ end
 ---@param region RefactorRegion
 ---@return TSNode[]
 function TreeSitter:get_region_refs(scope, region)
-    local nodes = self:get_references(scope)
+    local nodes = vim.iter(self:get_references(scope))
+        :filter(function(node)
+            return utils.region_intersect(node, region, region.bufnr)
+        end)
+        :totable()
 
-    nodes = utils.region_intersect(nodes, region, region.bufnr)
     return nodes
 end
 
@@ -330,12 +338,10 @@ local function containing_node_by_type(node, container_map)
         return nil
     end
 
-    -- TODO (TheLeoP): fix: if multiple containing nodes have the same type, this returns the first match, not necesarily the containing node (example: golang "block")
     repeat
         if container_map[node:type()] ~= nil then
             break
         end
-        --- @type TSNode
         node = node:parent()
     -- This statement can be uncommented to print all the parent nodes of the
     -- current node until there are no more. Useful in finding certain nodes
@@ -407,6 +413,7 @@ function TreeSitter:indent_scope_difference(ancestor, child)
 
     local curr = child
     repeat
+        ---@diagnostic disable-next-line: cast-local-type
         curr = containing_node_by_type(curr:parent(), self.indent_scopes)
         indent_count = indent_count + 1
     until curr == ancestor or curr == nil
@@ -425,10 +432,12 @@ function TreeSitter:get_debug_path(node)
     local path = {}
 
     repeat
+        ---@diagnostic disable-next-line: cast-local-type
         node = containing_node_by_type(node, self.debug_paths)
 
         if node then
             table.insert(path, self.debug_paths[node:type()](node, self.bufnr))
+            ---@diagnostic disable-next-line: cast-local-type
             node = node:parent()
         end
     until node == nil
@@ -458,7 +467,11 @@ end
 ---@param region  RefactorRegion
 ---@return TSNode[]
 function TreeSitter:local_declarations_in_region(scope, region)
-    return utils.region_intersect(self:get_local_declarations(scope), region)
+    return vim.iter(self:get_local_declarations(scope))
+        :filter(function(node)
+            return utils.region_intersect(node, region)
+        end)
+        :totable()
 end
 
 ---@return TSNode
@@ -471,14 +484,15 @@ function TreeSitter:local_declarations_under_cursor()
         error("Failed to get scope in local_declarations_under_cursor")
     end
 
-    return vim.tbl_filter(
-        --- @param node TSNode
-        --- @return boolean
-        function(node)
-            return Region:from_node(node, 0):contains_point(point)
-        end,
-        self:get_local_declarations(scope)
-    )[1]
+    return vim.iter(self:get_local_declarations(scope))
+        :filter(
+            --- @param node TSNode
+            --- @return boolean
+            function(node)
+                return Region:from_node(node, 0):contains_point(point)
+            end
+        )
+        :next()
 end
 
 ---@param node TSNode

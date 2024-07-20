@@ -30,51 +30,50 @@ end
 ---@param refactor Refactor
 ---@return string[]
 local function get_return_vals(refactor)
-    local region_vars = utils.region_intersect(
-        refactor.ts:get_local_declarations(refactor.scope),
-        refactor.region
-    )
+    local local_declarations =
+        refactor.ts:get_local_declarations(refactor.scope)
 
-    region_vars = vim.tbl_map(
-        ---@param node TSNode
-        ---@return TSNode[]
-        function(node)
-            return refactor.ts:get_local_var_names(node)[1]
-        end,
-        region_vars
-    )
+    local region_declarations = vim.iter(local_declarations)
+        :filter(function(node)
+            return utils.region_intersect(node, refactor.region)
+        end)
+        :map(
+            ---@param node TSNode
+            ---@return TSNode
+            function(node)
+                return refactor.ts:get_local_var_names(node)[1]
+            end
+        )
+        :filter(
+            ---@param node TSNode
+            function(node)
+                return not not node
+            end
+        )
+        :map(
+            ---@param node TSNode
+            ---@return TSNode
+            function(node)
+                return utils.node_to_parent_if_needed(refactor, node)
+            end
+        )
+        :totable()
 
-    region_vars = vim.tbl_filter(
-        ---@param node TSNode
-        ---@return TSNode[]
-        function(node)
-            return node
-        end,
-        region_vars
-    )
-
-    local refs = refactor.ts:get_references(refactor.scope)
-    refs = utils.after_region(refs, refactor.region)
-
-    refs = vim.tbl_map(
-        ---@param node TSNode
-        ---@return TSNode[]
-        function(node)
-            return utils.node_to_parent_if_needed(refactor, node)
-        end,
-        refs
-    )
-    region_vars = vim.tbl_map(
-        ---@param node TSNode
-        ---@return TSNode[]
-        function(node)
-            return utils.node_to_parent_if_needed(refactor, node)
-        end,
-        region_vars
-    )
+    local refs = vim.iter(refactor.ts:get_references(refactor.scope))
+        :filter(function(node)
+            return utils.after_region(node, refactor.region)
+        end)
+        :map(
+            ---@param node TSNode
+            ---@return TSNode
+            function(node)
+                return utils.node_to_parent_if_needed(refactor, node)
+            end
+        )
+        :totable()
 
     local bufnr = refactor.buffers[1]
-    local region_var_map = utils.nodes_to_text_set(bufnr, region_vars)
+    local region_var_map = utils.nodes_to_text_set(bufnr, region_declarations)
 
     local ref_map = utils.nodes_to_text_set(bufnr, refs)
     local return_vals =
@@ -326,11 +325,13 @@ end
 local function extract_block_setup(refactor)
     local region = Region:from_point(Point:from_cursor(), refactor.bufnr)
     local region_node = region:to_ts_node(refactor.ts:get_root())
+    ---@type boolean, TSNode|nil|string
     local ok, scope = pcall(refactor.ts.get_scope, refactor.ts, region_node)
     if not ok then
         ---@cast scope string
         return ok, scope
     end
+    ---@cast scope TSNode
 
     if scope == nil then
         return false, "Scope is nil. Couldn't find scope for current block"
@@ -430,7 +431,7 @@ local function extract_setup(refactor)
     end
     local region_above_scope = utils.get_non_comment_region_above_node(refactor)
 
-    --- @type LspTextEdit | {bufnr: integer}
+    ---@type RefactorTextEdit
     local extract_function
     if is_class then
         extract_function = text_edits_utils.insert_new_line_text(
@@ -488,8 +489,8 @@ local function extract_setup(refactor)
 
         for _, match in query:iter_matches(refactor.root, refactor.bufnr, 0, -1) do
             if match then
-                local first = match[1]
-                local last = match[#match]
+                local first = match[1] --[[@as TSNode]]
+                local last = match[#match] --[[@as TSNode]]
                 local start_row, _, _, _ = first:range()
                 local _, _, end_row, end_col = last:range()
 

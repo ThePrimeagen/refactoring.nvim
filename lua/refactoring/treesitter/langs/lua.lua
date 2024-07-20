@@ -5,7 +5,6 @@ local FieldNode = Nodes.FieldNode
 local StringNode = Nodes.StringNode
 local QueryNode = Nodes.QueryNode
 local InlineNode = Nodes.InlineNode
-local utils = require("refactoring.utils")
 
 local special_nodes = {
     "method_index_expression",
@@ -115,11 +114,7 @@ function Lua.new(bufnr, ft)
             ),
         },
         is_return_statement = function(statement)
-            -- stylua: ignore start
-            return vim.startswith(
-                utils.trim(statement)--[[@as string]],
-                "return "
-            )
+            return vim.startswith(vim.trim(statement), "return ")
         end,
         should_check_parent_node_print_var = function(parent_type)
             return vim.tbl_contains(special_nodes, parent_type)

@@ -3,7 +3,7 @@ local Region = require("refactoring.region")
 
 ---@param bufnr integer
 ---@param ns integer
----@param edit_set LspTextEdit[]
+---@param edit_set RefactorTextEdit[]
 local function preview_highlight(bufnr, ns, edit_set)
     vim.api.nvim_buf_clear_namespace(bufnr, ns, 0, -1)
     for _, edit in pairs(edit_set) do
@@ -48,7 +48,7 @@ local function refactor_apply_text_edits(refactor)
         return true, refactor
     end
 
-    --- @type table<integer, LspTextEdit[]>
+    --- @type table<integer, RefactorTextEdit[]>
     local edits = {}
 
     for _, edit in pairs(refactor.text_edits) do

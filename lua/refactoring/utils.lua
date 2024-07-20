@@ -10,66 +10,10 @@ function M.wait_frame()
     async.util.scheduler()
 end
 
-function M.take_one(table, fn)
-    if not table then
-        return nil
-    end
-
-    fn = fn or function()
-        return true
-    end
-
-    local out = nil
-    for k, v in pairs(table) do
-        if fn(k, v) then
-            out = v
-            break
-        end
-    end
-
-    return out
-end
-
----@param inputstr string
----@param sep string
----@return string[]
-function M.split_string(inputstr, sep)
-    local t = {}
-    -- [[ lets not think about the edge case there... --]]
-    while #inputstr > 0 do
-        local start, stop = inputstr:find(sep)
-        local str
-        if not start then
-            str = inputstr
-            inputstr = ""
-        else
-            str = inputstr:sub(1, start - 1)
-            inputstr = inputstr:sub(stop + 1)
-        end
-        table.insert(t, str)
-    end
-    return t
-end
-
 ---@return RefactorRegion
 function M.get_top_of_file_region()
     local range = { line = 0, character = 0 }
     return Region:from_lsp_range_insert({ start = range, ["end"] = range })
-end
-
--- FROM http://lua-users.org/wiki/CommonFunctions
--- remove trailing and leading whitespace from string.
----@param s string|table<any, string>
----@return string|table<any, string>
-function M.trim(s)
-    if type(s) == "table" then
-        for i, str in pairs(s) do
-            s[i] = M.trim(str) --[[@as string]]
-        end
-        return s
-    end
-    -- from PiL2 20.4
-    return (s:gsub("^%s*(.-)%s*$", "%1"))
 end
 
 ---@param node TSNode
@@ -151,41 +95,26 @@ function M.region_one_line_up_from_node(node)
     return region
 end
 
----@param nodes TSNode[]
+---@param node TSNode
 ---@param region RefactorRegion
----@return TSNode[]
-M.region_complement = function(nodes, region)
-    return vim.tbl_filter(function(node)
-        return not region:contains(Region:from_node(node))
-    end, nodes)
+---@return boolean
+M.region_complement = function(node, region)
+    return not region:contains(Region:from_node(node))
 end
 
----@param nodes TSNode[]
+---@param node TSNode[]
 ---@param region RefactorRegion
 ---@param bufnr integer|nil
----@return TSNode[]
-M.region_intersect = function(nodes, region, bufnr)
-    return vim.tbl_filter(function(node)
-        return region:contains(Region:from_node(node, bufnr))
-    end, nodes)
-end
-
----@param nodes TSNode[]
----@param region RefactorRegion
----@return TSNode[]
-M.after_region = function(nodes, region)
-    return vim.tbl_filter(function(node)
-        return Region:from_node(node):is_after(region)
-    end, nodes)
-end
-
----@param t table
 ---@return boolean
-function M.table_has_keys(t)
-    for _ in pairs(t) do
-        return true
-    end
-    return false
+M.region_intersect = function(node, region, bufnr)
+    return region:contains(Region:from_node(node, bufnr))
+end
+
+---@param node TSNode[]
+---@param region RefactorRegion
+---@return boolean
+M.after_region = function(node, region)
+    return Region:from_node(node):is_after(region)
 end
 
 -- TODO: Very unsure if this needs to be a "util" or not But this is super
@@ -194,9 +123,9 @@ end
 ---@param ... TSNode
 ---@return table<string, true>
 function M.nodes_to_text_set(bufnr, ...)
-    local out = {}
+    local out = {} ---@type table<string, true>
     for i = 1, select("#", ...) do
-        local nodes = select(i, ...)
+        local nodes = select(i, ...) ---@type TSNode[]
         for _, node in pairs(nodes) do
             local text = vim.treesitter.get_node_text(node, bufnr)
             if text ~= nil then
@@ -207,11 +136,11 @@ function M.nodes_to_text_set(bufnr, ...)
     return out
 end
 
----@param a table
----@param b table
+---@param a table<any, any>
+---@param b table<any, any>
 ---@return table
 function M.table_key_intersect(a, b)
-    local out = {}
+    local out = {} ---@type table<any, any>
     for k, v in pairs(b) do
         if a[k] then
             out[k] = v
@@ -276,7 +205,6 @@ function M.get_first_node_in_row(node)
     local start_row, _, _, _ = node:range()
     local first = node
     while true do
-        --- @type TSNode
         local parent = first:parent()
         if parent == nil then
             break
@@ -296,13 +224,15 @@ function M.get_non_comment_region_above_node(refactor)
     local prev_sibling = M.get_first_node_in_row(refactor.scope)
         :prev_named_sibling()
     if is_comment_or_decorator_node(prev_sibling) then
-        --- @type integer
+        ---@cast prev_sibling TSNode
+        ---@type integer
         local start_row
         while true do
             -- Only want first value
             start_row = prev_sibling:range()
             local temp = prev_sibling:prev_sibling()
             if is_comment_or_decorator_node(temp) then
+                ---@cast temp TSNode
                 -- Only want first value
                 local temp_row = temp:range()
                 if start_row - temp_row == 1 then
@@ -328,27 +258,28 @@ end
 ---@param refactor Refactor
 ---@return string[]
 function M.get_selected_locals(refactor)
-    local local_defs =
+    local local_defs = vim.iter(
         refactor.ts:get_local_defs(refactor.scope, refactor.region)
-    local region_refs =
+    )
+        :map(
+            ---@param node TSNode
+            ---@return TSNode[]
+            function(node)
+                return M.node_to_parent_if_needed(refactor, node)
+            end
+        )
+        :totable()
+    local region_refs = vim.iter(
         refactor.ts:get_region_refs(refactor.scope, refactor.region)
-
-    local_defs = vim.tbl_map(
-        ---@param node TSNode
-        ---@return TSNode[]
-        function(node)
-            return M.node_to_parent_if_needed(refactor, node)
-        end,
-        local_defs
     )
-    region_refs = vim.tbl_map(
-        ---@param node TSNode
-        ---@return TSNode[]
-        function(node)
-            return M.node_to_parent_if_needed(refactor, node)
-        end,
-        region_refs
-    )
+        :map(
+            ---@param node TSNode
+            ---@return TSNode[]
+            function(node)
+                return M.node_to_parent_if_needed(refactor, node)
+            end
+        )
+        :totable()
 
     local bufnr = refactor.buffers[1]
     local local_def_map = M.nodes_to_text_set(bufnr, local_defs)
@@ -360,7 +291,7 @@ end
 ---@param node TSNode
 ---@return TSNode
 function M.node_to_parent_if_needed(refactor, node)
-    local parent = node:parent()
+    local parent = assert(node:parent())
     if refactor.ts.should_check_parent_node(parent:type()) then
         return parent
     end

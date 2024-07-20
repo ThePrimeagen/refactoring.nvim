@@ -194,8 +194,13 @@ local function inline_func_setup(refactor)
         return false, "No function declaration found"
     end
 
+    local scope_parent = scope:parent()
+    if not scope_parent then
+        return false, "No scope parent"
+    end
+
     local function_references =
-        get_references(refactor, scope:parent(), identifier)
+        get_references(refactor, scope_parent, identifier)
 
     if #function_references == 0 then
         return false, "Error: no function usages to inline"
@@ -243,6 +248,11 @@ local function inline_func_setup(refactor)
     end
 
     for _, reference in ipairs(function_references) do
+        local reference_parent = reference:parent()
+        if not reference_parent then
+            return false, "No reference parent"
+        end
+
         -- TODO (TheLeoP): check if this can be done using `indent.buf_indent_amount`
         --
         -- Copy indentation of the line where the function is called
@@ -271,7 +281,7 @@ local function inline_func_setup(refactor)
                 table.insert(
                     text_edits,
                     text_edits_utils.insert_new_line_text(
-                        Region:from_node(reference:parent(), refactor.bufnr),
+                        Region:from_node(reference_parent, refactor.bufnr),
                         table.concat({ indentation, sentence }, ""),
                         { below = false, _end = false }
                     )
@@ -290,7 +300,7 @@ local function inline_func_setup(refactor)
                 table.insert(
                     text_edits,
                     text_edits_utils.insert_text(
-                        Region:from_node(reference:parent(), refactor.bufnr),
+                        Region:from_node(reference_parent, refactor.bufnr),
                         sentence
                     )
                 )
@@ -317,7 +327,7 @@ local function inline_func_setup(refactor)
                 table.insert(
                     text_edits,
                     text_edits_utils.insert_text(
-                        Region:from_node(reference:parent(), refactor.bufnr),
+                        Region:from_node(reference_parent, refactor.bufnr),
                         sentence
                     )
                 )
@@ -339,7 +349,7 @@ local function inline_func_setup(refactor)
                 table.insert(
                     text_edits,
                     text_edits_utils.insert_text(
-                        Region:from_node(reference:parent(), refactor.bufnr),
+                        Region:from_node(reference_parent, refactor.bufnr),
                         table.concat({ sentence, comma }, "")
                     )
                 )
@@ -371,7 +381,7 @@ local function inline_func_setup(refactor)
                 table.insert(
                     text_edits,
                     text_edits_utils.insert_text(
-                        Region:from_node(reference:parent(), refactor.bufnr),
+                        Region:from_node(reference_parent, refactor.bufnr),
                         table.concat({ sentence, comma }, "")
                     )
                 )
@@ -385,7 +395,7 @@ local function inline_func_setup(refactor)
         then
             refactor_is_possible = true
             local arguments_list =
-                get_function_arguments(refactor, reference:parent())
+                get_function_arguments(refactor, reference_parent)
             local constants = get_params_as_constants(
                 refactor,
                 indentation,
@@ -394,7 +404,7 @@ local function inline_func_setup(refactor)
             )
             for _, constant in ipairs(constants) do
                 local insert_text = text_edits_utils.insert_text(
-                    Region:from_node(reference:parent(), refactor.bufnr),
+                    Region:from_node(reference_parent, refactor.bufnr),
                     constant
                 )
                 table.insert(text_edits, insert_text)
@@ -407,7 +417,7 @@ local function inline_func_setup(refactor)
                 table.insert(
                     text_edits,
                     text_edits_utils.insert_text(
-                        Region:from_node(reference:parent(), refactor.bufnr),
+                        Region:from_node(reference_parent, refactor.bufnr),
                         table.concat({ indentation, sentence, new_line }, "")
                     )
                 )
@@ -421,7 +431,7 @@ local function inline_func_setup(refactor)
         then
             refactor_is_possible = true
             local arguments_list =
-                get_function_arguments(refactor, reference:parent())
+                get_function_arguments(refactor, reference_parent)
             local constants = get_params_as_constants(
                 refactor,
                 indentation,
@@ -445,7 +455,7 @@ local function inline_func_setup(refactor)
                 table.insert(
                     text_edits,
                     text_edits_utils.insert_text(
-                        Region:from_node(reference:parent(), refactor.bufnr),
+                        Region:from_node(reference_parent, refactor.bufnr),
                         table.concat({ sentence, comma }, "")
                     )
                 )
@@ -459,7 +469,7 @@ local function inline_func_setup(refactor)
             local new_line = code.new_line()
 
             local arguments_list =
-                get_function_arguments(refactor, reference:parent())
+                get_function_arguments(refactor, reference_parent)
             local constants = get_params_as_constants(
                 refactor,
                 indentation,
@@ -492,7 +502,7 @@ local function inline_func_setup(refactor)
                 table.insert(
                     text_edits,
                     text_edits_utils.insert_text(
-                        Region:from_node(reference:parent(), refactor.bufnr),
+                        Region:from_node(reference_parent, refactor.bufnr),
                         table.concat({ sentence, comma }, "")
                     )
                 )
@@ -502,7 +512,7 @@ local function inline_func_setup(refactor)
         if refactor_is_possible then
             -- Delete original reference
             local delete_text = text_edits_utils.delete_text(
-                Region:from_node(reference:parent(), refactor.bufnr)
+                Region:from_node(reference_parent, refactor.bufnr)
             )
             table.insert(text_edits, delete_text)
         end

@@ -85,7 +85,7 @@ end
 ---@param refactor Refactor
 ---@param definition TSNode[]
 ---@param identifier_pos integer
----@return LspTextEdit[]
+---@return RefactorTextEdit[]
 local function get_inline_text_edits(
     declarator_node,
     identifiers,
@@ -99,7 +99,7 @@ local function get_inline_text_edits(
     local references =
         ts_locals.find_usages(definition, refactor.scope, refactor.bufnr)
     references =
-        vim.iter(references):filter(refactor.ts.reference_filter):totable()
+        vim.iter(references):filter(refactor.ts.reference_filter):totable() --[=[@as TSNode[]]=]
 
     local all_values = refactor.ts:get_local_var_values(declarator_node)
 
@@ -195,7 +195,7 @@ local function inline_var_setup(refactor)
         return ok, declarator_nodes
     end
     -- only deal with first declaration
-    local declarator_node = declarator_nodes[1]
+    local declarator_node = declarator_nodes[1] ---@type TSNode?
 
     if declarator_node == nil then
         -- if the visual selection does not contain a declaration and it only contains a reference

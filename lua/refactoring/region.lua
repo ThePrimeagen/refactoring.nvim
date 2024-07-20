@@ -161,7 +161,7 @@ function Region:from_lsp_range_replace(lsp_range, bufnr)
 end
 
 ---@param root TSNode
----@return TSNode # the node contained by this region
+---@return TSNode? # the node contained by this region
 function Region:to_ts_node(root)
     local s_row, s_col, e_row, e_col = self:to_ts()
     return root:named_descendant_for_range(s_row, s_col, e_row, e_col)
@@ -264,12 +264,13 @@ function Region:to_lsp_range_replace()
     }
 end
 
----@class LspTextEdit
+---@class RefactorTextEdit
 ---@field range LspRange
 ---@field newText string
+---@field bufnr integer?
 
 ---@param text string
----@return LspTextEdit
+---@return RefactorTextEdit
 function Region:to_lsp_text_edit_insert(text)
     return {
         range = self:to_lsp_range_insert(),
@@ -278,7 +279,7 @@ function Region:to_lsp_text_edit_insert(text)
 end
 
 ---@param text string
----@return LspTextEdit
+---@return RefactorTextEdit
 function Region:to_lsp_text_edit_replace(text)
     return {
         range = self:to_lsp_range_replace(),

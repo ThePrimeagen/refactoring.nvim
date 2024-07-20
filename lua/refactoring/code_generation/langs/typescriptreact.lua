@@ -48,9 +48,11 @@ end
 ---@param opts call_function_opts
 local function tsx_call_function(opts)
     if opts.region_type == "jsx_element" or opts.contains_jsx then
-        local args = vim.tbl_map(function(arg)
-            return string.format("%s={%s}", arg, arg)
-        end, opts.args)
+        local args = vim.iter(opts.args)
+            :map(function(arg)
+                return string.format("%s={%s}", arg, arg)
+            end)
+            :totable()
         return string.format("< %s %s/>", opts.name, table.concat(args, " "))
     else
         return ts.call_function(opts)

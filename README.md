@@ -5,7 +5,7 @@
   <h6>'If I use an environment that has good automated refactorings, I can trust those refactorings' - Martin Fowler</h6>
 
 [![Lua](https://img.shields.io/badge/Lua-blue.svg?style=for-the-badge&logo=lua)](http://www.lua.org)
-[![Neovim Nightly](https://img.shields.io/badge/Neovim%20Nightly-green.svg?style=for-the-badge&logo=neovim)](https://neovim.io)
+[![Neovim 0.10](https://img.shields.io/badge/Neovim%200.10-green.svg?style=for-the-badge&logo=neovim)](https://neovim.io)
 ![Work In Progress](https://img.shields.io/badge/Work%20In%20Progress-orange?style=for-the-badge)
 
 </div>
@@ -38,7 +38,7 @@
 
 ### Requirements<a name="requirements"></a>
 
-- **Neovim Nightly**
+- **Neovim 0.10**
 - Treesitter
 - Plenary
 

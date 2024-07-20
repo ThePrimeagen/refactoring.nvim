@@ -79,6 +79,7 @@ local function extract_var_setup(refactor)
 
     --- @type TSNode[]
     local actual_occurrences = {}
+    ---@type string[]
     local texts = {}
 
     for _, occurrence in pairs(occurrences) do
@@ -113,12 +114,11 @@ local function extract_var_setup(refactor)
 
     --- @type TSNode[]
     local block_scopes = {}
-    --- @type table<integer, true>
+    --- @type table<string, true>
     local already_seen = {}
     for _, occurrence in pairs(actual_occurrences) do
         local block_scope =
             refactor.ts.get_container(occurrence, refactor.ts.block_scope)
-        -- TODO: Add test for block_scope being nil
         if block_scope == nil then
             return false, "block_scope is nil! Something went wrong"
         end
@@ -129,7 +129,6 @@ local function extract_var_setup(refactor)
     end
     utils.sort_in_appearance_order(block_scopes)
 
-    -- TODO: Add test for block_scope being nil
     if #block_scopes < 1 then
         return false, "block_scope is nil! Something went wrong"
     end
@@ -140,27 +139,27 @@ local function extract_var_setup(refactor)
         return ok, unfiltered_statements
     end
 
-    -- TODO: Add test for unfiltered_statements being nil
     if #unfiltered_statements < 1 then
         return false, "unfiltered_statements is nil! Something went wrong"
     end
 
-    local statements = vim.tbl_filter(
-        ---@param node TSNode
-        ---@return TSNode[]
-        function(node)
-            for _, scope in pairs(block_scopes) do
-                if node:parent():id() == scope:id() then
-                    return true
+    ---@type TSNode[]
+    local statements = vim.iter(unfiltered_statements)
+        :filter(
+            ---@param node TSNode
+            ---@return TSNode[]
+            function(node)
+                for _, scope in pairs(block_scopes) do
+                    if node:parent():id() == scope:id() then
+                        return true
+                    end
                 end
+                return false
             end
-            return false
-        end,
-        unfiltered_statements
-    )
+        )
+        :totable()
     utils.sort_in_appearance_order(statements)
 
-    -- TODO: Add test for statements being nil
     if #statements < 1 then
         return false, "statements is nil! Something went wrong"
     end
@@ -168,7 +167,7 @@ local function extract_var_setup(refactor)
     ---@type TSNode|nil
     local contained = nil
     local top_occurrence = actual_occurrences[1]
-    for _, statement in pairs(statements) do
+    for _, statement in ipairs(statements) do
         if utils.node_contains(statement, top_occurrence) then
             contained = statement
         end

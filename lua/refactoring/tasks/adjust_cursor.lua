@@ -1,5 +1,3 @@
-local utils = require("refactoring.utils")
-
 ---@type {region:RefactorRegion, text:string}[]
 local changes = {}
 
@@ -21,7 +19,11 @@ local function get_rows(cursor)
         local region = edit.region
         local text = edit.text
 
-        local text_length = #utils.split_string(text, "\n")
+        local lines = vim.split(text, "\n")
+        if lines[#lines] == "" then
+            lines[#lines] = nil
+        end
+        local text_length = #lines
         local row_diff = region.end_row - region.start_row
 
         if region.start_row == region.end_row and text_length > 0 then
