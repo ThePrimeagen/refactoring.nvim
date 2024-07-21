@@ -25,7 +25,7 @@ end
 ---@param node TSNode
 ---@return TSNode result
 local function get_root_for_node(node)
-    local parent = node
+    local parent = node ---@type TSNode?
     local result = node
 
     while parent ~= nil do
@@ -65,7 +65,7 @@ end
 ---@param bufnr integer
 ---@return fun(): TSNode|nil
 function M.iter_scope_tree(node, bufnr)
-    local last_node = node
+    local last_node = node ---@type TSNode?
     return function()
         if not last_node then
             return
@@ -411,13 +411,13 @@ function M.containing_scope(node, bufnr, allow_scope)
         return
     end
 
-    local iter_node = node
+    local current_node = node ---@type TSNode?
 
-    while iter_node ~= nil and not vim.tbl_contains(scopes, iter_node) do
-        iter_node = iter_node:parent()
+    while current_node ~= nil and not vim.tbl_contains(scopes, current_node) do
+        current_node = current_node:parent()
     end
 
-    return iter_node or (allow_scope and node or nil)
+    return current_node or (allow_scope and node or nil)
 end
 
 function M.nested_scope(node, cursor_pos)

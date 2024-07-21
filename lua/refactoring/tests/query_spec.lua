@@ -16,7 +16,7 @@ describe("Query", function()
             0,
             -1,
             false,
-            utils.split_string(file, "\n")
+            vim.split(file, "\n")
         )
 
         vim.cmd(":14")
@@ -24,8 +24,8 @@ describe("Query", function()
 
         local region = Region:from_current_selection()
         local ts = TreeSitter.get_treesitter()
-        local extract_node = region:to_ts_node(ts:get_root())
-        local scope = ts:get_scope(extract_node)
+        local extract_node = assert(region:to_ts_node(ts:get_root()))
+        local scope = assert(ts:get_scope(extract_node))
 
         local occurrences =
             Query.find_occurrences(scope, extract_node:sexpr(), bufnr)

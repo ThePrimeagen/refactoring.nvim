@@ -53,39 +53,42 @@ M.buf_indent_amount = function(point, refactor, below, bufnr)
     end
 
     ---@type table<integer, boolean>
-    local hash = {}
-    line_numbers = vim.tbl_filter(
-        ---@param line_number integer
-        ---@return boolean
-        function(line_number)
-            if hash[line_number] then
-                return false
+    local already_seend = {}
+    line_numbers = vim.iter(line_numbers)
+        :filter(
+            ---@param line_number integer
+            ---@return boolean
+            function(line_number)
+                if already_seend[line_number] then
+                    return false
+                end
+                already_seend[line_number] = true
+                local distance = point.row - line_number
+                return distance ~= 0
             end
-            hash[line_number] = true
-            local distance = point.row - line_number
-            return distance ~= 0
-        end,
-        line_numbers
-    )
+        )
+        :totable()
 
-    local line_numbers_up = vim.tbl_filter(
-        ---@param line_number integer
-        ---@return boolean
-        function(line_number)
-            local distance = point.row - line_number
-            return distance > 0
-        end,
-        line_numbers
-    )
-    local line_numbers_down = vim.tbl_filter(
-        ---@param line_number integer
-        ---@return boolean
-        function(line_number)
-            local distance = point.row - line_number
-            return distance < 0
-        end,
-        line_numbers
-    )
+    local line_numbers_up = vim.iter(line_numbers)
+        :filter(
+            ---@param line_number integer
+            ---@return boolean
+            function(line_number)
+                local distance = point.row - line_number
+                return distance > 0
+            end
+        )
+        :totable()
+    local line_numbers_down = vim.iter(line_numbers)
+        :filter(
+            ---@param line_number integer
+            ---@return boolean
+            function(line_number)
+                local distance = point.row - line_number
+                return distance < 0
+            end
+        )
+        :totable()
 
     ---@param a integer
     ---@param b integer

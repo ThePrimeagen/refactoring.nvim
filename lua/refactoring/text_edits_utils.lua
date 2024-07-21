@@ -15,7 +15,7 @@ local function to_region(pointOrRegion)
 end
 
 ---@param region RefactorRegion
----@return LspTextEdit
+---@return RefactorTextEdit
 function M.delete_text(region)
     return region:to_lsp_text_edit_replace("")
 end
@@ -23,7 +23,7 @@ end
 ---@param pointOrRegion RefactorRegion|RefactorPoint
 ---@param text string
 ---@param opts {below: boolean, _end: boolean}|nil
----@return LspTextEdit
+---@return RefactorTextEdit
 function M.insert_new_line_text(pointOrRegion, text, opts)
     opts = opts or {
         below = true,
@@ -50,7 +50,7 @@ end
 
 ---@param pointOrRegion RefactorRegion|RefactorPoint
 ---@param text string
----@return LspTextEdit
+---@return RefactorTextEdit
 function M.insert_text(pointOrRegion, text)
     local region = to_region(pointOrRegion)
     local clone = region:clone()
@@ -62,7 +62,7 @@ end
 
 ---@param region RefactorRegion
 ---@param text string
----@return LspTextEdit
+---@return RefactorTextEdit
 function M.replace_text(region, text)
     local clone = region:clone()
 

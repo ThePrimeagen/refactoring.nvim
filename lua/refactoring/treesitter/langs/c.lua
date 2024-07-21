@@ -7,7 +7,6 @@ local TakeFirstNode = Nodes.TakeFirstNode
 local QueryNode = Nodes.QueryNode
 local InlineNode = Nodes.InlineNode
 local InlineFilteredNode = Nodes.InlineFilteredNode
-local utils = require("refactoring.utils")
 
 ---@class TreeSitterInstance
 local C = {}
@@ -108,11 +107,7 @@ function C.new(bufnr, ft)
         },
         require_param_types = true,
         is_return_statement = function(statement)
-            -- stylua: ignore start
-            return vim.startswith(
-                utils.trim(statement)--[[@as string]],
-                "return"
-            )
+            return vim.startswith(vim.trim(statement), "return")
         end,
     }
     return TreeSitter:new(config, bufnr)

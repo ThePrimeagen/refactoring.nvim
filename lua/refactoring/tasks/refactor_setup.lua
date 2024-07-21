@@ -35,7 +35,7 @@ local function refactor_setup(input_bufnr, config)
         ---@field identifier_node? TSNode
         ---@field scope? TSNode
         ---@field cursor_col_adjustment? integer
-        ---@field text_edits? LspTextEdit[] | {bufnr?: integer}[]
+        ---@field text_edits? RefactorTextEdit[] | {bufnr?: integer}[]
         ---@field code code_generation
         ---@field return_value string used by debug.get_path
         ---@field success_message? string

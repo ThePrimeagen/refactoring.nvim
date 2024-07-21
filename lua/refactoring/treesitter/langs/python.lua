@@ -3,7 +3,6 @@ local Nodes = require("refactoring.treesitter.nodes")
 local FieldNode = Nodes.FieldNode
 local InlineNode = Nodes.InlineNode
 local InlineFilteredNode = Nodes.InlineFilteredNode
-local utils = require("refactoring.utils")
 
 ---@class TreeSitterInstance
 local Python = {}
@@ -115,11 +114,7 @@ function Python.new(bufnr, ft)
             ),
         },
         is_return_statement = function(statement)
-            -- stylua: ignore start
-            return vim.startswith(
-                utils.trim(statement)--[[@as string]],
-                "return "
-            )
+            return vim.startswith(vim.trim(statement), "return ")
         end,
         reference_filter = function(node)
             local parent = node:parent()

@@ -43,7 +43,7 @@ function M.select_refactor(opts)
         vim.cmd("norm! ")
     end
 
-    require("plenary.async").run(function()
+    require("plenary.async").void(function()
         local selected_refactor = require("refactoring.get_select_input")(
             M.get_refactors(),
             "Refactoring: select a refactor to apply:"

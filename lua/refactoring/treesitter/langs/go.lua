@@ -3,7 +3,6 @@ local Nodes = require("refactoring.treesitter.nodes")
 local FieldNode = Nodes.FieldNode
 local InlineNode = Nodes.InlineNode
 local InlineFilteredNode = Nodes.InlineFilteredNode
-local utils = require("refactoring.utils")
 
 local special_nodes = {
     "selector_expression",
@@ -113,11 +112,7 @@ function Golang.new(bufnr, ft)
         require_class_type = true,
         require_param_types = true,
         is_return_statement = function(statement)
-            -- stylua: ignore start
-            return vim.startswith(
-                utils.trim(statement)--[[@as string]],
-                "return "
-            )
+            return vim.startswith(vim.trim(statement), "return ")
         end,
         should_check_parent_node = function(parent_type)
             return vim.tbl_contains(special_nodes, parent_type)

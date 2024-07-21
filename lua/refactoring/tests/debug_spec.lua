@@ -2,7 +2,6 @@ local a = require("plenary.async").tests
 local Path = require("plenary.path")
 local debug = require("refactoring.debug")
 local scandir = require("plenary.scandir")
-local utils = require("refactoring.utils")
 local test_utils = require("refactoring.tests.utils")
 local async = require("plenary.async")
 local Config = require("refactoring.config")
@@ -11,6 +10,8 @@ local cwd = vim.loop.cwd()
 vim.cmd("set rtp+=" .. cwd)
 local eq = assert.are.same
 
+---@param file string
+---@return string
 local function remove_cwd(file)
     return file:sub(#cwd + 2 + #"lua/refactoring/tests/")
 end
@@ -46,11 +47,11 @@ local function set_config_options(filename_prefix, filename_extension)
             local real_filetype = filetypes[filename_extension]
                 or filename_extension
 
-            local printf_statements = {}
+            local printf_statements = {}---@type table<string, table>
             printf_statements[real_filetype] = { config_values[1] }
             Config:get():set_printf_statements(printf_statements)
 
-            local print_var_statements = {}
+            local print_var_statements = {}---@type table<string, table>
             print_var_statements[real_filetype] = { config_values[1] }
             Config:get():set_print_var_statements(print_var_statements)
         end
@@ -58,10 +59,11 @@ local function set_config_options(filename_prefix, filename_extension)
 end
 
 -- TODO: Move this to utils
+---@param cb fun(file: string)
 local function for_each_file(cb)
     local files = scandir.scan_dir(
         Path:new(cwd, "lua", "refactoring", "tests", "debug"):absolute()
-    )
+    )--[=[@as string[]]=]
     for _, file in pairs(files) do
         file = remove_cwd(file)
         if string.match(file, "start") then
@@ -70,12 +72,12 @@ local function for_each_file(cb)
     end
 end
 
+---@param path string
+---@return string
 local function get_debug_operation(path)
-    local temp = {}
-    local index = 1
+    local temp = {}---@type string[]
     for i in string.gmatch(path, "([^/]+)") do
-        table.insert(temp, index, i)
-        index = index + 1
+        table.insert(temp, i)
     end
     return temp[#temp]
 end
@@ -114,7 +116,7 @@ end
 describe("Debug", function()
     for_each_file(function(file)
         a.it(string.format("printf: %s", file), function()
-            local parts = utils.split_string(file, "%.")
+            local parts = vim.split(file, ".", { plain = true, trimempty = true })
             local filename_prefix = parts[1]
             local filename_extension = parts[3]
             local debug_operation = get_debug_operation(filename_prefix)

@@ -83,29 +83,28 @@ end
 local function command_complete(arg_lead, cmd_line, _cursor_pos)
     local refactors = require("refactoring.refactor")
 
-    local number_of_arguments = #vim.split(cmd_line, " ")
+    local number_of_arguments = #vim.split(cmd_line, " ", { trimempty = true })
 
     if number_of_arguments > 2 then
         return {}
     end
 
-    local options = vim.tbl_filter(
-        --- @param option any
-        function(option)
-            return type(option) == "string"
-        end,
-        vim.tbl_keys(refactors)
-    )
+    local options = vim.iter(vim.tbl_keys(refactors))
+        :filter(
+            --- @param option any
+            function(option)
+                return type(option) == "string"
+            end
+        )
+        :filter(
+            --- @param name string
+            function(name)
+                return vim.startswith(name, arg_lead)
+            end
+        )
+        :totable()
 
-    local filtered_options = vim.tbl_filter(
-        --- @param name string
-        function(name)
-            return vim.startswith(name, arg_lead)
-        end,
-        options
-    )
-
-    return filtered_options
+    return options
 end
 
 function M.setup()
