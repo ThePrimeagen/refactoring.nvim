@@ -38,7 +38,7 @@ lua <<EOF
 -- lsp-config setup
 
 -- treesitter setup
-local required_parsers = {'c', 'cpp', 'go', 'lua', 'php', 'python', 'typescript', 'javascript', 'java', 'ruby', 'tsx'}
+local required_parsers = {'c', 'cpp', 'go', 'lua', 'php', 'python', 'typescript', 'javascript', 'java', 'ruby', 'tsx', 'c_sharp'}
 local installed_parsers = require'nvim-treesitter.info'.installed_parsers()
 local to_install = vim.tbl_filter(function(parser)
   return not vim.tbl_contains(installed_parsers, parser)
