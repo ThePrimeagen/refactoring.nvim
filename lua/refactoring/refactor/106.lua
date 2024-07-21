@@ -472,8 +472,16 @@ local function extract_setup(refactor)
 
     -- PHP parser needs the PHP tag to parse code, so it's imposible to generate
     -- an adecuate sexpr with only the selected text
+    --
+    -- C# parser parses expresions without a surrounding scope as childs of the
+    -- `global_statement` node, so it's imposibble to match them against
+    -- non-global statements
     local number_of_function_calls = 0
-    if not has_error and refactor.filetype ~= "php" then
+    if
+        not has_error
+        and refactor.filetype ~= "php"
+        and refactor.filetype ~= "cs"
+    then
         --- @type string[]
         local body_sexprs = {}
         do
