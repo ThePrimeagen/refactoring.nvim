@@ -14,8 +14,10 @@ end
     )
 end
 
+---@param opts constant_opts
+---@return string
 local function lua_constant(opts)
-    local result
+    local result ---@type string
     if not opts.statement then
         opts.statement = "local %s = %s"
     end
@@ -27,11 +29,11 @@ local function lua_constant(opts)
             table.concat(opts.values, ", ")
         )
     else
-        local name
+        local name ---@type string
         if opts.name[1] ~= nil then
             name = opts.name[1]
         else
-            name = opts.name
+            name = opts.name --[[@as string]]
         end
         result = string.format(opts.statement .. "\n", name, opts.value)
     end
