@@ -12,7 +12,7 @@ local default_formatting = {
     go = {},
     php = {},
 
-    -- All of the cs
+    -- All of the Cs
     cpp = {},
     c = {},
     h = {},
@@ -104,6 +104,7 @@ local default_extract_var_statements = {}
 ---| "cxx"
 ---| "python"
 ---| "ruby"
+---| "cs"
 
 ---@class ConfigOpts
 ---@field formatting? table<ft, {cmd: string}>

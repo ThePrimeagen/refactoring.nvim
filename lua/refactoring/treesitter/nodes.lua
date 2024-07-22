@@ -49,13 +49,11 @@ function M.FieldNode(...)
 
                 local curr = self.node
                 for idx = 1, #self.fieldnames do
-                    --- @type TSNode[]
-                    curr = curr:field(self.fieldnames[idx])
+                    curr = curr:field(self.fieldnames[idx])[1]
 
-                    if not curr[1] then
+                    if not curr then
                         return fallback
                     end
-                    curr = curr[1]
                 end
 
                 return vim.treesitter.get_node_text(curr, 0) or fallback

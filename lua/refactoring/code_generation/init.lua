@@ -11,6 +11,7 @@ local c = require("refactoring.code_generation.langs.c")
 local python = require("refactoring.code_generation.langs.python")
 local php = require("refactoring.code_generation.langs.php")
 local java = require("refactoring.code_generation.langs.java")
+local cs = require("refactoring.code_generation.langs.cs")
 local ruby = require("refactoring.code_generation.langs.ruby")
 
 ---@type table<ft, code_generation>|{new_line: fun(): string}
@@ -26,6 +27,7 @@ local M = {
     python = python,
     php = php,
     java = java,
+    cs = cs,
     ruby = ruby,
     default = {},
 
