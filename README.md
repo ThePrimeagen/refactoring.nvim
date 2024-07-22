@@ -92,6 +92,7 @@ are supported (with individual support for each function may vary):
 - Java
 - PHP
 - Ruby
+- C#
 
 ### Refactoring Features<a name="refactoring-features"></a>
 
