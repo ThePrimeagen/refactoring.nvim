@@ -23,8 +23,6 @@ set rtp+=~/.local/share/nvim/lazy/plenary.nvim
 set rtp+=~/.local/share/nvim/lazy/nvim-treesitter
 
 
-" TODO, support NvChad because we are chad gigathundercock
-
 set autoindent
 set tabstop=4
 set expandtab

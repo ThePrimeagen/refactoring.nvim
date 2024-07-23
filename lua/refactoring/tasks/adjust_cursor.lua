@@ -56,13 +56,12 @@ local function adjust_cursor(refactor)
     if refactor.cursor_col_adjustment ~= nil then
         col = col + refactor.cursor_col_adjustment
     end
-    vim.schedule(function()
-        vim.api.nvim_set_current_win(win)
-        vim.api.nvim_win_set_cursor(win, {
-            result_row,
-            col,
-        })
-    end)
+    require("refactoring.utils").wait_frame()
+    vim.api.nvim_set_current_win(win)
+    vim.api.nvim_win_set_cursor(win, {
+        result_row,
+        col,
+    })
     reset()
 
     return true, refactor

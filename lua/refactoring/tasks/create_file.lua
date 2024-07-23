@@ -22,8 +22,6 @@ function M.from_input(refactor)
     end
     table.insert(refactor.buffers, vim.api.nvim_get_current_buf())
 
-    --TODO (TheLeoP): add text_edits for when extracting file (?) tsx exclusive (?)
-
     return true, refactor
 end
 

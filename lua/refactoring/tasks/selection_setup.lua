@@ -2,9 +2,9 @@ local Region = require("refactoring.region")
 
 ---@param refactor Refactor
 local function selection_setup(refactor)
-    local mode = vim.api.nvim_get_mode().mode
-    if mode == "v" or mode == "V" or mode == "vs" or mode == "Vs" then
-        vim.cmd("norm! ")
+    local utils = require("refactoring.utils")
+    if utils.is_visual_mode() then
+        utils.exit_to_normal_mode()
     end
 
     local region = Region:from_current_selection({

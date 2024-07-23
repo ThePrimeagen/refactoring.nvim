@@ -3,9 +3,6 @@ local async = require("plenary.async")
 
 local M = {}
 
--- TODO: Make this work.  I have vim.schedules in the code, though they
--- shouldn't need to be there.  When I use this all my results are before LSP
--- comes back and does something to the code.
 function M.wait_frame()
     async.util.scheduler()
 end
@@ -117,8 +114,6 @@ M.after_region = function(node, region)
     return Region:from_node(node):is_after(region)
 end
 
--- TODO: Very unsure if this needs to be a "util" or not But this is super
--- useful in refactor 106 and I assume it will be used elsewhere quite a bit
 ---@param bufnr integer
 ---@param ... TSNode
 ---@return table<string, true>
@@ -296,6 +291,25 @@ function M.node_to_parent_if_needed(refactor, node)
         return parent
     end
     return node
+end
+
+function M.is_visual_mode()
+    local mode = vim.api.nvim_get_mode().mode
+    -- '\22' is an escaped `<C-v>`
+    return mode == "v" or mode == "V" or mode == "\22", mode
+end
+
+function M.exit_to_normal_mode()
+    -- Don't use `<C-\><C-n>` in command-line window as they close it
+    if vim.fn.getcmdwintype() ~= "" then
+        local is_vis, cur_mode = M.is_visual_mode()
+        if is_vis then
+            vim.cmd("normal! " .. cur_mode)
+        end
+    else
+        -- '\28\14' is an escaped version of `<C-\><C-n>`
+        vim.cmd("normal! \28\14")
+    end
 end
 
 return M

@@ -25,7 +25,6 @@ describe("Region", function()
     it("select text : partial-line", function()
         setup()
 
-        -- TODO: Why is first selection just not present...
         vim_motion("jwvww")
         local region = Region:from_current_selection()
         eq({ "(true)" }, region:get_text())
@@ -34,7 +33,6 @@ describe("Region", function()
     it("select text : multibyte-partial-line", function()
         setup()
 
-        -- TODO: Why is first selection just not present...
         vim.cmd(":1")
         vim_motion("jwvje")
         eq("n", vim.api.nvim_get_mode().mode)
