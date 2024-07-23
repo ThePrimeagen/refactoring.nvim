@@ -95,9 +95,6 @@ local function test_empty_input()
         ---@type boolean, nil|string
         local status, err = pcall(refactoring.refactor, refactor)
 
-        -- waits for the next frame for formatting to work.
-        async.util.scheduler()
-
         vim.api.nvim_buf_delete(bufnr, { force = true })
 
         eq(false, status)

@@ -1,34 +1,5 @@
 local default_code_generation = require("refactoring.code_generation")
 
--- There is no formatting that we should do
-local default_formatting = {
-    -- TODO: should we change default to be nothing?
-    -- I realize this is almost never a good idea.
-    ts = {},
-    js = {},
-    typescriptreact = {},
-
-    lua = {},
-    go = {},
-    php = {},
-
-    -- All of the Cs
-    cpp = {},
-    c = {},
-    h = {},
-    hpp = {},
-    cxx = {},
-
-    -- Python needs tons of work to become correct.
-    python = {},
-
-    ruby = {},
-
-    default = {
-        cmd = nil, -- format.lua checks to see if the command is nil or not
-    },
-}
-
 local default_prompt_func_param_type = {
     go = false,
     java = false,
@@ -107,7 +78,6 @@ local default_extract_var_statements = {}
 ---| "cs"
 
 ---@class ConfigOpts
----@field formatting? table<ft, {cmd: string}>
 ---@field code_generation? table<ft, code_generation>|{new_line: fun(): string}
 ---@field prompt_func_return_type? table<ft, boolean>
 ---@field prompt_func_param_type? table<ft, boolean>
@@ -136,7 +106,6 @@ function Config:new(...)
             bufnr = nil,
         },
     }, {
-        formatting = vim.deepcopy(default_formatting),
         code_generation = vim.deepcopy(default_code_generation),
         prompt_func_return_type = vim.deepcopy(default_prompt_func_return_type),
         prompt_func_param_type = vim.deepcopy(default_prompt_func_param_type),
@@ -169,7 +138,6 @@ end
 
 function Config:reset()
     local c = self.config
-    c.formatting = vim.deepcopy(default_formatting)
     c.code_generation = vim.deepcopy(default_code_generation)
     c.prompt_func_return_type = vim.deepcopy(default_prompt_func_return_type)
     c.prompt_func_param_type = vim.deepcopy(default_prompt_func_param_type)
@@ -289,13 +257,6 @@ function Config:get_code_generation_for(filetype)
     filetype = filetype or vim.bo[0].ft
     return self.config.code_generation[filetype]
         or self.config.code_generation["default"]
-end
-
----@param filetype ft
----@return {cmd: string}
-function Config:get_formatting_for(filetype)
-    filetype = filetype or vim.bo[0].ft
-    return self.config.formatting[filetype] or self.config.formatting["default"]
 end
 
 ---@param filetype ft
