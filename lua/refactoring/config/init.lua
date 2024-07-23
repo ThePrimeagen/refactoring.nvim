@@ -86,7 +86,7 @@ local default_extract_var_statements = {}
 ---@field extract_var_statements? table<ft, string>
 ---@field visibility? table<ft, string>
 ---@field below? boolean
----@field show_success_message boolean
+---@field show_success_message? boolean
 ---@field _end? boolean
 
 ---@class c: ConfigOpts
