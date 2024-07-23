@@ -21,7 +21,7 @@ function M.get_contents(file)
     if contents[#contents] == '' then
         contents[#contents] = nil
     end
-return contents
+    return contents
 end
 
 ---@param filename_prefix string
@@ -71,6 +71,33 @@ function M.check_if_skip_test(test_name, tests_to_skip)
         end
     end
     return false
+end
+
+---@param file string
+---@param cwd string
+---@return string
+local function remove_cwd(file, cwd)
+    return file:sub(#cwd + 2 + #"lua/refactoring/tests/")
+end
+
+local default_predicate = function()
+    return true
+end
+
+---@param files string[]
+---@param cb fun(file: string)
+---@param predicate? fun(file: string): boolean
+function M.for_each_file(files, cwd, cb, predicate)
+    predicate = predicate or default_predicate
+    for _, file in pairs(files) do
+        file = remove_cwd(file, cwd)
+        if
+            string.match(file, "start")
+            and predicate(file)
+        then
+            cb(file)
+        end
+    end
 end
 
 return M

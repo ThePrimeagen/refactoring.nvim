@@ -181,11 +181,10 @@ local function indent_func_code(function_params, has_return_vals, refactor)
     end
 end
 
--- TODO: Change name of this, misleading
 ---@param extract_params extract_params
 ---@param refactor Refactor
 ---@return func_params
-local function get_func_params(extract_params, refactor)
+local function get_func_params_opts(extract_params, refactor)
     ---@class func_params
     ---@field func_header? string
     ---@field contains_jsx? boolean
@@ -226,21 +225,22 @@ end
 local function get_function_code(refactor, extract_params)
     --- @type string
     local function_code
-    local func_params = get_func_params(extract_params, refactor)
+    local func_params_opts = get_func_params_opts(extract_params, refactor)
 
     if extract_params.is_class then
-        func_params.class_name = refactor.ts:get_class_name(refactor.scope)
-        func_params.visibility =
+        func_params_opts.class_name = refactor.ts:get_class_name(refactor.scope)
+        func_params_opts.visibility =
             refactor.config:get_visibility_for(refactor.filetype)
         if extract_params.has_return_vals then
-            function_code = refactor.code.class_function_return(func_params)
+            function_code =
+                refactor.code.class_function_return(func_params_opts)
         else
-            function_code = refactor.code.class_function(func_params)
+            function_code = refactor.code.class_function(func_params_opts)
         end
     elseif extract_params.has_return_vals then
-        function_code = refactor.code.function_return(func_params)
+        function_code = refactor.code.function_return(func_params_opts)
     else
-        function_code = refactor.code["function"](func_params)
+        function_code = refactor.code["function"](func_params_opts)
     end
     return function_code
 end
@@ -544,9 +544,6 @@ local ensure_code_gen_list = {
     "function",
     "function_return",
     "terminate",
-    -- TODO: Should we require these?
-    -- "class_function",
-    -- "class_function_return",
 }
 
 local class_code_gen_list = {

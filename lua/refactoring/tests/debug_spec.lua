@@ -6,15 +6,9 @@ local test_utils = require("refactoring.tests.utils")
 local async = require("plenary.async")
 local Config = require("refactoring.config")
 
-local cwd = vim.loop.cwd()
+local cwd = vim.uv.cwd()
 vim.cmd("set rtp+=" .. cwd)
 local eq = assert.are.same
-
----@param file string
----@return string
-local function remove_cwd(file)
-    return file:sub(#cwd + 2 + #"lua/refactoring/tests/")
-end
 
 -- TODO: make this better for more complex config options
 -- assuming first line is for a custom printf statement
@@ -47,35 +41,29 @@ local function set_config_options(filename_prefix, filename_extension)
             local real_filetype = filetypes[filename_extension]
                 or filename_extension
 
-            local printf_statements = {}---@type table<string, table>
+            local printf_statements = {} ---@type table<string, table>
             printf_statements[real_filetype] = { config_values[1] }
             Config:get():set_printf_statements(printf_statements)
 
-            local print_var_statements = {}---@type table<string, table>
+            local print_var_statements = {} ---@type table<string, table>
             print_var_statements[real_filetype] = { config_values[1] }
             Config:get():set_print_var_statements(print_var_statements)
         end
     end
 end
 
--- TODO: Move this to utils
 ---@param cb fun(file: string)
 local function for_each_file(cb)
     local files = scandir.scan_dir(
         Path:new(cwd, "lua", "refactoring", "tests", "debug"):absolute()
-    )--[=[@as string[]]=]
-    for _, file in pairs(files) do
-        file = remove_cwd(file)
-        if string.match(file, "start") then
-            cb(file)
-        end
-    end
+    ) --[=[@as string[]]=]
+    test_utils.for_each_file(files, cwd, cb)
 end
 
 ---@param path string
 ---@return string
 local function get_debug_operation(path)
-    local temp = {}---@type string[]
+    local temp = {} ---@type string[]
     for i in string.gmatch(path, "([^/]+)") do
         table.insert(temp, i)
     end

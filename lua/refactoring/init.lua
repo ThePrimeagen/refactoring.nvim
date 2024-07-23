@@ -13,7 +13,6 @@ function M.refactor(name, opts)
         opts = {}
     end
 
-    -- TODO: We should redo how this selection thing works.
     local refactor = refactors.refactor_names[name] or refactors[name] and name
     if not refactor then
         error(

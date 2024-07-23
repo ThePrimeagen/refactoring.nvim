@@ -52,8 +52,8 @@ local function tsx_call_function(opts)
             :map(function(arg)
                 return string.format("%s={%s}", arg, arg)
             end)
-            :totable()
-        return string.format("< %s %s/>", opts.name, table.concat(args, " "))
+            :join(" ")
+        return string.format("< %s %s/>", opts.name, args)
     else
         return ts.call_function(opts)
     end

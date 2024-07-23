@@ -26,7 +26,7 @@ local extension_to_filetype = {
 
 local tests_to_skip = {}
 
-local cwd = vim.loop.cwd() --[[@as string]]
+local cwd = vim.uv.cwd() --[[@as string]]
 vim.cmd("set rtp+=" .. cwd)
 
 local eq = assert.are.same
@@ -37,19 +37,14 @@ local function remove_cwd(file)
     return file:sub(#cwd + 2 + #"lua/refactoring/tests/")
 end
 
+---@param cb fun(file: string)
 local function for_each_file(cb)
     local files = scandir.scan_dir(
         Path:new(cwd, "lua", "refactoring", "tests", "refactor"):absolute()
     ) --[=[@as string[]]=]
-    for _, file in pairs(files) do
-        file = remove_cwd(file)
-        if
-            string.match(file, "start")
-            and not test_utils.check_if_skip_test(file, tests_to_skip)
-        then
-            cb(file)
-        end
-    end
+    test_utils.for_each_file(files, cwd, cb, function(file)
+        return not test_utils.check_if_skip_test(file, tests_to_skip)
+    end)
 end
 
 local function test_empty_input()
@@ -100,7 +95,6 @@ local function test_empty_input()
         eq(false, status)
         ---@cast err string
 
-        -- TODO: find a better way to validate errors
         local has_error_message = string.find(err, test_case["error_message"])
         if not has_error_message then
             eq(test_case["error_message"], err)
