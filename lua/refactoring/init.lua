@@ -38,9 +38,9 @@ end
 ---@param opts ConfigOpts
 function M.select_refactor(opts)
     -- vim.ui.select exits visual mode without setting the `<` and `>` marks
-    local mode = vim.api.nvim_get_mode().mode
-    if mode == "v" or mode == "V" or mode == "vs" or mode == "Vs" then
-        vim.cmd("norm! ")
+    local utils = require("refactoring.utils")
+    if utils.is_visual_mode() then
+        utils.exit_to_normal_mode()
     end
 
     require("plenary.async").void(function()

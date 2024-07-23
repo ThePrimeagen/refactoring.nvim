@@ -298,4 +298,23 @@ function M.node_to_parent_if_needed(refactor, node)
     return node
 end
 
+function M.is_visual_mode()
+    local mode = vim.api.nvim_get_mode().mode
+    -- '\22' is an escaped `<C-v>`
+    return mode == "v" or mode == "V" or mode == "\22", mode
+end
+
+function M.exit_to_normal_mode()
+    -- Don't use `<C-\><C-n>` in command-line window as they close it
+    if vim.fn.getcmdwintype() ~= "" then
+        local is_vis, cur_mode = M.is_visual_mode()
+        if is_vis then
+            vim.cmd("normal! " .. cur_mode)
+        end
+    else
+        -- '\28\14' is an escaped version of `<C-\><C-n>`
+        vim.cmd("normal! \28\14")
+    end
+end
+
 return M
