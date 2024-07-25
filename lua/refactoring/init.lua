@@ -42,7 +42,7 @@ function M.select_refactor(opts)
         utils.exit_to_normal_mode()
     end
 
-    require("plenary.async").void(function()
+    require("plenary.async").run(function()
         local selected_refactor = require("refactoring.get_select_input")(
             M.get_refactors(),
             "Refactoring: select a refactor to apply:"
