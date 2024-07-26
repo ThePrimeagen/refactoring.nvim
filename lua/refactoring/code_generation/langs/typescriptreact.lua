@@ -92,7 +92,10 @@ local tsx = {
     ["function"] = tsx_function,
     function_return = ts.function_return,
     call_function = tsx_call_function,
-    terminate = ts.terminate,
+    -- Shouldn't add a semicolon inside of JSX/TSX
+    terminate = function(code)
+        return code
+    end,
 
     class_function = ts.class_function,
 
