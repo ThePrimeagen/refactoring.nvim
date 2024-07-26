@@ -476,11 +476,15 @@ local function extract_setup(refactor)
     -- C# parser parses expresions without a surrounding scope as childs of the
     -- `global_statement` node, so it's imposibble to match them against
     -- non-global statements
+    --
+    -- TSX/JSX parser parses isolated tags as having an expression parent
     local number_of_function_calls = 0
     if
         not has_error
         and refactor.filetype ~= "php"
         and refactor.filetype ~= "cs"
+        and refactor.filetype ~= "typescriptreact"
+        and refactor.filetype ~= "javascriptreact"
     then
         --- @type string[]
         local body_sexprs = {}
