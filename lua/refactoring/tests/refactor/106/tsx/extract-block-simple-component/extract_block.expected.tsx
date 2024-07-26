@@ -16,5 +16,5 @@ function foo_bar() {
 }
 
 export const Button: React.FC = () => {
-    < foo_bar />;
+    < foo_bar />
 };
