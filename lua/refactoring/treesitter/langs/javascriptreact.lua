@@ -52,6 +52,12 @@ function JavascriptReact.new(bufnr, ft)
             InlineNode(
                 "(lexical_declaration (variable_declarator name: (_) @tmp_capture))"
             ),
+            InlineNode(
+                "(lexical_declaration (variable_declarator name: (array_pattern (identifier) @tmp_capture) ))"
+            ),
+            InlineNode(
+                "(lexical_declaration (variable_declarator name: (object_pattern (shorthand_property_identifier_pattern) @tmp_capture) ))"
+            ),
         },
         function_args = {
             InlineNode(
