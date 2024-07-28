@@ -124,8 +124,14 @@ function Lua.new(bufnr, ft)
             if not parent then
                 return true
             end
+            -- foo.foo
+            -- ^
             if parent:type() == "dot_index_expression" then
                 return parent:field("table")[1] == node
+            -- {foo = foo}
+            --        ^
+            elseif parent:type() == "field" then
+                return parent:field("value")[1] == node
             end
             return true
         end,
