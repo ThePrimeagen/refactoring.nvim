@@ -1,4 +1,3 @@
-local code_utils = require("refactoring.code_generation.utils")
 local ts = require("refactoring.code_generation.langs.typescript")
 
 ---@type code_generation
