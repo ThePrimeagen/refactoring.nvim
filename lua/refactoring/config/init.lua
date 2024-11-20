@@ -62,6 +62,7 @@ local default_extract_var_statements = {}
 ---| "js"
 ---| "typescriptreact"
 ---| "javascriptreact"
+---| "vue"
 ---| "typescript"
 ---| "javascript"
 ---| "java"
