@@ -499,7 +499,14 @@ local function extract_setup(refactor)
         local body_sexpr = "(" .. table.concat(body_sexprs, " . ") .. ")"
         local query = vim.treesitter.query.parse(lang, body_sexpr)
 
-        for _, match in query:iter_matches(refactor.root, refactor.bufnr, 0, -1) do
+        local matches = query:iter_matches(
+            refactor.root,
+            refactor.bufnr,
+            0,
+            -1,
+            { all = false }
+        )
+        for _, match in matches do
             if match then
                 local first = match[1] --[[@as TSNode]]
                 local last = match[#match] --[[@as TSNode]]
