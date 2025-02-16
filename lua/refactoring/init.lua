@@ -1,5 +1,10 @@
 local M = {}
 
+local _dont_need_args = {
+    "inline_var",
+    "inline_func",
+}
+
 ---@param config ConfigOpts
 function M.setup(config)
     require("refactoring.config").setup(config)
@@ -35,7 +40,8 @@ function M.get_refactors()
 end
 
 ---@param opts ConfigOpts
-function M.select_refactor(opts)
+---@param useExCmd? boolean
+function M.select_refactor(opts, useExCmd)
     -- vim.ui.select exits visual mode without setting the `<` and `>` marks
     local utils = require("refactoring.utils")
     if utils.is_visual_mode() then
@@ -49,7 +55,14 @@ function M.select_refactor(opts)
         )
 
         if selected_refactor then
-            M.refactor(selected_refactor, opts)
+            local refactors = require("refactoring.refactor")
+            local refactor = refactors.refactor_names[selected_refactor]
+                or refactors[selected_refactor] and selected_refactor
+            if not useExCmd or vim.list_contains(_dont_need_args, refactor) then
+                M.refactor(selected_refactor, opts)
+            else
+                vim.api.nvim_input(":Refactor " .. refactor .. " ")
+            end
         end
     end)()
 end
