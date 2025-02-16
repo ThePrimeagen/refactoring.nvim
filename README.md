@@ -266,6 +266,14 @@ vim.keymap.set(
 -- Note that not all refactor support both normal and visual mode
 ```
 
+`select_refactor()` uses `vim.ui.input` by default to input the arguments (if
+needed). If you want to use the Ex command to get the preview of the changes
+you can pass a second argument as `true` to the function.
+
+```lua
+require('refactoring').select_refactor({}, true)
+```
+
 #### Using Telescope<a name="config-refactoring-telescope"></a>
 
 If you would prefer to use Telescope to choose a refactor, you can do so
