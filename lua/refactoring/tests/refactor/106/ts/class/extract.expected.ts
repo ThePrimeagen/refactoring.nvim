@@ -7,7 +7,6 @@ class RefuctorPlease {
 
         return test_other;
     }
-
     multiple_returns(a: number) {
         let test: number = 1;
         const test_other = this.return_me(a, test);

@@ -11,10 +11,8 @@ func (s Slicer) sumSlice() int {
     }
     return sum
 }
-
 func (s Slicer) Sum() int {
     sum := s.sumSlice()
-
 
     return sum
 }

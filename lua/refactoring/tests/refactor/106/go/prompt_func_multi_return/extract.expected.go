@@ -14,6 +14,5 @@ func foo(a int) (int, int) {
 func simple_function(a int) (int, int) {
     test, test_other := foo(a)
 
-
     return test, test_other
 }

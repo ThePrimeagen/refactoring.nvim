@@ -5,7 +5,6 @@ def self.foo_bar(a, test, test_other)
     end
 end
 
-
   def self.simple_function(a)
     test = 1
     test_other = 11

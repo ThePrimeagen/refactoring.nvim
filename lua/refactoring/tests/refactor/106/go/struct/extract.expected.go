@@ -11,7 +11,6 @@ func (f *foobar) foo(a int, test int, test_other INSERT_PARAM_TYPE) {
         fmt.Println(f.poggers, idx, a)
     }
 }
-
 func (f *foobar) simple_function(a int) {
     var test int = 1
     test_other := 1

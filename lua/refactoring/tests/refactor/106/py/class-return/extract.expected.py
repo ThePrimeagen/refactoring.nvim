@@ -6,7 +6,6 @@ class Poggers:
             print(x, a)
         return test_other
 
-
     def simple_function(self, a):
         test = 1
         test_other = self.foo(a, test)

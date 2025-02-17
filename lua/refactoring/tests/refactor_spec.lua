@@ -114,48 +114,51 @@ local function validate_error_if_file_exists(err, filename_prefix)
     elseif not expected_error_file:exists() or not err then
         return
     end
-    local cursor_position = test_utils.get_contents(
+    local error = test_utils.get_contents(
         string.format("%s.expected_error", filename_prefix)
     )
-    local expected_error = cursor_position[1]
+    local expected_error = error[1]
     local has_error_message = string.find(err, expected_error)
     if not has_error_message then
         eq(expected_error, err)
     end
 end
 
+---@param filename_prefix string
 local function validate_cursor_if_file_exists(filename_prefix)
     local cursor_position_name =
         string.format("%s.cursor_position", filename_prefix)
     local cursor_position_file =
         Path:new(cwd, "lua", "refactoring", "tests", cursor_position_name)
-    if cursor_position_file:exists() then
-        local cursor_position = test_utils.get_contents(
-            string.format("%s.cursor_position", filename_prefix)
-        )
-        local expected_row = tonumber(cursor_position[1])
-        local expected_col = tonumber(cursor_position[2])
-
-        local cursor = vim.api.nvim_win_get_cursor(0)
-        local result_row = cursor[1]
-        local result_col = cursor[2]
-        assert(
-            expected_row == result_row,
-            string.format(
-                "cursor row invalid, expected %s got %s",
-                expected_row,
-                result_row
-            )
-        )
-        assert(
-            expected_col == result_col,
-            string.format(
-                "cursor col invalid, expected %s got %s",
-                expected_col,
-                result_col
-            )
-        )
+    if not cursor_position_file:exists() then
+        return
     end
+
+    local cursor_position = test_utils.get_contents(
+        string.format("%s.cursor_position", filename_prefix)
+    )
+    local expected_row = tonumber(cursor_position[1])
+    local expected_col = tonumber(cursor_position[2])
+
+    local cursor = vim.api.nvim_win_get_cursor(0)
+    local result_row = cursor[1]
+    local result_col = cursor[2]
+    assert(
+        expected_row == result_row,
+        string.format(
+            "cursor row invalid, expected %s got %s",
+            expected_row,
+            result_row
+        )
+    )
+    assert(
+        expected_col == result_col,
+        string.format(
+            "cursor col invalid, expected %s got %s",
+            expected_col,
+            result_col
+        )
+    )
 end
 
 -- TODO: make this better for more complex config options

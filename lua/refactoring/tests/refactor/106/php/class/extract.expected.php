@@ -12,12 +12,10 @@ class RefuctorPlease
         }
         return $test_other;
     }
-
     public function multiple_returns($a)
     {
         $test = 1;
         $test_other = $this->foo_bar($a, $test);
-
 
         return $test_other;
     }
