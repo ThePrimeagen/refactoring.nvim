@@ -268,10 +268,10 @@ vim.keymap.set(
 
 `select_refactor()` uses `vim.ui.input` by default to input the arguments (if
 needed). If you want to use the Ex command to get the preview of the changes
-you can pass a second argument as `true` to the function.
+you can use the `prefer_ex_cmd` option.
 
 ```lua
-require('refactoring').select_refactor({}, true)
+require('refactoring').select_refactor({prefer_ex_cmd = true})
 ```
 
 #### Using Telescope<a name="config-refactoring-telescope"></a>
