@@ -2,6 +2,7 @@ local Region = require("refactoring.region")
 local text_edits_utils = require("refactoring.text_edits_utils")
 local test_utils = require("refactoring.tests.utils")
 local ts_locals = require("refactoring.ts-locals")
+---@module 'luassert'
 
 local function setup()
     vim.cmd(":new")
@@ -21,7 +22,11 @@ describe("text_edits_utils", function()
         test_utils.vim_motion("fo")
         assert.are.same(vim.fn.expand("<cWORD>"), "foo")
 
+        local parser = vim.treesitter.get_parser()
+        parser:parse()
+
         local current_node = vim.treesitter.get_node()
+        assert.no.is_nil(current_node) ---@cast current_node -nil
         local definition = ts_locals.find_definition(current_node, bufnr)
         local def_region = Region:from_node(definition)
         local references = ts_locals.find_usages(definition, nil, bufnr)
