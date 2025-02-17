@@ -102,20 +102,25 @@ local function test_empty_input()
     end
 end
 
+---@param err string|nil
+---@param filename_prefix string
 local function validate_error_if_file_exists(err, filename_prefix)
     local expected_error_name =
         string.format("%s.expected_error", filename_prefix)
     local expected_error_file =
         Path:new(cwd, "lua", "refactoring", "tests", expected_error_name)
-    if expected_error_file:exists() then
-        local cursor_position = test_utils.get_contents(
-            string.format("%s.expected_error", filename_prefix)
-        )
-        local expected_error = cursor_position[1]
-        local has_error_message = string.find(err, expected_error)
-        if not has_error_message then
-            eq(expected_error, err)
-        end
+    if err and not expected_error_file:exists() then
+        error(err)
+    elseif not expected_error_file:exists() or not err then
+        return
+    end
+    local cursor_position = test_utils.get_contents(
+        string.format("%s.expected_error", filename_prefix)
+    )
+    local expected_error = cursor_position[1]
+    local has_error_message = string.find(err, expected_error)
+    if not has_error_message then
+        eq(expected_error, err)
     end
 end
 
