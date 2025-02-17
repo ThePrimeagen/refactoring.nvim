@@ -1,2 +1,3 @@
 .ccls-cache/
 .luarc.json
+.nvim.lua
