@@ -16,18 +16,12 @@ local eq = assert.are.same
 local function set_config_options(filename_prefix, filename_extension)
     local config_file_name = string.format("%s.config", filename_prefix)
 
-    local config_file = Path:new(
-        cwd,
-        "lua",
-        "refactoring",
-        "tests",
-        config_file_name
-    )
+    local config_file =
+        Path:new(cwd, "lua", "refactoring", "tests", config_file_name)
 
     if config_file:exists() then
-        local config_values = test_utils.get_contents(
-            string.format("%s.config", filename_prefix)
-        )
+        local config_values =
+            test_utils.get_contents(string.format("%s.config", filename_prefix))
 
         if config_values[1] ~= "" then
             local filetypes = {
@@ -73,13 +67,8 @@ end
 local function get_func_opts(filename_prefix)
     local opts_file_name = string.format("%s.opts", filename_prefix)
 
-    local opts_file = Path:new(
-        cwd,
-        "lua",
-        "refactoring",
-        "tests",
-        opts_file_name
-    )
+    local opts_file =
+        Path:new(cwd, "lua", "refactoring", "tests", opts_file_name)
 
     local opts = {}
     if opts_file:exists() then
@@ -93,18 +82,17 @@ local function get_func_opts(filename_prefix)
     return opts
 end
 
-
 local function buf_setlocal_options(filename_extension)
     if filename_extension == "go" then
         vim.cmd([[setlocal shiftwidth=4 expandtab]])
     end
 end
 
-
 describe("Debug", function()
     for_each_file(function(file)
         a.it(string.format("printf: %s", file), function()
-            local parts = vim.split(file, ".", { plain = true, trimempty = true })
+            local parts =
+                vim.split(file, ".", { plain = true, trimempty = true })
             local filename_prefix = parts[1]
             local filename_extension = parts[3]
             local debug_operation = get_debug_operation(filename_prefix)

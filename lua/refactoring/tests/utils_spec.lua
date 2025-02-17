@@ -49,20 +49,29 @@ describe("Utils", function()
 
         test_utils.vim_motion("jjfbviw")
         local region = Region:from_current_selection()
-        local captures = query:pluck_by_capture(
-            root,
-            Query.query_type.Reference
-        )
-        local intersections = vim.iter(captures):filter(function(node)
-            return utils.region_intersect(node, region)
-        end):totable()
+        local captures =
+            query:pluck_by_capture(root, Query.query_type.Reference)
+        local intersections = vim.iter(captures)
+            :filter(function(node)
+                return utils.region_intersect(node, region)
+            end)
+            :totable()
 
         assert.are.same(#intersections, 1)
-        assert.are.same(vim.treesitter.get_node_text(intersections[1], bufnr), "bar")
-        local complements = vim.iter(captures):filter(function(node) return utils.region_complement(node, region) end)
+        assert.are.same(
+            vim.treesitter.get_node_text(intersections[1], bufnr),
+            "bar"
+        )
+        local complements = vim.iter(captures)
+            :filter(function(node)
+                return utils.region_complement(node, region)
+            end)
             :totable()
 
         assert.are.same(#complements, 1)
-        assert.are.same(vim.treesitter.get_node_text(complements[1], bufnr), "foo")
+        assert.are.same(
+            vim.treesitter.get_node_text(complements[1], bufnr),
+            "foo"
+        )
     end)
 end)

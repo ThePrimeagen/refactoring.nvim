@@ -202,7 +202,8 @@ describe("Refactoring", function()
     for_each_file(function(file)
         a.it(string.format("Refactoring: %s", file), function()
             vim.notify = error
-            local parts = vim.split(file, ".", { plain = true, trimempty = true })
+            local parts =
+                vim.split(file, ".", { plain = true, trimempty = true })
             local filename_prefix = parts[1]
             local filename_extension = parts[3]
             local path_split = vim.split(parts[1], "/", { trimempty = true })

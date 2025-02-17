@@ -11,13 +11,7 @@ describe("Query", function()
         vim.cmd(":set filetype=typescript")
         local bufnr = vim.api.nvim_get_current_buf()
         local file = test_utils.read_file("query.ts")
-        vim.api.nvim_buf_set_lines(
-            0,
-            0,
-            -1,
-            false,
-            vim.split(file, "\n")
-        )
+        vim.api.nvim_buf_set_lines(0, 0, -1, false, vim.split(file, "\n"))
 
         vim.cmd(":14")
         test_utils.vim_motion("fovt-h")
