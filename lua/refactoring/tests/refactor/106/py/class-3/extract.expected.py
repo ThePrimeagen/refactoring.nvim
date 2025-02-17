@@ -4,7 +4,6 @@ class Poggers:
         for x in range(self.test_other + self.test + test):
             print(x, a)
 
-
     def simple_function(self, a):
         test = 3
         self.test = 1
