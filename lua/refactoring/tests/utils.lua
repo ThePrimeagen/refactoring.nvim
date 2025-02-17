@@ -18,7 +18,7 @@ end
 ---@return string[]
 function M.get_contents(file)
     local contents = vim.split(M.read_file(file), "\n")
-    if contents[#contents] == '' then
+    if contents[#contents] == "" then
         contents[#contents] = nil
     end
     return contents
@@ -91,10 +91,7 @@ function M.for_each_file(files, cwd, cb, predicate)
     predicate = predicate or default_predicate
     for _, file in pairs(files) do
         file = remove_cwd(file, cwd)
-        if
-            string.match(file, "start")
-            and predicate(file)
-        then
+        if string.match(file, "start") and predicate(file) then
             cb(file)
         end
     end
