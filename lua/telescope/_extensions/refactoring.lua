@@ -1,6 +1,5 @@
 local refactoring = require("refactoring")
 
--- refactoring helper
 local function refactor(prompt_bufnr)
     local content =
         require("telescope.actions.state").get_selected_entry(prompt_bufnr)
@@ -10,6 +9,11 @@ end
 
 local function telescope_refactoring(opts)
     opts = opts or require("telescope.themes").get_cursor()
+
+    local utils = require("refactoring.utils")
+    if utils.is_visual_mode() then
+        utils.exit_to_normal_mode()
+    end
 
     require("telescope.pickers")
         .new(opts, {
