@@ -110,10 +110,12 @@ function JavascriptReact.new(bufnr, ft)
             InlineNode("(arrow_function (statement_block (_) @tmp_capture))"),
         },
         require_special_var_format = true,
-        ---@param parent_type string
-        ---@return boolean
-        should_check_parent_node = function(parent_type)
-            return vim.tbl_contains(special_nodes, parent_type)
+        should_check_parent_node = function(node)
+            local parent = node:parent()
+            if not parent then
+                return false
+            end
+            return vim.tbl_contains(special_nodes, parent:type())
         end,
     }
     local ts = TreeSitter:new(config, bufnr)

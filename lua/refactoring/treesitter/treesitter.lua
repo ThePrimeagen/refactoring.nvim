@@ -25,15 +25,15 @@ local ts_locals = require("refactoring.ts-locals")
 ---@field require_class_name? boolean flag to require class name for codegen
 ---@field require_class_type? boolean flag to require class type for codegen
 ---@field require_special_var_format? boolean: flag to require special variable format for codegen
----@field should_check_parent_node? fun(parent_type: string): boolean function to check if it's necesary to check the parent node
----@field should_check_parent_node_print_var? fun(parent_type: string): boolean function to check if it's necesary to check the parent node for print_var
+---@field should_check_parent_node? fun(current_node: TSNode): boolean function to check if it's necesary to check the parent node
+---@field should_check_parent_node_print_var? fun(curren_node: TSNode): boolean function to check if it's necesary to check the parent node for print_var
 ---@field reference_filter? fun(node: TSNode): boolean
 ---@field include_end_of_line? boolean flag to indicate if end of line should be included in a region
----@field return_values InlineNodeFunc[] nodes that are return values
----@field function_references InlineNodeFunc[] nodes that are references of function
----@field caller_args InlineNodeFunc[] nodes that are arguments passed to a function when it's called
----@field return_statement InlineNodeFunc[] nodes that are return statements
----@field is_return_statement fun(statement: string): boolean function to check if a statement is a return statement
+---@field return_values? InlineNodeFunc[] nodes that are return values
+---@field function_references? InlineNodeFunc[] nodes that are references of function
+---@field caller_args? InlineNodeFunc[] nodes that are arguments passed to a function when it's called
+---@field return_statement? InlineNodeFunc[] nodes that are return statements
+---@field is_return_statement? fun(statement: string): boolean function to check if a statement is a return statement
 
 --- The following fields act similar to a cursor
 ---@class TreeSitter: TreeSitterLanguageConfig
@@ -68,13 +68,13 @@ function TreeSitter:new(config, bufnr)
         require_class_type = false,
         require_param_types = false,
         require_special_var_format = false,
-        should_check_parent_node = function(_parent_type)
+        should_check_parent_node = function()
             return false
         end,
-        should_check_parent_node_print_var = function(_parent_type)
+        should_check_parent_node_print_var = function()
             return false
         end,
-        reference_filter = function(_node)
+        reference_filter = function()
             return true
         end,
         include_end_of_line = false,

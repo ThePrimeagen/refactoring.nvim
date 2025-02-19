@@ -157,16 +157,15 @@ local function get_inline_text_edits(
         -- {1} -> 1
         --
         -- https://github.com/ThePrimeagen/refactoring.nvim/issues/427
-        value_text = value_text:sub(2, #value_text - 1)
+        value_text = value_text:sub(2, #value_text - 1) ---@type string
     end
 
     for _, ref in pairs(references) do
         -- TODO: In my mind, if nothing is left on the line when you remove, it should get deleted.
         -- Could be done via opts into replace_text.
 
-        local parent = assert(ref:parent()) ---@type TSNode
-        if refactor.ts.should_check_parent_node(parent:type()) then
-            ref = parent
+        if refactor.ts.should_check_parent_node(ref) then
+            ref = assert(ref:parent())
         end
 
         refactor.success_message = ("Inlined %d variable occurrences"):format(
@@ -272,12 +271,9 @@ local function inline_var_normal_setup(refactor)
     if node_to_inline == nil then
         return false, "There is no node on cursor"
     end
-    if refactor.ts.should_check_parent_node(node_to_inline:type()) then
-        --- @type TSNode?
-        node_to_inline = node_to_inline:named_child(0)
-        if node_to_inline == nil then
-            return false, "There is no node on cursor"
-        end
+    local child = node_to_inline:named_child(0) ---@type TSNode?
+    if child and refactor.ts.should_check_parent_node(child) then
+        node_to_inline = child
     end
     local definition = ts_locals.find_definition(node_to_inline, refactor.bufnr)
     local identifier_pos =

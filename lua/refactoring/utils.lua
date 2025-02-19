@@ -286,9 +286,8 @@ end
 ---@param node TSNode
 ---@return TSNode
 function M.node_to_parent_if_needed(refactor, node)
-    local parent = assert(node:parent())
-    if refactor.ts.should_check_parent_node(parent:type()) then
-        return parent
+    if refactor.ts.should_check_parent_node(node) then
+        return assert(node:parent())
     end
     return node
 end
