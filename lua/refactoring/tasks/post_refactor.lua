@@ -1,5 +1,4 @@
 local Pipeline = require("refactoring.pipeline")
-local adjust_cursor = require("refactoring.tasks.adjust_cursor").adjust_cursor
 local apply_text_edits = require("refactoring.tasks.apply_text_edits")
 
 local M = {}
@@ -18,9 +17,7 @@ local function success_message(refactor)
 end
 
 M.post_refactor = function()
-    return Pipeline:from_task(apply_text_edits)
-        :add_task(adjust_cursor)
-        :add_task(success_message)
+    return Pipeline:from_task(apply_text_edits):add_task(success_message)
 end
 
 -- needed when another file is generated
