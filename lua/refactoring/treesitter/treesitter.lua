@@ -436,7 +436,7 @@ function TreeSitter:get_debug_path(node)
 
         if curr then
             table.insert(path, self.debug_paths[curr:type()](curr, self.bufnr))
-            curr = curr:parent()
+            curr = curr:parent() ---@type TSNode?
         end
     until curr == nil
 

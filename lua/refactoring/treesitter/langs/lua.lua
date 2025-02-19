@@ -59,7 +59,14 @@ function Lua.new(bufnr, ft)
         },
         debug_paths = {
             class_specifier = FieldNode("name"),
-            function_definition = StringNode("function"),
+            function_definition = function(node)
+                local parent = node:parent()
+                if not parent or parent:type() == "field" then
+                    return FieldNode("name")(node:parent(), "(anon)")
+                end
+
+                return FieldNode("name")(parent:prev_named_sibling(), "(anon)")
+            end,
             function_declaration = QueryNode(
                 "(function_declaration name: [(identifier) (dot_index_expression) (method_index_expression)] @name)"
             ),
