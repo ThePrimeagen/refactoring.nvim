@@ -114,7 +114,7 @@ function Golang.new(bufnr, ft)
         is_return_statement = function(statement)
             return vim.startswith(vim.trim(statement), "return ")
         end,
-        should_check_parent_node = function(node)
+        should_check_parent_node_print_var = function(node)
             local parent = node:parent()
             if not parent then
                 return false
