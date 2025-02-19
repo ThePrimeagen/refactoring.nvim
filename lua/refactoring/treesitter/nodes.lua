@@ -22,7 +22,7 @@ end
 ---@field fieldnames string[]
 ---@field node TSNode
 
----@alias FieldNodeFunc fun(node: TSNode, fallback: integer|string): FieldnameNode
+---@alias FieldNodeFunc fun(node: TSNode?, fallback: integer|string): FieldnameNode
 
 ---@param ... string
 ---@return FieldNodeFunc
@@ -30,7 +30,7 @@ function M.FieldNode(...)
     ---@type string[]
     local fieldnames = to_array(...)
 
-    ---@param node TSNode
+    ---@param node TSNode?
     ---@param fallback string
     ---@return FieldnameNode
     return function(node, fallback)
