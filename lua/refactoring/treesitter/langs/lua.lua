@@ -6,11 +6,6 @@ local StringNode = Nodes.StringNode
 local QueryNode = Nodes.QueryNode
 local InlineNode = Nodes.InlineNode
 
-local special_nodes = {
-    "method_index_expression",
-    "dot_index_expression",
-}
-
 ---@class TreeSitterInstance
 local Lua = {}
 
@@ -121,7 +116,24 @@ function Lua.new(bufnr, ft)
             if not parent then
                 return false
             end
-            return vim.tbl_contains(special_nodes, parent:type())
+            local field_node = parent:field("field")[1]
+            if not field_node then
+                return false
+            end
+            if
+                not vim.tbl_contains({
+                    "method_index_expression",
+                    "dot_index_expression",
+                }, parent:type())
+            then
+                return false
+            end
+
+            if not field_node:equal(node) then
+                return false
+            end
+
+            return true
         end,
         reference_filter = function(node)
             local parent = node:parent()
