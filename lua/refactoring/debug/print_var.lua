@@ -88,11 +88,7 @@ function M.printDebug(bufnr, config)
                     if parent_node == nil then
                         return false, "parent_node is nil"
                     end
-                    if
-                        refactor.ts.should_check_parent_node_print_var(
-                            parent_node:type()
-                        )
-                    then
+                    if refactor.ts.should_check_parent_node_print_var(node) then
                         variable = vim.treesitter.get_node_text(
                             parent_node,
                             refactor.bufnr

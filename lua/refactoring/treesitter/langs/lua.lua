@@ -116,8 +116,12 @@ function Lua.new(bufnr, ft)
         is_return_statement = function(statement)
             return vim.startswith(vim.trim(statement), "return ")
         end,
-        should_check_parent_node_print_var = function(parent_type)
-            return vim.tbl_contains(special_nodes, parent_type)
+        should_check_parent_node_print_var = function(node)
+            local parent = node:parent()
+            if not parent then
+                return false
+            end
+            return vim.tbl_contains(special_nodes, parent:type())
         end,
         reference_filter = function(node)
             local parent = node:parent()

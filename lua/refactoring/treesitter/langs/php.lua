@@ -8,8 +8,14 @@ local special_nodes = {
     "variable_name",
 }
 
-local function should_check_parent_node(parent_type)
-    return vim.tbl_contains(special_nodes, parent_type)
+---@param node TSNode
+---@return boolean
+local function should_check_parent_node(node)
+    local parent = node:parent()
+    if not parent then
+        return false
+    end
+    return vim.tbl_contains(special_nodes, parent:type())
 end
 
 ---@class TreeSitterInstance
