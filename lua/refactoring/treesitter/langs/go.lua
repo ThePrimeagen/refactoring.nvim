@@ -4,10 +4,6 @@ local FieldNode = Nodes.FieldNode
 local InlineNode = Nodes.InlineNode
 local InlineFilteredNode = Nodes.InlineFilteredNode
 
-local special_nodes = {
-    "selector_expression",
-}
-
 ---@class TreeSitterInstance
 local Golang = {}
 
@@ -119,7 +115,23 @@ function Golang.new(bufnr, ft)
             if not parent then
                 return false
             end
-            return vim.tbl_contains(special_nodes, parent:type())
+            local field_node = parent:field("field")[1]
+            if not field_node then
+                return false
+            end
+            if
+                not vim.tbl_contains({
+                    "selector_expression",
+                }, parent:type())
+            then
+                return false
+            end
+
+            if not field_node:equal(node) then
+                return false
+            end
+
+            return true
         end,
     }
     return TreeSitter:new(config, bufnr)
