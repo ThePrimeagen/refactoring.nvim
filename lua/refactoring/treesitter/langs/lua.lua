@@ -17,7 +17,7 @@ function Lua.new(bufnr, ft)
         scope_names = {
             program = "program",
             local_function = "function",
-            ["function_declaration"] = "function",
+            function_declaration = "function",
             function_definition = "function",
             chunk = "chunk",
         },
@@ -69,10 +69,6 @@ function Lua.new(bufnr, ft)
             end,
             function_declaration = QueryNode(
                 "(function_declaration name: [(identifier) (dot_index_expression) (method_index_expression)] @name)"
-            ),
-            ["function"] = QueryNode("(function (function_name) @name)"),
-            ["local_function"] = QueryNode(
-                "(local_function (identifier) @name)"
             ),
             if_statement = StringNode("if"),
             repeat_statement = StringNode("repeat"),
