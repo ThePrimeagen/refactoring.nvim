@@ -4,11 +4,6 @@ local FieldNode = Nodes.FieldNode
 local StringNode = Nodes.StringNode
 local InlineNode = Nodes.InlineNode
 
-local special_nodes = {
-    "jsx_element",
-    "jsx_self_closing_element",
-}
-
 ---@class TreeSitterInstance
 local JavascriptReact = {}
 
@@ -115,7 +110,16 @@ function JavascriptReact.new(bufnr, ft)
             if not parent then
                 return false
             end
-            return vim.tbl_contains(special_nodes, parent:type())
+            if
+                not vim.tbl_contains({
+                    "jsx_element",
+                    "jsx_self_closing_element",
+                }, parent:type())
+            then
+                return false
+            end
+
+            return true
         end,
     }
     local ts = TreeSitter:new(config, bufnr)
