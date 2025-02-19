@@ -67,7 +67,6 @@ function TreeSitter:new(config, bufnr)
         require_class_name = false,
         require_class_type = false,
         require_param_types = false,
-        require_special_variable_format = false,
         require_special_var_format = false,
         should_check_parent_node = function(_parent_type)
             return false
