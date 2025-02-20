@@ -39,9 +39,9 @@ function M.get_refactors()
     return vim.tbl_keys(refactors.refactor_names)
 end
 
----@param opts ConfigOpts|{prefer_ex_cmd: boolean?}
+---@param opts ConfigOpts|{prefer_ex_cmd: boolean?}?
 function M.select_refactor(opts)
-    local prefer_ex_cmd = opts.prefer_ex_cmd or false
+    local prefer_ex_cmd = opts and opts.prefer_ex_cmd or false
 
     -- vim.ui.select exits visual mode without setting the `<` and `>` marks
     local utils = require("refactoring.utils")
