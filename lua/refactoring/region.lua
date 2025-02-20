@@ -103,13 +103,19 @@ end
 ---@return RefactorRegion
 function Region:from_node(node, bufnr)
     bufnr = bufnr or vim.api.nvim_get_current_buf()
-    local start_line, start_col, end_line, end_col = node:range()
+    local start_row, start_col, end_row, end_col = node:range()
+    local start_line =
+        vim.api.nvim_buf_get_lines(bufnr, start_row, start_row + 1, true)[1]
+    start_col = vim.fn.charidx(start_line, start_col)
+    local end_line =
+        vim.api.nvim_buf_get_lines(bufnr, end_row, end_row + 1, true)[1]
+    end_col = vim.fn.charidx(end_line, end_col)
 
     return setmetatable({
         bufnr = bufnr,
-        start_row = start_line + 1,
+        start_row = start_row + 1,
         start_col = start_col + 1,
-        end_row = end_line + 1,
+        end_row = end_row + 1,
         end_col = end_col,
     }, self)
 end
