@@ -104,11 +104,14 @@ end
 function Region:from_node(node, bufnr)
     bufnr = bufnr or vim.api.nvim_get_current_buf()
     local start_row, start_col, end_row, end_col = node:range()
-    local start_line =
-        vim.api.nvim_buf_get_lines(bufnr, start_row, start_row + 1, true)[1]
+
+    local lines = vim.api.nvim_buf_get_lines(bufnr, 0, -1, true)
+    local start_line = lines[start_row + 1]
     start_col = vim.fn.charidx(start_line, start_col)
-    local end_line =
-        vim.api.nvim_buf_get_lines(bufnr, end_row, end_row + 1, true)[1]
+
+    -- the parent node may have an end_row #lines + 1
+    local end_i = math.min(end_row + 1, #lines)
+    local end_line = lines[end_i]
     end_col = vim.fn.charidx(end_line, end_col)
 
     return setmetatable({
