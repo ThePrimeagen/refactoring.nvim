@@ -142,8 +142,8 @@ end
 function TreeSitter:loop_thru_nodes(scope, inline_nodes)
     local out = {}
     for _, statement in ipairs(inline_nodes) do
-        local temp = statement(scope, self.bufnr, self.filetype)
-        for _, node in ipairs(temp) do
+        local nodes = statement(scope, self.bufnr, self.filetype)
+        for _, node in ipairs(nodes) do
             table.insert(out, node)
         end
     end

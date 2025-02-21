@@ -115,17 +115,14 @@ M.after_region = function(node, region)
 end
 
 ---@param bufnr integer
----@param ... TSNode
+---@param nodes TSNode[]
 ---@return table<string, true>
-function M.nodes_to_text_set(bufnr, ...)
+function M.nodes_to_text_set(bufnr, nodes)
     local out = {} ---@type table<string, true>
-    for i = 1, select("#", ...) do
-        local nodes = select(i, ...) ---@type TSNode[]
-        for _, node in pairs(nodes) do
-            local text = vim.treesitter.get_node_text(node, bufnr)
-            if text ~= nil then
-                out[text] = true
-            end
+    for _, node in pairs(nodes) do
+        local text = ts.get_node_text(node, bufnr)
+        if text ~= nil then
+            out[text] = true
         end
     end
     return out
@@ -253,43 +250,29 @@ end
 ---@param refactor Refactor
 ---@return string[]
 function M.get_selected_locals(refactor)
-    local local_defs = vim.iter(
-        refactor.ts:get_local_defs(refactor.scope, refactor.region)
-    )
-        :map(
-            ---@param node TSNode
-            ---@return TSNode[]
-            function(node)
-                return M.node_to_parent_if_needed(refactor, node)
-            end
-        )
-        :totable()
-    local region_refs = vim.iter(
-        refactor.ts:get_region_refs(refactor.scope, refactor.region)
-    )
-        :map(
-            ---@param node TSNode
-            ---@return TSNode[]
-            function(node)
-                return M.node_to_parent_if_needed(refactor, node)
-            end
-        )
-        :totable()
+    ---@param node TSNode
+    ---@return TSNode[]
+    local function node_to_parent_if_needed(node)
+        if refactor.ts.should_check_parent_node(node) then
+            local parent = assert(node:parent()) -- assert may return multiple values when running inside of plenary, causing errors on the iter pipeline
+            return parent
+        end
+        return node
+    end
+
+    local local_defs =
+        vim.iter(refactor.ts:get_local_defs(refactor.scope, refactor.region))
+            :map(node_to_parent_if_needed)
+            :totable()
+    local region_refs =
+        vim.iter(refactor.ts:get_region_refs(refactor.scope, refactor.region))
+            :map(node_to_parent_if_needed)
+            :totable()
 
     local bufnr = refactor.buffers[1]
     local local_def_map = M.nodes_to_text_set(bufnr, local_defs)
     local region_refs_map = M.nodes_to_text_set(bufnr, region_refs)
     return M.table_key_intersect(local_def_map, region_refs_map)
-end
-
----@param refactor Refactor
----@param node TSNode
----@return TSNode
-function M.node_to_parent_if_needed(refactor, node)
-    if refactor.ts.should_check_parent_node(node) then
-        return assert(node:parent())
-    end
-    return node
 end
 
 function M.is_visual_mode()
