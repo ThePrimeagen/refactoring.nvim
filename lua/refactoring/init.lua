@@ -1,3 +1,5 @@
+local api = vim.api
+
 local M = {}
 
 local dont_need_args = {
@@ -30,13 +32,15 @@ function M.refactor(name, opts)
 
     local Config = require("refactoring.config")
     local config = Config.get():merge(opts)
-    refactors[refactor](vim.api.nvim_get_current_buf(), config)
+    refactors[refactor](api.nvim_get_current_buf(), config)
 end
 
 ---@return string[]
 function M.get_refactors()
     local refactors = require("refactoring.refactor")
-    return vim.tbl_keys(refactors.refactor_names)
+    return vim.tbl_keys(
+        refactors.refactor_names --[[@as table<string, string>>]]
+    )
 end
 
 ---@param opts ConfigOpts|{prefer_ex_cmd: boolean?}?
@@ -65,7 +69,7 @@ function M.select_refactor(opts)
         then
             local refactor_name =
                 require("refactoring.refactor").refactor_names[selected_refactor]
-            vim.api.nvim_input((":Refactor %s "):format(refactor_name))
+            api.nvim_input((":Refactor %s "):format(refactor_name))
         else
             M.refactor(selected_refactor, opts)
         end

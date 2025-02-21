@@ -1,11 +1,13 @@
+local api = vim.api
+
 ---@param bufnr integer
 ---@param ns integer
 ---@param edit_set RefactorTextEdit[]
 local function preview_highlight(bufnr, ns, edit_set)
-    vim.api.nvim_buf_clear_namespace(bufnr, ns, 0, -1)
+    api.nvim_buf_clear_namespace(bufnr, ns, 0, -1)
     for _, edit in pairs(edit_set) do
         if edit.newText == "" then
-            vim.api.nvim_buf_set_extmark(
+            api.nvim_buf_set_extmark(
                 bufnr,
                 ns,
                 edit.range.start.line,
@@ -21,7 +23,7 @@ local function preview_highlight(bufnr, ns, edit_set)
                 }
             )
         else
-            vim.api.nvim_buf_set_extmark(
+            api.nvim_buf_set_extmark(
                 bufnr,
                 ns,
                 edit.range.start.line,

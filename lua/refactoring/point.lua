@@ -1,11 +1,13 @@
+local api = vim.api
+
 local function getpos()
-    local cursor = vim.api.nvim_win_get_cursor(0)
+    local cursor = api.nvim_win_get_cursor(0)
     return cursor[1], cursor[2]
 end
 
 ---@class RefactorPoint
 ---@field row number: The 1-based row
----@field col number: The 1-based col
+---@field col number: The 0-based col
 local Point = {}
 Point.__index = Point
 

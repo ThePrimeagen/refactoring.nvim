@@ -1,9 +1,11 @@
 local Region = require("refactoring.region")
 local ts_locals = require("refactoring.ts-locals")
 
+local ts = vim.treesitter
+
 ---@param refactor Refactor
 local function node_on_cursor_setup(refactor)
-    local identifier_node = vim.treesitter.get_node()
+    local identifier_node = ts.get_node()
 
     if identifier_node == nil then
         return false, "Identifier_node is nil"

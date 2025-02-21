@@ -15,12 +15,12 @@ end, 5)
 ---@param question string
 ---@param format? fun(item: unknown) : string
 ---@return unknown?
----@return integer
+---@return integer?
 local function get_select_input(items, question, format)
     -- TODO: Extract to class
     local automation_input = Config.get():get_automated_input()
     if automation_input ~= nil then
-        local automation_input_number = tonumber(automation_input)
+        local automation_input_number = tonumber(automation_input) --[[@as integer]]
         return items[automation_input_number], automation_input_number
     end
 

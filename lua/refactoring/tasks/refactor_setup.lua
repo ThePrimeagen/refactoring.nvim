@@ -2,6 +2,8 @@ local Config = require("refactoring.config")
 local TreeSitter = require("refactoring.treesitter")
 local Point = require("refactoring.point")
 
+local api = vim.api
+
 -- TODO: Move refactor into the actual init function.  Seems weird
 -- to have here.  Also make refactor object into a table instead of this
 -- monstrosity
@@ -10,7 +12,7 @@ local Point = require("refactoring.point")
 ---@param config Config
 ---@return fun(): true, Refactor
 local function refactor_setup(input_bufnr, config)
-    input_bufnr = input_bufnr or vim.api.nvim_get_current_buf()
+    input_bufnr = input_bufnr or api.nvim_get_current_buf()
     config = config or Config.get()
 
     return function()
@@ -26,7 +28,7 @@ local function refactor_setup(input_bufnr, config)
 
         local filetype = vim.bo[bufnr].filetype --[[@as ft]]
         local root = ts:get_root()
-        local win = vim.api.nvim_get_current_win()
+        local win = api.nvim_get_current_win()
         local cursor = Point:from_cursor()
 
         ---@class Refactor
