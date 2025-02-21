@@ -13,7 +13,6 @@ local function cleanup(bufnr, config)
                 local lines = vim.api.nvim_buf_get_lines(bufnr, 0, -1, false)
                 refactor.text_edits = {}
 
-                -- set default cleanup behavior
                 if opts.printf == nil then
                     opts.printf = true
                 end
@@ -25,16 +24,15 @@ local function cleanup(bufnr, config)
                 for row_num, line in ipairs(lines) do
                     if opts.printf then
                         if
-                            string.find(line, "__AUTO_GENERATED_PRINTF_END__")
+                            line:find("__AUTO_GENERATED_PRINTF_END__$")
                             ~= nil
                         then
                             for searched_row_num = row_num, 1, -1 do
                                 local searched_line = lines[searched_row_num]
 
                                 if
-                                    string.find(
-                                        searched_line,
-                                        "__AUTO_GENERATED_PRINTF_START__"
+                                    searched_line:find(
+                                        "__AUTO_GENERATED_PRINTF_START__$"
                                     )
                                     ~= nil
                                 then
@@ -57,19 +55,15 @@ local function cleanup(bufnr, config)
 
                     if opts.print_var then
                         if
-                            string.find(
-                                line,
-                                "__AUTO_GENERATED_PRINT_VAR_END__"
-                            )
+                            line:find("__AUTO_GENERATED_PRINT_VAR_END__$")
                             ~= nil
                         then
                             for searched_row_num = row_num, 1, -1 do
                                 local searched_line = lines[searched_row_num]
 
                                 if
-                                    string.find(
-                                        searched_line,
-                                        "__AUTO_GENERATED_PRINT_VAR_START__"
+                                    searched_line:find(
+                                        "__AUTO_GENERATED_PRINT_VAR_START__$"
                                     )
                                     ~= nil
                                 then
