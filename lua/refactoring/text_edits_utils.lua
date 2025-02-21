@@ -3,7 +3,7 @@ local Region = require("refactoring.region")
 
 local M = {}
 
-local MAX_COL = 10000
+local MAX_COL = vim.v.maxcol
 
 ---@param pointOrRegion RefactorRegion|RefactorPoint
 ---@return RefactorRegion

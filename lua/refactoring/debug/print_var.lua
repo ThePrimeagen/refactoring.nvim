@@ -10,7 +10,7 @@ local get_select_input = require("refactoring.get_select_input")
 local indent = require("refactoring.indent")
 local notify = require("refactoring.notify")
 
-local MAX_COL = 100000
+local MAX_COL = vim.v.maxcol
 
 local M = {}
 
