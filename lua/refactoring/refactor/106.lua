@@ -30,6 +30,16 @@ end
 ---@param refactor Refactor
 ---@return string[]
 local function get_return_vals(refactor)
+    ---@param node TSNode
+    ---@return TSNode[]
+    local function node_to_parent_if_needed(node)
+        if refactor.ts.should_check_parent_node(node) then
+            local parent = assert(node:parent()) -- assert may return multiple values when running inside of plenary, causing errors on the iter pipeline
+            return parent
+        end
+        return node
+    end
+
     local local_declarations =
         refactor.ts:get_local_declarations(refactor.scope)
 
@@ -50,26 +60,14 @@ local function get_return_vals(refactor)
                 return not not node
             end
         )
-        :map(
-            ---@param node TSNode
-            ---@return TSNode
-            function(node)
-                return utils.node_to_parent_if_needed(refactor, node)
-            end
-        )
+        :map(node_to_parent_if_needed)
         :totable()
 
     local refs = vim.iter(refactor.ts:get_references(refactor.scope))
         :filter(function(node)
             return utils.after_region(node, refactor.region)
         end)
-        :map(
-            ---@param node TSNode
-            ---@return TSNode
-            function(node)
-                return utils.node_to_parent_if_needed(refactor, node)
-            end
-        )
+        :map(node_to_parent_if_needed)
         :totable()
 
     local bufnr = refactor.buffers[1]
