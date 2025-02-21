@@ -9,11 +9,7 @@ local get_select_input = require("refactoring.get_select_input")
 local indent = require("refactoring.indent")
 local notify = require("refactoring.notify")
 
-local iter = vim.iter
 local api = vim.api
-local ts = vim.treesitter
-
-local MAX_COL = vim.v.maxcol
 
 local M = {}
 
@@ -64,14 +60,18 @@ local function text_edit_insert_text(
         content = content,
     })
 
-    local cursor = refactor.cursor
-    local line = api.nvim_buf_get_lines(
+    local _, _, current_statement = debug_utils.get_debug_points(refactor, opts)
+
+    local start_row, _, end_row = current_statement:range()
+    local statement_row = opts.below and start_row + 1 or end_row
+    local statement_line = api.nvim_buf_get_lines(
         refactor.bufnr,
-        cursor.row - 1,
-        cursor.row,
+        statement_row,
+        statement_row + 1,
         true
     )[1]
-    local indent_amount = indent.line_indent_amount(line, refactor.bufnr)
+    local indent_amount =
+        indent.line_indent_amount(statement_line, refactor.bufnr)
     local indentation = indent.indent(indent_amount, refactor.bufnr)
 
     local start_comment =
@@ -177,47 +177,8 @@ function M.printDebug(bufnr, config)
                 end
                 opts._end = opts.below
 
-                local current_line = api.nvim_buf_get_lines(
-                    refactor.bufnr,
-                    cursor.row - 1,
-                    cursor.row,
-                    true
-                )[1]
-                local _, non_white_space = current_line:find("^%s*()")
-
-                ---@type TSNode?
-                local current = assert(ts.get_node({
-                    bufnr = refactor.bufnr,
-                    pos = { cursor.row - 1, non_white_space },
-                }))
-                local statements = refactor.ts:get_statements(refactor.root)
-                local is_statement = false
-                while current and not is_statement do
-                    is_statement = iter(statements):any(function(node)
-                        return node:equal(current)
-                    end)
-
-                    if not is_statement then
-                        current = current:parent()
-                    end
-                end
-
-                local insert_pos = cursor:clone()
-                local path_pos = cursor:clone()
-                if current then
-                    local start_row, start_col, end_row, end_col =
-                        current:range()
-
-                    insert_pos.row = opts.below and end_row + 1 or start_row + 1
-                    insert_pos.col = opts.below and end_col or start_col
-
-                    path_pos.row = opts.below and end_row + 1 or start_row
-                    path_pos.col = opts.below and end_col or MAX_COL
-                else
-                    insert_pos.col = opts.below and 0 or MAX_COL
-
-                    path_pos.col = opts.below and 0 or MAX_COL
-                end
+                local insert_pos, path_pos =
+                    debug_utils.get_debug_points(refactor, opts)
 
                 local ok, debug_path =
                     pcall(debug_utils.get_debug_path, refactor, path_pos)

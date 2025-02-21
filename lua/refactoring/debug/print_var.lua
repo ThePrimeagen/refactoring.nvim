@@ -1,5 +1,4 @@
 local Pipeline = require("refactoring.pipeline")
-local Point = require("refactoring.point")
 local Region = require("refactoring.region")
 local refactor_setup = require("refactoring.tasks.refactor_setup")
 local post_refactor = require("refactoring.tasks.post_refactor")
@@ -10,7 +9,7 @@ local get_select_input = require("refactoring.get_select_input")
 local indent = require("refactoring.indent")
 local notify = require("refactoring.notify")
 
-local MAX_COL = vim.v.maxcol
+local api = vim.api
 
 local M = {}
 
@@ -61,15 +60,11 @@ function M.printDebug(bufnr, config)
             ---@param refactor Refactor
             function(refactor)
                 local opts = refactor.config:get()
-                local point = Point:from_cursor()
 
-                -- set default `below` behavior
                 if opts.below == nil then
                     opts.below = true
                 end
-                -- set default `end` behavior
                 opts._end = opts.below
-                point.col = opts.below and MAX_COL or 1
 
                 -- Get variable text
                 local variable_region = Region:from_motion()
@@ -104,24 +99,23 @@ function M.printDebug(bufnr, config)
                     return false, "variable is nil"
                 end
 
-                --- @type string
-                local indentation
-                if refactor.ts.allows_indenting_task then
-                    local ok, indent_amount = pcall(
-                        indent.buf_indent_amount,
-                        refactor.cursor,
-                        refactor,
-                        opts.below,
-                        refactor.bufnr
-                    )
-                    if not ok then
-                        return ok, indent_amount
-                    end
-                    indentation = indent.indent(indent_amount, refactor.bufnr)
-                end
+                local insert_pos, path_pos, current_statement =
+                    debug_utils.get_debug_points(refactor, opts)
+
+                local start_row, _, end_row = current_statement:range()
+                local statement_row = opts.below and start_row + 1 or end_row
+                local statement_line = api.nvim_buf_get_lines(
+                    refactor.bufnr,
+                    statement_row,
+                    statement_row + 1,
+                    true
+                )[1]
+                local indent_amount =
+                    indent.line_indent_amount(statement_line, refactor.bufnr)
+                local indentation = indent.indent(indent_amount, refactor.bufnr)
 
                 local ok, debug_path =
-                    pcall(debug_utils.get_debug_path, refactor, point)
+                    pcall(debug_utils.get_debug_path, refactor, path_pos)
                 if not ok then
                     return ok, debug_path
                 end
@@ -144,20 +138,19 @@ function M.printDebug(bufnr, config)
                 local end_comment =
                     refactor.code.comment("__AUTO_GENERATED_PRINT_VAR_END__")
 
-                if indentation ~= nil then
-                    print_statement =
-                        table.concat({ indentation, print_statement }, "")
-                    start_comment =
-                        table.concat({ indentation, start_comment }, "")
-                end
+                local text = table.concat({
+                    indentation,
+                    start_comment,
+                    "\n",
+                    indentation,
+                    print_statement,
+                    " ",
+                    end_comment,
+                }, "")
 
-                local text = table.concat(
-                    { start_comment, "\n", print_statement, " ", end_comment },
-                    ""
-                )
                 refactor.text_edits = {
                     text_edits_utils.insert_new_line_text(
-                        Region:from_point(point),
+                        Region:from_point(insert_pos),
                         text,
                         opts
                     ),
