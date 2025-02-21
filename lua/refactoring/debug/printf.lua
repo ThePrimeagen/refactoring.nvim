@@ -110,13 +110,15 @@ local function text_edits_modify_count(
     row_num,
     i
 )
-    local count_pattern = debug_path ~= "" and debug_path .. " " .. "(%d+)"
+    local escaped_debug_path = vim.pesc(debug_path)
+    local count_pattern = debug_path ~= ""
+            and escaped_debug_path .. " " .. "(%d+)"
         or "(%d+)"
     local before_count_pattern = debug_path ~= ""
-            and debug_path .. " " .. "()%d+"
+            and escaped_debug_path .. " " .. "()%d+"
         or "()%d+"
     local after_count_pattern = debug_path ~= ""
-            and debug_path .. " " .. "%d+()"
+            and escaped_debug_path .. " " .. "%d+()"
         or "%d+()"
     local pattern_count = refactor.code.print({
         statement = escaped_printf_statement,
@@ -192,7 +194,7 @@ function M.printDebug(bufnr, config)
                     :gsub("%%%%", "%%%%%1")
                     :gsub("([%^%$%(%)%[%]%*%+%-%?])", "%%%%%1")
                 local text_to_count_pattern = debug_path ~= ""
-                        and debug_path .. " " .. "%d+"
+                        and ("%s %%d+"):format(vim.pesc(debug_path))
                     or "%d+"
                 local text_to_count = refactor.code.print({
                     statement = escaped_printf_statement,
