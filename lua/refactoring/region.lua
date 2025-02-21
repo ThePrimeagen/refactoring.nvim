@@ -1,5 +1,7 @@
 local Point = require("refactoring.point")
 
+local api = vim.api
+
 ---@param opts {include_end_of_line: boolean}|nil
 ---@return integer start_row, integer start_col, integer end_row, integer end_col
 local function get_selection_range(opts)
@@ -10,7 +12,7 @@ local function get_selection_range(opts)
 
     if opts and opts.include_end_of_line then
         local last_line =
-            vim.api.nvim_buf_get_lines(0, end_row - 1, end_row, true)[1]
+            api.nvim_buf_get_lines(0, end_row - 1, end_row, true)[1]
         local line_length = vim.str_utfindex(last_line, #last_line)
         end_col = math.min(end_col, line_length)
     end
@@ -35,7 +37,7 @@ function Region:from_current_selection(opts)
     local start_row, start_col, end_row, end_col = get_selection_range(opts)
 
     return setmetatable({
-        bufnr = vim.api.nvim_get_current_buf(),
+        bufnr = api.nvim_get_current_buf(),
         start_row = start_row,
         start_col = start_col,
         end_row = end_row,
@@ -52,7 +54,7 @@ function Region:from_motion()
     local end_col = vim.fn.col("']")
 
     return setmetatable({
-        bufnr = vim.api.nvim_get_current_buf(),
+        bufnr = api.nvim_get_current_buf(),
         start_row = start_row,
         start_col = start_col,
         end_row = end_row,
@@ -102,10 +104,10 @@ end
 ---@param bufnr? number
 ---@return RefactorRegion
 function Region:from_node(node, bufnr)
-    bufnr = bufnr or vim.api.nvim_get_current_buf()
+    bufnr = bufnr or api.nvim_get_current_buf()
     local start_row, start_col, end_row, end_col = node:range()
 
-    local lines = vim.api.nvim_buf_get_lines(bufnr, 0, -1, true)
+    local lines = api.nvim_buf_get_lines(bufnr, 0, -1, true)
     local start_line = lines[start_row + 1]
     start_col = vim.fn.charidx(start_line, start_col)
 
@@ -128,7 +130,7 @@ end
 ---@param bufnr? number  the bufnr for the region
 ---@return RefactorRegion
 function Region:from_point(point, bufnr)
-    bufnr = bufnr or vim.api.nvim_get_current_buf()
+    bufnr = bufnr or api.nvim_get_current_buf()
 
     return setmetatable({
         bufnr = bufnr,
@@ -143,7 +145,7 @@ end
 ---@param bufnr integer|nil
 ---@return RefactorRegion
 function Region:from_lsp_range_insert(lsp_range, bufnr)
-    bufnr = bufnr or vim.api.nvim_get_current_buf()
+    bufnr = bufnr or api.nvim_get_current_buf()
 
     return setmetatable({
         bufnr = bufnr,
@@ -158,7 +160,7 @@ end
 ---@param bufnr integer|nil
 ---@return RefactorRegion
 function Region:from_lsp_range_replace(lsp_range, bufnr)
-    bufnr = bufnr or vim.api.nvim_get_current_buf()
+    bufnr = bufnr or api.nvim_get_current_buf()
 
     return setmetatable({
         bufnr = bufnr,
@@ -188,7 +190,7 @@ end
 --- Get the lines contained in the region
 ---@return string[]
 function Region:get_lines()
-    local text = vim.api.nvim_buf_get_lines(
+    local text = api.nvim_buf_get_lines(
         self.bufnr,
         self.start_row - 1,
         self.end_row,
@@ -211,7 +213,7 @@ end
 
 ---@return string[]
 function Region:get_text()
-    local lines = vim.api.nvim_buf_get_lines(
+    local lines = api.nvim_buf_get_lines(
         self.bufnr,
         self.start_row - 1,
         self.end_row,

@@ -1,3 +1,5 @@
+local ts = vim.treesitter
+
 --- local myEnum = Enum {
 ---     'Foo',          -- Takes value 1
 ---     'Bar',          -- Takes value 2
@@ -6,7 +8,7 @@
 --- }
 
 ---@class RefactorQuery
----@field query? vim.treesitter.Query
+---@field query? treesitter.Query
 ---@field bufnr integer
 ---@field filetype string
 ---@field root TSNode
@@ -23,8 +25,8 @@ Query.query_type = {
 ---@param filetype string
 ---@return TSNode
 function Query.get_root(bufnr, filetype)
-    local lang = vim.treesitter.language.get_lang(filetype)
-    local parser = vim.treesitter.get_parser(bufnr, lang)
+    local lang = ts.language.get_lang(filetype)
+    local parser = ts.get_parser(bufnr, lang)
     if not parser then
         error(
             "No treesitter parser found. Install one using :TSInstall <language>"
@@ -38,13 +40,13 @@ end
 ---@param query_name string
 ---@return RefactorQuery
 function Query.from_query_name(bufnr, filetype, query_name)
-    local lang = vim.treesitter.language.get_lang(filetype)
+    local lang = ts.language.get_lang(filetype)
 
     if lang == nil then
         error(string.format("No treesitter lang for filetype %s", filetype))
     end
 
-    local query = vim.treesitter.query.get(lang, query_name)
+    local query = ts.query.get(lang, query_name)
 
     if query == nil then
         error(
@@ -105,8 +107,8 @@ function Query.find_occurrences(scope, sexpr, bufnr)
         sexpr = sexpr .. " @tmp_capture"
     end
 
-    local lang = vim.treesitter.language.get_lang(filetype)
-    local ok, sexpr_query = pcall(vim.treesitter.query.parse, lang, sexpr)
+    local lang = ts.language.get_lang(filetype)
+    local ok, sexpr_query = pcall(ts.query.parse, lang, sexpr)
     if not ok then
         error(
             string.format("Invalid query: '%s'\n error: %s", sexpr, sexpr_query)

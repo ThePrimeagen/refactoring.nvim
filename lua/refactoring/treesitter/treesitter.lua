@@ -3,6 +3,9 @@ local utils = require("refactoring.utils")
 local Region = require("refactoring.region")
 local ts_locals = require("refactoring.ts-locals")
 
+local ts = vim.treesitter
+local iter = vim.iter
+
 ---@class TreeSitterLanguageConfig
 ---@field bufnr integer bufnr to which this belongs
 ---@field filetype string filetype
@@ -175,7 +178,7 @@ function TreeSitter:get_local_defs(scope, region)
 
     vim.list_extend(nodes, local_var_names)
 
-    nodes = vim.iter(nodes)
+    nodes = iter(nodes)
         :filter(function(node)
             return utils.region_complement(node, region)
         end)
@@ -259,7 +262,7 @@ end
 ---@return TSNode[]
 function TreeSitter:get_references(scope)
     local ft = self.filetype
-    local lang = vim.treesitter.language.get_lang(ft)
+    local lang = ts.language.get_lang(ft)
 
     if lang == nil then
         error(
@@ -270,7 +273,7 @@ function TreeSitter:get_references(scope)
         )
     end
 
-    local query = vim.treesitter.query.get(lang, "locals")
+    local query = ts.query.get(lang, "locals")
 
     if query == nil then
         error(string.format("The lang %s has no query `locals`", lang))
@@ -291,11 +294,9 @@ end
 ---@param region RefactorRegion
 ---@return TSNode[]
 function TreeSitter:get_region_refs(scope, region)
-    local nodes = vim.iter(self:get_references(scope))
-        :filter(function(node)
-            return utils.region_intersect(node, region, region.bufnr)
-        end)
-        :totable()
+    local nodes = iter(self:get_references(scope)):filter(function(node)
+        return utils.region_intersect(node, region, region.bufnr)
+    end):totable()
 
     return nodes
 end
@@ -377,8 +378,8 @@ function TreeSitter:get_local_types(scope)
 
     if #types > 0 then
         for i = 1, #types do
-            local type = vim.treesitter.get_node_text(types[i], self.bufnr)
-            local ident = vim.treesitter.get_node_text(idents[i], self.bufnr)
+            local type = ts.get_node_text(types[i], self.bufnr)
+            local ident = ts.get_node_text(idents[i], self.bufnr)
             all_types[ident] = type
         end
     end
@@ -465,11 +466,9 @@ end
 ---@param region  RefactorRegion
 ---@return TSNode[]
 function TreeSitter:local_declarations_in_region(scope, region)
-    return vim.iter(self:get_local_declarations(scope))
-        :filter(function(node)
-            return utils.region_intersect(node, region)
-        end)
-        :totable()
+    return iter(self:get_local_declarations(scope)):filter(function(node)
+        return utils.region_intersect(node, region)
+    end):totable()
 end
 
 ---@return TSNode
@@ -482,15 +481,13 @@ function TreeSitter:local_declarations_under_cursor()
         error("Failed to get scope in local_declarations_under_cursor")
     end
 
-    return vim.iter(self:get_local_declarations(scope))
-        :filter(
-            --- @param node TSNode
-            --- @return boolean
-            function(node)
-                return Region:from_node(node, 0):contains_point(point)
-            end
-        )
-        :next()
+    return iter(self:get_local_declarations(scope)):filter(
+        --- @param node TSNode
+        --- @return boolean
+        function(node)
+            return Region:from_node(node, 0):contains_point(point)
+        end
+    ):next()
 end
 
 ---@param node TSNode
@@ -516,8 +513,8 @@ end
 
 ---@return TSNode
 function TreeSitter:get_root()
-    local lang = vim.treesitter.language.get_lang(self.filetype)
-    local parser = vim.treesitter.get_parser(self.bufnr, lang)
+    local lang = ts.language.get_lang(self.filetype)
+    local parser = ts.get_parser(self.bufnr, lang)
     return parser:parse()[1]:root()
 end
 

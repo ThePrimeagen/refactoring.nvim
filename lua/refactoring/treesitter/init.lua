@@ -14,6 +14,8 @@ local java = require("refactoring.treesitter.langs.java")
 local cs = require("refactoring.treesitter.langs.cs")
 local ruby = require("refactoring.treesitter.langs.ruby")
 
+local api = vim.api
+
 ---@class TreeSitterInstance: TreeSitter
 ---@field new fun(bufnr: integer, ft: string): TreeSitter
 
@@ -55,7 +57,7 @@ function DefaultSitter.new(bufnr, ft)
 end
 
 function M.get_treesitter(bufnr)
-    bufnr = bufnr or vim.api.nvim_get_current_buf()
+    bufnr = bufnr or api.nvim_get_current_buf()
 
     local ft = vim.bo[bufnr].ft
     return M[ft] and M[ft].new(bufnr, ft) or DefaultSitter.new(bufnr, ft)

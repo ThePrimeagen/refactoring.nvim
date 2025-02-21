@@ -1,5 +1,7 @@
 local Region = require("refactoring.region")
 
+local iter = vim.iter
+
 local M = {}
 
 ---Returns the indent width of a given buffer
@@ -22,6 +24,7 @@ end
 M.buf_indent_amount = function(point, refactor, below, bufnr)
     local region = Region:from_point(point, bufnr)
     local region_node = region:to_ts_node(refactor.ts:get_root())
+    assert(region_node)
 
     local scope = refactor.ts:get_scope(region_node)
 
@@ -54,41 +57,35 @@ M.buf_indent_amount = function(point, refactor, below, bufnr)
 
     ---@type table<integer, boolean>
     local already_seend = {}
-    line_numbers = vim.iter(line_numbers)
-        :filter(
-            ---@param line_number integer
-            ---@return boolean
-            function(line_number)
-                if already_seend[line_number] then
-                    return false
-                end
-                already_seend[line_number] = true
-                local distance = point.row - line_number
-                return distance ~= 0
+    line_numbers = iter(line_numbers):filter(
+        ---@param line_number integer
+        ---@return boolean
+        function(line_number)
+            if already_seend[line_number] then
+                return false
             end
-        )
-        :totable()
+            already_seend[line_number] = true
+            local distance = point.row - line_number
+            return distance ~= 0
+        end
+    ):totable()
 
-    local line_numbers_up = vim.iter(line_numbers)
-        :filter(
-            ---@param line_number integer
-            ---@return boolean
-            function(line_number)
-                local distance = point.row - line_number
-                return distance > 0
-            end
-        )
-        :totable()
-    local line_numbers_down = vim.iter(line_numbers)
-        :filter(
-            ---@param line_number integer
-            ---@return boolean
-            function(line_number)
-                local distance = point.row - line_number
-                return distance < 0
-            end
-        )
-        :totable()
+    local line_numbers_up = iter(line_numbers):filter(
+        ---@param line_number integer
+        ---@return boolean
+        function(line_number)
+            local distance = point.row - line_number
+            return distance > 0
+        end
+    ):totable()
+    local line_numbers_down = iter(line_numbers):filter(
+        ---@param line_number integer
+        ---@return boolean
+        function(line_number)
+            local distance = point.row - line_number
+            return distance < 0
+        end
+    ):totable()
 
     ---@param a integer
     ---@param b integer

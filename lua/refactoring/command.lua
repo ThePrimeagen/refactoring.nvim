@@ -1,5 +1,8 @@
 local M = {}
 
+local api = vim.api
+local iter = vim.iter
+
 --- @alias command_opts {name: string, args: string, fargs: string[], bang: boolean, line1: number, line2: number, range: number, count: number, reg: string, mods: string, smods: string[]}
 
 local DO_NOT_PREVIEW = 0
@@ -89,7 +92,7 @@ local function command_complete(arg_lead, cmd_line, _cursor_pos)
         return {}
     end
 
-    local options = vim.iter(vim.tbl_keys(refactors))
+    local options = iter(vim.tbl_keys(refactors))
         :filter(
             --- @param option any
             function(option)
@@ -108,7 +111,7 @@ local function command_complete(arg_lead, cmd_line, _cursor_pos)
 end
 
 function M.setup()
-    vim.api.nvim_create_user_command(
+    api.nvim_create_user_command(
         "Refactor",
         command,
         -- stylua: ignore start

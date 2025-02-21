@@ -1,5 +1,7 @@
 local get_input = require("refactoring.get_input")
 
+local api = vim.api
+
 local M = {}
 
 ---@param refactor Refactor
@@ -10,7 +12,7 @@ function M.from_input(refactor)
         return false, "Error: Must provide a file name"
     end
 
-    local starting_win = vim.api.nvim_get_current_win()
+    local starting_win = api.nvim_get_current_win()
 
     local new_bufnr = vim.fn.bufnr(vim.fn.expand(file_name))
     local new_winnr = vim.fn.bufwinnr(new_bufnr)
@@ -22,9 +24,9 @@ function M.from_input(refactor)
     else
         vim.cmd.wincmd({ args = { "w" }, count = new_winnr })
     end
-    table.insert(refactor.buffers, vim.api.nvim_get_current_buf())
+    table.insert(refactor.buffers, api.nvim_get_current_buf())
 
-    vim.api.nvim_set_current_win(starting_win)
+    api.nvim_set_current_win(starting_win)
     return true, refactor
 end
 

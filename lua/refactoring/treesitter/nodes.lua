@@ -1,5 +1,8 @@
 local Query = require("refactoring.query")
 
+local api = vim.api
+local ts = vim.treesitter
+
 local M = {}
 
 local BaseFieldNode = {}
@@ -56,7 +59,7 @@ function M.FieldNode(...)
                     end
                 end
 
-                return vim.treesitter.get_node_text(curr, 0) or fallback
+                return ts.get_node_text(curr, 0) or fallback
             end,
         })
     end
@@ -80,8 +83,8 @@ end
 ---@return InlineNodeFunc
 function M.InlineNode(sexpr)
     return function(scope, bufnr, filetype)
-        local lang = vim.treesitter.language.get_lang(filetype)
-        local ok, result_object = pcall(vim.treesitter.query.parse, lang, sexpr)
+        local lang = ts.language.get_lang(filetype)
+        local ok, result_object = pcall(ts.query.parse, lang, sexpr)
         if not ok then
             error(
                 string.format(
@@ -107,8 +110,8 @@ end
 ---@return InlineFilteredNodeFunc
 function M.InlineFilteredNode(sexpr)
     return function(scope, bufnr, filetype, filter)
-        local lang = vim.treesitter.language.get_lang(filetype)
-        local ok, result_object = pcall(vim.treesitter.query.parse, lang, sexpr)
+        local lang = ts.language.get_lang(filetype)
+        local ok, result_object = pcall(ts.query.parse, lang, sexpr)
         if not ok then
             error(
                 string.format(
@@ -139,10 +142,7 @@ function M.QueryNode(sexpr)
         local first = occurrences[1]
 
         if first then
-            local res = vim.treesitter.get_node_text(
-                first,
-                vim.api.nvim_get_current_buf()
-            )
+            local res = ts.get_node_text(first, api.nvim_get_current_buf())
             return res or ""
         end
 

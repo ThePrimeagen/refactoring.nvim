@@ -11,6 +11,10 @@ local text_edits_utils = require("refactoring.text_edits_utils")
 
 local ts_locals = require("refactoring.ts-locals")
 
+local api = vim.api
+local iter = vim.iter
+local ts = vim.treesitter
+
 local M = {}
 
 ---@param identifiers TSNode[]
@@ -41,7 +45,7 @@ local function get_node_to_inline(identifiers, bufnr)
             ---@param node TSNode
             ---@return string
             function(node)
-                return vim.treesitter.get_node_text(node, bufnr)
+                return ts.get_node_text(node, bufnr)
             end
         )
     end
@@ -65,14 +69,8 @@ local function construct_new_declaration(
 
     for idx, identifier in pairs(identifiers) do
         if identifier ~= identifier_to_exclude then
-            table.insert(
-                new_identifiers,
-                vim.treesitter.get_node_text(identifier, bufnr)
-            )
-            table.insert(
-                new_values,
-                vim.treesitter.get_node_text(values[idx], bufnr)
-            )
+            table.insert(new_identifiers, ts.get_node_text(identifier, bufnr))
+            table.insert(new_values, ts.get_node_text(values[idx], bufnr))
         end
     end
 
@@ -98,8 +96,7 @@ local function get_inline_text_edits(
 
     local references =
         ts_locals.find_usages(definition, refactor.scope, refactor.bufnr)
-    references =
-        vim.iter(references):filter(refactor.ts.reference_filter):totable() --[=[@as TSNode[]]=]
+    references = iter(references):filter(refactor.ts.reference_filter):totable() --[=[@as TSNode[]]=]
 
     local all_values = refactor.ts:get_local_var_values(declarator_node)
 
@@ -143,8 +140,7 @@ local function get_inline_text_edits(
         )
     end
 
-    local value_text =
-        vim.treesitter.get_node_text(value_node_to_inline, refactor.bufnr)
+    local value_text = ts.get_node_text(value_node_to_inline, refactor.bufnr)
 
     if
         refactor.filetype == "cpp"
@@ -199,7 +195,7 @@ local function inline_var_setup(refactor)
     if declarator_node == nil then
         -- if the visual selection does not contain a declaration and it only contains a reference
         -- (which is under the cursor)
-        local identifier_node = vim.treesitter.get_node()
+        local identifier_node = ts.get_node()
         if identifier_node == nil then
             return false, "Identifier_node is nil"
         end
@@ -319,7 +315,7 @@ end
 ---@param bufnr integer
 ---@param opts Config
 function M.inline_var(bufnr, opts)
-    local mode = vim.api.nvim_get_mode().mode
+    local mode = api.nvim_get_mode().mode
     if mode == "n" or mode == "c" then
         inline_var_normal(bufnr, opts)
     else

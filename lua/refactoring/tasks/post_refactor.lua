@@ -1,6 +1,8 @@
 local Pipeline = require("refactoring.pipeline")
 local apply_text_edits = require("refactoring.tasks.apply_text_edits")
 
+local api = vim.api
+
 local M = {}
 
 ---@param refactor Refactor
@@ -27,7 +29,7 @@ M.no_cursor_post_refactor = function()
             ---@param refactor Refactor
             ---@return boolean, Refactor
             function(refactor)
-                vim.api.nvim_set_current_win(refactor.win)
+                api.nvim_set_current_win(refactor.win)
                 return true, refactor
             end
         )

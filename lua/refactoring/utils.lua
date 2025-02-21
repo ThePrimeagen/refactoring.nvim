@@ -1,6 +1,10 @@
 local Region = require("refactoring.region")
 local async = require("plenary.async")
 
+local api = vim.api
+local ts = vim.treesitter
+local iter = vim.iter
+
 local M = {}
 
 function M.wait_frame()
@@ -27,8 +31,8 @@ function M.get_node_text(node, out)
         -- go special case
         or node:type() == "interpreted_string_literal"
     then
-        local cur_bufnr = vim.api.nvim_get_current_buf()
-        local text = vim.treesitter.get_node_text(node, cur_bufnr)
+        local cur_bufnr = api.nvim_get_current_buf()
+        local text = ts.get_node_text(node, cur_bufnr)
         table.insert(out, text)
         return out
     end
@@ -77,8 +81,8 @@ function M.node_contains(a, b)
         end_col = end_col - 1
     end
 
-    return vim.treesitter.is_in_node_range(a, start_row, start_col)
-        and vim.treesitter.is_in_node_range(a, end_row, end_col)
+    return ts.is_in_node_range(a, start_row, start_col)
+        and ts.is_in_node_range(a, end_row, end_col)
 end
 
 -- TODO: This likely doesn't work with multistatement line inserts
@@ -260,14 +264,12 @@ function M.get_selected_locals(refactor)
         return node
     end
 
-    local local_defs =
-        vim.iter(refactor.ts:get_local_defs(refactor.scope, refactor.region))
-            :map(node_to_parent_if_needed)
-            :totable()
-    local region_refs =
-        vim.iter(refactor.ts:get_region_refs(refactor.scope, refactor.region))
-            :map(node_to_parent_if_needed)
-            :totable()
+    local local_defs = iter(
+        refactor.ts:get_local_defs(refactor.scope, refactor.region)
+    ):map(node_to_parent_if_needed):totable()
+    local region_refs = iter(
+        refactor.ts:get_region_refs(refactor.scope, refactor.region)
+    ):map(node_to_parent_if_needed):totable()
 
     local bufnr = refactor.buffers[1]
     local local_def_map = M.nodes_to_text_set(bufnr, local_defs)
@@ -276,7 +278,7 @@ function M.get_selected_locals(refactor)
 end
 
 function M.is_visual_mode()
-    local mode = vim.api.nvim_get_mode().mode
+    local mode = api.nvim_get_mode().mode
     -- '\22' is an escaped `<C-v>`
     return mode == "v" or mode == "V" or mode == "\22", mode
 end
