@@ -86,6 +86,8 @@ function Python.new(bufnr, ft)
             InlineNode("(while_statement) @tmp_capture"),
             InlineNode("(assignment) @tmp_capture"),
             InlineNode("(with_statement) @tmp_capture"),
+            InlineNode("(function_definition) @tmp_capture"),
+            InlineNode("(pass_statement) @tmp_capture"),
         },
         indent_scopes = {
             module = true,

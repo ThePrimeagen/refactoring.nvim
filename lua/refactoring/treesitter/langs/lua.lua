@@ -93,6 +93,7 @@ function Lua.new(bufnr, ft)
             InlineNode("(variable_declaration) @tmp_capture"),
             InlineNode("(assignment_statement) @tmp_capture"),
             InlineNode("(function_call) @tmp_capture"),
+            InlineNode("(function_declaration) @tmp_capture"),
         },
         function_body = {
             InlineNode("(function_declaration (block (_) @tmp_capture))"),

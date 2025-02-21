@@ -1,6 +1,5 @@
-local Region = require("refactoring.region")
-
 local iter = vim.iter
+local ts = vim.treesitter
 
 local M = {}
 
@@ -22,14 +21,20 @@ end
 ---@param bufnr number
 ---@return number
 M.buf_indent_amount = function(point, refactor, below, bufnr)
-    local region = Region:from_point(point, bufnr)
-    local region_node = region:to_ts_node(refactor.ts:get_root())
-    assert(region_node)
+    local default_indent = refactor.whitespace.cursor
+        / M.buf_indent_width(refactor.bufnr)
 
-    local scope = refactor.ts:get_scope(region_node)
+    local point_node =
+        ts.get_node({ bufnr = bufnr, pos = { point.row, point.col } })
+
+    if not point_node then
+        return default_indent
+    end
+
+    local scope = refactor.ts:get_scope(point_node)
 
     if not scope then
-        return refactor.whitespace.cursor / M.buf_indent_width(refactor.bufnr)
+        return default_indent
     end
 
     --- @type TSNode[]
@@ -44,7 +49,7 @@ M.buf_indent_amount = function(point, refactor, below, bufnr)
     end
 
     if #nodes == 0 then
-        return refactor.whitespace.cursor / M.buf_indent_width(refactor.bufnr)
+        return default_indent
     end
 
     --- @type integer[]
@@ -70,6 +75,7 @@ M.buf_indent_amount = function(point, refactor, below, bufnr)
         end
     ):totable()
 
+    ---@type integer[]
     local line_numbers_up = iter(line_numbers):filter(
         ---@param line_number integer
         ---@return boolean
@@ -78,6 +84,7 @@ M.buf_indent_amount = function(point, refactor, below, bufnr)
             return distance > 0
         end
     ):totable()
+    ---@type integer[]
     local line_numbers_down = iter(line_numbers):filter(
         ---@param line_number integer
         ---@return boolean
@@ -105,19 +112,26 @@ M.buf_indent_amount = function(point, refactor, below, bufnr)
     local line_up_indent = vim.fn.indent(line_up)
     local cursor_indent = vim.fn.indent(point.row)
 
+    local delta_before = cursor_indent - line_up_indent
+    local delta_after = line_down_indent - cursor_indent
+
     --- @type integer
     local indent_scope_whitespace
     if below then
-        if cursor_indent == 0 then
-            indent_scope_whitespace = math.max(line_down_indent, line_up_indent)
-        else
-            indent_scope_whitespace = math.max(cursor_indent, line_down_indent)
+        if delta_after == 0 then
+            indent_scope_whitespace = cursor_indent
+        elseif delta_after < 0 then
+            indent_scope_whitespace = cursor_indent
+        elseif delta_after > 0 then
+            indent_scope_whitespace = line_down_indent
         end
     else
-        if cursor_indent == 0 then
-            indent_scope_whitespace = math.max(line_down_indent, line_up_indent)
-        else
-            indent_scope_whitespace = math.max(cursor_indent, line_up_indent)
+        if delta_before == 0 then
+            indent_scope_whitespace = cursor_indent
+        elseif delta_before < 0 then
+            indent_scope_whitespace = line_up_indent
+        elseif delta_before > 0 then
+            indent_scope_whitespace = cursor_indent
         end
     end
 

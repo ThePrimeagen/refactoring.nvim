@@ -5,13 +5,13 @@ local M = {}
 
 local MAX_COL = vim.v.maxcol
 
----@param pointOrRegion RefactorRegion|RefactorPoint
+---@param point_or_region RefactorRegion|RefactorPoint
 ---@return RefactorRegion
-local function to_region(pointOrRegion)
-    if not pointOrRegion.end_row then
-        return Region:from_point(pointOrRegion --[[@as RefactorPoint]])
+local function to_region(point_or_region)
+    if not point_or_region.end_row then
+        return Region:from_point(point_or_region --[[@as RefactorPoint]])
     end
-    return pointOrRegion --[[@as RefactorRegion]]
+    return point_or_region --[[@as RefactorRegion]]
 end
 
 ---@param region RefactorRegion
@@ -20,17 +20,17 @@ function M.delete_text(region)
     return region:to_lsp_text_edit_replace("")
 end
 
----@param pointOrRegion RefactorRegion|RefactorPoint
+---@param point_or_region RefactorRegion|RefactorPoint
 ---@param text string
 ---@param opts {below: boolean, _end: boolean}|nil
 ---@return RefactorTextEdit
-function M.insert_new_line_text(pointOrRegion, text, opts)
+function M.insert_new_line_text(point_or_region, text, opts)
     opts = opts or {
         below = true,
         _end = true,
     }
 
-    local region = to_region(pointOrRegion)
+    local region = to_region(point_or_region)
 
     if opts.below then
         text = code.new_line() .. text
@@ -48,11 +48,11 @@ function M.insert_new_line_text(pointOrRegion, text, opts)
     return region:to_lsp_text_edit_insert(text)
 end
 
----@param pointOrRegion RefactorRegion|RefactorPoint
+---@param point_or_region RefactorRegion|RefactorPoint
 ---@param text string
 ---@return RefactorTextEdit
-function M.insert_text(pointOrRegion, text)
-    local region = to_region(pointOrRegion)
+function M.insert_text(point_or_region, text)
+    local region = to_region(point_or_region)
     local clone = region:clone()
     clone.end_col = clone.start_col
     clone.end_row = clone.start_row

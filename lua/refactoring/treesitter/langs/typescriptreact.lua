@@ -94,6 +94,7 @@ function TypescriptReact.new(bufnr, ft)
             InlineNode("(do_statement) @tmp_capture"),
             InlineNode("(while_statement) @tmp_capture"),
             InlineNode("(lexical_declaration) @tmp_capture"),
+            InlineNode("(function_declaration) @tmp_capture"),
         },
         ident_with_type = {
             InlineFilteredNode(

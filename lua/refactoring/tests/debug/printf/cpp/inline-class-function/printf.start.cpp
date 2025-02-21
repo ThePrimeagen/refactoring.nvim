@@ -4,7 +4,7 @@ class Test {
     public:
         ~Test() { }
         void foo() {
-
+            printf("");
         }
 };
 

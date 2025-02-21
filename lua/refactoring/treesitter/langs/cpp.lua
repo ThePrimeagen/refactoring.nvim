@@ -82,6 +82,7 @@ function Cpp.new(bufnr, ft)
             InlineNode("(do_statement) @tmp_capture"),
             InlineNode("(while_statement) @tmp_capture"),
             InlineNode("(declaration) @tmp_capture"),
+            InlineNode("(function_definition) @tmp_capture"),
         },
         ident_with_type = {
             InlineFilteredNode(

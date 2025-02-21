@@ -1,5 +1,4 @@
 local Pipeline = require("refactoring.pipeline")
-local Point = require("refactoring.point")
 local Region = require("refactoring.region")
 local refactor_setup = require("refactoring.tasks.refactor_setup")
 local post_refactor = require("refactoring.tasks.post_refactor")
@@ -9,6 +8,10 @@ local ensure_code_gen = require("refactoring.tasks.ensure_code_gen")
 local get_select_input = require("refactoring.get_select_input")
 local indent = require("refactoring.indent")
 local notify = require("refactoring.notify")
+
+local iter = vim.iter
+local api = vim.api
+local ts = vim.treesitter
 
 local MAX_COL = vim.v.maxcol
 
@@ -49,42 +52,42 @@ end
 ---@param printf_statement string
 ---@param content string
 ---@param point RefactorPoint
----@param row_num integer
 local function text_edit_insert_text(
     refactor,
     opts,
     printf_statement,
     content,
-    point,
-    row_num
+    point
 )
     local text = refactor.code.print({
         statement = printf_statement,
         content = content,
     })
 
-    ---@type string
-    local indentation
-    if refactor.ts:allows_indenting_task() then
-        local indent_amount = indent.buf_indent_amount(
-            Point:from_values(row_num, MAX_COL),
-            refactor,
-            opts.below,
-            refactor.bufnr
-        )
-        indentation = indent.indent(indent_amount, refactor.bufnr)
-    end
+    local cursor = refactor.cursor
+    local line = api.nvim_buf_get_lines(
+        refactor.bufnr,
+        cursor.row - 1,
+        cursor.row,
+        true
+    )[1]
+    local indent_amount = indent.line_indent_amount(line, refactor.bufnr)
+    local indentation = indent.indent(indent_amount, refactor.bufnr)
 
     local start_comment =
         refactor.code.comment("__AUTO_GENERATED_PRINTF_START__")
     local end_comment = refactor.code.comment("__AUTO_GENERATED_PRINTF_END__")
 
-    if indentation ~= nil then
-        text = table.concat({ indentation, text }, "")
-        start_comment = table.concat({ indentation, start_comment }, "")
-    end
+    text = table.concat({
+        indentation,
+        start_comment,
+        "\n",
+        indentation,
+        text,
+        " ",
+        end_comment,
+    }, "")
 
-    text = table.concat({ start_comment, "\n", text, " ", end_comment }, "")
     local range = Region:from_point(point, refactor.bufnr)
     table.insert(
         refactor.text_edits,
@@ -167,19 +170,57 @@ function M.printDebug(bufnr, config)
             ---@param refactor Refactor
             function(refactor)
                 local opts = refactor.config:get()
-                local point = Point:from_cursor()
+                local cursor = refactor.cursor
 
-                -- set default `below` behavior
                 if opts.below == nil then
                     opts.below = true
                 end
-                -- set default `end` behavior
                 opts._end = opts.below
 
-                point.col = opts.below and MAX_COL or 1
+                local current_line = api.nvim_buf_get_lines(
+                    refactor.bufnr,
+                    cursor.row - 1,
+                    cursor.row,
+                    true
+                )[1]
+                local _, non_white_space = current_line:find("^%s*()")
+
+                ---@type TSNode?
+                local current = assert(ts.get_node({
+                    bufnr = refactor.bufnr,
+                    pos = { cursor.row - 1, non_white_space },
+                }))
+                local statements = refactor.ts:get_statements(refactor.root)
+                local is_statement = false
+                while current and not is_statement do
+                    is_statement = iter(statements):any(function(node)
+                        return node:equal(current)
+                    end)
+
+                    if not is_statement then
+                        current = current:parent()
+                    end
+                end
+
+                local insert_pos = cursor:clone()
+                local path_pos = cursor:clone()
+                if current then
+                    local start_row, start_col, end_row, end_col =
+                        current:range()
+
+                    insert_pos.row = opts.below and end_row + 1 or start_row + 1
+                    insert_pos.col = opts.below and end_col or start_col
+
+                    path_pos.row = opts.below and end_row + 1 or start_row
+                    path_pos.col = opts.below and end_col or MAX_COL
+                else
+                    insert_pos.col = opts.below and 0 or MAX_COL
+
+                    path_pos.col = opts.below and 0 or MAX_COL
+                end
 
                 local ok, debug_path =
-                    pcall(debug_utils.get_debug_path, refactor, point)
+                    pcall(debug_utils.get_debug_path, refactor, path_pos)
                 if not ok then
                     return ok, debug_path
                 end
@@ -202,7 +243,7 @@ function M.printDebug(bufnr, config)
                 })
 
                 local lines =
-                    vim.api.nvim_buf_get_lines(refactor.bufnr, 0, -1, false)
+                    api.nvim_buf_get_lines(refactor.bufnr, 0, -1, false)
 
                 ---@type integer[]
                 local current_lines_with_text = {}
@@ -213,9 +254,9 @@ function M.printDebug(bufnr, config)
                 end
                 local should_replace = vim.tbl_contains(
                     current_lines_with_text,
-                    point.row
+                    cursor.row
                 ) and opts.below
-                table.insert(current_lines_with_text, point.row)
+                table.insert(current_lines_with_text, cursor.row)
                 table.sort(current_lines_with_text)
 
                 refactor.text_edits = {}
@@ -228,7 +269,7 @@ function M.printDebug(bufnr, config)
                         content = tostring(i)
                     end
 
-                    if row_num == point.row and not should_replace then
+                    if row_num == cursor.row and not should_replace then
                         should_replace = true
                         local ok2, error = pcall(
                             text_edit_insert_text,
@@ -236,14 +277,13 @@ function M.printDebug(bufnr, config)
                             opts,
                             printf_statement,
                             content,
-                            point,
-                            row_num
+                            insert_pos
                         )
                         if not ok2 then
                             return ok2, error
                         end
                     else
-                        if row_num == point.row then
+                        if row_num == cursor.row then
                             should_replace = false
                         end
                         text_edits_modify_count(
