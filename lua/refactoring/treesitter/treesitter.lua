@@ -431,15 +431,18 @@ function TreeSitter:get_debug_path(node)
     self:validate_setting("debug_paths")
     local path = {}
 
-    local curr = node ---@type TSNode?
+    local current = node ---@type TSNode?
     repeat
-        curr = containing_node_by_type(curr, self.debug_paths)
+        current = containing_node_by_type(current, self.debug_paths)
 
-        if curr then
-            table.insert(path, self.debug_paths[curr:type()](curr, self.bufnr))
-            curr = curr:parent() ---@type TSNode?
+        if current then
+            table.insert(
+                path,
+                self.debug_paths[current:type()](current, self.bufnr)
+            )
+            current = current:parent() ---@type TSNode?
         end
-    until curr == nil
+    until current == nil
 
     return path
 end

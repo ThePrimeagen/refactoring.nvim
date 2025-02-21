@@ -44,6 +44,7 @@ function Ruby.new(bufnr, ft)
             InlineNode("(for) @tmp_capture"),
             InlineNode("(while) @tmp_capture"),
             InlineNode("(assignment) @tmp_capture"),
+            InlineNode("(method) @tmp_capture"),
         },
         function_args = {
             InlineNode(

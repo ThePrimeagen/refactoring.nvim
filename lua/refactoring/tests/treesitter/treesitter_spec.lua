@@ -180,7 +180,7 @@ describe("TreeSitter", function()
         local ts = init()
         local scope = get_scope(ts, 31)
         local inline_node_result = ts:get_statements(scope)
-        assert.are.same(#inline_node_result, 9)
+        assert.are.same(#inline_node_result, 11)
 
         local cur_bufnr = vim.api.nvim_get_current_buf()
         assert.are.same(

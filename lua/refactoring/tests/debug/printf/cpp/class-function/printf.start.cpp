@@ -7,5 +7,5 @@ class Test {
 };
 
 void Test::foo() {
-
+    printf("");
 }

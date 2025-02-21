@@ -82,6 +82,7 @@ function JavaScript.new(bufnr, ft)
             InlineNode("(while_statement) @tmp_capture"),
             InlineNode("(lexical_declaration) @tmp_capture"),
             InlineNode("(variable_declaration) @tmp_capture"),
+            InlineNode("(function_declaration) @tmp_capture"),
         },
         function_body = {
             InlineNode(
