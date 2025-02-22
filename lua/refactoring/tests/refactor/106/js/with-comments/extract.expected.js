@@ -13,5 +13,5 @@ function foo_bar(a, test, test_other) {
 function simple_function(a) {
     let test = 1;
     let test_other = 11
-    foo_bar(a, test, test_other);
+    foo_bar(a, test, test_other)
 }

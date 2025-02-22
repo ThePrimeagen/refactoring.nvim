@@ -8,5 +8,5 @@ function foo_bar(a) {
 }
 
 function simple_function(a) {
-    foo_bar(a);
+    foo_bar(a)
 }

@@ -84,19 +84,13 @@ end
 function M.InlineNode(sexpr)
     return function(scope, bufnr, filetype)
         local lang = ts.language.get_lang(filetype)
-        local ok, result_object = pcall(ts.query.parse, lang, sexpr)
+        local ok, query = pcall(ts.query.parse, lang, sexpr)
         if not ok then
-            error(
-                string.format(
-                    "Invalid query: '%s'\n error: %s",
-                    sexpr,
-                    result_object
-                )
-            )
+            error(("Invalid query: '%s'\n error: %s"):format(sexpr, query))
         end
 
         local out = {}
-        for _, node, _ in result_object:iter_captures(scope, bufnr, 0, -1) do
+        for _, node, _ in query:iter_captures(scope, bufnr) do
             table.insert(out, node)
         end
         return out
@@ -111,20 +105,14 @@ end
 function M.InlineFilteredNode(sexpr)
     return function(scope, bufnr, filetype, filter)
         local lang = ts.language.get_lang(filetype)
-        local ok, result_object = pcall(ts.query.parse, lang, sexpr)
+        local ok, query = pcall(ts.query.parse, lang, sexpr)
         if not ok then
-            error(
-                string.format(
-                    "Invalid query: '%s'\n error: %s",
-                    sexpr,
-                    result_object
-                )
-            )
+            error(("Invalid query: '%s'\n error: %s"):format(sexpr, query))
         end
 
         local out = {}
-        for id, node, _ in result_object:iter_captures(scope, bufnr, 0, -1) do
-            if filter(id, node, result_object) then
+        for id, node, _ in query:iter_captures(scope, bufnr) do
+            if filter(id, node, query) then
                 table.insert(out, node)
             end
         end

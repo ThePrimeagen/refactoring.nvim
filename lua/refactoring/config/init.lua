@@ -6,9 +6,6 @@ local default_prompt_func_param_type = {
 
     cpp = false,
     c = false,
-    h = false,
-    hpp = false,
-    cxx = false,
 }
 
 local default_prompt_func_return_type = {
@@ -17,9 +14,6 @@ local default_prompt_func_return_type = {
 
     cpp = false,
     c = false,
-    h = false,
-    hpp = false,
-    cxx = false,
 }
 
 local default_visibility = {
@@ -79,7 +73,7 @@ local default_extract_var_statements = {}
 ---| "cs"
 
 ---@class ConfigOpts
----@field code_generation? table<ft, code_generation>|{new_line: fun(): string}
+---@field code_generation? table<string, code_generation>|{new_line: fun(): string}
 ---@field prompt_func_return_type? table<ft, boolean>
 ---@field prompt_func_param_type? table<ft, boolean>
 ---@field printf_statements? table<ft, string[]>
@@ -252,11 +246,9 @@ function Config:set_test_bufnr(bufnr)
 end
 
 --- Get the code generation for the current filetype
----@param filetype ft
----@return code_generation
-function Config:get_code_generation_for(filetype)
-    filetype = filetype or vim.bo[0].ft
-    return self.config.code_generation[filetype]
+---@param lang string
+function Config:get_code_generation_for(lang)
+    return self.config.code_generation[lang]
         or self.config.code_generation["default"]
 end
 

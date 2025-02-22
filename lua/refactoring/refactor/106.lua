@@ -452,10 +452,7 @@ local function extract_setup(refactor)
     -- about
     table.insert(refactor.text_edits, extract_function)
 
-    local lang = vim.treesitter.language.get_lang(refactor.filetype)
-    if not lang then
-        return false, "Error: Language not found"
-    end
+    local lang = refactor.lang
 
     local selected_code = table.concat(refactor.region:get_text(), "\n")
     local parser = vim.treesitter.get_string_parser(selected_code, lang)

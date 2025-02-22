@@ -24,9 +24,9 @@ local function refactor_setup(input_bufnr, config)
             bufnr = input_bufnr
         end
 
-        local ts = TreeSitter.get_treesitter()
+        local ts, lang = TreeSitter.get_treesitter(bufnr)
+        local ft = vim.bo[bufnr].filetype --[[@as ft]]
 
-        local filetype = vim.bo[bufnr].filetype --[[@as ft]]
         local root = ts:get_root()
         local win = api.nvim_get_current_win()
         local cursor = Point:from_cursor()
@@ -47,9 +47,10 @@ local function refactor_setup(input_bufnr, config)
                 cursor = assert(vim.fn.indent(cursor.row)),
             },
             cursor = cursor,
-            code = config:get_code_generation_for(filetype),
+            code = config:get_code_generation_for(lang),
             ts = ts,
-            filetype = filetype,
+            filetype = ft,
+            lang = lang,
             bufnr = bufnr,
             win = win,
             root = root,

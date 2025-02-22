@@ -38,8 +38,8 @@ local iter = vim.iter
 ---@field return_statement? InlineNodeFunc[] nodes that are return statements
 ---@field is_return_statement? fun(statement: string): boolean function to check if a statement is a return statement
 
---- The following fields act similar to a cursor
 ---@class TreeSitter: TreeSitterLanguageConfig
+---@field language_tree vim.treesitter.LanguageTree
 local TreeSitter = {}
 TreeSitter.__index = TreeSitter
 
@@ -516,8 +516,7 @@ end
 
 ---@return TSNode
 function TreeSitter:get_root()
-    local lang = ts.language.get_lang(self.filetype)
-    local parser = ts.get_parser(self.bufnr, lang)
+    local parser = self.language_tree
     return parser:parse()[1]:root()
 end
 
