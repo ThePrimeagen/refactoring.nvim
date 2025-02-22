@@ -39,7 +39,6 @@ function M.get_debug_points(refactor, opts)
     local current =
         language_tree:named_node_for_range(range, { ignore_injections = false })
     assert(current)
-    -- TODO: make this use nested languages
     local statements = refactor.ts:get_statements(refactor.root)
     local is_statement = false
     while current and not is_statement do
