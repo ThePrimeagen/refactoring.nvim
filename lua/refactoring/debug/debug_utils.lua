@@ -20,7 +20,7 @@ end
 ---@param opts {below: boolean}
 ---@return RefactorPoint insert_pos
 ---@return RefactorPoint path_pos
----@return TSNode current_statement
+---@return TSNode? current_statement
 function M.get_debug_points(refactor, opts)
     local cursor = refactor.cursor
     local current_line = api.nvim_buf_get_lines(
@@ -31,11 +31,15 @@ function M.get_debug_points(refactor, opts)
     )[1]
     local _, non_white_space = current_line:find("^%s*()")
 
-    ---@type TSNode?
-    local current = assert(ts.get_node({
-        bufnr = refactor.bufnr,
-        pos = { cursor.row - 1, non_white_space },
-    }))
+    local range =
+        { cursor.row - 1, non_white_space, cursor.row - 1, non_white_space + 1 }
+    local language_tree = refactor.ts.language_tree:language_for_range(range)
+
+    assert(language_tree)
+    local current =
+        language_tree:named_node_for_range(range, { ignore_injections = false })
+    assert(current)
+    -- TODO: make this use nested languages
     local statements = refactor.ts:get_statements(refactor.root)
     local is_statement = false
     while current and not is_statement do

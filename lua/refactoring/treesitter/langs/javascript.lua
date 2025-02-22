@@ -1,8 +1,8 @@
 local TreeSitter = require("refactoring.treesitter.treesitter")
 local Nodes = require("refactoring.treesitter.nodes")
-local InlineNode = Nodes.InlineNode
-local StringNode = Nodes.StringNode
 local FieldNode = Nodes.FieldNode
+local StringNode = Nodes.StringNode
+local InlineNode = Nodes.InlineNode
 
 ---@class TreeSitterInstance
 local JavaScript = {}
@@ -27,8 +27,32 @@ function JavaScript.new(bufnr, ft)
             variable_declaration = true,
             lexical_declaration = true,
         },
+        indent_scopes = {
+            program = true,
+            function_declaration = true,
+            method_definition = true,
+            arrow_function = true,
+            class_declaration = true,
+            if_statement = true,
+            for_statement = true,
+            for_in_statement = true,
+            while_statement = true,
+            do_statement = true,
+        },
+        valid_class_nodes = {
+            class_declaration = true,
+            abstract_class_declaration = true,
+        },
         local_var_names = {
-            InlineNode("(variable_declarator name: (_) @tmp_capture)"),
+            InlineNode(
+                "(lexical_declaration (variable_declarator name: (_) @tmp_capture))"
+            ),
+            InlineNode(
+                "(lexical_declaration (variable_declarator name: (array_pattern (identifier) @tmp_capture) ))"
+            ),
+            InlineNode(
+                "(lexical_declaration (variable_declarator name: (object_pattern (shorthand_property_identifier_pattern) @tmp_capture) ))"
+            ),
         },
         function_args = {
             InlineNode(
@@ -60,18 +84,6 @@ function JavaScript.new(bufnr, ft)
             while_statement = StringNode("while"),
             do_statement = StringNode("do"),
         },
-        indent_scopes = {
-            program = true,
-            function_declaration = true,
-            method_definition = true,
-            arrow_function = true,
-            class_declaration = true,
-            if_statement = true,
-            for_statement = true,
-            for_in_statement = true,
-            while_statement = true,
-            do_statement = true,
-        },
         statements = {
             InlineNode("(expression_statement) @tmp_capture"),
             InlineNode("(return_statement) @tmp_capture"),
@@ -91,9 +103,25 @@ function JavaScript.new(bufnr, ft)
             InlineNode(
                 "(function_declaration (statement_block (_) @tmp_capture))"
             ),
-
             InlineNode("(arrow_function (statement_block (_) @tmp_capture))"),
         },
+        require_special_var_format = true,
+        should_check_parent_node = function(node)
+            local parent = node:parent()
+            if not parent then
+                return false
+            end
+            if
+                not vim.tbl_contains({
+                    "jsx_element",
+                    "jsx_self_closing_element",
+                }, parent:type())
+            then
+                return false
+            end
+
+            return true
+        end,
         should_check_parent_node_print_var = function(node)
             local parent = node:parent()
             if not parent then

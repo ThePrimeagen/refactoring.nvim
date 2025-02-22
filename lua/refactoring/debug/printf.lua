@@ -62,8 +62,9 @@ local function text_edit_insert_text(
 
     local _, _, current_statement = debug_utils.get_debug_points(refactor, opts)
 
-    local start_row, _, end_row = current_statement:range()
-    local statement_row = opts.below and start_row + 1 or end_row
+    assert(current_statement)
+    local start_row = current_statement:range()
+    local statement_row = start_row
     local statement_line = api.nvim_buf_get_lines(
         refactor.bufnr,
         statement_row,
