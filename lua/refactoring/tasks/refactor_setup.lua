@@ -36,7 +36,6 @@ local function refactor_setup(input_bufnr, config)
         ---@field region_node? TSNode
         ---@field identifier_node? TSNode
         ---@field scope? TSNode
-        ---@field cursor_col_adjustment? integer
         ---@field text_edits? RefactorTextEdit[] | {bufnr?: integer}[]
         ---@field code code_generation
         ---@field return_value string used by debug.get_path
@@ -47,7 +46,7 @@ local function refactor_setup(input_bufnr, config)
                 cursor = assert(vim.fn.indent(cursor.row)),
             },
             cursor = cursor,
-            code = config:get_code_generation_for(lang),
+            code = config:get_code_generation_for(lang) --[[@as code_generation]],
             ts = ts,
             filetype = ft,
             lang = lang,

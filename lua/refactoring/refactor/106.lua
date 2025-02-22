@@ -142,7 +142,6 @@ local function get_indent_prefix(refactor)
     local scope_start_col = scope_region.start_col
     local baseline_indent = math.floor(scope_start_col / ident_width)
     local total_indents = baseline_indent + 1
-    refactor.cursor_col_adjustment = total_indents * ident_width
     return indent.indent(total_indents, refactor.bufnr)
 end
 
