@@ -77,8 +77,10 @@ function Lua.new(bufnr, ft)
             while_statement = StringNode("while"),
         },
         indent_scopes = {
-            for_statement = true,
             if_statement = true,
+            for_statement = true,
+            do_statement = true,
+            repeat_statement = true,
             while_statement = true,
             function_declaration = true,
             function_definition = true,
@@ -94,7 +96,9 @@ function Lua.new(bufnr, ft)
             InlineNode("(assignment_statement) @tmp_capture"),
             InlineNode("(function_call) @tmp_capture"),
             InlineNode("(function_declaration) @tmp_capture"),
+            InlineNode("(function_definition) @tmp_capture"),
         },
+        debug_special_statements = {},
         function_body = {
             InlineNode("(function_declaration (block (_) @tmp_capture))"),
         },

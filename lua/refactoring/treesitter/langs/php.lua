@@ -44,15 +44,15 @@ function Php.new(bufnr, ft)
         },
         indent_scopes = {
             program = true,
-            method_declaration = true,
-            function_definition = true,
             expression_statement = true,
-            class_declaration = true,
-            arrow_function = true,
             if_statement = true,
             for_statement = true,
-            while_statement = true,
             do_statement = true,
+            function_definition = true,
+            method_declaration = true,
+            class_declaration = true,
+            arrow_function = true,
+            while_statement = true,
         },
         local_var_names = {
             InlineNode(
@@ -85,13 +85,16 @@ function Php.new(bufnr, ft)
             do_statement = StringNode("do"),
         },
         statements = {
-            InlineNode("(expression_statement) @tmp_capture"),
             InlineNode("(return_statement) @tmp_capture"),
+            InlineNode("(expression_statement) @tmp_capture"),
             InlineNode("(if_statement) @tmp_capture"),
             InlineNode("(for_statement) @tmp_capture"),
             InlineNode("(do_statement) @tmp_capture"),
-            InlineNode("(assignment_expression) @tmp_capture"),
             InlineNode("(function_definition) @tmp_capture"),
+            InlineNode("(method_declaration) @tmp_capture"),
+            InlineNode("(arrow_function) @tmp_capture"),
+            InlineNode("(while_statement) @tmp_capture"),
+            InlineNode("(assignment_expression) @tmp_capture"),
         },
         function_body = {
             InlineNode(

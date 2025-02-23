@@ -192,32 +192,71 @@ describe("TreeSitter", function()
             vim.treesitter.get_node_text(inline_node_result[2], cur_bufnr)
         )
         assert.are.same(
-            "if (true) {\n            let fazz = 7;\n        }",
+            [[if (true) {
+            let fazz = 7;
+        }]],
             vim.treesitter.get_node_text(inline_node_result[3], cur_bufnr)
         )
         assert.are.same(
-            "if (true) {\n            let buzzzbaszz = 69;\n        }",
+            [[if (true) {
+            let buzzzbaszz = 69;
+        }]],
             vim.treesitter.get_node_text(inline_node_result[4], cur_bufnr)
         )
         assert.are.same(
-            "let foo = 5;",
+            [[function local_var_test() {
+    let foo = 5;
+    const bar = 5;
+
+    function inner() {
+        let baz = 5;
+        return 5;
+        if (true) {
+            let fazz = 7;
+        }
+
+        if (true) {
+            let buzzzbaszz = 69;
+        }
+    }
+
+    return inner() * foo * bar;
+}]],
             vim.treesitter.get_node_text(inline_node_result[5], cur_bufnr)
         )
         assert.are.same(
-            "const bar = 5;",
+            [[function inner() {
+        let baz = 5;
+        return 5;
+        if (true) {
+            let fazz = 7;
+        }
+
+        if (true) {
+            let buzzzbaszz = 69;
+        }
+    }]],
             vim.treesitter.get_node_text(inline_node_result[6], cur_bufnr)
         )
         assert.are.same(
-            "let baz = 5;",
+            "let foo = 5;",
             vim.treesitter.get_node_text(inline_node_result[7], cur_bufnr)
         )
         assert.are.same(
-            "let fazz = 7;",
+            "const bar = 5;",
             vim.treesitter.get_node_text(inline_node_result[8], cur_bufnr)
         )
         assert.are.same(
-            "let buzzzbaszz = 69;",
+            "let baz = 5;",
             vim.treesitter.get_node_text(inline_node_result[9], cur_bufnr)
+        )
+        assert.are.same(
+            "let fazz = 7;",
+            vim.treesitter.get_node_text(inline_node_result[10], cur_bufnr)
+        )
+        assert.are.same(
+            "let buzzzbaszz = 69;",
+            vim.treesitter.get_node_text(inline_node_result[11], cur_bufnr)
         )
     end)
 

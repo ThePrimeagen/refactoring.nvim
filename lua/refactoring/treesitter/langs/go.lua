@@ -20,6 +20,8 @@ function Golang.new(bufnr, ft)
             var_declaration = true,
         },
         indent_scopes = {
+            if_statement = true,
+            for_statement = true,
             function_declaration = true,
             method_declaration = true,
         },
@@ -69,6 +71,8 @@ function Golang.new(bufnr, ft)
             InlineNode("(return_statement) @tmp_capture"),
             InlineNode("(if_statement) @tmp_capture"),
             InlineNode("(for_statement) @tmp_capture"),
+            InlineNode("(function_declaration) @tmp_capture"),
+            InlineNode("(method_declaration) @tmp_capture"),
             InlineNode("(call_expression) @tmp_capture"),
             InlineNode("(assignment_statement) @tmp_capture"),
             InlineNode("(expression_statement) @tmp_capture"),

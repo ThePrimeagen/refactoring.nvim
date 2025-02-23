@@ -43,13 +43,13 @@ function CS.new(bufnr, ft)
             InlineNode("(local_declaration_statement) @tmp_capture"),
         },
         indent_scopes = {
-            method_declaration = true,
-            class_declaration = true,
             if_statement = true,
             for_statement = true,
             foreach_statement = true,
-            while_statement = true,
             do_statement = true,
+            while_statement = true,
+            method_declaration = true,
+            class_declaration = true,
         },
         debug_paths = {
             class_declaration = FieldNode("name"),
@@ -73,6 +73,7 @@ function CS.new(bufnr, ft)
             InlineNode("(foreach_statement) @tmp_capture"),
             InlineNode("(do_statement) @tmp_capture"),
             InlineNode("(while_statement) @tmp_capture"),
+            InlineNode("(method_declaration) @tmp_capture"),
             InlineNode("(local_declaration_statement) @tmp_capture"),
         },
         ident_with_type = {

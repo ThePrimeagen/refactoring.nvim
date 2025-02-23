@@ -29,15 +29,15 @@ function TypescriptReact.new(bufnr, ft)
         },
         indent_scopes = {
             program = true,
+            if_statement = true,
+            for_statement = true,
+            for_in_statement = true,
+            do_statement = true,
+            while_statement = true,
             function_declaration = true,
             method_definition = true,
             arrow_function = true,
             class_declaration = true,
-            if_statement = true,
-            for_statement = true,
-            for_in_statement = true,
-            while_statement = true,
-            do_statement = true,
         },
         valid_class_nodes = {
             class_declaration = true,
@@ -93,8 +93,10 @@ function TypescriptReact.new(bufnr, ft)
             InlineNode("(for_in_statement) @tmp_capture"),
             InlineNode("(do_statement) @tmp_capture"),
             InlineNode("(while_statement) @tmp_capture"),
-            InlineNode("(lexical_declaration) @tmp_capture"),
             InlineNode("(function_declaration) @tmp_capture"),
+            InlineNode("(method_definition) @tmp_capture"),
+            InlineNode("(arrow_function) @tmp_capture"),
+            InlineNode("(lexical_declaration) @tmp_capture"),
         },
         ident_with_type = {
             InlineFilteredNode(
