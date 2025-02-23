@@ -51,9 +51,14 @@ function M.get_debug_points(refactor, opts)
         end
     end
 
+    local is_indent_scope = current
+        and iter(refactor.ts.indent_scopes):any(function(scope)
+            return current:type() == scope
+        end)
+
     local insert_pos = cursor:clone()
     local path_pos = cursor:clone()
-    if current then
+    if current and not is_indent_scope then
         local start_row, start_col, end_row, end_col = current:range()
 
         insert_pos.row = opts.below and end_row + 1 or start_row + 1
@@ -65,6 +70,25 @@ function M.get_debug_points(refactor, opts)
         insert_pos.col = opts.below and 0 or vim.v.maxcol
 
         path_pos.col = opts.below and 0 or vim.v.maxcol
+
+        if current and is_indent_scope then
+            local start_row = current:range()
+
+            local below_line = api.nvim_buf_get_lines(
+                refactor.bufnr,
+                start_row + 1,
+                start_row + 2,
+                true
+            )[1]
+            _, non_white_space = below_line:find("^%s*()")
+
+            current = current:named_descendant_for_range(
+                start_row + 1,
+                non_white_space,
+                start_row + 1,
+                non_white_space + 1
+            ) or current
+        end
     end
 
     return insert_pos, path_pos, current

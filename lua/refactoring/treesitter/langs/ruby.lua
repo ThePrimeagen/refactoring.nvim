@@ -22,6 +22,9 @@ function Ruby.new(bufnr, ft)
         },
         indent_scopes = {
             program = true,
+            ["if"] = true,
+            ["for"] = true,
+            ["while"] = true,
             method = true,
             singleton_method = true,
         },
@@ -43,8 +46,9 @@ function Ruby.new(bufnr, ft)
             InlineNode("(if) @tmp_capture"),
             InlineNode("(for) @tmp_capture"),
             InlineNode("(while) @tmp_capture"),
-            InlineNode("(assignment) @tmp_capture"),
             InlineNode("(method) @tmp_capture"),
+            InlineNode("(singleton_method) @tmp_capture"),
+            InlineNode("(assignment) @tmp_capture"),
         },
         function_args = {
             InlineNode(

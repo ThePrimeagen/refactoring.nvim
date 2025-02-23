@@ -47,14 +47,12 @@ function C.new(bufnr, ft)
             InlineNode("((declaration) @tmp_capture)"),
         },
         indent_scopes = {
-            function_definition = true,
-            class_specifier = true,
             if_statement = true,
             for_statement = true,
-            while_statement = true,
             do_statement = true,
+            while_statement = true,
+            function_definition = true,
         },
-
         debug_paths = {
             class_specifier = FieldNode("name"),
             function_definition = TakeFirstNode(

@@ -69,8 +69,8 @@ function Java.new(bufnr, ft)
             InlineNode("(if_statement) @tmp_capture"),
             InlineNode("(for_statement) @tmp_capture"),
             InlineNode("(enhanced_for_statement) @tmp_capture"),
-            InlineNode("(do_statement) @tmp_capture"),
             InlineNode("(while_statement) @tmp_capture"),
+            InlineNode("(do_statement) @tmp_capture"),
             InlineNode("(local_variable_declaration) @tmp_capture"),
         },
         ident_with_type = {
