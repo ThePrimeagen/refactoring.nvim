@@ -48,7 +48,7 @@ end
 
 ---@param bufnr integer
 ---@param config Config
-function M.printDebug(bufnr, config)
+function M.print_debug(bufnr, config)
     Pipeline:from_task(refactor_setup(bufnr, config))
         :add_task(
             ---@param refactor Refactor
