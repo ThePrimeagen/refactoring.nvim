@@ -78,6 +78,7 @@ function JavaScript.new(bufnr, ft)
             arrow_function = function(node)
                 return FieldNode("name")(node:parent(), "(anon)")
             end,
+            function_expression = StringNode("(anon)"),
             if_statement = StringNode("if"),
             for_statement = StringNode("for"),
             for_in_statement = StringNode("for_in"),
