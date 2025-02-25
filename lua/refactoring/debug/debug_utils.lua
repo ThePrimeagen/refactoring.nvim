@@ -29,10 +29,10 @@ function M.get_debug_points(refactor, opts)
         cursor.row,
         true
     )[1]
-    local _, non_white_space = current_line:find("^%s*()")
+    local _, non_white_space = current_line:find("^%s*()") --[[@as integer, integer]]
 
-    local range =
-        { cursor.row - 1, non_white_space, cursor.row - 1, non_white_space + 1 }
+    local cursor_col = math.max(non_white_space, cursor.col)
+    local range = { cursor.row - 1, cursor_col, cursor.row - 1, cursor_col + 1 }
     local language_tree = refactor.ts.language_tree:language_for_range(range)
 
     assert(language_tree)
@@ -80,7 +80,7 @@ function M.get_debug_points(refactor, opts)
                 start_row + 2,
                 true
             )[1]
-            _, non_white_space = below_line:find("^%s*()")
+            _, non_white_space = below_line:find("^%s*()") --[[@as integer, integer]]
 
             current = current:named_descendant_for_range(
                 start_row + 1,
