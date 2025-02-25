@@ -37,6 +37,8 @@ function TypescriptReact.new(bufnr, ft)
             function_declaration = true,
             method_definition = true,
             arrow_function = true,
+            switch_statement = true,
+            switch_case = true,
             class_declaration = true,
         },
         valid_class_nodes = {
@@ -97,6 +99,8 @@ function TypescriptReact.new(bufnr, ft)
             InlineNode("(function_declaration) @tmp_capture"),
             InlineNode("(method_definition) @tmp_capture"),
             InlineNode("(arrow_function) @tmp_capture"),
+            InlineNode("(switch_statement) @tmp_capture"),
+            InlineNode("(switch_case) @tmp_capture"),
             InlineNode("(lexical_declaration) @tmp_capture"),
         },
         ident_with_type = {
