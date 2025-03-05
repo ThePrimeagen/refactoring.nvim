@@ -1,2 +1,2 @@
 :5
-:execute "norm! vib\<Esc>"
+:execute "norm! va\"\<Esc>"

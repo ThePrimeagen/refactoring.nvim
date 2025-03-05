@@ -3,7 +3,7 @@ local function greeter(names)
         while name do
             if name ~= "world" then
                 local hello = "hello %s"
-                print(hello):format(name)
+                print((hello):format(name))
             end
             name = nil
         end
