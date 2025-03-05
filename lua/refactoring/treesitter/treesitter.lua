@@ -101,18 +101,12 @@ end
 ---@param setting string
 function TreeSitter:validate_setting(setting)
     if self[setting] == nil then
-        error(
-            string.format(
-                "%s setting does not exist on treesitter class",
-                setting
-            )
-        )
+        error(("%s setting does not exist on treesitter class"):format(setting))
     end
 
     if not setting_present(self[setting]) then
         error(
-            string.format(
-                "%s setting is empty in treesitter for this language",
+            ("%s setting is empty in treesitter for this language"):format(
                 setting
             )
         )
@@ -266,8 +260,7 @@ function TreeSitter:get_references(scope)
 
     if lang == nil then
         error(
-            string.format(
-                "The filetype %s has no treesitter lang asociated with it",
+            ("The filetype %s has no treesitter lang asociated with it"):format(
                 ft
             )
         )
@@ -276,7 +269,7 @@ function TreeSitter:get_references(scope)
     local query = ts.query.get(lang, "locals")
 
     if query == nil then
-        error(string.format("The lang %s has no query `locals`", lang))
+        error(("The lang %s has no query `locals`"):format(lang))
     end
 
     ---@type TSNode[]

@@ -23,7 +23,7 @@ function M.returnify(args, string_pattern)
         table.insert(codes, M.stringify_code(value))
     end
 
-    return string.format(string_pattern, table.concat(codes, ", "))
+    return string_pattern:format(table.concat(codes, ", "))
 end
 
 M.default_func_return_type = function()

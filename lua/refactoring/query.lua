@@ -43,15 +43,14 @@ function Query.from_query_name(bufnr, filetype, query_name)
     local lang = ts.language.get_lang(filetype)
 
     if lang == nil then
-        error(string.format("No treesitter lang for filetype %s", filetype))
+        error(("No treesitter lang for filetype %s"):format(filetype))
     end
 
     local query = ts.query.get(lang, query_name)
 
     if query == nil then
         error(
-            string.format(
-                "No query for treesiter lang %s and query_name %s",
+            ("No query for treesiter lang %s and query_name %s"):format(
                 lang,
                 query_name
             )
@@ -110,9 +109,7 @@ function Query.find_occurrences(scope, sexpr, bufnr)
     local lang = ts.language.get_lang(filetype)
     local ok, sexpr_query = pcall(ts.query.parse, lang, sexpr)
     if not ok then
-        error(
-            string.format("Invalid query: '%s'\n error: %s", sexpr, sexpr_query)
-        )
+        error(("Invalid query: '%s'\n error: %s"):format(sexpr, sexpr_query))
     end
 
     local occurrences = {}

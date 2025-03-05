@@ -20,12 +20,11 @@ local function python_function(opts)
     if opts.func_header == nil then
         opts.func_header = ""
     end
-    return string.format(
-        [[
+    return ([[
 %sdef %s(%s):
 %s
 
-]],
+]]):format(
         opts.func_header,
         opts.name,
         table.concat(args, ", "),
@@ -41,12 +40,11 @@ local function python_function_return(opts)
     if opts.return_type == nil then
         opts.return_type = "None"
     end
-    return string.format(
-        [[
+    return ([[
 %sdef %s(%s) -> %s:
 %s
 
-]],
+]]):format(
         opts.func_header,
         opts.name,
         table.concat(args, ", "),
@@ -61,12 +59,11 @@ local function python_class_function(opts)
     if opts.func_header == nil then
         opts.func_header = ""
     end
-    return string.format(
-        [[
+    return ([[
 %sdef %s(%s):
 %s
 
-]],
+]]):format(
         opts.func_header,
         opts.name,
         table.concat(args, ", "),
@@ -83,12 +80,11 @@ local function python_class_function_return(opts)
     if opts.return_type == nil then
         opts.return_type = "None"
     end
-    return string.format(
-        [[
+    return ([[
 %sdef %s(%s) -> %s:
 %s
 
-]],
+]]):format(
         opts.func_header,
         opts.name,
         table.concat(args, ", "),
@@ -101,8 +97,7 @@ local function python_constant(opts)
     local constant_string_pattern
 
     if opts.multiple then
-        constant_string_pattern = string.format(
-            "%s = %s\n",
+        constant_string_pattern = ("%s = %s\n"):format(
             table.concat(opts.identifiers, ", "),
             table.concat(opts.values, ", ")
         )
@@ -118,8 +113,10 @@ local function python_constant(opts)
             opts.statement = "%s = %s"
         end
 
-        constant_string_pattern =
-            string.format(opts.statement .. "\n", name, opts.value)
+        constant_string_pattern = (opts.statement .. "\n"):format(
+            name,
+            opts.value
+        )
     end
 
     return constant_string_pattern
@@ -131,7 +128,7 @@ local python = {
         return python_constant(opts)
     end,
     ["return"] = function(code)
-        return string.format("return %s", code_utils.stringify_code(code))
+        return ("return %s"):format(code_utils.stringify_code(code))
     end,
     ["function"] = function(opts)
         return python_function(opts)
@@ -140,7 +137,7 @@ local python = {
         return python_function_return(opts)
     end,
     call_function = function(opts)
-        return string.format("%s(%s)", opts.name, table.concat(opts.args, ", "))
+        return ("%s(%s)"):format(opts.name, table.concat(opts.args, ", "))
     end,
     class_function = function(opts)
         return python_class_function(opts)
@@ -149,11 +146,7 @@ local python = {
         return python_class_function_return(opts)
     end,
     call_class_function = function(opts)
-        return string.format(
-            "self.%s(%s)",
-            opts.name,
-            table.concat(opts.args, ", ")
-        )
+        return ("self.%s(%s)"):format(opts.name, table.concat(opts.args, ", "))
     end,
     terminate = function(code)
         return code
@@ -162,19 +155,19 @@ local python = {
         return code_utils.returnify(opts, "%s")
     end,
     comment = function(statement)
-        return string.format("# %s", statement)
+        return ("# %s"):format(statement)
     end,
     default_printf_statement = function()
         return { 'print("%s")' }
     end,
     print = function(opts)
-        return string.format(opts.statement, opts.content)
+        return opts.statement:format(opts.content)
     end,
     default_print_var_statement = function()
         return { 'print(f"%s {str(%s)}")' }
     end,
     print_var = function(opts)
-        return string.format(opts.statement, opts.prefix, opts.var)
+        return opts.statement:format(opts.prefix, opts.var)
     end,
 }
 

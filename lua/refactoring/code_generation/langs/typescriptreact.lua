@@ -23,8 +23,7 @@ local function tsx_function(opts)
             args = opts.args
         end
 
-        return string.format(
-            [[
+        return ([[
 %sfunction %s({%s}) {
 return (
 <>
@@ -33,7 +32,7 @@ return (
 )
 %s}
 
-]],
+]]):format(
             opts.func_header,
             opts.name,
             table.concat(args, ", "),
@@ -50,10 +49,10 @@ local function tsx_call_function(opts)
     if opts.region_type == "jsx_element" or opts.contains_jsx then
         local args = vim.iter(opts.args)
             :map(function(arg)
-                return string.format("%s={%s}", arg, arg)
+                return ("%s={%s}"):format(arg, arg)
             end)
             :join(" ")
-        return string.format("< %s %s/>", opts.name, args)
+        return ("< %s %s/>"):format(opts.name, args)
     else
         return ts.call_function(opts)
     end
@@ -69,7 +68,7 @@ local special_nodes = {
 ---@return string
 local function tsx_special_var(var, opts)
     if vim.tbl_contains(special_nodes, opts.region_node_type) then
-        return string.format("{%s}", var)
+        return ("{%s}"):format(var)
     else
         return var
     end

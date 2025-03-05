@@ -137,9 +137,9 @@ local function text_edits_modify_count(
         content = after_count_pattern,
     })
 
-    local _, _, current_count = string.find(lines[row_num], pattern_count)
-    local _start = string.match(lines[row_num], pattern_before)
-    local _end = string.match(lines[row_num], pattern_after)
+    local _, _, current_count = (lines[row_num]):find(pattern_count)
+    local _start = (lines[row_num]):match(pattern_before)
+    local _end = (lines[row_num]):match(pattern_after)
 
     local text = tostring(i)
     if current_count ~= text then
@@ -210,7 +210,7 @@ function M.printDebug(bufnr, config)
                 ---@type integer[]
                 local current_lines_with_text = {}
                 for row_num, line in ipairs(lines) do
-                    if string.find(line, text_to_count) ~= nil then
+                    if (line):find(text_to_count) ~= nil then
                         table.insert(current_lines_with_text, row_num)
                     end
                 end

@@ -120,7 +120,7 @@ function M.print_debug(bufnr, config)
                 if not ok then
                     return ok, debug_path
                 end
-                local prefix = string.format("%s %s:", debug_path, variable)
+                local prefix = ("%s %s:"):format(debug_path, variable)
 
                 local print_var_statement =
                     M.get_print_var_statement(opts, refactor)

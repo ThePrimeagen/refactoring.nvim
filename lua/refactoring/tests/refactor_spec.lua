@@ -95,7 +95,7 @@ local function test_empty_input()
         eq(false, status)
         ---@cast err string
 
-        local has_error_message = string.find(err, test_case["error_message"])
+        local has_error_message = (err):find(test_case["error_message"])
         if not has_error_message then
             eq(test_case["error_message"], err)
         end
@@ -105,8 +105,7 @@ end
 ---@param err string|nil
 ---@param filename_prefix string
 local function validate_error_if_file_exists(err, filename_prefix)
-    local expected_error_name =
-        string.format("%s.expected_error", filename_prefix)
+    local expected_error_name = ("%s.expected_error"):format(filename_prefix)
     local expected_error_file =
         Path:new(cwd, "lua", "refactoring", "tests", expected_error_name)
     if err and not expected_error_file:exists() then
@@ -114,11 +113,10 @@ local function validate_error_if_file_exists(err, filename_prefix)
     elseif not expected_error_file:exists() or not err then
         return
     end
-    local error = test_utils.get_contents(
-        string.format("%s.expected_error", filename_prefix)
-    )
+    local error =
+        test_utils.get_contents(("%s.expected_error"):format(filename_prefix))
     local expected_error = error[1]
-    local has_error_message = string.find(err, expected_error)
+    local has_error_message = (err):find(expected_error)
     if not has_error_message then
         eq(expected_error, err)
     end
@@ -126,17 +124,15 @@ end
 
 ---@param filename_prefix string
 local function validate_cursor_if_file_exists(filename_prefix)
-    local cursor_position_name =
-        string.format("%s.cursor_position", filename_prefix)
+    local cursor_position_name = ("%s.cursor_position"):format(filename_prefix)
     local cursor_position_file =
         Path:new(cwd, "lua", "refactoring", "tests", cursor_position_name)
     if not cursor_position_file:exists() then
         return
     end
 
-    local cursor_position = test_utils.get_contents(
-        string.format("%s.cursor_position", filename_prefix)
-    )
+    local cursor_position =
+        test_utils.get_contents(("%s.cursor_position"):format(filename_prefix))
     local expected_row = tonumber(cursor_position[1])
     local expected_col = tonumber(cursor_position[2])
 
@@ -145,16 +141,14 @@ local function validate_cursor_if_file_exists(filename_prefix)
     local result_col = cursor[2]
     assert(
         expected_row == result_row,
-        string.format(
-            "cursor row invalid, expected %s got %s",
+        ("cursor row invalid, expected %s got %s"):format(
             expected_row,
             result_row
         )
     )
     assert(
         expected_col == result_col,
-        string.format(
-            "cursor col invalid, expected %s got %s",
+        ("cursor col invalid, expected %s got %s"):format(
             expected_col,
             result_col
         )
@@ -166,12 +160,12 @@ end
 ---@param filename_prefix string
 ---@param filename_extension string
 local function set_config_options(filename_prefix, filename_extension)
-    local config_file_name = string.format("%s.config", filename_prefix)
+    local config_file_name = ("%s.config"):format(filename_prefix)
     local config_file =
         Path:new(cwd, "lua", "refactoring", "tests", config_file_name)
     if config_file:exists() then
         local config_values =
-            test_utils.get_contents(string.format("%s.config", filename_prefix))
+            test_utils.get_contents(("%s.config"):format(filename_prefix))
 
         --- @type table<string, boolean>
         local prompt_func_return_type = {}
@@ -208,7 +202,7 @@ end
 
 describe("Refactoring", function()
     for_each_file(function(file)
-        a.it(string.format("Refactoring: %s", file), function()
+        a.it(("Refactoring: %s"):format(file), function()
             vim.notify = error
             local parts =
                 vim.split(file, ".", { plain = true, trimempty = true })
@@ -219,11 +213,7 @@ describe("Refactoring", function()
 
             local bufnr = test_utils.open_test_file(file)
             local expected = test_utils.get_contents(
-                string.format(
-                    "%s.expected.%s",
-                    filename_prefix,
-                    filename_extension
-                )
+                ("%s.expected.%s"):format(filename_prefix, filename_extension)
             )
 
             Config.get():reset()

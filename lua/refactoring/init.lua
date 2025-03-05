@@ -23,8 +23,7 @@ function M.refactor(name, opts)
     local refactor = refactors.refactor_names[name] or refactors[name] and name
     if not refactor then
         error(
-            string.format(
-                'Could not find refactor %s.  You can get a list of all refactors from require("refactoring").get_refactors()',
+            ('Could not find refactor %s.  You can get a list of all refactors from require("refactoring").get_refactors()'):format(
                 refactor
             )
         )

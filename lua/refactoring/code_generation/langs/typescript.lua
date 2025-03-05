@@ -28,12 +28,11 @@ local function typescript_class_function(opts)
         opts.func_header = ""
     end
 
-    return string.format(
-        [[
+    return ([[
 %s%s(%s) {
 %s
 %s}
-]],
+]]):format(
         opts.func_header,
         opts.name,
         table.concat(args, ", "),
@@ -52,13 +51,12 @@ local function typescript_function(opts)
         args = opts.args
     end
 
-    return string.format(
-        [[
+    return ([[
 %sfunction %s(%s) {
 %s
 %s}
 
-]],
+]]):format(
         opts.func_header,
         opts.name,
         table.concat(args, ", "),
@@ -78,10 +76,10 @@ local function typescript_constant(opts)
         for idx, identifier in pairs(opts.identifiers) do
             if idx == #opts.identifiers then
                 constant_string_pattern = constant_string_pattern
-                    .. string.format("%s = %s", identifier, opts.values[idx])
+                    .. ("%s = %s"):format(identifier, opts.values[idx])
             else
                 constant_string_pattern = constant_string_pattern
-                    .. string.format("%s = %s,", identifier, opts.values[idx])
+                    .. ("%s = %s,"):format(identifier, opts.values[idx])
             end
         end
 
@@ -91,8 +89,7 @@ local function typescript_constant(opts)
             opts.statement = "const %s = %s;"
         end
 
-        constant_string_pattern = string.format(
-            opts.statement .. "\n",
+        constant_string_pattern = (opts.statement .. "\n"):format(
             code_utils.returnify(opts.name, string_pattern),
             opts.value
         )
@@ -107,16 +104,16 @@ local typescript = {
         return { 'console.log("%s");' }
     end,
     print = function(opts)
-        return string.format(opts.statement, opts.content)
+        return opts.statement:format(opts.content)
     end,
     default_print_var_statement = function()
         return { 'console.log("%s %%s", %s);' }
     end,
     print_var = function(opts)
-        return string.format(opts.statement, opts.prefix, opts.var)
+        return opts.statement:format(opts.prefix, opts.var)
     end,
     comment = function(statement)
-        return string.format("// %s", statement)
+        return ("// %s"):format(statement)
     end,
     -- The constant can be destructured
     constant = function(opts)
@@ -132,7 +129,7 @@ local typescript = {
     end,
 
     ["return"] = function(code)
-        return string.format("return %s;", code)
+        return ("return %s;"):format(code)
     end,
     ["function"] = function(opts)
         return typescript_function(opts)
@@ -141,7 +138,7 @@ local typescript = {
         return typescript_function(opts)
     end,
     call_function = function(opts)
-        return string.format("%s(%s)", opts.name, table.concat(opts.args, ", "))
+        return ("%s(%s)"):format(opts.name, table.concat(opts.args, ", "))
     end,
     terminate = function(code)
         return code .. ";"
@@ -156,11 +153,7 @@ local typescript = {
     end,
 
     call_class_function = function(opts)
-        return string.format(
-            "this.%s(%s)",
-            opts.name,
-            table.concat(opts.args, ", ")
-        )
+        return ("this.%s(%s)"):format(opts.name, table.concat(opts.args, ", "))
     end,
 }
 

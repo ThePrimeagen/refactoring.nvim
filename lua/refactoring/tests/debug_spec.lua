@@ -14,14 +14,14 @@ local eq = assert.are.same
 -- assuming first line is for a custom printf statement
 -- and second line is for a custom print var statement
 local function set_config_options(filename_prefix, filename_extension)
-    local config_file_name = string.format("%s.config", filename_prefix)
+    local config_file_name = ("%s.config"):format(filename_prefix)
 
     local config_file =
         Path:new(cwd, "lua", "refactoring", "tests", config_file_name)
 
     if config_file:exists() then
         local config_values =
-            test_utils.get_contents(string.format("%s.config", filename_prefix))
+            test_utils.get_contents(("%s.config"):format(filename_prefix))
 
         if config_values[1] ~= "" then
             local filetypes = {
@@ -58,14 +58,14 @@ end
 ---@return string
 local function get_debug_operation(path)
     local temp = {} ---@type string[]
-    for i in string.gmatch(path, "([^/]+)") do
+    for i in (path):gmatch("([^/]+)") do
         table.insert(temp, i)
     end
     return temp[#temp]
 end
 
 local function get_func_opts(filename_prefix)
-    local opts_file_name = string.format("%s.opts", filename_prefix)
+    local opts_file_name = ("%s.opts"):format(filename_prefix)
 
     local opts_file =
         Path:new(cwd, "lua", "refactoring", "tests", opts_file_name)
@@ -90,7 +90,7 @@ end
 
 describe("Debug", function()
     for_each_file(function(file)
-        a.it(string.format("printf: %s", file), function()
+        a.it(("printf: %s"):format(file), function()
             local parts =
                 vim.split(file, ".", { plain = true, trimempty = true })
             local filename_prefix = parts[1]
@@ -99,11 +99,7 @@ describe("Debug", function()
 
             local bufnr = test_utils.open_test_file(file)
             local expected = test_utils.get_contents(
-                string.format(
-                    "%s.expected.%s",
-                    filename_prefix,
-                    filename_extension
-                )
+                ("%s.expected.%s"):format(filename_prefix, filename_extension)
             )
 
             Config:get():reset()
