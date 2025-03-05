@@ -268,10 +268,10 @@ describe("TreeSitter", function()
         local status, err =
             pcall(failingInlineNode, scope, ts.bufnr, ts.filetype)
         assert.are.same(false, status)
-        local user_error = string.find(err, "Invalid query: 'This should fail'")
+        local user_error = (err):find("Invalid query: 'This should fail'")
         assert(user_error ~= nil)
         local query_error =
-            string.find(err, "Query error at 1:1. Invalid syntax")
+            (err):find("Query error at 1:1. Invalid syntax")
         assert(query_error ~= nil)
     end)
 
@@ -284,10 +284,10 @@ describe("TreeSitter", function()
             pcall(failingQueryNode, scope, ts.bufnr, ts.filetype)
         assert.are.same(false, status)
         local user_error =
-            string.find(err, "Invalid query: 'This should fail @tmp_capture'")
+            (err):find("Invalid query: 'This should fail @tmp_capture'")
         assert(user_error ~= nil)
         local query_error =
-            string.find(err, "Query error at 1:1. Invalid syntax")
+            (err):find("Query error at 1:1. Invalid syntax")
         assert(query_error ~= nil)
     end)
 
@@ -307,13 +307,10 @@ describe("TreeSitter", function()
         local status, err = pcall(ts_valid, ts, setting)
 
         assert(status == false)
-        local query_error = string.find(
-            err,
-            string.format(
-                "%s setting is empty in treesitter for this language",
-                setting
-            )
-        )
+        local query_error = (err):find(string.format(
+            "%s setting is empty in treesitter for this language",
+            setting
+        ))
         assert(query_error ~= nil)
     end)
 
@@ -324,13 +321,10 @@ describe("TreeSitter", function()
         local status, err = pcall(ts_valid, ts, setting)
 
         assert(status == false)
-        local query_error = string.find(
-            err,
-            string.format(
-                "%s setting does not exist on treesitter class",
-                setting
-            )
-        )
+        local query_error = (err):find(string.format(
+            "%s setting does not exist on treesitter class",
+            setting
+        ))
         assert(query_error ~= nil)
     end)
 end)

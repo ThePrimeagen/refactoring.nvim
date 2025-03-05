@@ -9,7 +9,7 @@ local function c_func_args_default_types(args)
     for _, arg in ipairs(args) do
         table.insert(
             new_args,
-            string.format("%s %s", code_utils.default_func_param_type(), arg)
+            ("%s %s"):format(code_utils.default_func_param_type(), arg)
         )
     end
     return new_args
@@ -18,10 +18,7 @@ end
 local function c_func_args_with_types(args, args_types)
     local args_with_types = {}
     for _, arg in ipairs(args) do
-        table.insert(
-            args_with_types,
-            string.format("%s %s", args_types[arg], arg)
-        )
+        table.insert(args_with_types, ("%s %s"):format(args_types[arg], arg))
     end
     return table.concat(args_with_types, ", ")
 end
@@ -43,10 +40,10 @@ local function c_constant(opts)
         for idx, identifier in pairs(opts.identifiers) do
             if idx == #opts.identifiers then
                 constant_string_pattern = constant_string_pattern
-                    .. string.format("%s = %s", identifier, opts.values[idx])
+                    .. ("%s = %s"):format(identifier, opts.values[idx])
             else
                 constant_string_pattern = constant_string_pattern
-                    .. string.format("%s = %s,", identifier, opts.values[idx])
+                    .. ("%s = %s,"):format(identifier, opts.values[idx])
             end
         end
 
@@ -56,8 +53,7 @@ local function c_constant(opts)
             opts.statement = "INSERT_TYPE_HERE %s = %s;"
         end
 
-        constant_string_pattern = string.format(
-            opts.statement .. "\n",
+        constant_string_pattern = (opts.statement .. "\n"):format(
             code_utils.returnify(opts.name, string_pattern),
             opts.value
         )
@@ -76,13 +72,12 @@ local c = {
     ["return"] = cpp["return"],
     ["function"] = cpp["function"],
     function_return = function(opts)
-        return string.format(
-            [[
+        return ([[
 %s %s(%s) {
 %s
 }
 
-]],
+]]):format(
             opts.return_type,
             opts.name,
             c_func_args(opts),

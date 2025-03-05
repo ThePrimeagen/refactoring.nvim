@@ -109,7 +109,7 @@ local function get_function_param_types(refactor, args)
             refactor.config:get_prompt_func_param_type(refactor.filetype)
         then
             function_param_type = get_input(
-                string.format("106: Extract Function param type for %s > ", arg)
+                ("106: Extract Function param type for %s > "):format(arg)
             )
 
             if function_param_type == "" then

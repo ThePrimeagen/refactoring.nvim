@@ -11,7 +11,7 @@ end
 
 ---@param motion string
 function M.vim_motion(motion)
-    vim.cmd(string.format(':exe "norm! %s\\<esc>"', motion))
+    vim.cmd((':exe "norm! %s\\<esc>"'):format(motion))
 end
 
 ---@param file string
@@ -27,12 +27,11 @@ end
 ---@param filename_prefix string
 ---@param cwd string
 function M.run_inputs_if_exist(filename_prefix, cwd)
-    local input_file_name = string.format("%s.inputs", filename_prefix)
+    local input_file_name = ("%s.inputs"):format(filename_prefix)
     local inputs_file =
         Path:new(cwd, "lua", "refactoring", "tests", input_file_name)
     if inputs_file:exists() then
-        local inputs =
-            M.get_contents(string.format("%s.inputs", filename_prefix))
+        local inputs = M.get_contents(("%s.inputs"):format(filename_prefix))
         Config.get():automate_input(inputs)
     end
 end
@@ -41,7 +40,7 @@ end
 ---@return string[]
 local function get_commands(filename_prefix)
     return vim.split(
-        M.read_file(string.format("%s.commands", filename_prefix)),
+        M.read_file(("%s.commands"):format(filename_prefix)),
         "\n",
         { trimempty = true }
     )
@@ -91,7 +90,7 @@ function M.for_each_file(files, cwd, cb, predicate)
     predicate = predicate or default_predicate
     for _, file in pairs(files) do
         file = remove_cwd(file, cwd)
-        if string.match(file, "start") and predicate(file) then
+        if (file):match("start") and predicate(file) then
             cb(file)
         end
     end
