@@ -6,7 +6,7 @@ local Region = require("refactoring.region")
 local Point = require("refactoring.point")
 local text_edits_utils = require("refactoring.text_edits_utils")
 local Query = require("refactoring.query")
-local get_input = require("refactoring.get_input")
+local ui = require("refactoring.ui")
 local indent = require("refactoring.indent")
 local notify = require("refactoring.notify")
 
@@ -77,7 +77,7 @@ end
 
 local function get_function_return_type()
     local function_return_type =
-        get_input("106: Extract Function return type > ")
+        ui.input("106: Extract Function return type > ")
     if function_return_type == "" then
         function_return_type = code_utils.default_func_return_type()
     end
@@ -102,7 +102,7 @@ local function get_function_param_types(refactor, args)
         elseif
             refactor.config:get_prompt_func_param_type(refactor.filetype)
         then
-            function_param_type = get_input(
+            function_param_type = ui.input(
                 ("106: Extract Function param type for %s > "):format(arg)
             )
 
@@ -365,7 +365,7 @@ end
 --- @param refactor Refactor
 --- @return boolean, Refactor|string
 local function extract_setup(refactor)
-    local function_name = get_input("106: Extract Function Name > ")
+    local function_name = ui.input("106: Extract Function Name > ")
     if not function_name or function_name == "" then
         return false, "Error: Must provide function name"
     end
@@ -574,9 +574,9 @@ M.extract_to_file = function(bufnr, region_type, opts)
     bufnr = bufnr or vim.api.nvim_get_current_buf()
     get_extract_setup_pipeline(bufnr, region_type, opts)
         :add_task(ensure_code_gen_106)
-        :add_task(tasks.from_input)
+        :add_task(tasks.create_file_from_input)
         :add_task(extract_setup)
-        :after(tasks.no_cursor_post_refactor)
+        :after(tasks.multiple_files_post_refactor)
         :run(nil, notify.error)
 end
 
@@ -624,9 +624,9 @@ M.extract_block_to_file = function(bufnr, region_type, opts)
     Pipeline:from_task(tasks.refactor_setup(bufnr, region_type, opts))
         :add_task(ensure_code_gen_106)
         :add_task(extract_block_setup)
-        :add_task(tasks.from_input)
+        :add_task(tasks.create_file_from_input)
         :add_task(extract_setup)
-        :after(tasks.no_cursor_post_refactor)
+        :after(tasks.multiple_files_post_refactor)
         :run(nil, notify.error)
 end
 

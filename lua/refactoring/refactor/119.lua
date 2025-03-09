@@ -1,6 +1,6 @@
 local Region = require("refactoring.region")
 local utils = require("refactoring.utils")
-local get_input = require("refactoring.get_input")
+local ui = require("refactoring.ui")
 local Query = require("refactoring.query")
 local Pipeline = require("refactoring.pipeline")
 local tasks = require("refactoring.tasks")
@@ -90,7 +90,7 @@ local function extract_var_setup(refactor)
     end
     utils.sort_in_appearance_order(actual_occurrences)
 
-    local var_name = get_input("119: What is the var name > ")
+    local var_name = ui.input("119: What is the var name > ")
     if not var_name or var_name == "" then
         return false, "Error: Must provide new var name"
     end

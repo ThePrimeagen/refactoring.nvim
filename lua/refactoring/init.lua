@@ -86,7 +86,8 @@ function M.select_refactor(opts)
     end
 
     require("plenary.async").void(function()
-        local selected_refactor = require("refactoring.get_select_input")(
+        local ui = require("refactoring.ui")
+        local selected_refactor = ui.select(
             M.get_refactors(),
             "Refactoring: select a refactor to apply:"
         )

@@ -1,7 +1,7 @@
 local Pipeline = require("refactoring.pipeline")
 local Region = require("refactoring.region")
 local tasks = require("refactoring.tasks")
-local get_select_input = require("refactoring.get_select_input")
+local ui = require("refactoring.ui")
 local notify = require("refactoring.notify")
 
 local text_edits_utils = require("refactoring.text_edits_utils")
@@ -24,7 +24,7 @@ local function get_node_to_inline(identifiers, bufnr)
         identifier_pos = 1
         node_to_inline = identifiers[identifier_pos]
     else
-        node_to_inline, identifier_pos = get_select_input(
+        node_to_inline, identifier_pos = ui.select(
             identifiers,
             "123: Select an identifier to inline:",
             ---@param node TSNode

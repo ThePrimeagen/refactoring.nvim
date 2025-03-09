@@ -5,7 +5,7 @@ local api = vim.api
 local Config = require("refactoring.config")
 local TreeSitter = require("refactoring.treesitter")
 local Point = require("refactoring.point")
-local get_input = require("refactoring.get_input")
+local ui = require("refactoring.ui")
 local Pipeline = require("refactoring.pipeline")
 
 function M.not_ready()
@@ -143,8 +143,8 @@ end
 
 ---@param refactor Refactor
 ---@return boolean, Refactor|string
-function M.from_input(refactor)
-    local file_name = get_input("Create File: Name > ", vim.fn.expand("%:h"))
+function M.create_file_from_input(refactor)
+    local file_name = ui.input("Create File: Name > ", vim.fn.expand("%:h"))
     if not file_name or file_name == "" then
         return false, "Error: Must provide a file name"
     end
@@ -228,7 +228,7 @@ function M.post_refactor()
 end
 
 -- needed when another file is generated
-M.no_cursor_post_refactor = function()
+function M.multiple_files_post_refactor()
     return Pipeline:from_task(M.refactor_apply_text_edits)
         :add_task(
             ---@param refactor Refactor
