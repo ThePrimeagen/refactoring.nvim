@@ -5,7 +5,7 @@ local tasks = require("refactoring.tasks")
 local text_edits_utils = require("refactoring.text_edits_utils")
 local debug_utils = require("refactoring.debug.debug_utils")
 
-local get_select_input = require("refactoring.get_select_input")
+local ui = require("refactoring.ui")
 local indent = require("refactoring.indent")
 local notify = require("refactoring.notify")
 
@@ -27,7 +27,7 @@ function M.get_printf_statement(opts, refactor)
     if custom_printf_statements then
         if #custom_printf_statements > 1 then
             printf_statement = assert(
-                get_select_input(
+                ui.select(
                     custom_printf_statements,
                     "printf: Select a statement to insert:"
                 )

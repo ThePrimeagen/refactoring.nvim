@@ -3,7 +3,7 @@ local Region = require("refactoring.region")
 local tasks = require("refactoring.tasks")
 local text_edits_utils = require("refactoring.text_edits_utils")
 local debug_utils = require("refactoring.debug.debug_utils")
-local get_select_input = require("refactoring.get_select_input")
+local ui = require("refactoring.ui")
 local indent = require("refactoring.indent")
 local notify = require("refactoring.notify")
 
@@ -26,7 +26,7 @@ function M.get_print_var_statement(opts, refactor)
 
     if custom_print_var_statements then
         if #custom_print_var_statements > 1 then
-            print_var_statement = get_select_input(
+            print_var_statement = ui.select(
                 custom_print_var_statements,
                 "print_var: Select a statement to insert:",
                 ---@param item string
