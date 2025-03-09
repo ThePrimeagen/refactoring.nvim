@@ -25,8 +25,8 @@ local function get_new_var_text(extract_node_text, refactor, var_name, region)
     })
 
     if
-        refactor.ts:is_indent_scope(refactor.scope)
-        and refactor.ts:allows_indenting_task()
+        refactor.ts:indent_scopes_support()
+        and refactor.ts:is_indent_scope(refactor.scope)
     then
         local indent_amount = indent.buf_indent_amount(
             region:get_start_point(),

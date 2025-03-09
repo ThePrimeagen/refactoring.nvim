@@ -135,7 +135,6 @@ end
 ---@param refactor Refactor
 local function indent_func_code(function_params, has_return_vals, refactor)
     if refactor.ts:is_indent_scope(refactor.scope) then
-        -- Indent func header
         local func_header_indent = get_func_header_prefix(refactor)
         function_params.func_header = func_header_indent
     end
@@ -194,8 +193,7 @@ local function get_func_params_opts(extract_params, refactor)
         func_params.return_type = get_function_return_type()
     end
 
-    -- TODO: Move this to main get_function_code function
-    if refactor.ts:allows_indenting_task() then
+    if refactor.ts:indent_scopes_support() then
         indent_func_code(func_params, extract_params.has_return_vals, refactor)
     end
     return func_params
@@ -286,7 +284,7 @@ local function get_func_call(refactor, extract_params)
     end
 
     if
-        refactor.ts:allows_indenting_task()
+        refactor.ts:indent_scopes_support()
         and refactor.ts:is_indent_scope(refactor.scope)
     then
         local indent_amount = indent.buf_indent_amount(
@@ -373,10 +371,8 @@ local function extract_setup(refactor)
 
     local first_line = function_body[1]
 
-    if refactor.ts:allows_indenting_task() then
-        refactor.whitespace.func_call =
-            indent.line_indent_amount(first_line, refactor.bufnr)
-    end
+    refactor.whitespace.func_call =
+        indent.line_indent_amount(first_line, refactor.bufnr)
 
     local ok2, return_vals = pcall(get_return_vals, refactor)
     if not ok2 then
