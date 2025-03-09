@@ -15,13 +15,13 @@ local M = {}
 ---@param extract_node_text string
 ---@param refactor Refactor
 ---@param var_name string
----@param new_var_pos RefactorPoint
+---@param starting_pos RefactorPoint
 ---@return string
 local function get_new_var_text(
     extract_node_text,
     refactor,
     var_name,
-    new_var_pos
+    starting_pos
 )
     local statement =
         refactor.config:get_extract_var_statement(refactor.filetype)
@@ -33,12 +33,10 @@ local function get_new_var_text(
 
     local current_statement_line = api.nvim_buf_get_lines(
         refactor.bufnr,
-        new_var_pos.row - 1,
-        new_var_pos.row,
+        starting_pos.row - 1,
+        starting_pos.row,
         true
     )[1]
-    -- it's assumed that the extracted var has the same indentation as the
-    -- statement under cursor where the refactor was started
     local indent_amount =
         indent.line_indent_amount(current_statement_line, refactor.bufnr)
     local indentation = indent.indent(indent_amount, refactor.bufnr)
