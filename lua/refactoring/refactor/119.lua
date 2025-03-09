@@ -8,14 +8,21 @@ local indent = require("refactoring.indent")
 local text_edits_utils = require("refactoring.text_edits_utils")
 local notify = require("refactoring.notify")
 
+local api = vim.api
+
 local M = {}
 
 ---@param extract_node_text string
 ---@param refactor Refactor
 ---@param var_name string
----@param region RefactorRegion
+---@param new_var_pos RefactorPoint
 ---@return string
-local function get_new_var_text(extract_node_text, refactor, var_name, region)
+local function get_new_var_text(
+    extract_node_text,
+    refactor,
+    var_name,
+    new_var_pos
+)
     local statement =
         refactor.config:get_extract_var_statement(refactor.filetype)
     local base_text = refactor.code.constant({
@@ -24,21 +31,19 @@ local function get_new_var_text(extract_node_text, refactor, var_name, region)
         statement = statement,
     })
 
-    if
-        refactor.ts:indent_scopes_support()
-        and refactor.ts:is_indent_scope(refactor.scope)
-    then
-        local indent_amount = indent.buf_indent_amount(
-            region:get_start_point(),
-            refactor,
-            false,
-            refactor.bufnr
-        )
-        local indent_whitespace = indent.indent(indent_amount, refactor.bufnr)
-        return table.concat({ indent_whitespace, base_text }, "")
-    end
+    local current_statement_line = api.nvim_buf_get_lines(
+        refactor.bufnr,
+        new_var_pos.row - 1,
+        new_var_pos.row,
+        true
+    )[1]
+    -- it's assumed that the extracted var has the same indentation as the
+    -- statement under cursor where the refactor was started
+    local indent_amount =
+        indent.line_indent_amount(current_statement_line, refactor.bufnr)
+    local indentation = indent.indent(indent_amount, refactor.bufnr)
 
-    return base_text
+    return table.concat({ indentation, base_text })
 end
 
 ---@param var_name string
@@ -176,8 +181,13 @@ local function extract_var_setup(refactor)
     end
 
     local region = utils.region_one_line_up_from_node(contained)
-    local ok2, new_var_text =
-        pcall(get_new_var_text, extract_node_text, refactor, var_name, region)
+    local ok2, new_var_text = pcall(
+        get_new_var_text,
+        extract_node_text,
+        refactor,
+        var_name,
+        region:get_start_point()
+    )
     if not ok2 then
         return ok2, new_var_text
     end
