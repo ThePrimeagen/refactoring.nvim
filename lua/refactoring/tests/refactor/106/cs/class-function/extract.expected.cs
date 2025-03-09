@@ -13,6 +13,6 @@ public static void foo(int a, int test, int test_other) {
     {
         int test = 1,
             test_other = 11;
-            foo(a, test, test_other);
+        foo(a, test, test_other);
     }
 }

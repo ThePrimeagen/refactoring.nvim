@@ -10,6 +10,8 @@ local ui = require("refactoring.ui")
 local indent = require("refactoring.indent")
 local notify = require("refactoring.notify")
 
+local api = vim.api
+
 local M = {}
 
 ---@param refactor Refactor
@@ -283,19 +285,18 @@ local function get_func_call(refactor, extract_params)
         func_call = refactor.code.terminate(func_call)
     end
 
-    if
-        refactor.ts:indent_scopes_support()
-        and refactor.ts:is_indent_scope(refactor.scope)
-    then
-        local indent_amount = indent.buf_indent_amount(
-            refactor.region:get_start_point(),
-            refactor,
-            false,
-            refactor.bufnr
-        )
-        local indent_whitespace = indent.indent(indent_amount, refactor.bufnr)
-        func_call = table.concat({ indent_whitespace, func_call }, "")
-    end
+    local starting_pos = refactor.region:get_start_point()
+    local current_statement_line = api.nvim_buf_get_lines(
+        refactor.bufnr,
+        starting_pos.row - 1,
+        starting_pos.row,
+        true
+    )[1]
+    local indent_amount =
+        indent.line_indent_amount(current_statement_line, refactor.bufnr)
+    local indentation = indent.indent(indent_amount, refactor.bufnr)
+
+    func_call = table.concat({ indentation, func_call })
 
     return func_call
 end
