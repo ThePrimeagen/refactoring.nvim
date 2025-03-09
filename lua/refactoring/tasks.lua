@@ -13,61 +13,53 @@ function M.not_ready()
         "Sorry this refactor is not ready yet!  But I appreciate you very much :)"
 end
 
--- TODO: Move refactor into the actual init function.  Seems weird
--- to have here.  Also make refactor object into a table instead of this
--- monstrosity
 ---@param input_bufnr integer
 ---@param region_type 'v' | 'V' | '' | nil
 ---@param config Config
----@return fun(): true, Refactor
-function M.refactor_setup(input_bufnr, region_type, config)
-    input_bufnr = input_bufnr or api.nvim_get_current_buf()
-    config = config or Config.get()
-
-    return function()
-        --- @type integer
-        local bufnr
-        if config:get_test_bufnr() ~= nil then
-            bufnr = config:get_test_bufnr()
-        else
-            bufnr = input_bufnr
-        end
-
-        local ts, lang = TreeSitter.get_treesitter(bufnr)
-        local ft = vim.bo[bufnr].filetype --[[@as ft]]
-
-        local root = ts:get_root()
-        local win = api.nvim_get_current_win()
-        local cursor = Point:from_cursor()
-
-        ---@class Refactor
-        ---@field region? RefactorRegion
-        ---@field region_node? TSNode
-        ---@field identifier_node? TSNode
-        ---@field scope? TSNode
-        ---@field text_edits? RefactorTextEdit[] | {bufnr?: integer}[]
-        ---@field code code_generation
-        ---@field success_message? string
-        local refactor = {
-            ---@type {cursor: integer, func_call: integer|nil}
-            whitespace = {
-                cursor = assert(vim.fn.indent(cursor.row)),
-            },
-            cursor = cursor,
-            code = config:get_code_generation_for(lang) --[[@as code_generation]],
-            ts = ts,
-            filetype = ft,
-            lang = lang,
-            bufnr = bufnr,
-            win = win,
-            root = root,
-            config = config,
-            buffers = { bufnr },
-            region_type = region_type,
-        }
-
-        return true, refactor
+---@return Refactor
+function M.refactor_seed(input_bufnr, region_type, config)
+    local bufnr ---@type integer
+    local test_bufnr = config:get_test_bufnr()
+    if test_bufnr ~= nil then
+        bufnr = test_bufnr
+    else
+        bufnr = input_bufnr
     end
+
+    local ts, lang = TreeSitter.get_treesitter(bufnr)
+    local ft = vim.bo[bufnr].filetype --[[@as ft]]
+
+    local root = ts:get_root()
+    local win = api.nvim_get_current_win()
+    local cursor = Point:from_cursor()
+
+    ---@class Refactor
+    ---@field region? RefactorRegion
+    ---@field region_node? TSNode
+    ---@field identifier_node? TSNode
+    ---@field scope? TSNode
+    ---@field text_edits? RefactorTextEdit[] | {bufnr?: integer}[]
+    ---@field code code_generation
+    ---@field success_message? string
+    local refactor = {
+        ---@type {cursor: integer, func_call: integer|nil}
+        whitespace = {
+            cursor = assert(vim.fn.indent(cursor.row)),
+        },
+        cursor = cursor,
+        code = config:get_code_generation_for(lang) --[[@as code_generation]],
+        ts = ts,
+        filetype = ft,
+        lang = lang,
+        bufnr = bufnr,
+        win = win,
+        root = root,
+        config = config,
+        buffers = { bufnr },
+        region_type = region_type,
+    }
+
+    return refactor
 end
 
 ---@param bufnr integer
@@ -154,7 +146,7 @@ function M.create_file_from_input(refactor)
     local new_bufnr = vim.fn.bufnr(vim.fn.expand(file_name))
     local new_winnr = vim.fn.bufwinnr(new_bufnr)
     if new_winnr == -1 then
-        -- OPTIONS? We should probably configure this
+        -- TODO: OPTIONS? We should probably configure this
         -- extract on second method added
         vim.cmd.vsplit(file_name)
         vim.opt_local.filetype = refactor.filetype

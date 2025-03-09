@@ -11,7 +11,7 @@ local async = require("plenary.async")
 local Pipeline = {}
 Pipeline.__index = Pipeline
 
----@param task fun(): boolean, any
+---@param task fun(seed: any?): boolean, any
 ---@return RefactorPipeline
 function Pipeline:from_task(task)
     return setmetatable({
@@ -19,7 +19,7 @@ function Pipeline:from_task(task)
     }, self)
 end
 
----@param task function
+---@param task fun(seed: any?): boolean, any
 ---@return RefactorPipeline
 function Pipeline:add_task(task)
     table.insert(self._tasks, task)

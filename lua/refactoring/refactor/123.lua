@@ -234,11 +234,11 @@ end
 ---@param region_type 'v' | 'V' | '' | nil
 ---@param opts Config
 local function inline_var(bufnr, region_type, opts)
-    Pipeline:from_task(tasks.refactor_setup(bufnr, region_type, opts))
-        :add_task(tasks.operator_setup)
+    local seed = tasks.refactor_seed(bufnr, region_type, opts)
+    Pipeline:from_task(tasks.operator_setup)
         :add_task(inline_var_setup)
         :after(tasks.post_refactor)
-        :run(nil, notify.error)
+        :run(nil, notify.error, seed)
 end
 
 ---@param bufnr integer

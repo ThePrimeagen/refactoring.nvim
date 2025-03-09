@@ -546,11 +546,11 @@ end
 ---@param region_type 'v' | 'V' | '' | nil
 ---@param opts Config
 function M.inline_func(bufnr, region_type, opts)
-    Pipeline:from_task(tasks.refactor_setup(bufnr, region_type, opts))
-        :add_task(ensure_code_gen_115)
+    local seed = tasks.refactor_seed(bufnr, region_type, opts)
+    Pipeline:from_task(ensure_code_gen_115)
         :add_task(inline_func_setup)
         :after(tasks.post_refactor)
-        :run(nil, notify.error)
+        :run(nil, notify.error, seed)
 end
 
 return M

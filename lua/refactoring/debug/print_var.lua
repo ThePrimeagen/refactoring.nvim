@@ -48,16 +48,13 @@ end
 ---@param region_type 'v' | 'V' | '' | nil
 ---@param config Config
 function M.print_debug(bufnr, region_type, config)
-    Pipeline:from_task(tasks.refactor_setup(bufnr, region_type, config))
-        :add_task(
-            ---@param refactor Refactor
-            function(refactor)
-                return tasks.ensure_code_gen(
-                    refactor,
-                    { "print_var", "comment" }
-                )
-            end
-        )
+    local seed = tasks.refactor_seed(bufnr, region_type, config)
+    Pipeline:from_task(
+        ---@param refactor Refactor
+        function(refactor)
+            return tasks.ensure_code_gen(refactor, { "print_var", "comment" })
+        end
+    )
         :add_task(
             ---@param refactor Refactor
             function(refactor)
@@ -166,7 +163,7 @@ function M.print_debug(bufnr, region_type, config)
             end
         )
         :after(tasks.post_refactor)
-        :run(nil, notify.error)
+        :run(nil, notify.error, seed)
 end
 
 return M

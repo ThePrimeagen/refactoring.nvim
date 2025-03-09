@@ -160,13 +160,13 @@ end
 ---@param bufnr integer
 ---@param config Config
 function M.printDebug(bufnr, config)
-    Pipeline:from_task(tasks.refactor_setup(bufnr, nil, config))
-        :add_task(
-            ---@param refactor Refactor
-            function(refactor)
-                return tasks.ensure_code_gen(refactor, { "print", "comment" })
-            end
-        )
+    local seed = tasks.refactor_seed(bufnr, nil, config)
+    Pipeline:from_task(
+        ---@param refactor Refactor
+        function(refactor)
+            return tasks.ensure_code_gen(refactor, { "print", "comment" })
+        end
+    )
         :add_task(
             ---@param refactor Refactor
             function(refactor)
@@ -263,7 +263,7 @@ function M.printDebug(bufnr, config)
             end
         )
         :after(tasks.post_refactor)
-        :run(nil, notify.error)
+        :run(nil, notify.error, seed)
 end
 
 return M

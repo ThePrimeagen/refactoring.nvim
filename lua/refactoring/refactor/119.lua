@@ -199,12 +199,12 @@ end
 ---@param region_type 'v' | 'V' | ''
 ---@param config Config
 function M.extract_var(bufnr, region_type, config)
-    Pipeline:from_task(tasks.refactor_setup(bufnr, region_type, config))
-        :add_task(ensure_code_gen_119)
+    local seed = tasks.refactor_seed(bufnr, region_type, config)
+    Pipeline:from_task(ensure_code_gen_119)
         :add_task(tasks.operator_setup)
         :add_task(extract_var_setup)
         :after(tasks.post_refactor)
-        :run(nil, notify.error)
+        :run(nil, notify.error, seed)
 end
 
 return M
