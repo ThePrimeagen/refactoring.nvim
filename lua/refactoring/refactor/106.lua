@@ -331,6 +331,13 @@ local function extract_block_setup(refactor)
     local block_first_child = function_body[1]
     local block_last_child = function_body[#function_body]
 
+    if not block_first_child then
+        return false, "block_first_child is nil"
+    end
+    if not block_last_child then
+        return false, "block_last_child is nil"
+    end
+
     local first_line_region = Region:from_node(block_first_child)
     local last_line_region = Region:from_node(block_last_child)
 
