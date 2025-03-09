@@ -77,7 +77,7 @@ local function extract_var_setup(refactor)
     local occurrences =
         Query.find_occurrences(refactor.scope, sexpr, refactor.bufnr)
 
-    --- @type TSNode[]
+    ---@type TSNode[]
     local actual_occurrences = {}
     ---@type string[]
     local texts = {}
@@ -112,9 +112,9 @@ local function extract_var_setup(refactor)
         #actual_occurrences
     )
 
-    --- @type TSNode[]
+    ---@type TSNode[]
     local block_scopes = {}
-    --- @type table<string, true>
+    ---@type table<string, true>
     local already_seen = {}
     for _, occurrence in pairs(actual_occurrences) do
         local block_scope =

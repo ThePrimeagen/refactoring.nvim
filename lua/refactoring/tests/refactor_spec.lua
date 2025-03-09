@@ -169,14 +169,14 @@ local function set_config_options(filename_prefix, filename_extension)
         local config_values =
             test_utils.get_contents(("%s.config"):format(filename_prefix))
 
-        --- @type table<string, boolean>
+        ---@type table<string, boolean>
         local prompt_func_return_type = {}
         local str_to_bool = { ["true"] = true, ["false"] = false }
         prompt_func_return_type[filename_extension] =
             str_to_bool[config_values[1]]
         Config.get():set_prompt_func_return_type(prompt_func_return_type)
 
-        --- @type table<string, boolean>
+        ---@type table<string, boolean>
         local prompt_func_param_type = {}
         prompt_func_param_type[filename_extension] =
             str_to_bool[config_values[2]]

@@ -537,7 +537,7 @@ local ensure_code_gen_list = {
     "constant",
 }
 
---- @param refactor refactor.Refactor
+---@param refactor refactor.Refactor
 local function ensure_code_gen_115(refactor)
     return tasks.ensure_code_gen(refactor, ensure_code_gen_list)
 end

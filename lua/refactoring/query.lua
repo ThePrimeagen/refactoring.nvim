@@ -102,7 +102,7 @@ function Query.find_occurrences(scope, sexpr, bufnr)
     local filetype = vim.bo[bufnr].filetype
 
     if not sexpr:find("@") then
-        --- @type string
+        ---@type string
         sexpr = sexpr .. " @tmp_capture"
     end
 
