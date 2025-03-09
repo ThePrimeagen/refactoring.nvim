@@ -47,8 +47,20 @@ describe("Utils", function()
         )
         local root = Query.get_root(bufnr, filetype)
 
-        test_utils.vim_motion("jjfbviw")
-        local region = Region:from_current_selection()
+        local co = coroutine.running()
+        _G.operatorfunc = function(type)
+            local region_type = type == "line" and "V"
+                or type == "char" and "v"
+                or type == "block" and ""
+                or nil
+            coroutine.resume(co, Region:from_motion({ type = region_type }))
+        end
+        vim.o.operatorfunc = "v:lua.operatorfunc"
+
+        vim.schedule(function()
+            test_utils.vim_motion("jjfbviwg@")
+        end)
+        local region = coroutine.yield()
         local captures =
             query:pluck_by_capture(root, Query.query_type.Reference)
         local intersections = vim.iter(captures)

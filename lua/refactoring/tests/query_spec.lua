@@ -13,10 +13,22 @@ describe("Query", function()
         local file = test_utils.read_file("query.ts")
         vim.api.nvim_buf_set_lines(0, 0, -1, false, vim.split(file, "\n"))
 
-        vim.cmd(":14")
-        test_utils.vim_motion("fovt-h")
+        local co = coroutine.running()
+        _G.operatorfunc = function(type)
+            local region_type = type == "line" and "V"
+                or type == "char" and "v"
+                or type == "block" and ""
+                or nil
+            coroutine.resume(co, Region:from_motion({ type = region_type }))
+        end
+        vim.o.operatorfunc = "v:lua.operatorfunc"
 
-        local region = Region:from_current_selection()
+        vim.cmd(":14")
+        vim.schedule(function()
+            test_utils.vim_motion("fovt-hg@")
+        end)
+
+        local region = coroutine.yield()
         local ts = TreeSitter.get_treesitter()
         local extract_node = assert(region:to_ts_node(ts:get_root()))
         local scope = assert(ts:get_scope(extract_node))

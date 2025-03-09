@@ -3,7 +3,7 @@ local utils = require("refactoring.utils")
 local get_input = require("refactoring.get_input")
 local Query = require("refactoring.query")
 local Pipeline = require("refactoring.pipeline")
-local selection_setup = require("refactoring.tasks.selection_setup")
+local selection_setup = require("refactoring.tasks.operator_setup")
 local refactor_setup = require("refactoring.tasks.refactor_setup")
 local post_refactor = require("refactoring.tasks.post_refactor")
 local ensure_code_gen = require("refactoring.tasks.ensure_code_gen")
@@ -199,9 +199,10 @@ local function ensure_code_gen_119(refactor)
 end
 
 ---@param bufnr integer
+---@param region_type 'v' | 'V' | ''
 ---@param config Config
-function M.extract_var(bufnr, config)
-    Pipeline:from_task(refactor_setup(bufnr, config))
+function M.extract_var(bufnr, region_type, config)
+    Pipeline:from_task(refactor_setup(bufnr, region_type, config))
         :add_task(ensure_code_gen_119)
         :add_task(selection_setup)
         :add_task(extract_var_setup)

@@ -54,7 +54,12 @@ local function command_preview(opts, ns)
     end
     require("refactoring.config"):get():automate_input(args)
 
-    require("refactoring").refactor(refactor, { _preview_namespace = ns })
+    local keys =
+        require("refactoring").refactor(refactor, { _preview_namespace = ns })
+    if keys == "g@" then
+        keys = "gvg@"
+    end
+    vim.cmd.normal(keys)
 
     return PREVIEW_IN_CURRENT_BUFFER
 end
@@ -76,7 +81,11 @@ local function command(opts)
     end
 
     require("refactoring.config"):get():automate_input(args)
-    require("refactoring").refactor(refactor)
+    local keys = require("refactoring").refactor(refactor)
+    if keys == "g@" then
+        keys = "gvg@"
+    end
+    vim.cmd.normal(keys)
 end
 
 ---@param arg_lead string

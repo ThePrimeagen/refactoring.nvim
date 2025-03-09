@@ -5,7 +5,7 @@ local text_edits_utils = require("refactoring.text_edits_utils")
 local post_refactor = require("refactoring.tasks.post_refactor")
 
 local function cleanup(bufnr, config)
-    Pipeline:from_task(refactor_setup(bufnr, config))
+    Pipeline:from_task(refactor_setup(bufnr, nil, config))
         :add_task(
             ---@param refactor Refactor
             function(refactor)

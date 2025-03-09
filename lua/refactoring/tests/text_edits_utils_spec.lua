@@ -12,6 +12,16 @@ local function setup()
         "    bar",
         "}",
     })
+
+    local co = coroutine.running()
+    _G.operatorfunc = function(type)
+        local region_type = type == "line" and "V"
+            or type == "char" and "v"
+            or type == "block" and ""
+            or nil
+        coroutine.resume(co, Region:from_motion({ type = region_type }))
+    end
+    vim.o.operatorfunc = "v:lua.operatorfunc"
 end
 
 describe("text_edits_utils", function()
@@ -41,8 +51,10 @@ describe("text_edits_utils", function()
 
     it("should delete text.", function()
         setup()
-        test_utils.vim_motion("2jfbviw")
-        local region = Region:from_current_selection()
+        vim.schedule(function()
+            test_utils.vim_motion("2jfbviwg@")
+        end)
+        local region = coroutine.yield()
         local delete_text = text_edits_utils.delete_text(region)
         local bufnr = vim.api.nvim_get_current_buf()
         vim.lsp.util.apply_text_edits({ delete_text }, bufnr, "utf-16")
@@ -56,8 +68,10 @@ describe("text_edits_utils", function()
 
     it("should insert text.", function()
         setup()
-        test_utils.vim_motion("2jfbviw")
-        local region = Region:from_current_selection()
+        vim.schedule(function()
+            test_utils.vim_motion("2jfbviwg@")
+        end)
+        local region = coroutine.yield()
         local insert_text = text_edits_utils.insert_text(region, "hello, piq")
         local bufnr = vim.api.nvim_get_current_buf()
         vim.lsp.util.apply_text_edits({ insert_text }, bufnr, "utf-16")
@@ -71,8 +85,10 @@ describe("text_edits_utils", function()
 
     it("should be able to replace a single part of code.", function()
         setup()
-        test_utils.vim_motion("2jfbviw")
-        local region = Region:from_current_selection()
+        vim.schedule(function()
+            test_utils.vim_motion("2jfbviwg@")
+        end)
+        local region = coroutine.yield()
         local insert_text = text_edits_utils.replace_text(
             region,
             [[

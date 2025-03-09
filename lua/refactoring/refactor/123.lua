@@ -2,8 +2,7 @@ local Pipeline = require("refactoring.pipeline")
 local Region = require("refactoring.region")
 local post_refactor = require("refactoring.tasks.post_refactor")
 local refactor_setup = require("refactoring.tasks.refactor_setup")
-local selection_setup = require("refactoring.tasks.selection_setup")
-local node_on_cursor_setup = require("refactoring.tasks.node_on_cursor_setup")
+local selection_setup = require("refactoring.tasks.operator_setup")
 local get_select_input = require("refactoring.get_select_input")
 local notify = require("refactoring.notify")
 
@@ -11,22 +10,10 @@ local text_edits_utils = require("refactoring.text_edits_utils")
 
 local ts_locals = require("refactoring.ts-locals")
 
-local api = vim.api
 local iter = vim.iter
 local ts = vim.treesitter
 
 local M = {}
-
----@param identifiers TSNode[]
----@param node TSNode
----@return integer|nil
-local function determine_identifier_position(identifiers, node)
-    for idx, identifier in pairs(identifiers) do
-        if node == identifier then
-            return idx
-        end
-    end
-end
 
 ---@param identifiers TSNode[]
 ---@param bufnr integer
@@ -193,7 +180,7 @@ local function inline_var_setup(refactor)
     local declarator_node = declarator_nodes[1] ---@type TSNode?
 
     if declarator_node == nil then
-        -- if the visual selection does not contain a declaration and it only contains a reference
+        -- if the selection does not contain a declaration and it only contains a reference
         -- (which is under the cursor)
         local identifier_node = ts.get_node()
         if identifier_node == nil then
@@ -245,82 +232,22 @@ local function inline_var_setup(refactor)
     return true, refactor
 end
 
----@param refactor Refactor
-local function inline_var_normal_setup(refactor)
-    local declarator_node = refactor.region_node
-
-    if declarator_node == nil then
-        return false, "Couldn't determine declarator node"
-    end
-
-    local ok, identifiers =
-        pcall(refactor.ts.get_local_var_names, refactor.ts, declarator_node)
-    if not ok then
-        return ok, identifiers
-    end
-
-    if #identifiers == 0 then
-        return false, "No declarations in selected area"
-    end
-
-    local node_to_inline = refactor.identifier_node
-    if node_to_inline == nil then
-        return false, "There is no node on cursor"
-    end
-    local child = node_to_inline:named_child(0) ---@type TSNode?
-    if child and refactor.ts.should_check_parent_node(child) then
-        node_to_inline = child
-    end
-    local definition = ts_locals.find_definition(node_to_inline, refactor.bufnr)
-    local identifier_pos =
-        determine_identifier_position(identifiers, definition)
-
-    if identifier_pos == nil then
-        return false, "Couldn't determine identifier position"
-    end
-
-    local text_edits = get_inline_text_edits(
-        declarator_node,
-        identifiers,
-        node_to_inline,
-        refactor,
-        definition,
-        identifier_pos
-    )
-
-    refactor.text_edits = text_edits
-    return true, refactor
-end
-
 ---@param bufnr integer
+---@param region_type 'v' | 'V' | '' | nil
 ---@param opts Config
-local function inline_var_visual(bufnr, opts)
-    Pipeline:from_task(refactor_setup(bufnr, opts))
+local function inline_var(bufnr, region_type, opts)
+    Pipeline:from_task(refactor_setup(bufnr, region_type, opts))
         :add_task(selection_setup)
         :add_task(inline_var_setup)
         :after(post_refactor.post_refactor)
         :run(nil, notify.error)
 end
 
--- bufnr integer
----@param opts Config
-local function inline_var_normal(bufnr, opts)
-    Pipeline:from_task(refactor_setup(bufnr, opts))
-        :add_task(node_on_cursor_setup)
-        :add_task(inline_var_normal_setup)
-        :after(post_refactor.post_refactor)
-        :run(nil, notify.error)
-end
-
 ---@param bufnr integer
+---@param region_type 'v' | 'V' | '' | nil
 ---@param opts Config
-function M.inline_var(bufnr, opts)
-    local mode = api.nvim_get_mode().mode
-    if mode == "n" or mode == "c" then
-        inline_var_normal(bufnr, opts)
-    else
-        inline_var_visual(bufnr, opts)
-    end
+function M.inline_var(bufnr, region_type, opts)
+    inline_var(bufnr, region_type, opts)
 end
 
 return M

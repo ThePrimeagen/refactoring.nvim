@@ -11,22 +11,37 @@ local function setup()
         "이미지가 서버에 저장되었습니다",
         "}",
     })
+
+    local co = coroutine.running()
+    _G.operatorfunc = function(type)
+        local region_type = type == "line" and "V"
+            or type == "char" and "v"
+            or type == "block" and ""
+            or nil
+        coroutine.resume(co, Region:from_motion({ type = region_type }))
+    end
+    vim.o.operatorfunc = "v:lua.operatorfunc"
 end
 
 describe("Region", function()
     it("select text : line", function()
         setup()
 
-        vim_motion("jV")
-        local region = Region:from_current_selection()
+        vim.schedule(function()
+            vim_motion("jVg@")
+        end)
+        local region = coroutine.yield()
+
         eq(region:get_text(), { "if (true) {" })
     end)
 
     it("select text : partial-line", function()
         setup()
 
-        vim_motion("jwvww")
-        local region = Region:from_current_selection()
+        vim.schedule(function()
+            vim_motion("jwvwwg@")
+        end)
+        local region = coroutine.yield()
         eq({ "(true)" }, region:get_text())
     end)
 
@@ -34,10 +49,12 @@ describe("Region", function()
         setup()
 
         vim.cmd(":1")
-        vim_motion("jwvje")
+        vim.schedule(function()
+            vim_motion("jwvjeg@")
+        end)
+        local region = coroutine.yield()
         eq("n", vim.api.nvim_get_mode().mode)
-        eq(3, vim.fn.line("."))
-        local region = Region:from_current_selection()
+        eq(2, vim.fn.line("."))
         eq({ "(true) {", "    bar" }, region:get_text())
     end)
 
@@ -45,10 +62,12 @@ describe("Region", function()
         setup()
 
         vim.cmd(":4")
-        vim_motion("viw")
+        vim.schedule(function()
+            vim_motion("viwg@")
+        end)
+        local region = coroutine.yield()
         eq("n", vim.api.nvim_get_mode().mode)
         eq(4, vim.fn.line("."))
-        local region = Region:from_current_selection()
         eq({ "이미지가" }, region:get_text())
     end)
 

@@ -1,2 +1,2 @@
 :5
-:execute "norm! va\"\<Esc>"
+:execute "norm! va\""

@@ -1,2 +1,2 @@
 :4
-:execute "norm! wve\<Esc>"
+:execute "norm! wve"

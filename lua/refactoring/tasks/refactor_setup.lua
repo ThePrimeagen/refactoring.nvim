@@ -9,9 +9,10 @@ local api = vim.api
 -- monstrosity
 
 ---@param input_bufnr integer
+---@param region_type 'v' | 'V' | '' | nil
 ---@param config Config
 ---@return fun(): true, Refactor
-local function refactor_setup(input_bufnr, config)
+local function refactor_setup(input_bufnr, region_type, config)
     input_bufnr = input_bufnr or api.nvim_get_current_buf()
     config = config or Config.get()
 
@@ -55,6 +56,7 @@ local function refactor_setup(input_bufnr, config)
             root = root,
             config = config,
             buffers = { bufnr },
+            region_type = region_type,
         }
 
         return true, refactor

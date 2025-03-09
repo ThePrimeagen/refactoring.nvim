@@ -545,9 +545,10 @@ local function ensure_code_gen_115(refactor)
 end
 
 ---@param bufnr integer
+---@param region_type 'v' | 'V' | '' | nil
 ---@param opts Config
-function M.inline_func(bufnr, opts)
-    Pipeline:from_task(refactor_setup(bufnr, opts))
+function M.inline_func(bufnr, region_type, opts)
+    Pipeline:from_task(refactor_setup(bufnr, region_type, opts))
         :add_task(ensure_code_gen_115)
         :add_task(inline_func_setup)
         :after(post_refactor.post_refactor)

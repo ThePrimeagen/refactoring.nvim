@@ -235,20 +235,17 @@ If you want to make remaps for a specific refactoring operation, you can do so
 by configuring the plugin like this:
 
 ```lua
-vim.keymap.set("x", "<leader>re", function() require('refactoring').refactor('Extract Function') end)
-vim.keymap.set("x", "<leader>rf", function() require('refactoring').refactor('Extract Function To File') end)
--- Extract function supports only visual mode
-vim.keymap.set("x", "<leader>rv", function() require('refactoring').refactor('Extract Variable') end)
--- Extract variable supports only visual mode
-vim.keymap.set("n", "<leader>rI", function() require('refactoring').refactor('Inline Function') end)
--- Inline func supports only normal
-vim.keymap.set({ "n", "x" }, "<leader>ri", function() require('refactoring').refactor('Inline Variable') end)
--- Inline var supports both normal and visual mode
+vim.keymap.set({ "n", "x" }, "<leader>re", function() return require('refactoring').refactor('Extract Function') end, { expr = true })
+vim.keymap.set({ "n", "x" }, "<leader>rf", function() return require('refactoring').refactor('Extract Function To File') end, { expr = true })
+vim.keymap.set({ "n", "x" }, "<leader>rv", function() return require('refactoring').refactor('Extract Variable') end, { expr = true })
+vim.keymap.set({ "n", "x" }, "<leader>rI", function() return require('refactoring').refactor('Inline Function') end, { expr = true })
+vim.keymap.set({ "n", "x" }, "<leader>ri", function() return require('refactoring').refactor('Inline Variable') end, { expr = true })
 
-vim.keymap.set("n", "<leader>rb", function() require('refactoring').refactor('Extract Block') end)
-vim.keymap.set("n", "<leader>rbf", function() require('refactoring').refactor('Extract Block To File') end)
--- Extract block supports only normal mode
+vim.keymap.set({ "n", "x" }, "<leader>rbb", function() return require('refactoring').refactor('Extract Block') end, { expr = true })
+vim.keymap.set({ "n", "x" }, "<leader>rbf", function() return require('refactoring').refactor('Extract Block To File') end, { expr = true })
 ```
+
+IMPORTANT: the keymaps **MUST** to be created using the `{ expr = true }` option and return the value of the `require('refactoring').refactor` function (like in the example above).
 
 #### Using Built-In Neovim Selection<a name="config-refactoring-builtin"></a>
 

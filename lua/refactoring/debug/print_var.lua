@@ -47,9 +47,10 @@ function M.get_print_var_statement(opts, refactor)
 end
 
 ---@param bufnr integer
+---@param region_type 'v' | 'V' | '' | nil
 ---@param config Config
-function M.print_debug(bufnr, config)
-    Pipeline:from_task(refactor_setup(bufnr, config))
+function M.print_debug(bufnr, region_type, config)
+    Pipeline:from_task(refactor_setup(bufnr, region_type, config))
         :add_task(
             ---@param refactor Refactor
             function(refactor)
@@ -66,8 +67,11 @@ function M.print_debug(bufnr, config)
                 end
                 opts._end = opts.below
 
-                -- Get variable text
-                local variable_region = Region:from_motion()
+                local variable_region = Region:from_motion({
+                    bufnr = refactor.bufnr,
+                    include_end_of_line = refactor.ts.include_end_of_line,
+                    type = refactor.region_type,
+                })
                 local variable = variable_region:get_text()[1]
 
                 -- use treesitter for languges like PHP
