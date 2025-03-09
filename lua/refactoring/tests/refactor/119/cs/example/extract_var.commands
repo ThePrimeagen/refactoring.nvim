@@ -1,2 +1,2 @@
 :16
-:execute "norm! fov$h\<Esc>"
+:execute "norm! fov$h"

@@ -2,63 +2,42 @@ local Point = require("refactoring.point")
 
 local api = vim.api
 
----@param opts {include_end_of_line: boolean}|nil
----@return integer start_row, integer start_col, integer end_row, integer end_col
-local function get_selection_range(opts)
-    local start_row = vim.fn.line("'<")
-    local start_col = vim.fn.col("'<")
-    local end_row = vim.fn.line("'>")
-    local end_col = vim.fn.col("'>")
-
-    if opts and opts.include_end_of_line then
-        local last_line =
-            api.nvim_buf_get_lines(0, end_row - 1, end_row, true)[1]
-        local line_length = vim.str_utfindex(last_line, #last_line)
-        end_col = math.min(end_col, line_length)
-    end
-
-    return start_row, start_col, end_row, end_col
-end
-
 ---@class RefactorRegion
---- The following fields act similar to a cursor
 ---@field start_row number: The 1-based row
 ---@field start_col number: The 1-based col
 ---@field end_row number: The 1-based row
 ---@field end_col number: The 1-based col
 ---@field bufnr number: the buffer that the region is from
+---@field type "v" | "V" | ""
 local Region = {}
 Region.__index = Region
 
---- Get a Region from the current selection
----@param opts {include_end_of_line: boolean}|nil
----@return RefactorRegion
-function Region:from_current_selection(opts)
-    local start_row, start_col, end_row, end_col = get_selection_range(opts)
-
-    return setmetatable({
-        bufnr = api.nvim_get_current_buf(),
-        start_row = start_row,
-        start_col = start_col,
-        end_row = end_row,
-        end_col = end_col,
-    }, self)
-end
-
 --- Get a Region from motion (marks [ and ])
+---@param opts {include_end_of_line: boolean, type :"v" | "V" | "" | nil, bufnr: integer} | nil
 ---@return RefactorRegion
-function Region:from_motion()
+function Region:from_motion(opts)
+    local type = opts and opts.type or "v"
+    local bufnr = opts and opts.bufnr or api.nvim_get_current_buf()
+
     local start_row = vim.fn.line("'[")
     local start_col = vim.fn.col("'[")
     local end_row = vim.fn.line("']")
-    local end_col = vim.fn.col("']")
+    local end_col = type == "V" and vim.v.maxcol or vim.fn.col("']")
+
+    if opts and opts.include_end_of_line then
+        local last_line =
+            api.nvim_buf_get_lines(0, end_row - 1, end_row, true)[1]
+        local line_length = vim.str_utfindex(last_line, #last_line)
+        end_col = math.min(end_col, line_length) --[[@as integer]]
+    end
 
     return setmetatable({
-        bufnr = api.nvim_get_current_buf(),
+        bufnr = bufnr,
         start_row = start_row,
         start_col = start_col,
         end_row = end_row,
         end_col = end_col,
+        type = type,
     }, self)
 end
 
@@ -67,14 +46,17 @@ end
 ---@param start_col integer
 ---@param end_row integer
 ---@param end_col integer
+---@param type "v" | "V" | "" | nil
 ---@return RefactorRegion
-function Region:from_values(bufnr, start_row, start_col, end_row, end_col)
+function Region:from_values(bufnr, start_row, start_col, end_row, end_col, type)
+    type = type or "v"
     return setmetatable({
         start_row = start_row,
         start_col = start_col,
         end_row = end_row,
         end_col = end_col,
         bufnr = bufnr,
+        type = type,
     }, self)
 end
 
@@ -83,6 +65,7 @@ end
 function Region:empty(bufnr)
     return setmetatable({
         bufnr = bufnr,
+        type = "v",
     }, self)
 end
 
@@ -122,6 +105,7 @@ function Region:from_node(node, bufnr)
         start_col = start_col + 1,
         end_row = end_row + 1,
         end_col = end_col,
+        type = "v",
     }, self)
 end
 
@@ -138,6 +122,7 @@ function Region:from_point(point, bufnr)
         start_col = point.col,
         end_row = point.row,
         end_col = point.col,
+        type = "v",
     }, self)
 end
 
@@ -153,6 +138,7 @@ function Region:from_lsp_range_insert(lsp_range, bufnr)
         start_col = lsp_range.start.character + 1,
         end_row = lsp_range["end"].line + 1,
         end_col = lsp_range["end"].character + 1,
+        type = "v",
     }, self)
 end
 
@@ -168,6 +154,7 @@ function Region:from_lsp_range_replace(lsp_range, bufnr)
         start_col = lsp_range.start.character + 1,
         end_row = lsp_range["end"].line + 1,
         end_col = lsp_range["end"].character,
+        type = "v",
     }, self)
 end
 
@@ -190,12 +177,18 @@ end
 --- Get the lines contained in the region
 ---@return string[]
 function Region:get_lines()
-    local text = api.nvim_buf_get_lines(
+    local offset = 0
+    local text = vim.fn.getregion({
         self.bufnr,
-        self.start_row - 1,
+        self.start_row,
+        self.start_col,
+        offset,
+    }, {
+        self.bufnr,
         self.end_row,
-        false
-    )
+        self.end_col,
+        offset,
+    }, { type = "V" })
     return text
 end
 
@@ -213,28 +206,19 @@ end
 
 ---@return string[]
 function Region:get_text()
-    local lines = api.nvim_buf_get_lines(
+    local offset = 0
+    local text = vim.fn.getregion({
         self.bufnr,
-        self.start_row - 1,
+        self.start_row,
+        self.start_col,
+        offset,
+    }, {
+        self.bufnr,
         self.end_row,
-        false
-    )
-
-    local number_of_lines = #lines
-    local last_line_length = vim.str_utfindex(lines[number_of_lines])
-        or #lines[number_of_lines]
-
-    local end_col = self.end_col <= last_line_length
-            and vim.str_utfindex(lines[number_of_lines], self.end_col)
-        or last_line_length
-
-    local last_line_end_idx = vim.str_byteindex(lines[number_of_lines], end_col)
-    local first_line_start_idx = vim.str_byteindex(lines[1], self.start_col - 1)
-
-    lines[number_of_lines] = lines[number_of_lines]:sub(1, last_line_end_idx)
-    lines[1] = lines[1]:sub(first_line_start_idx + 1)
-
-    return lines
+        self.end_col,
+        offset,
+    }, { type = self.type })
+    return text
 end
 
 ---@class LspPoint
@@ -306,6 +290,7 @@ function Region:clone()
     clone.start_col = self.start_col
     clone.end_row = self.end_row
     clone.end_col = self.end_col
+    clone.type = self.type
 
     return clone
 end

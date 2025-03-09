@@ -1,15 +1,11 @@
-local Region = require("refactoring.region")
-
 ---@param refactor Refactor
-local function selection_setup(refactor)
-    local utils = require("refactoring.utils")
-    if utils.is_visual_mode() then
-        utils.exit_to_normal_mode()
-    end
+local function operator_setup(refactor)
+    local Region = require("refactoring.region")
 
-    local region = Region:from_current_selection({
+    local region = Region:from_motion({
         bufnr = refactor.bufnr,
         include_end_of_line = refactor.ts.include_end_of_line,
+        type = refactor.region_type,
     })
     local region_node = region:to_ts_node(refactor.ts:get_root())
     local ok, scope = pcall(refactor.ts.get_scope, refactor.ts, region_node)
@@ -28,4 +24,4 @@ local function selection_setup(refactor)
     return true, refactor
 end
 
-return selection_setup
+return operator_setup

@@ -1,6 +1,6 @@
 local utils = require("refactoring.utils")
 local Pipeline = require("refactoring.pipeline")
-local selection_setup = require("refactoring.tasks.selection_setup")
+local selection_setup = require("refactoring.tasks.operator_setup")
 local ensure_code_gen = require("refactoring.tasks.ensure_code_gen")
 local code_utils = require("refactoring.code_generation.utils")
 local Region = require("refactoring.region")
@@ -17,13 +17,12 @@ local notify = require("refactoring.notify")
 
 local M = {}
 
--- 1.  We need definition set of potential captured variables
-
 ---@param bufnr integer
+---@param region_type 'v' | 'V' | '' | nil
 ---@param opts Config
 ---@return RefactorPipeline
-local function get_extract_setup_pipeline(bufnr, opts)
-    return Pipeline:from_task(refactor_setup(bufnr, opts))
+local function get_extract_setup_pipeline(bufnr, region_type, opts)
+    return Pipeline:from_task(refactor_setup(bufnr, region_type, opts))
         :add_task(selection_setup)
 end
 
@@ -574,10 +573,11 @@ local function ensure_code_gen_106(refactor)
 end
 
 ---@param bufnr integer
+---@param region_type 'v' | 'V' | '' | nil
 ---@param opts Config
-M.extract_to_file = function(bufnr, opts)
+M.extract_to_file = function(bufnr, region_type, opts)
     bufnr = bufnr or vim.api.nvim_get_current_buf()
-    get_extract_setup_pipeline(bufnr, opts)
+    get_extract_setup_pipeline(bufnr, region_type, opts)
         :add_task(ensure_code_gen_106)
         :add_task(create_file.from_input)
         :add_task(extract_setup)
@@ -586,10 +586,11 @@ M.extract_to_file = function(bufnr, opts)
 end
 
 ---@param bufnr integer
+---@param region_type 'v' | 'V' | '' | nil
 ---@param opts Config
-M.extract = function(bufnr, opts)
+M.extract = function(bufnr, region_type, opts)
     bufnr = bufnr or vim.api.nvim_get_current_buf()
-    get_extract_setup_pipeline(bufnr, opts)
+    get_extract_setup_pipeline(bufnr, region_type, opts)
         :add_task(ensure_code_gen_106)
         :add_task(
             ---@param refactor Refactor
@@ -608,10 +609,11 @@ M.extract = function(bufnr, opts)
 end
 
 ---@param bufnr integer
+---@param region_type 'v' | 'V' | '' | nil
 ---@param opts Config
-M.extract_block = function(bufnr, opts)
+M.extract_block = function(bufnr, region_type, opts)
     bufnr = bufnr or vim.api.nvim_get_current_buf()
-    Pipeline:from_task(refactor_setup(bufnr, opts))
+    Pipeline:from_task(refactor_setup(bufnr, region_type, opts))
         :add_task(ensure_code_gen_106)
         :add_task(extract_block_setup)
         :add_task(extract_setup)
@@ -620,10 +622,11 @@ M.extract_block = function(bufnr, opts)
 end
 
 ---@param bufnr integer
+---@param region_type 'v' | 'V' | '' | nil
 ---@param opts Config
-M.extract_block_to_file = function(bufnr, opts)
+M.extract_block_to_file = function(bufnr, region_type, opts)
     bufnr = bufnr or vim.api.nvim_get_current_buf()
-    Pipeline:from_task(refactor_setup(bufnr, opts))
+    Pipeline:from_task(refactor_setup(bufnr, region_type, opts))
         :add_task(ensure_code_gen_106)
         :add_task(extract_block_setup)
         :add_task(create_file.from_input)

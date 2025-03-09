@@ -22,8 +22,13 @@ function M.printf(opts)
     vim.cmd([[normal! g@iw]])
 end
 
-function M.print_var_operatorfunc()
-    print_var(api.nvim_get_current_buf(), last_config)
+---@param type "line" | "char" | "block"
+function M.print_var_operatorfunc(type)
+    local region_type = type == "line" and "V"
+        or type == "char" and "v"
+        or type == "block" and ""
+        or nil
+    print_var(api.nvim_get_current_buf(), region_type, last_config)
 end
 
 ---@param opts ConfigOpts

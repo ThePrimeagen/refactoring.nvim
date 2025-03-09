@@ -1,2 +1,2 @@
 :6
-:execute "norm! fe\<Esc>"
+:execute "norm! fe"

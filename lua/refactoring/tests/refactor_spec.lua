@@ -48,7 +48,6 @@ local function for_each_file(cb)
 end
 
 local function test_empty_input()
-    vim.notify = error
     local test_cases = {
         [1] = {
             ["inputs"] = "",
@@ -87,13 +86,12 @@ local function test_empty_input()
 
         test_utils.run_commands(filename_prefix)
 
-        ---@type boolean, nil|string
-        local status, err = pcall(refactoring.refactor, refactor)
+        local keys = refactoring.refactor(refactor)
+        local status, err = pcall(vim.cmd.normal, keys) ---@type boolean, string
 
         vim.api.nvim_buf_delete(bufnr, { force = true })
 
         eq(false, status)
-        ---@cast err string
 
         local has_error_message = (err):find(test_case["error_message"])
         if not has_error_message then
@@ -102,13 +100,17 @@ local function test_empty_input()
     end
 end
 
+---@param ok boolean
 ---@param err string|nil
 ---@param filename_prefix string
-local function validate_error_if_file_exists(err, filename_prefix)
+local function validate_error_if_file_exists(ok, err, filename_prefix)
     local expected_error_name = ("%s.expected_error"):format(filename_prefix)
     local expected_error_file =
         Path:new(cwd, "lua", "refactoring", "tests", expected_error_name)
-    if err and not expected_error_file:exists() then
+
+    assert.are.same(expected_error_file:exists(), not ok)
+
+    if err and err ~= "" and not expected_error_file:exists() then
         error(err)
     elseif not expected_error_file:exists() or not err then
         return
@@ -201,9 +203,10 @@ local function buf_setlocal_options(filename_extension)
 end
 
 describe("Refactoring", function()
+    vim.notify = error
+
     for_each_file(function(file)
         a.it(("Refactoring: %s"):format(file), function()
-            vim.notify = error
             local parts =
                 vim.split(file, ".", { plain = true, trimempty = true })
             local filename_prefix = parts[1]
@@ -225,11 +228,13 @@ describe("Refactoring", function()
             buf_setlocal_options(filename_extension)
 
             test_utils.run_commands(filename_prefix)
-            local _, err = pcall(refactoring.refactor, refactor)
+            local keys = refactoring.refactor(refactor)
+            local ok, err = pcall(vim.cmd.normal, keys) ---@type boolean, string
+
+            validate_error_if_file_exists(ok, err, filename_prefix)
+
             async.util.scheduler()
             local lines = vim.api.nvim_buf_get_lines(bufnr, 0, -1, false)
-
-            validate_error_if_file_exists(err, filename_prefix)
 
             eq(expected, lines)
             validate_cursor_if_file_exists(filename_prefix)

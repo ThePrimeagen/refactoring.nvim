@@ -1,4 +1,5 @@
 local api = vim.api
+local refactors = require("refactoring.refactor")
 
 local M = {}
 
@@ -12,10 +13,29 @@ function M.setup(config)
     require("refactoring.config").setup(config)
 end
 
+---@alias refactor.RefactorFunc fun(bufnr: integer, type: 'v' | 'V' | '' | nil, opts: Config)
+
+local last_refactor ---@type refactor.RefactorFunc
+local last_config ---@type Config
+
+---@param type "line" | "char" | "block"
+function M.refactor_operatorfunc(type)
+    local region_type = type == "line" and "V"
+        or type == "char" and "v"
+        or type == "block" and ""
+        or nil
+    last_refactor(api.nvim_get_current_buf(), region_type, last_config)
+end
+
+local default_motions = {
+    [refactors.inline_var] = "iw",
+    [refactors.inline_func] = "iw",
+    [refactors.extract_block] = "l",
+}
+
 ---@param name string|number
 ---@param opts ConfigOpts|nil
 function M.refactor(name, opts)
-    local refactors = require("refactoring.refactor")
     if opts == nil then
         opts = {}
     end
@@ -30,8 +50,21 @@ function M.refactor(name, opts)
     end
 
     local Config = require("refactoring.config")
-    local config = Config.get():merge(opts)
-    refactors[refactor](api.nvim_get_current_buf(), config)
+    last_config = Config.get():merge(opts)
+    last_refactor = refactors[refactor]
+
+    vim.o.operatorfunc = "v:lua.require'refactoring'.refactor_operatorfunc"
+
+    local mode = api.nvim_get_mode().mode
+    if mode ~= "n" then
+        return "g@"
+    end
+
+    local default_motion = default_motions[last_refactor]
+    if not default_motion then
+        return "g@"
+    end
+    return "g@" .. default_motion
 end
 
 ---@return string[]

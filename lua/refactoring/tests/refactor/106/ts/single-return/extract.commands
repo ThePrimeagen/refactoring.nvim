@@ -1,2 +1,2 @@
 :3
-:execute "norm! V}\<Esc>"
+:execute "norm! V}"

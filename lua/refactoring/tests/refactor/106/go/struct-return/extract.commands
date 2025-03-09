@@ -1,2 +1,2 @@
 :11
-:execute "norm! V3j\<Esc>"
+:execute "norm! V3j"
