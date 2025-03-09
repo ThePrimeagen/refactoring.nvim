@@ -164,21 +164,26 @@ local function indent_func_code(function_params, has_return_vals, refactor)
     end
 end
 
+---@class func_params
+---@field func_header? string
+---@field contains_jsx? boolean
+---@field class_name? string
+---@field visibility? string
+---@field name? string
+---@field args? string[]
+---@field body? string[]
+---@field scope_type? string
+---@field region_type? string
+
 ---@param extract_params extract_params
 ---@param refactor Refactor
 ---@return func_params
 local function get_func_params_opts(extract_params, refactor)
-    ---@class func_params
-    ---@field func_header? string
-    ---@field contains_jsx? boolean
-    ---@field class_name? string
-    ---@field visibility? string
     local func_params = {
         name = extract_params.function_name,
         args = extract_params.args,
         body = extract_params.function_body,
         scope_type = extract_params.scope_type,
-        ---@type string
         region_type = refactor.region:to_ts_node(refactor.ts:get_root()):type(),
         visibility = refactor.config:get_visibility_for(refactor.filetype),
     }
@@ -367,7 +372,7 @@ local function extract_setup(refactor)
     if not ok then
         return ok, locals
     end
-    local args = vim.tbl_keys(locals)
+    local args = vim.tbl_keys(locals) --[=[@as string[]]=]
     table.sort(args)
 
     local first_line = function_body[1]
