@@ -1,11 +1,10 @@
 local Pipeline = require("refactoring.pipeline")
-local refactor_setup = require("refactoring.tasks.refactor_setup")
+local tasks = require("refactoring.tasks")
 local Region = require("refactoring.region")
 local text_edits_utils = require("refactoring.text_edits_utils")
-local post_refactor = require("refactoring.tasks.post_refactor")
 
 local function cleanup(bufnr, config)
-    Pipeline:from_task(refactor_setup(bufnr, nil, config))
+    Pipeline:from_task(tasks.refactor_setup(bufnr, nil, config))
         :add_task(
             ---@param refactor Refactor
             function(refactor)
@@ -88,7 +87,7 @@ local function cleanup(bufnr, config)
                 return true, refactor
             end
         )
-        :after(post_refactor.post_refactor)
+        :after(tasks.post_refactor)
         :run()
 end
 
