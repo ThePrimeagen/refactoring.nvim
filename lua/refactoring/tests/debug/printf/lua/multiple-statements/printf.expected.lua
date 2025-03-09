@@ -1,4 +1,3 @@
--- stylua: ignore start
 local hello = function()
     print("test")
     -- __AUTO_GENERATED_PRINTF_START__

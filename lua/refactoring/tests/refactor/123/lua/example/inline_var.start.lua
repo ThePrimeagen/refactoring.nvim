@@ -1,4 +1,3 @@
--- stylua: ignore start
 
 local function orderCalculation(order)
     local basePrice = order.quantity * order.itemPrice

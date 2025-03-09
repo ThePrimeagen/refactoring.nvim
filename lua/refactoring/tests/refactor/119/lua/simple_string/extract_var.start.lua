@@ -1,4 +1,3 @@
--- stylua: ignore start
 
 local function orderCalculation(person, start, _end)
     local greeting = start .. " [space] " .. _end

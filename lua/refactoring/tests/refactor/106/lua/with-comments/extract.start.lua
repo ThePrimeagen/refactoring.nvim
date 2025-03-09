@@ -1,4 +1,3 @@
--- stylua: ignore start
 
 -- This is a comment
 -- comments are fun

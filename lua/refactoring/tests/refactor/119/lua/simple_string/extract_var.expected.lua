@@ -1,4 +1,3 @@
--- stylua: ignore start
 
 local function orderCalculation(person, start, _end)
     local space = " [space] "
