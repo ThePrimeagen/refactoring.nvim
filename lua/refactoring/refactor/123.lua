@@ -1,8 +1,6 @@
 local Pipeline = require("refactoring.pipeline")
 local Region = require("refactoring.region")
-local post_refactor = require("refactoring.tasks.post_refactor")
-local refactor_setup = require("refactoring.tasks.refactor_setup")
-local selection_setup = require("refactoring.tasks.operator_setup")
+local tasks = require("refactoring.tasks")
 local get_select_input = require("refactoring.get_select_input")
 local notify = require("refactoring.notify")
 
@@ -236,10 +234,10 @@ end
 ---@param region_type 'v' | 'V' | '' | nil
 ---@param opts Config
 local function inline_var(bufnr, region_type, opts)
-    Pipeline:from_task(refactor_setup(bufnr, region_type, opts))
-        :add_task(selection_setup)
+    Pipeline:from_task(tasks.refactor_setup(bufnr, region_type, opts))
+        :add_task(tasks.operator_setup)
         :add_task(inline_var_setup)
-        :after(post_refactor.post_refactor)
+        :after(tasks.post_refactor)
         :run(nil, notify.error)
 end
 

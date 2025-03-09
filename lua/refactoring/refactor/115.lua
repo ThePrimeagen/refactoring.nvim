@@ -1,12 +1,10 @@
 local Pipeline = require("refactoring.pipeline")
-local refactor_setup = require("refactoring.tasks.refactor_setup")
-local post_refactor = require("refactoring.tasks.post_refactor")
+local tasks = require("refactoring.tasks")
 local ts_locals = require("refactoring.ts-locals")
 local Region = require("refactoring.region")
 local text_edits_utils = require("refactoring.text_edits_utils")
 local utils = require("refactoring.utils")
 local indent = require("refactoring.indent")
-local ensure_code_gen = require("refactoring.tasks.ensure_code_gen")
 local code = require("refactoring.code_generation")
 local notify = require("refactoring.notify")
 
@@ -541,17 +539,17 @@ local ensure_code_gen_list = {
 
 --- @param refactor Refactor
 local function ensure_code_gen_115(refactor)
-    return ensure_code_gen(refactor, ensure_code_gen_list)
+    return tasks.ensure_code_gen(refactor, ensure_code_gen_list)
 end
 
 ---@param bufnr integer
 ---@param region_type 'v' | 'V' | '' | nil
 ---@param opts Config
 function M.inline_func(bufnr, region_type, opts)
-    Pipeline:from_task(refactor_setup(bufnr, region_type, opts))
+    Pipeline:from_task(tasks.refactor_setup(bufnr, region_type, opts))
         :add_task(ensure_code_gen_115)
         :add_task(inline_func_setup)
-        :after(post_refactor.post_refactor)
+        :after(tasks.post_refactor)
         :run(nil, notify.error)
 end
 

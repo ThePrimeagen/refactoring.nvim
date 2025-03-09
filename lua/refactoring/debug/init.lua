@@ -1,7 +1,6 @@
 local Config = require("refactoring.config")
 local printf = require("refactoring.debug.printf").printDebug
 local print_var = require("refactoring.debug.print_var").print_debug
-local get_path = require("refactoring.debug.get_path")
 local cleanup = require("refactoring.debug.cleanup")
 
 local api = vim.api
@@ -49,13 +48,6 @@ end
 function M.cleanup(opts)
     local config = Config.get():merge(opts)
     cleanup(api.nvim_get_current_buf(), config)
-end
-
----@param opts ConfigOpts
----@return string
-function M.get_path(opts)
-    local config = Config.get():merge(opts)
-    return get_path(api.nvim_get_current_buf(), config)
 end
 
 return M

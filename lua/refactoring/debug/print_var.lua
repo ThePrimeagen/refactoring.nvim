@@ -1,10 +1,8 @@
 local Pipeline = require("refactoring.pipeline")
 local Region = require("refactoring.region")
-local refactor_setup = require("refactoring.tasks.refactor_setup")
-local post_refactor = require("refactoring.tasks.post_refactor")
+local tasks = require("refactoring.tasks")
 local text_edits_utils = require("refactoring.text_edits_utils")
 local debug_utils = require("refactoring.debug.debug_utils")
-local ensure_code_gen = require("refactoring.tasks.ensure_code_gen")
 local get_select_input = require("refactoring.get_select_input")
 local indent = require("refactoring.indent")
 local notify = require("refactoring.notify")
@@ -50,11 +48,14 @@ end
 ---@param region_type 'v' | 'V' | '' | nil
 ---@param config Config
 function M.print_debug(bufnr, region_type, config)
-    Pipeline:from_task(refactor_setup(bufnr, region_type, config))
+    Pipeline:from_task(tasks.refactor_setup(bufnr, region_type, config))
         :add_task(
             ---@param refactor Refactor
             function(refactor)
-                return ensure_code_gen(refactor, { "print_var", "comment" })
+                return tasks.ensure_code_gen(
+                    refactor,
+                    { "print_var", "comment" }
+                )
             end
         )
         :add_task(
@@ -164,7 +165,7 @@ function M.print_debug(bufnr, region_type, config)
                 return true, refactor
             end
         )
-        :after(post_refactor.post_refactor)
+        :after(tasks.post_refactor)
         :run(nil, notify.error)
 end
 

@@ -1,17 +1,12 @@
 local utils = require("refactoring.utils")
 local Pipeline = require("refactoring.pipeline")
-local selection_setup = require("refactoring.tasks.operator_setup")
-local ensure_code_gen = require("refactoring.tasks.ensure_code_gen")
+local tasks = require("refactoring.tasks")
 local code_utils = require("refactoring.code_generation.utils")
 local Region = require("refactoring.region")
 local Point = require("refactoring.point")
 local text_edits_utils = require("refactoring.text_edits_utils")
 local Query = require("refactoring.query")
-
-local refactor_setup = require("refactoring.tasks.refactor_setup")
 local get_input = require("refactoring.get_input")
-local create_file = require("refactoring.tasks.create_file")
-local post_refactor = require("refactoring.tasks.post_refactor")
 local indent = require("refactoring.indent")
 local notify = require("refactoring.notify")
 
@@ -22,8 +17,8 @@ local M = {}
 ---@param opts Config
 ---@return RefactorPipeline
 local function get_extract_setup_pipeline(bufnr, region_type, opts)
-    return Pipeline:from_task(refactor_setup(bufnr, region_type, opts))
-        :add_task(selection_setup)
+    return Pipeline:from_task(tasks.refactor_setup(bufnr, region_type, opts))
+        :add_task(tasks.operator_setup)
 end
 
 ---@param refactor Refactor
@@ -569,7 +564,7 @@ local function ensure_code_gen_106(refactor)
         end
     end
 
-    return ensure_code_gen(refactor, list)
+    return tasks.ensure_code_gen(refactor, list)
 end
 
 ---@param bufnr integer
@@ -579,9 +574,9 @@ M.extract_to_file = function(bufnr, region_type, opts)
     bufnr = bufnr or vim.api.nvim_get_current_buf()
     get_extract_setup_pipeline(bufnr, region_type, opts)
         :add_task(ensure_code_gen_106)
-        :add_task(create_file.from_input)
+        :add_task(tasks.from_input)
         :add_task(extract_setup)
-        :after(post_refactor.no_cursor_post_refactor)
+        :after(tasks.no_cursor_post_refactor)
         :run(nil, notify.error)
 end
 
@@ -604,7 +599,7 @@ M.extract = function(bufnr, region_type, opts)
             end
         )
         :add_task(extract_setup)
-        :after(post_refactor.post_refactor)
+        :after(tasks.post_refactor)
         :run(nil, notify.error)
 end
 
@@ -613,11 +608,11 @@ end
 ---@param opts Config
 M.extract_block = function(bufnr, region_type, opts)
     bufnr = bufnr or vim.api.nvim_get_current_buf()
-    Pipeline:from_task(refactor_setup(bufnr, region_type, opts))
+    Pipeline:from_task(tasks.refactor_setup(bufnr, region_type, opts))
         :add_task(ensure_code_gen_106)
         :add_task(extract_block_setup)
         :add_task(extract_setup)
-        :after(post_refactor.post_refactor)
+        :after(tasks.post_refactor)
         :run(nil, notify.error)
 end
 
@@ -626,12 +621,12 @@ end
 ---@param opts Config
 M.extract_block_to_file = function(bufnr, region_type, opts)
     bufnr = bufnr or vim.api.nvim_get_current_buf()
-    Pipeline:from_task(refactor_setup(bufnr, region_type, opts))
+    Pipeline:from_task(tasks.refactor_setup(bufnr, region_type, opts))
         :add_task(ensure_code_gen_106)
         :add_task(extract_block_setup)
-        :add_task(create_file.from_input)
+        :add_task(tasks.from_input)
         :add_task(extract_setup)
-        :after(post_refactor.no_cursor_post_refactor)
+        :after(tasks.no_cursor_post_refactor)
         :run(nil, notify.error)
 end
 

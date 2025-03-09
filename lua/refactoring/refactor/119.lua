@@ -3,10 +3,7 @@ local utils = require("refactoring.utils")
 local get_input = require("refactoring.get_input")
 local Query = require("refactoring.query")
 local Pipeline = require("refactoring.pipeline")
-local selection_setup = require("refactoring.tasks.operator_setup")
-local refactor_setup = require("refactoring.tasks.refactor_setup")
-local post_refactor = require("refactoring.tasks.post_refactor")
-local ensure_code_gen = require("refactoring.tasks.ensure_code_gen")
+local tasks = require("refactoring.tasks")
 local indent = require("refactoring.indent")
 local text_edits_utils = require("refactoring.text_edits_utils")
 local notify = require("refactoring.notify")
@@ -195,18 +192,18 @@ end
 local function ensure_code_gen_119(refactor)
     local list = { "constant" }
 
-    return ensure_code_gen(refactor, list)
+    return tasks.ensure_code_gen(refactor, list)
 end
 
 ---@param bufnr integer
 ---@param region_type 'v' | 'V' | ''
 ---@param config Config
 function M.extract_var(bufnr, region_type, config)
-    Pipeline:from_task(refactor_setup(bufnr, region_type, config))
+    Pipeline:from_task(tasks.refactor_setup(bufnr, region_type, config))
         :add_task(ensure_code_gen_119)
-        :add_task(selection_setup)
+        :add_task(tasks.operator_setup)
         :add_task(extract_var_setup)
-        :after(post_refactor.post_refactor)
+        :after(tasks.post_refactor)
         :run(nil, notify.error)
 end
 
