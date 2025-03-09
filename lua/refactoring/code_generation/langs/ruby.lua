@@ -42,7 +42,7 @@ local function ruby_constant(opts)
     return constant_string_pattern
 end
 
----@type code_generation
+---@type refactor.CodeGeneration
 local ruby = {
     comment = function(statement)
         return ("# %s"):format(statement)

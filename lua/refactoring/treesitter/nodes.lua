@@ -21,21 +21,21 @@ local function to_array(...)
     return items
 end
 
----@class FieldnameNode
+---@class refactor.FieldnameNode
 ---@field fieldnames string[]
 ---@field node TSNode
 
----@alias FieldNodeFunc fun(node: TSNode?, fallback: integer|string): FieldnameNode
+---@alias refactor.FieldNodeFunc fun(node: TSNode?, fallback: integer|string): refactor.FieldnameNode
 
 ---@param ... string
----@return FieldNodeFunc
+---@return refactor.FieldNodeFunc
 function M.FieldNode(...)
     ---@type string[]
     local fieldnames = to_array(...)
 
     ---@param node TSNode?
     ---@param fallback string
-    ---@return FieldnameNode
+    ---@return refactor.FieldnameNode
     return function(node, fallback)
         return setmetatable({
             fieldnames = fieldnames,
@@ -43,7 +43,7 @@ function M.FieldNode(...)
         }, {
             __index = BaseFieldNode,
 
-            ---@param self FieldnameNode
+            ---@param self refactor.FieldnameNode
             ---@return string
             __tostring = function(self)
                 if not self.node then
@@ -77,10 +77,10 @@ function M.StringNode(text)
     end
 end
 
----@alias InlineNodeFunc fun(scope: TSNode, bufnr: integer, filetype: string): TSNode[]
+---@alias refactor.InlineNodeFunc fun(scope: TSNode, bufnr: integer, filetype: string): TSNode[]
 
 ---@param sexpr string sexpr of a capture
----@return InlineNodeFunc
+---@return refactor.InlineNodeFunc
 function M.InlineNode(sexpr)
     return function(scope, bufnr, filetype)
         local lang = ts.language.get_lang(filetype)
@@ -97,11 +97,11 @@ function M.InlineNode(sexpr)
     end
 end
 
----@alias NodeFilter fun(id: integer, node: TSNode, query: vim.treesitter.Query): boolean
----@alias InlineFilteredNodeFunc fun(scope: TSNode, bufnr: integer, filetype: string, filter: NodeFilter): TSNode[]
+---@alias refactor.NodeFilter fun(id: integer, node: TSNode, query: vim.treesitter.Query): boolean
+---@alias refactor.InlineFilteredNodeFunc fun(scope: TSNode, bufnr: integer, filetype: string, filter: refactor.NodeFilter): TSNode[]
 
 ---@param sexpr string sexpr with multiple captures
----@return InlineFilteredNodeFunc
+---@return refactor.InlineFilteredNodeFunc
 function M.InlineFilteredNode(sexpr)
     return function(scope, bufnr, filetype, filter)
         local lang = ts.language.get_lang(filetype)

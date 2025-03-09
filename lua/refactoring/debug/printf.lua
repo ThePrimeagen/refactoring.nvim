@@ -13,8 +13,8 @@ local api = vim.api
 
 local M = {}
 
----@param opts c
----@param refactor Refactor
+---@param opts refactor.c
+---@param refactor refactor.Refactor
 ---@return string
 function M.get_printf_statement(opts, refactor)
     local default_printf_statement = refactor.code.default_printf_statement()
@@ -43,11 +43,11 @@ end
 
 --- Add text edit for printf to be inserted (line above or below cursor).
 --- Should always be called at least once
----@param refactor Refactor
+---@param refactor refactor.Refactor
 ---@param opts {below:boolean, _end:boolean}
 ---@param printf_statement string
 ---@param content string
----@param point RefactorPoint
+---@param point refactor.Point
 local function text_edit_insert_text(
     refactor,
     opts,
@@ -100,7 +100,7 @@ end
 --- Should be called for each line with a debug printf statement in the current buffer.
 --
 --- Checks if each line should be modified and only adds a text_edit if its needed
----@param refactor Refactor
+---@param refactor refactor.Refactor
 ---@param debug_path string
 ---@param escaped_printf_statement string
 ---@param lines string[]
@@ -158,17 +158,17 @@ local function text_edits_modify_count(
 end
 
 ---@param bufnr integer
----@param config Config
+---@param config refactor.Config
 function M.printDebug(bufnr, config)
     local seed = tasks.refactor_seed(bufnr, nil, config)
     Pipeline:from_task(
-        ---@param refactor Refactor
+        ---@param refactor refactor.Refactor
         function(refactor)
             return tasks.ensure_code_gen(refactor, { "print", "comment" })
         end
     )
         :add_task(
-            ---@param refactor Refactor
+            ---@param refactor refactor.Refactor
             function(refactor)
                 local opts = refactor.config:get()
                 local cursor = refactor.cursor

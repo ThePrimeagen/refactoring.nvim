@@ -13,7 +13,7 @@ local function build_args(args, arg_types)
     return final_args
 end
 
----@param opts function_opts
+---@param opts refactor.code_gen.function.Opts
 local function tsx_function(opts)
     if opts.region_type == "jsx_element" then
         local args
@@ -44,7 +44,7 @@ return (
     end
 end
 
----@param opts call_function_opts
+---@param opts refactor.code_gen.call_function.Opts
 local function tsx_call_function(opts)
     if opts.region_type == "jsx_element" or opts.contains_jsx then
         local args = vim.iter(opts.args)
@@ -64,7 +64,7 @@ local special_nodes = {
 }
 
 ---@param var string
----@param opts special_var_opts
+---@param opts refactor.code_gen.special_var.Opts
 ---@return string
 local function tsx_special_var(var, opts)
     if vim.tbl_contains(special_nodes, opts.region_node_type) then
@@ -74,7 +74,7 @@ local function tsx_special_var(var, opts)
     end
 end
 
----@type code_generation
+---@type refactor.CodeGeneration
 local tsx = {
     default_printf_statement = ts.default_printf_statement,
     print = ts.print,

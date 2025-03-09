@@ -81,8 +81,8 @@ function M.iter_scope_tree(node, bufnr)
 end
 
 -- Gets a table of all nodes and their 'kinds' from a locals list
----@param local_def TSLocal[] the local list result
----@return TSLocal[] a list of node entries
+---@param local_def refactor.TSLocal[] the local list result
+---@return refactor.TSLocal[] a list of node entries
 function M.get_local_nodes(local_def)
     local result = {}
 
@@ -99,7 +99,7 @@ end
 -- * The node
 -- * The full definition match `@local.definition.var.something` -> 'var.something'
 -- * The last definition match `@local.definition.var.something` -> 'something'
----@param local_def TSLocal The locals result
+---@param local_def refactor.TSLocal The locals result
 ---@param accumulator function The accumulator function
 ---@param full_match? string The full match path to append to
 ---@param last_match? string The last match
@@ -180,20 +180,20 @@ local function get_query(bufnr)
     return query, root
 end
 
----@alias TSScope "parent"|"local"|"global"
+---@alias refactor.TSScope "parent"|"local"|"global"
 
----@class TSLocal
+---@class refactor.TSLocal
 ---@field kind string
 ---@field node TSNode
----@field scope TSScope
+---@field scope refactor.TSScope
 
 -- Return all locals for the buffer
 --
 -- memoized by buffer tick
 --
 ---@param bufnr integer buffer
----@return TSLocal[] definitions
----@return TSLocal[] references
+---@return refactor.TSLocal[] definitions
+---@return refactor.TSLocal[] references
 ---@return TSNode[] scopes
 ---@return TSNode[] statements
 M.get = memoize(function(bufnr)
@@ -267,14 +267,14 @@ end
 -- is called very frequently, which is why this lookup must be fast as possible.
 --
 ---@param bufnr integer: the buffer
----@return TSLocal[] result: a table for looking up definitions
+---@return refactor.TSLocal[] result: a table for looking up definitions
 M.get_definitions_lookup_table = memoize(function(bufnr)
     local definitions, _, _ = M.get(bufnr)
     if not definitions then
         return {}
     end
 
-    ---@type table<string, TSLocal>
+    ---@type table<string, refactor.TSLocal>
     local result = {}
     for _, definition in ipairs(definitions) do
         for _, node_entry in ipairs(M.get_local_nodes(definition)) do
@@ -310,7 +310,7 @@ end)
 --
 ---@param node TSNode: the definition node
 ---@param bufnr integer: the buffer
----@param scope_type TSScope: the scope type
+---@param scope_type refactor.TSScope: the scope type
 ---@return TSNode[]
 function M.get_definition_scopes(node, bufnr, scope_type)
     local scopes = {}

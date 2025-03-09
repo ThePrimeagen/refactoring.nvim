@@ -14,7 +14,7 @@ local api = vim.api
 
 local M = {}
 
----@param refactor Refactor
+---@param refactor refactor.Refactor
 ---@return string[]
 local function get_return_vals(refactor)
     ---@param node TSNode
@@ -77,7 +77,7 @@ local function get_function_return_type()
     return function_return_type
 end
 
----@param refactor Refactor
+---@param refactor refactor.Refactor
 ---@param args string[]
 ---@return table<string, string|nil>
 local function get_function_param_types(refactor, args)
@@ -112,7 +112,7 @@ local function get_function_param_types(refactor, args)
     return args_types
 end
 
----@param refactor Refactor
+---@param refactor refactor.Refactor
 local function get_func_header_prefix(refactor)
     local indent_width = indent.buf_indent_width(refactor.bufnr)
     local scope_region = Region:from_node(refactor.scope, refactor.bufnr)
@@ -121,7 +121,7 @@ local function get_func_header_prefix(refactor)
     return indent.indent(baseline_indent, refactor.bufnr)
 end
 
----@param refactor Refactor
+---@param refactor refactor.Refactor
 local function get_indent_prefix(refactor)
     local ident_width = indent.buf_indent_width(refactor.bufnr)
     local first_node_in_row, _ = utils.get_first_node_in_row(refactor.scope)
@@ -132,9 +132,9 @@ local function get_indent_prefix(refactor)
     return indent.indent(total_indents, refactor.bufnr)
 end
 
----@param function_params func_params
+---@param function_params refactor.FuncParams
 ---@param has_return_vals boolean
----@param refactor Refactor
+---@param refactor refactor.Refactor
 local function indent_func_code(function_params, has_return_vals, refactor)
     if refactor.ts:is_indent_scope(refactor.scope) then
         local func_header_indent = get_func_header_prefix(refactor)
@@ -164,7 +164,7 @@ local function indent_func_code(function_params, has_return_vals, refactor)
     end
 end
 
----@class func_params
+---@class refactor.FuncParams
 ---@field func_header? string
 ---@field contains_jsx? boolean
 ---@field class_name? string
@@ -175,9 +175,9 @@ end
 ---@field scope_type? string
 ---@field region_type? string
 
----@param extract_params extract_params
----@param refactor Refactor
----@return func_params
+---@param extract_params refactor.ExtractParams
+---@param refactor refactor.Refactor
+---@return refactor.FuncParams
 local function get_func_params_opts(extract_params, refactor)
     local func_params = {
         name = extract_params.function_name,
@@ -206,8 +206,8 @@ local function get_func_params_opts(extract_params, refactor)
     return func_params
 end
 
----@param refactor Refactor
----@param extract_params extract_params
+---@param refactor refactor.Refactor
+---@param extract_params refactor.ExtractParams
 ---@return string
 local function get_function_code(refactor, extract_params)
     --- @type string
@@ -232,8 +232,8 @@ local function get_function_code(refactor, extract_params)
     return function_code
 end
 
---- @param refactor Refactor
---- @param extract_params extract_params
+--- @param refactor refactor.Refactor
+--- @param extract_params refactor.ExtractParams
 ---@return string
 local function get_func_call(refactor, extract_params)
     --- @type string
@@ -306,8 +306,8 @@ local function get_func_call(refactor, extract_params)
     return func_call
 end
 
---- @param refactor Refactor
----@return boolean, Refactor|string
+--- @param refactor refactor.Refactor
+---@return boolean, refactor.Refactor|string
 local function extract_block_setup(refactor)
     local region = Region:from_point(Point:from_cursor(), refactor.bufnr)
     local region_node = region:to_ts_node(refactor.ts:get_root())
@@ -357,8 +357,8 @@ local function extract_block_setup(refactor)
     return true, refactor
 end
 
---- @param refactor Refactor
---- @return boolean, Refactor|string
+--- @param refactor refactor.Refactor
+--- @return boolean, refactor.Refactor|string
 local function extract_setup(refactor)
     local function_name = ui.input("106: Extract Function Name > ")
     if not function_name or function_name == "" then
@@ -394,7 +394,7 @@ local function extract_setup(refactor)
 
     local is_class = refactor.ts:is_class_function(refactor.scope)
 
-    ---@class extract_params
+    ---@class refactor.ExtractParams
     local extract_params = {
         return_vals = return_vals,
         has_return_vals = has_return_vals,
@@ -415,7 +415,7 @@ local function extract_setup(refactor)
     end
     local region_above_scope = utils.get_non_comment_region_above_node(refactor)
 
-    ---@type RefactorTextEdit
+    ---@type refactor.TextEdit
     local extract_function
     if is_class then
         extract_function = text_edits_utils.insert_new_line_text(
@@ -544,7 +544,7 @@ local class_code_gen_list = {
     "call_class_function",
 }
 
---- @param refactor Refactor
+--- @param refactor refactor.Refactor
 local function ensure_code_gen_106(refactor)
     local list = {}
     for _, func in ipairs(ensure_code_gen_list) do
@@ -562,7 +562,7 @@ end
 
 ---@param bufnr integer
 ---@param region_type 'v' | 'V' | '' | nil
----@param opts Config
+---@param opts refactor.Config
 M.extract_to_file = function(bufnr, region_type, opts)
     local seed = tasks.refactor_seed(bufnr, region_type, opts)
     Pipeline:from_task(tasks.operator_setup)
@@ -575,14 +575,14 @@ end
 
 ---@param bufnr integer
 ---@param region_type 'v' | 'V' | '' | nil
----@param opts Config
+---@param opts refactor.Config
 M.extract = function(bufnr, region_type, opts)
     local seed = tasks.refactor_seed(bufnr, region_type, opts)
     Pipeline:from_task(tasks.operator_setup)
         :add_task(ensure_code_gen_106)
         :add_task(
-            ---@param refactor Refactor
-            ---@return boolean, Refactor|string
+            ---@param refactor refactor.Refactor
+            ---@return boolean, refactor.Refactor|string
             function(refactor)
                 if refactor.region:is_empty() then
                     return false,
@@ -598,7 +598,7 @@ end
 
 ---@param bufnr integer
 ---@param region_type 'v' | 'V' | '' | nil
----@param opts Config
+---@param opts refactor.Config
 M.extract_block = function(bufnr, region_type, opts)
     bufnr = bufnr or vim.api.nvim_get_current_buf()
 
@@ -612,7 +612,7 @@ end
 
 ---@param bufnr integer
 ---@param region_type 'v' | 'V' | '' | nil
----@param opts Config
+---@param opts refactor.Config
 M.extract_block_to_file = function(bufnr, region_type, opts)
     bufnr = bufnr or vim.api.nvim_get_current_buf()
 

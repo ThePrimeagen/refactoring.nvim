@@ -7,14 +7,14 @@ local api = vim.api
 
 local M = {}
 
----@type Config
+---@type refactor.Config
 local last_config
 
 function M.printf_operatorfunc()
     printf(api.nvim_get_current_buf(), last_config)
 end
 
----@param opts ConfigOpts
+---@param opts refactor.ConfigOpts
 function M.printf(opts)
     last_config = Config.get():merge(opts)
     vim.o.operatorfunc = "v:lua.require'refactoring'.debug.printf_operatorfunc"
@@ -30,7 +30,7 @@ function M.print_var_operatorfunc(type)
     print_var(api.nvim_get_current_buf(), region_type, last_config)
 end
 
----@param opts ConfigOpts
+---@param opts refactor.ConfigOpts
 function M.print_var(opts)
     last_config = Config.get():merge(opts)
     vim.o.operatorfunc =
@@ -44,7 +44,7 @@ function M.print_var(opts)
     end
 end
 
----@param opts ConfigOpts
+---@param opts refactor.ConfigOpts
 function M.cleanup(opts)
     local config = Config.get():merge(opts)
     cleanup(api.nvim_get_current_buf(), config)

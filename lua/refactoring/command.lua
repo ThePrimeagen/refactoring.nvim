@@ -3,7 +3,7 @@ local M = {}
 local api = vim.api
 local iter = vim.iter
 
---- @alias command_opts {name: string, args: string, fargs: string[], bang: boolean, line1: number, line2: number, range: number, count: number, reg: string, mods: string, smods: string[]}
+---@alias refactor.command.Opts {name: string, args: string, fargs: string[], bang: boolean, line1: number, line2: number, range: number, count: number, reg: string, mods: string, smods: string[]}
 
 local DO_NOT_PREVIEW = 0
 local PREVIEW_IN_CURRENT_BUFFER = 1
@@ -16,7 +16,7 @@ local _needed_args = {
     default = 1,
 }
 
---- @param opts command_opts
+--- @param opts refactor.command.Opts
 --- @param ns integer
 local function command_preview(opts, ns)
     local refactors = require("refactoring.refactor")
@@ -64,7 +64,7 @@ local function command_preview(opts, ns)
     return PREVIEW_IN_CURRENT_BUFFER
 end
 
---- @param opts command_opts
+--- @param opts refactor.command.Opts
 local function command(opts)
     local refactor = opts.fargs[1]
 

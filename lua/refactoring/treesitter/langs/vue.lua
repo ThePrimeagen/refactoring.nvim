@@ -1,10 +1,10 @@
 local TreeSitter = require("refactoring.treesitter.treesitter")
 
----@class TreeSitterInstance
+---@class refactor.TreeSitterInstance
 local Vue = {}
 
 function Vue.new(bufnr, ft)
-    ---@type TreeSitterLanguageConfig
+    ---@type refactor.TreeSitterLanguageConfig
     local config = {
         filetype = ft,
         bufnr = bufnr,

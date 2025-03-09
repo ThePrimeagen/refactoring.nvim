@@ -4,11 +4,11 @@ local FieldNode = Nodes.FieldNode
 local StringNode = Nodes.StringNode
 local InlineNode = Nodes.InlineNode
 
----@class TreeSitterInstance
+---@class refactor.TreeSitterInstance
 local JavaScript = {}
 
 function JavaScript.new(bufnr, ft)
-    ---@type TreeSitterLanguageConfig
+    ---@type refactor.TreeSitterLanguageConfig
     local config = {
         filetype = ft,
         bufnr = bufnr,

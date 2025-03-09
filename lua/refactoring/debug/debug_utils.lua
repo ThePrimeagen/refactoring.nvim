@@ -4,8 +4,8 @@ local ts = vim.treesitter
 local iter = vim.iter
 local api = vim.api
 
----@param refactor Refactor
----@param point RefactorPoint
+---@param refactor refactor.Refactor
+---@param point refactor.Point
 function M.get_debug_path(refactor, point)
     local node = assert(ts.get_node({
         bufnr = refactor.bufnr,
@@ -16,10 +16,10 @@ function M.get_debug_path(refactor, point)
     return iter(debug_path):map(tostring):rev():join("#")
 end
 
----@param refactor Refactor
+---@param refactor refactor.Refactor
 ---@param opts {below: boolean}
----@return RefactorPoint insert_pos
----@return RefactorPoint path_pos
+---@return refactor.Point insert_pos
+---@return refactor.Point path_pos
 ---@return TSNode? current_statement
 function M.get_debug_points(refactor, opts)
     local cursor = refactor.cursor

@@ -1,4 +1,4 @@
----@type code_generation
+---@type refactor.CodeGeneration
 local vue = {}
 
 return vue

@@ -15,8 +15,8 @@ end
 
 ---@param input_bufnr integer
 ---@param region_type 'v' | 'V' | '' | nil
----@param config Config
----@return Refactor
+---@param config refactor.Config
+---@return refactor.Refactor
 function M.refactor_seed(input_bufnr, region_type, config)
     local bufnr ---@type integer
     local test_bufnr = config:get_test_bufnr()
@@ -27,19 +27,19 @@ function M.refactor_seed(input_bufnr, region_type, config)
     end
 
     local ts, lang = TreeSitter.get_treesitter(bufnr)
-    local ft = vim.bo[bufnr].filetype --[[@as ft]]
+    local ft = vim.bo[bufnr].filetype --[[@as refactor.ft]]
 
     local root = ts:get_root()
     local win = api.nvim_get_current_win()
     local cursor = Point:from_cursor()
 
-    ---@class Refactor
-    ---@field region? RefactorRegion
+    ---@class refactor.Refactor
+    ---@field region? refactor.Region
     ---@field region_node? TSNode
     ---@field identifier_node? TSNode
     ---@field scope? TSNode
-    ---@field text_edits? RefactorTextEdit[] | {bufnr?: integer}[]
-    ---@field code code_generation
+    ---@field text_edits? refactor.TextEdit[] | {bufnr?: integer}[]
+    ---@field code refactor.CodeGeneration
     ---@field success_message? string
     local refactor = {
         ---@type {cursor: integer, func_call: integer|nil}
@@ -47,7 +47,7 @@ function M.refactor_seed(input_bufnr, region_type, config)
             cursor = assert(vim.fn.indent(cursor.row)),
         },
         cursor = cursor,
-        code = config:get_code_generation_for(lang) --[[@as code_generation]],
+        code = config:get_code_generation_for(lang) --[[@as refactor.CodeGeneration]],
         ts = ts,
         filetype = ft,
         lang = lang,
@@ -64,7 +64,7 @@ end
 
 ---@param bufnr integer
 ---@param ns integer
----@param edit_set RefactorTextEdit[]
+---@param edit_set refactor.TextEdit[]
 local function preview_highlight(bufnr, ns, edit_set)
     api.nvim_buf_clear_namespace(bufnr, ns, 0, -1)
     for _, edit in pairs(edit_set) do
@@ -102,14 +102,14 @@ local function preview_highlight(bufnr, ns, edit_set)
     end
 end
 
----@param refactor Refactor
----@return true, Refactor
+---@param refactor refactor.Refactor
+---@return true, refactor.Refactor
 function M.refactor_apply_text_edits(refactor)
     if not refactor.text_edits then
         return true, refactor
     end
 
-    --- @type table<integer, RefactorTextEdit[]>
+    --- @type table<integer, refactor.TextEdit[]>
     local edits = {}
 
     for _, edit in pairs(refactor.text_edits) do
@@ -133,8 +133,8 @@ function M.refactor_apply_text_edits(refactor)
     return true, refactor
 end
 
----@param refactor Refactor
----@return boolean, Refactor|string
+---@param refactor refactor.Refactor
+---@return boolean, refactor.Refactor|string
 function M.create_file_from_input(refactor)
     local file_name = ui.input("Create File: Name > ", vim.fn.expand("%:h"))
     if not file_name or file_name == "" then
@@ -159,9 +159,9 @@ function M.create_file_from_input(refactor)
     return true, refactor
 end
 
---- @param refactor Refactor
+--- @param refactor refactor.Refactor
 ---@param code_gen_operations string[]
----@return boolean, Refactor|string
+---@return boolean, refactor.Refactor|string
 function M.ensure_code_gen(refactor, code_gen_operations)
     for _, code_gen_operation in ipairs(code_gen_operations) do
         if refactor.code[code_gen_operation] == nil then
@@ -175,7 +175,7 @@ function M.ensure_code_gen(refactor, code_gen_operations)
     return true, refactor
 end
 
----@param refactor Refactor
+---@param refactor refactor.Refactor
 function M.operator_setup(refactor)
     local Region = require("refactoring.region")
 
@@ -201,7 +201,7 @@ function M.operator_setup(refactor)
     return true, refactor
 end
 
----@param refactor Refactor
+---@param refactor refactor.Refactor
 local function success_message(refactor)
     local config = refactor.config:get()
     if refactor.success_message and config.show_success_message then
@@ -223,8 +223,8 @@ end
 function M.multiple_files_post_refactor()
     return Pipeline:from_task(M.refactor_apply_text_edits)
         :add_task(
-            ---@param refactor Refactor
-            ---@return boolean, Refactor
+            ---@param refactor refactor.Refactor
+            ---@return boolean, refactor.Refactor
             function(refactor)
                 api.nvim_set_current_win(refactor.win)
                 return true, refactor

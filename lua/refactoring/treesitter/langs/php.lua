@@ -18,11 +18,11 @@ local function should_check_parent_node(node)
     return vim.tbl_contains(special_nodes, parent:type())
 end
 
----@class TreeSitterInstance
+---@class refactor.TreeSitterInstance
 local Php = {}
 
 function Php.new(bufnr, ft)
-    ---@type TreeSitterLanguageConfig
+    ---@type refactor.TreeSitterLanguageConfig
     local config = {
         filetype = ft,
         bufnr = bufnr,

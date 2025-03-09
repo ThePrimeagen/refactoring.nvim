@@ -8,15 +8,15 @@ local dont_need_args = {
     "Inline Function",
 }
 
----@param config ConfigOpts
+---@param config refactor.ConfigOpts
 function M.setup(config)
     require("refactoring.config").setup(config)
 end
 
----@alias refactor.RefactorFunc fun(bufnr: integer, type: 'v' | 'V' | '' | nil, opts: Config)
+---@alias refactor.RefactorFunc fun(bufnr: integer, type: 'v' | 'V' | '' | nil, opts: refactor.Config)
 
 local last_refactor ---@type refactor.RefactorFunc
-local last_config ---@type Config
+local last_config ---@type refactor.Config
 
 ---@param type "line" | "char" | "block"
 function M.refactor_operatorfunc(type)
@@ -34,7 +34,7 @@ local default_motions = {
 }
 
 ---@param name string|number
----@param opts ConfigOpts|nil
+---@param opts refactor.ConfigOpts|nil
 function M.refactor(name, opts)
     if opts == nil then
         opts = {}
@@ -75,7 +75,7 @@ function M.get_refactors()
     )
 end
 
----@param opts ConfigOpts|{prefer_ex_cmd: boolean?}?
+---@param opts refactor.ConfigOpts|{prefer_ex_cmd: boolean?}?
 function M.select_refactor(opts)
     local prefer_ex_cmd = opts and opts.prefer_ex_cmd or false
 

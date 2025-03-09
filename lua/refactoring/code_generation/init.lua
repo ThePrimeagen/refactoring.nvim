@@ -13,7 +13,7 @@ local java = require("refactoring.code_generation.langs.java")
 local cs = require("refactoring.code_generation.langs.cs")
 local ruby = require("refactoring.code_generation.langs.ruby")
 
----@type table<ft, code_generation>|{new_line: fun(): string}
+---@type table<refactor.ft, refactor.CodeGeneration>|{new_line: fun(): string}
 local M = {
     javascript = javascript, -- includes jsx because they share parser
     typescript = typescript,
