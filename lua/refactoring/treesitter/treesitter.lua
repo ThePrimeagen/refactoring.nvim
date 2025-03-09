@@ -119,8 +119,8 @@ function TreeSitter.get_arg_type_key(arg)
     return arg
 end
 
----@return boolean: whether to allow indenting operations
-function TreeSitter:allows_indenting_task()
+---@return boolean
+function TreeSitter:indent_scopes_support()
     return setting_present(self.indent_scopes)
 end
 
