@@ -67,8 +67,8 @@ function M.sort_in_appearance_order(nodes)
 end
 
 -- determines if a contains node b.
---- @param a TSNode the containing node
---- @param b TSNode the node to be contained
+---@param a TSNode the containing node
+---@param b TSNode the node to be contained
 function M.node_contains(a, b)
     if a == nil or b == nil then
         return false

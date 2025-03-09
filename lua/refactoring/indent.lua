@@ -61,10 +61,10 @@ end
 ---@param bufnr number
 ---@return string
 local function space_indent(indent_amount, bufnr)
-    --- @type string[]
+    ---@type string[]
     local indent = {}
 
-    --- @type string[]
+    ---@type string[]
     local single_indent_table = {}
     for i = 1, M.buf_indent_width(bufnr) do
         single_indent_table[i] = " "
@@ -81,7 +81,7 @@ end
 ---@param indent_amount number
 ---@return string
 local function tab_indent(indent_amount)
-    --- @type string[]
+    ---@type string[]
     local indent = {}
     for i = 1, indent_amount do
         indent[i] = "\t"

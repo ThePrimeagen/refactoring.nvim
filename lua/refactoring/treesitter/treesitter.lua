@@ -177,7 +177,7 @@ function TreeSitter:get_local_defs(scope, region)
             return utils.region_complement(node, region)
         end)
         :filter(
-            --- @param node TSNode
+            ---@param node TSNode
             ---@return boolean
             function(node)
                 return Region:from_node(node):above(region)
@@ -348,7 +348,7 @@ end
 ---@param scope TSNode
 ---@return table<string, string>
 function TreeSitter:get_local_types(scope)
-    --- @type table<string, string>
+    ---@type table<string, string>
     local all_types = {}
 
     self:validate_setting("ident_with_type")
@@ -478,8 +478,8 @@ function TreeSitter:local_declarations_under_cursor()
     end
 
     return iter(self:get_local_declarations(scope)):filter(
-        --- @param node TSNode
-        --- @return boolean
+        ---@param node TSNode
+        ---@return boolean
         function(node)
             return Region:from_node(node, 0):contains_point(point)
         end

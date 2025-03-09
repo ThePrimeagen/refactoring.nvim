@@ -17,7 +17,7 @@ local M = {}
 ---@param bufnr integer
 ---@return TSNode|nil, integer|nil
 local function get_node_to_inline(identifiers, bufnr)
-    --- @type TSNode|nil, integer|nil
+    ---@type TSNode|nil, integer|nil
     local node_to_inline, identifier_pos
 
     if #identifiers == 1 then
@@ -164,7 +164,7 @@ end
 ---@param refactor refactor.Refactor
 ---@return boolean, refactor.Refactor|string
 local function inline_var_setup(refactor)
-    --- @type boolean
+    ---@type boolean
     local ok, declarator_nodes = pcall(
         refactor.ts.local_declarations_in_region,
         refactor.ts,

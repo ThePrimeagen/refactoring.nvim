@@ -148,7 +148,7 @@ local function memoize(fn, hash_fn)
 
         for k, value in pairs(v) do
             if value == vim.NIL then
-                value[k] = nil --- @type any
+                value[k] = nil ---@type any
             end
         end
 

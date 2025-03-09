@@ -16,8 +16,8 @@ local _needed_args = {
     default = 1,
 }
 
---- @param opts refactor.command.Opts
---- @param ns integer
+---@param opts refactor.command.Opts
+---@param ns integer
 local function command_preview(opts, ns)
     local refactors = require("refactoring.refactor")
 
@@ -47,7 +47,7 @@ local function command_preview(opts, ns)
         end
     end
 
-    --- @type string[]
+    ---@type string[]
     local args = {}
     for i = 2, needed_args + 1 do
         table.insert(args, opts.fargs[i])
@@ -64,7 +64,7 @@ local function command_preview(opts, ns)
     return PREVIEW_IN_CURRENT_BUFFER
 end
 
---- @param opts refactor.command.Opts
+---@param opts refactor.command.Opts
 local function command(opts)
     local refactor = opts.fargs[1]
 
@@ -74,7 +74,7 @@ local function command(opts)
 
     local needed_args = _needed_args[refactor] or _needed_args.default
 
-    --- @type string[]
+    ---@type string[]
     local args = {}
     for i = 2, needed_args + 1 do
         table.insert(args, opts.fargs[i])
@@ -103,13 +103,13 @@ local function command_complete(arg_lead, cmd_line, _cursor_pos)
 
     local options = iter(vim.tbl_keys(refactors))
         :filter(
-            --- @param option any
+            ---@param option any
             function(option)
                 return type(option) == "string"
             end
         )
         :filter(
-            --- @param name string
+            ---@param name string
             function(name)
                 return vim.startswith(name, arg_lead)
             end

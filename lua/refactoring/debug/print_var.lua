@@ -21,7 +21,7 @@ function M.get_print_var_statement(opts, refactor)
     local custom_print_var_statements =
         opts.print_var_statements[refactor.filetype]
 
-    --- @type string|nil
+    ---@type string|nil
     local print_var_statement
 
     if custom_print_var_statements then

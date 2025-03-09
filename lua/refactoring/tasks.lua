@@ -109,7 +109,7 @@ function M.refactor_apply_text_edits(refactor)
         return true, refactor
     end
 
-    --- @type table<integer, refactor.TextEdit[]>
+    ---@type table<integer, refactor.TextEdit[]>
     local edits = {}
 
     for _, edit in pairs(refactor.text_edits) do
@@ -159,7 +159,7 @@ function M.create_file_from_input(refactor)
     return true, refactor
 end
 
---- @param refactor refactor.Refactor
+---@param refactor refactor.Refactor
 ---@param code_gen_operations string[]
 ---@return boolean, refactor.Refactor|string
 function M.ensure_code_gen(refactor, code_gen_operations)

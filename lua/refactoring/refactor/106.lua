@@ -86,7 +86,7 @@ local function get_function_param_types(refactor, args)
     local local_types = refactor.ts:get_local_types(refactor.scope)
 
     for _, arg in pairs(args) do
-        --- @type string|nil
+        ---@type string|nil
         local function_param_type
         local curr_arg = refactor.ts.get_arg_type_key(arg)
 
@@ -105,7 +105,7 @@ local function get_function_param_types(refactor, args)
         else
             function_param_type = code_utils.default_func_param_type()
         end
-        --- @type string|nil
+        ---@type string|nil
         args_types[curr_arg] = function_param_type
     end
 
@@ -210,7 +210,7 @@ end
 ---@param extract_params refactor.ExtractParams
 ---@return string
 local function get_function_code(refactor, extract_params)
-    --- @type string
+    ---@type string
     local function_code
     local func_params_opts = get_func_params_opts(extract_params, refactor)
 
@@ -232,11 +232,11 @@ local function get_function_code(refactor, extract_params)
     return function_code
 end
 
---- @param refactor refactor.Refactor
---- @param extract_params refactor.ExtractParams
+---@param refactor refactor.Refactor
+---@param extract_params refactor.ExtractParams
 ---@return string
 local function get_func_call(refactor, extract_params)
-    --- @type string
+    ---@type string
     local func_call
     if extract_params.is_class then
         func_call = refactor.code.call_class_function({
@@ -306,7 +306,7 @@ local function get_func_call(refactor, extract_params)
     return func_call
 end
 
---- @param refactor refactor.Refactor
+---@param refactor refactor.Refactor
 ---@return boolean, refactor.Refactor|string
 local function extract_block_setup(refactor)
     local region = Region:from_point(Point:from_cursor(), refactor.bufnr)
@@ -357,8 +357,8 @@ local function extract_block_setup(refactor)
     return true, refactor
 end
 
---- @param refactor refactor.Refactor
---- @return boolean, refactor.Refactor|string
+---@param refactor refactor.Refactor
+---@return boolean, refactor.Refactor|string
 local function extract_setup(refactor)
     local function_name = ui.input("106: Extract Function Name > ")
     if not function_name or function_name == "" then
@@ -429,7 +429,7 @@ local function extract_setup(refactor)
             function_code,
             { below = true }
         )
-        --- @type integer
+        ---@type integer
         extract_function.bufnr = refactor.buffers[2]
     end
 
@@ -467,7 +467,7 @@ local function extract_setup(refactor)
         and refactor.filetype ~= "typescriptreact"
         and refactor.filetype ~= "javascriptreact"
     then
-        --- @type string[]
+        ---@type string[]
         local body_sexprs = {}
         do
             local i = 1
@@ -544,7 +544,7 @@ local class_code_gen_list = {
     "call_class_function",
 }
 
---- @param refactor refactor.Refactor
+---@param refactor refactor.Refactor
 local function ensure_code_gen_106(refactor)
     local list = {}
     for _, func in ipairs(ensure_code_gen_list) do
