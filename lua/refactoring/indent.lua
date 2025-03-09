@@ -1,6 +1,3 @@
-local iter = vim.iter
-local ts = vim.treesitter
-
 local M = {}
 
 ---Returns the indent width of a given buffer

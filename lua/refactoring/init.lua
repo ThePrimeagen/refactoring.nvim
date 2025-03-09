@@ -69,7 +69,6 @@ end
 
 ---@return string[]
 function M.get_refactors()
-    local refactors = require("refactoring.refactor")
     return vim.tbl_keys(
         refactors.refactor_names --[[@as table<string, string>>]]
     )

@@ -2,7 +2,6 @@ local M = {}
 
 local api = vim.api
 
-local Config = require("refactoring.config")
 local TreeSitter = require("refactoring.treesitter")
 local Point = require("refactoring.point")
 local ui = require("refactoring.ui")
