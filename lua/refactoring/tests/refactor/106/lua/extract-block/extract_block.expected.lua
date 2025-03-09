@@ -1,4 +1,3 @@
--- stylua: ignore start
 
 local function foo_bar(a)
     local test = 1

@@ -1,4 +1,3 @@
--- stylua: ignore start
 
 local function orderCalculation(order, a, b)
     local temp = a * b

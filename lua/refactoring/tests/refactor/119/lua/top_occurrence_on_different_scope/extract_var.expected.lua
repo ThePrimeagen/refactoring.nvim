@@ -1,4 +1,3 @@
--- stylua: ignore start
 local function foo()
     local foo = "foo"
     print(foo)

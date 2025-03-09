@@ -1,4 +1,3 @@
--- stylua: ignore start
 
 local function foo_bar(a, x, y)
     print(a, x, y)

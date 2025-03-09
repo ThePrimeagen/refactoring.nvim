@@ -1,4 +1,3 @@
--- stylua: ignore start
 local function poggers()
     -- __AUTO_GENERATED_PRINTF_START__
     print([==[poggers 1]==]) -- __AUTO_GENERATED_PRINTF_END__

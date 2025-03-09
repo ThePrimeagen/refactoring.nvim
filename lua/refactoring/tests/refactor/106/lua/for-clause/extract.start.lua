@@ -1,4 +1,3 @@
--- stylua: ignore start
 
 function simple_function(a)
     local test = {1, 2}

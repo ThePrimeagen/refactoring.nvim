@@ -1,4 +1,3 @@
--- stylua: ignore start
 
 local function main()
     local i = 0

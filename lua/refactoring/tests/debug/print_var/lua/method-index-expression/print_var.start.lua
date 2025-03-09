@@ -1,4 +1,3 @@
--- stylua: ignore start
 local function simple_function()
     local test = {
         value = 11,

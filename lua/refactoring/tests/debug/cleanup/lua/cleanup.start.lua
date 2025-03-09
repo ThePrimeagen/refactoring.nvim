@@ -1,4 +1,3 @@
--- stylua: ignore start
 
 local function main()
     -- __AUTO_GENERATED_PRINTF_START__
