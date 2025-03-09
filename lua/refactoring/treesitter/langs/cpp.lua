@@ -8,11 +8,11 @@ local QueryNode = Nodes.QueryNode
 local InlineNode = Nodes.InlineNode
 local InlineFilteredNode = Nodes.InlineFilteredNode
 
----@class TreeSitterInstance
+---@class refactor.TreeSitterInstance
 local Cpp = {}
 
 function Cpp.new(bufnr, ft)
-    ---@type TreeSitterLanguageConfig
+    ---@type refactor.TreeSitterLanguageConfig
     local config = {
         filetype = ft,
         bufnr = bufnr,

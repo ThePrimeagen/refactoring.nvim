@@ -16,10 +16,10 @@ local ruby = require("refactoring.treesitter.langs.ruby")
 local api = vim.api
 local ts = vim.treesitter
 
----@class TreeSitterInstance: TreeSitter
----@field new fun(bufnr: integer, ft: string): TreeSitter
+---@class refactor.TreeSitterInstance: refactor.TreeSitter
+---@field new fun(bufnr: integer, ft: string): refactor.TreeSitter
 
----@type table<string, TreeSitter|TreeSitterInstance|fun(bufnr: integer|nil): TreeSitter, string>
+---@type table<string, refactor.TreeSitter|refactor.TreeSitterInstance|fun(bufnr: integer|nil): refactor.TreeSitter, string>
 local M = {
     TreeSitter = TreeSitter,
     javascript = JavaScript, -- includes jsx because they use the same parser
@@ -43,7 +43,7 @@ local DefaultSitter = {}
 
 ---@param bufnr integer
 ---@param ft string
----@return TreeSitter
+---@return refactor.TreeSitter
 function DefaultSitter.new(bufnr, ft)
     return TreeSitter:new({
         filetype = ft,

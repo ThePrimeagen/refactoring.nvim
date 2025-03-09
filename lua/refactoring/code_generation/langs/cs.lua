@@ -26,7 +26,7 @@ local function cs_func_args_with_types(args, args_types)
     return table.concat(args_with_types, ", ")
 end
 
----@param opts function_opts
+---@param opts refactor.code_gen.function.Opts
 local function cs_func_args(opts)
     if opts.args_types ~= nil then
         return cs_func_args_with_types(opts.args, opts.args_types)
@@ -35,7 +35,7 @@ local function cs_func_args(opts)
     end
 end
 
----@param opts constant_opts
+---@param opts refactor.code_gen.constant.Opts
 ---@return string
 local function cs_constant(opts)
     local constant_string_pattern ---@type string
@@ -68,7 +68,7 @@ local function cs_constant(opts)
     return constant_string_pattern
 end
 
----@type code_generation
+---@type refactor.CodeGeneration
 local cs = {
     comment = function(statement)
         return ("// %s"):format(statement)

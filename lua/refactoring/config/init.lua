@@ -25,33 +25,36 @@ local default_printf_statements = {}
 local default_print_var_statements = {}
 local default_extract_var_statements = {}
 
----@alias constant_opts {multiple: boolean?, identifiers: string[]?, values: string[]?, statement: string|nil|boolean, name: string|nil|string[], value: string?}
----@alias call_function_opts func_params
----@alias function_opts func_params
----@alias special_var_opts {region_node_type: string}
----@alias print_opts {statement:string, content:string}
+---@alias refactor.code_gen.constant.Opts {multiple: boolean?, identifiers: string[]?, values: string[]?, statement: string|nil|boolean, name: string|nil|string[], value: string?}
+---@alias refactor.code_gen.call_function.Opts refactor.FuncParams
+---@alias refactor.code_gen.class_function_return.Opts {body: string, classname: string, name: string, return_type: string}
+---@alias refactor.code_gen.call_class_function.Opts {args: string[], class_type: string|nil, name: string}
+---@alias refactor.code_gen.function.Opts refactor.FuncParams
+---@alias refactor.code_gen.special_var.Opts {region_node_type: string}
+---@alias refactor.code_gen.print.Opts {statement:string, content:string}
+---@alias refactor.code_gen.print_var.Opts {statement:string, prefix:string , var:string}
 
----@class code_generation
+---@class refactor.CodeGeneration
 ---@field default_printf_statement fun(): string[]
----@field print fun(opts: print_opts): string
+---@field print fun(opts: refactor.code_gen.print.Opts): string
 ---@field default_print_var_statement fun(): string[]
----@field print_var fun(opts: {statement:string, prefix:string , var:string}): string
+---@field print_var fun(opts: refactor.code_gen.print_var.Opts): string
 ---@field comment fun(statement: string): string
----@field constant fun(opts: constant_opts): string
+---@field constant fun(opts: refactor.code_gen.constant.Opts): string
 ---@field pack? fun(names: string|table):string This is for returning multiple arguments from a function
 ---@field unpack? fun(names: string|table):string This is for consuming one or more arguments from a function call.
 ---@field return fun(code: string[]|string):string
----@field function fun(opts: function_opts):string
----@field function_return fun(opts: function_opts): string
----@field call_function fun(opts: call_function_opts):string
+---@field function fun(opts: refactor.code_gen.function.Opts):string
+---@field function_return fun(opts: refactor.code_gen.function.Opts): string
+---@field call_function fun(opts: refactor.code_gen.call_function.Opts):string
 ---@field terminate fun(code: string): string
----@field class_function? fun(opts: call_function_opts):string
----@field class_function_return? fun(opts: {body: string, classname: string, name: string, return_type: string}): string
----@field call_class_function? fun(opts: {args: string[], class_type: string|nil, name: string}): string
----@field special_var? fun(var: string, opts: special_var_opts): string
----@field var_declaration? fun(opts: constant_opts): string
+---@field class_function? fun(opts: refactor.code_gen.call_function.Opts):string
+---@field class_function_return? fun(opts: refactor.code_gen.class_function_return.Opts): string
+---@field call_class_function? fun(opts: refactor.code_gen.call_class_function.Opts): string
+---@field special_var? fun(var: string, opts: refactor.code_gen.special_var.Opts): string
+---@field var_declaration? fun(opts: refactor.code_gen.constant.Opts): string
 
----@alias ft
+---@alias refactor.ft
 ---| "ts"
 ---| "js"
 ---| "typescriptreact"
@@ -72,29 +75,29 @@ local default_extract_var_statements = {}
 ---| "ruby"
 ---| "cs"
 
----@class ConfigOpts
----@field code_generation? table<string, code_generation>|{new_line: fun(): string}
----@field prompt_func_return_type? table<ft, boolean>
----@field prompt_func_param_type? table<ft, boolean>
----@field printf_statements? table<ft, string[]>
----@field print_var_statements? table<ft, string[]>
----@field extract_var_statements? table<ft, string>
----@field visibility? table<ft, string>
+---@class refactor.ConfigOpts
+---@field code_generation? table<string, refactor.CodeGeneration>|{new_line: fun(): string}
+---@field prompt_func_return_type? table<refactor.ft, boolean>
+---@field prompt_func_param_type? table<refactor.ft, boolean>
+---@field printf_statements? table<refactor.ft, string[]>
+---@field print_var_statements? table<refactor.ft, string[]>
+---@field extract_var_statements? table<refactor.ft, string>
+---@field visibility? table<refactor.ft, string>
 ---@field below? boolean
 ---@field show_success_message? boolean
 ---@field _end? boolean
 
----@class c: ConfigOpts
+---@class refactor.c: refactor.ConfigOpts
 ---@field _automation {bufnr: number, inputs: string[], inputs_idx: integer}
 ---@field _preview_namespace integer
 
----@class Config
----@field config c
+---@class refactor.Config
+---@field config refactor.c
 local Config = {}
 Config.__index = Config
 
----@vararg ConfigOpts
----@return Config
+---@vararg refactor.ConfigOpts
+---@return refactor.Config
 function Config:new(...)
     local c = vim.tbl_deep_extend("force", {
         _automation = {
@@ -120,13 +123,13 @@ function Config:new(...)
     }, self)
 end
 
----@return c
+---@return refactor.c
 function Config:get()
     return self.config
 end
 
----@param opts ConfigOpts
----@return Config
+---@param opts refactor.ConfigOpts
+---@return refactor.Config
 function Config:merge(opts)
     return Config:new(self.config, opts or {})
 end
@@ -152,7 +155,7 @@ function Config:automate_input(inputs)
     self.config._automation.inputs_idx = 0
 end
 
----@param filetype ft
+---@param filetype refactor.ft
 ---@return boolean
 function Config:get_prompt_func_param_type(filetype)
     if self.config.prompt_func_param_type[filetype] == nil then
@@ -161,12 +164,12 @@ function Config:get_prompt_func_param_type(filetype)
     return self.config.prompt_func_param_type[filetype]
 end
 
----@param override_map table<ft, boolean>
+---@param override_map table<refactor.ft, boolean>
 function Config:set_prompt_func_param_type(override_map)
     self.config.prompt_func_param_type = override_map
 end
 
----@param filetype ft
+---@param filetype refactor.ft
 ---@return boolean
 function Config:get_prompt_func_return_type(filetype)
     if self.config.prompt_func_return_type[filetype] == nil then
@@ -175,12 +178,12 @@ function Config:get_prompt_func_return_type(filetype)
     return self.config.prompt_func_return_type[filetype]
 end
 
----@param override_map table<ft, boolean>
+---@param override_map table<refactor.ft, boolean>
 function Config:set_prompt_func_return_type(override_map)
     self.config.prompt_func_return_type = override_map
 end
 
----@param filetype ft
+---@param filetype refactor.ft
 ---@return string[]|false
 function Config:get_printf_statements(filetype)
     if self.config.printf_statements[filetype] == nil then
@@ -189,12 +192,12 @@ function Config:get_printf_statements(filetype)
     return self.config.prompt_func_return_type[filetype]
 end
 
----@param override_map table<ft, string[]>
+---@param override_map table<refactor.ft, string[]>
 function Config:set_printf_statements(override_map)
     self.config.printf_statements = override_map
 end
 
----@param filetype ft
+---@param filetype refactor.ft
 ---@return string[]|false
 function Config:get_print_var_statements(filetype)
     if self.config.print_var_statements[filetype] == nil then
@@ -207,7 +210,7 @@ function Config:set_print_var_statements(override_map)
     self.config.print_var_statements = override_map
 end
 
----@param filetype ft: the filetype
+---@param filetype refactor.ft: the filetype
 ---@return string|false
 function Config:get_extract_var_statement(filetype)
     if self.config.extract_var_statements[filetype] == nil then
@@ -217,7 +220,7 @@ function Config:get_extract_var_statement(filetype)
 end
 
 ---@param override_statement string|nil extract_var_statement
----@param filetype ft filetype for which to override the extract_var_statement
+---@param filetype refactor.ft filetype for which to override the extract_var_statement
 function Config:set_extract_var_statement(filetype, override_statement)
     self.config.extract_var_statements[filetype] = override_statement
 end
@@ -252,7 +255,7 @@ function Config:get_code_generation_for(lang)
         or self.config.code_generation["default"]
 end
 
----@param filetype ft
+---@param filetype refactor.ft
 ---@return string
 function Config:get_visibility_for(filetype)
     filetype = filetype or vim.bo[0].ft
@@ -262,12 +265,12 @@ end
 local config = Config:new()
 local M = {}
 
----@return Config
+---@return refactor.Config
 function M.get()
     return config
 end
 
----@param c ConfigOpts
+---@param c refactor.ConfigOpts
 function M.setup(c)
     c = c or {}
     config = Config:new(c)

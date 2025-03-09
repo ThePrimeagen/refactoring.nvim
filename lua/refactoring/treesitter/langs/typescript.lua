@@ -5,11 +5,11 @@ local StringNode = Nodes.StringNode
 local InlineNode = Nodes.InlineNode
 local InlineFilteredNode = Nodes.InlineFilteredNode
 
----@class TreeSitterInstance
+---@class refactor.TreeSitterInstance
 local Typescript = {}
 
 function Typescript.new(bufnr, ft)
-    ---@type TreeSitterLanguageConfig
+    ---@type refactor.TreeSitterLanguageConfig
     local config = {
         filetype = ft,
         bufnr = bufnr,

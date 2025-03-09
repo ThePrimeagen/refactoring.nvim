@@ -5,12 +5,12 @@ local text_edits_utils = require("refactoring.text_edits_utils")
 local notify = require("refactoring.notify")
 
 ---@param bufnr integer
----@param config Config
+---@param config refactor.Config
 local function cleanup(bufnr, config)
     local seed = tasks.refactor_seed(bufnr, nil, config)
     Pipeline
         :from_task(
-            ---@param refactor Refactor
+            ---@param refactor refactor.Refactor
             function(refactor)
                 local opts = refactor.config:get()
                 local lines = vim.api.nvim_buf_get_lines(bufnr, 0, -1, false)

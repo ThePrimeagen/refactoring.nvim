@@ -5,14 +5,14 @@ local function getpos()
     return cursor[1], cursor[2]
 end
 
----@class RefactorPoint
+---@class refactor.Point
 ---@field row number: The 1-based row
 ---@field col number: The 0-based col
 local Point = {}
 Point.__index = Point
 
 --- Get a Point from the current selection
----@return RefactorPoint
+---@return refactor.Point
 function Point:from_cursor()
     local row, col = getpos()
 
@@ -56,7 +56,7 @@ end
 --- Compare the position of two points.
 -- Given two points with positions pos_1 and pos_2
 -- return -1 if pos_1 < pos_2, 0 if pos_1 == pos_2 and 1 otherwise.
---- @param point RefactorPoint the second point to compare to.
+--- @param point refactor.Point the second point to compare to.
 --- @return integer # either -1, 0 or 1
 function Point:compare_to(point)
     if self.row ~= point.row then

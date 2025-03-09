@@ -1,18 +1,18 @@
 local async = require("plenary.async")
 
----@class RefactorPipeline
+---@class refactor.Pipeline
 ---Allows for pipelining tasks.  Tasks are functions that are expected to
 ---return ok (boolean), value (thing to be returned or passed to next task)
 ---
 ---Async tasks are functions that will take the previous result and a function
 ---to call back when done with ok, and value
 ---@field _tasks table: list of tasks
----@field _after RefactorPipeline: A single pipeline to run next afterwords
+---@field _after refactor.Pipeline: A single pipeline to run next afterwords
 local Pipeline = {}
 Pipeline.__index = Pipeline
 
 ---@param task fun(seed: any?): boolean, any
----@return RefactorPipeline
+---@return refactor.Pipeline
 function Pipeline:from_task(task)
     return setmetatable({
         _tasks = { task },
@@ -20,7 +20,7 @@ function Pipeline:from_task(task)
 end
 
 ---@param task fun(seed: any?): boolean, any
----@return RefactorPipeline
+---@return refactor.Pipeline
 function Pipeline:add_task(task)
     table.insert(self._tasks, task)
     return self
@@ -39,7 +39,7 @@ end
 ---
 --- It would only make sense to allow for this pipeline to be attached
 ---
----@param pipeline RefactorPipeline|function: the next pipeline to run after the primary pipeline has been an
+---@param pipeline refactor.Pipeline|function: the next pipeline to run after the primary pipeline has been an
 function Pipeline:after(pipeline)
     if type(pipeline) == "function" then
         pipeline = pipeline()

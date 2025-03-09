@@ -8,7 +8,7 @@ local test_utils = require("refactoring.tests.utils")
 
 local async = require("plenary.async")
 
----@type table<string, ft>
+---@type table<string, refactor.ft>
 local extension_to_filetype = {
     ["lua"] = "lua",
     ["ts"] = "typescript",

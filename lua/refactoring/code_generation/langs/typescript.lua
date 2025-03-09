@@ -14,7 +14,7 @@ local function build_args(args, arg_types)
     return final_args
 end
 
----@param opts function_opts
+---@param opts refactor.code_gen.function.Opts
 local function typescript_class_function(opts)
     -- Need this for javascript
     local args
@@ -41,7 +41,7 @@ local function typescript_class_function(opts)
     )
 end
 
----@param opts function_opts
+---@param opts refactor.code_gen.function.Opts
 local function typescript_function(opts)
     -- Need this for javascript
     local args
@@ -65,7 +65,7 @@ local function typescript_function(opts)
     )
 end
 
----@param opts constant_opts
+---@param opts refactor.code_gen.constant.Opts
 ---@return string
 local function typescript_constant(opts)
     local constant_string_pattern
@@ -98,7 +98,7 @@ local function typescript_constant(opts)
     return constant_string_pattern
 end
 
----@type code_generation
+---@type refactor.CodeGeneration
 local typescript = {
     default_printf_statement = function()
         return { 'console.log("%s");' }

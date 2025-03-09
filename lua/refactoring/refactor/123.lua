@@ -65,10 +65,10 @@ end
 ---@param declarator_node TSNode
 ---@param identifiers TSNode[]
 ---@param node_to_inline TSNode
----@param refactor Refactor
+---@param refactor refactor.Refactor
 ---@param definition TSNode[]
 ---@param identifier_pos integer
----@return RefactorTextEdit[]
+---@return refactor.TextEdit[]
 local function get_inline_text_edits(
     declarator_node,
     identifiers,
@@ -161,8 +161,8 @@ local function get_inline_text_edits(
     return text_edits
 end
 
----@param refactor Refactor
----@return boolean, Refactor|string
+---@param refactor refactor.Refactor
+---@return boolean, refactor.Refactor|string
 local function inline_var_setup(refactor)
     --- @type boolean
     local ok, declarator_nodes = pcall(
@@ -232,7 +232,7 @@ end
 
 ---@param bufnr integer
 ---@param region_type 'v' | 'V' | '' | nil
----@param opts Config
+---@param opts refactor.Config
 local function inline_var(bufnr, region_type, opts)
     local seed = tasks.refactor_seed(bufnr, region_type, opts)
     Pipeline:from_task(tasks.operator_setup)
@@ -243,7 +243,7 @@ end
 
 ---@param bufnr integer
 ---@param region_type 'v' | 'V' | '' | nil
----@param opts Config
+---@param opts refactor.Config
 function M.inline_var(bufnr, region_type, opts)
     inline_var(bufnr, region_type, opts)
 end

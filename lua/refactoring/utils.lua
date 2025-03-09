@@ -11,7 +11,7 @@ function M.wait_frame()
     async.util.scheduler()
 end
 
----@return RefactorRegion
+---@return refactor.Region
 function M.get_top_of_file_region()
     local range = { line = 0, character = 0 }
     return Region:from_lsp_range_insert({ start = range, ["end"] = range })
@@ -87,7 +87,7 @@ end
 
 -- TODO: This likely doesn't work with multistatement line inserts
 ---@param node TSNode
----@return RefactorRegion
+---@return refactor.Region
 function M.region_one_line_up_from_node(node)
     local region = Region:from_node(node)
     region.end_row = region.start_row
@@ -97,14 +97,14 @@ function M.region_one_line_up_from_node(node)
 end
 
 ---@param node TSNode
----@param region RefactorRegion
+---@param region refactor.Region
 ---@return boolean
 M.region_complement = function(node, region)
     return not region:contains(Region:from_node(node))
 end
 
 ---@param node TSNode[]
----@param region RefactorRegion
+---@param region refactor.Region
 ---@param bufnr integer|nil
 ---@return boolean
 M.region_intersect = function(node, region, bufnr)
@@ -112,7 +112,7 @@ M.region_intersect = function(node, region, bufnr)
 end
 
 ---@param node TSNode[]
----@param region RefactorRegion
+---@param region refactor.Region
 ---@return boolean
 M.after_region = function(node, region)
     return Region:from_node(node):is_after(region)
@@ -146,7 +146,7 @@ function M.table_key_intersect(a, b)
 end
 
 ---@param node TSNode
----@return RefactorRegion
+---@return refactor.Region
 function M.region_above_node(node)
     local scope_region = Region:from_node(node)
 
@@ -215,7 +215,7 @@ function M.get_first_node_in_row(node)
 end
 
 -- TODO (TheLeoP): clean this up and use some kind of configuration for each language
----@param refactor Refactor
+---@param refactor refactor.Refactor
 function M.get_non_comment_region_above_node(refactor)
     local prev_sibling = M.get_first_node_in_row(refactor.scope)
         :prev_named_sibling()
@@ -251,7 +251,7 @@ function M.get_non_comment_region_above_node(refactor)
     end
 end
 
----@param refactor Refactor
+---@param refactor refactor.Refactor
 ---@return string[]
 function M.get_selected_locals(refactor)
     ---@param node TSNode

@@ -46,7 +46,7 @@ local function php_class_function(opts)
     )
 end
 
----@type code_generation
+---@type refactor.CodeGeneration
 local php = {
     default_print_var_statement = function()
         return { "printf('%s %%s'.%s, %s);" }

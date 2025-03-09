@@ -13,7 +13,7 @@ end
     )
 end
 
----@param opts constant_opts
+---@param opts refactor.code_gen.constant.Opts
 ---@return string
 local function lua_constant(opts)
     local result ---@type string
@@ -39,7 +39,7 @@ local function lua_constant(opts)
     return result
 end
 
----@type code_generation
+---@type refactor.CodeGeneration
 local lua = {
     comment = function(statement)
         return ("-- %s"):format(statement)

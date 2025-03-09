@@ -10,7 +10,7 @@ local notify = require("refactoring.notify")
 
 local M = {}
 
----@param refactor Refactor
+---@param refactor refactor.Refactor
 ---@return TSNode? scope
 ---@return TSNode? identifier
 local function get_function_declaration(refactor)
@@ -29,7 +29,7 @@ local function get_function_declaration(refactor)
     end
 end
 
----@param refactor Refactor
+---@param refactor refactor.Refactor
 ---@param function_declaration TSNode
 ---@param identifier TSNode
 ---@return TSNode[]
@@ -55,7 +55,7 @@ local function get_references(refactor, function_declaration, identifier)
     return values
 end
 
----@param refactor Refactor
+---@param refactor refactor.Refactor
 ---@param function_declaration TSNode
 ---@return string[]
 local function get_function_returned_values(refactor, function_declaration)
@@ -70,7 +70,7 @@ local function get_function_returned_values(refactor, function_declaration)
     return values
 end
 
----@param refactor Refactor
+---@param refactor refactor.Refactor
 ---@param function_declaration TSNode
 ---@return string[]
 local function get_function_parameter_names(refactor, function_declaration)
@@ -85,7 +85,7 @@ local function get_function_parameter_names(refactor, function_declaration)
     return values
 end
 
----@param refactor Refactor
+---@param refactor refactor.Refactor
 ---@param declarator_node TSNode
 ---@return string[]
 local function get_function_arguments(refactor, declarator_node)
@@ -104,7 +104,7 @@ local function get_function_arguments(refactor, declarator_node)
     return args
 end
 
----@param refactor Refactor
+---@param refactor refactor.Refactor
 ---@param function_declaration TSNode
 ---@return string[]
 local function get_function_body_text(refactor, function_declaration)
@@ -134,7 +134,7 @@ local function get_function_body_text(refactor, function_declaration)
     return function_body_text
 end
 
----@param refactor Refactor
+---@param refactor refactor.Refactor
 ---@param indent_space string
 ---@param keys string[]
 ---@param values string[]
@@ -165,7 +165,7 @@ local function get_params_as_constants(refactor, indent_space, keys, values)
     return constants
 end
 
----@param refactor Refactor
+---@param refactor refactor.Refactor
 local function supports_115(refactor)
     local ts = refactor.ts
     return ts.return_statement
@@ -175,9 +175,9 @@ local function supports_115(refactor)
         and ts.is_return_statement
 end
 
----@param refactor Refactor
+---@param refactor refactor.Refactor
 ---@return boolean
----@return Refactor|string
+---@return refactor.Refactor|string
 local function inline_func_setup(refactor)
     if not supports_115(refactor) then
         return false,
@@ -537,14 +537,14 @@ local ensure_code_gen_list = {
     "constant",
 }
 
---- @param refactor Refactor
+--- @param refactor refactor.Refactor
 local function ensure_code_gen_115(refactor)
     return tasks.ensure_code_gen(refactor, ensure_code_gen_list)
 end
 
 ---@param bufnr integer
 ---@param region_type 'v' | 'V' | '' | nil
----@param opts Config
+---@param opts refactor.Config
 function M.inline_func(bufnr, region_type, opts)
     local seed = tasks.refactor_seed(bufnr, region_type, opts)
     Pipeline:from_task(ensure_code_gen_115)

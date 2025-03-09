@@ -132,7 +132,7 @@ local function constant(opts)
     return result
 end
 
----@type code_generation
+---@type refactor.CodeGeneration
 local go = {
     comment = function(statement)
         return ("// %s"):format(statement)

@@ -13,9 +13,9 @@ local api = vim.api
 local M = {}
 
 ---@param extract_node_text string
----@param refactor Refactor
+---@param refactor refactor.Refactor
 ---@param var_name string
----@param starting_pos RefactorPoint
+---@param starting_pos refactor.Point
 ---@return string
 local function get_new_var_text(
     extract_node_text,
@@ -45,7 +45,7 @@ local function get_new_var_text(
 end
 
 ---@param var_name string
----@param refactor Refactor
+---@param refactor refactor.Refactor
 ---@return string
 local function get_var_name(var_name, refactor)
     if refactor.ts.require_special_var_format then
@@ -58,8 +58,8 @@ local function get_var_name(var_name, refactor)
     end
 end
 
----@param refactor Refactor
----@return boolean, Refactor|string
+---@param refactor refactor.Refactor
+---@return boolean, refactor.Refactor|string
 local function extract_var_setup(refactor)
     local extract_node = refactor.region_node
 
@@ -196,7 +196,7 @@ local function extract_var_setup(refactor)
     return true, refactor
 end
 
----@param refactor Refactor
+---@param refactor refactor.Refactor
 local function ensure_code_gen_119(refactor)
     local list = { "constant" }
 
@@ -205,7 +205,7 @@ end
 
 ---@param bufnr integer
 ---@param region_type 'v' | 'V' | ''
----@param config Config
+---@param config refactor.Config
 function M.extract_var(bufnr, region_type, config)
     local seed = tasks.refactor_seed(bufnr, region_type, config)
     Pipeline:from_task(ensure_code_gen_119)

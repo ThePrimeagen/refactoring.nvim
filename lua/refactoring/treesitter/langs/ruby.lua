@@ -3,11 +3,11 @@ local Nodes = require("refactoring.treesitter.nodes")
 local FieldNode = Nodes.FieldNode
 local InlineNode = Nodes.InlineNode
 
----@class TreeSitterInstance
+---@class refactor.TreeSitterInstance
 local Ruby = {}
 
 function Ruby.new(bufnr, ft)
-    ---@type TreeSitterLanguageConfig
+    ---@type refactor.TreeSitterLanguageConfig
     local config = {
         filetype = ft,
         bufnr = bufnr,

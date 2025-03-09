@@ -122,7 +122,7 @@ local function python_constant(opts)
     return constant_string_pattern
 end
 
----@type code_generation
+---@type refactor.CodeGeneration
 local python = {
     constant = function(opts)
         return python_constant(opts)

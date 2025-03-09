@@ -6,25 +6,25 @@ local ts_locals = require("refactoring.ts-locals")
 local ts = vim.treesitter
 local iter = vim.iter
 
----@class TreeSitterLanguageConfig
+---@class refactor.TreeSitterLanguageConfig
 ---@field bufnr integer bufnr to which this belongs
 ---@field filetype string filetype
 ---@field scope_names table<string, string> nodes that are scopes in current buffer
 ---@field block_scope table<string, true> scopes that are blocks in current buffer
 ---@field variable_scope table<string, true> scopes that contain variables in current buffer
----@field local_var_names InlineNodeFunc[] nodes for local variable names
----@field function_args InlineNodeFunc[] nodes to find args for a function
----@field local_var_values InlineNodeFunc[] nodes for local variable values
----@field local_declarations InlineNodeFunc[] nodes for local declarations
+---@field local_var_names refactor.InlineNodeFunc[] nodes for local variable names
+---@field function_args refactor.InlineNodeFunc[] nodes to find args for a function
+---@field local_var_values refactor.InlineNodeFunc[] nodes for local variable values
+---@field local_declarations refactor.InlineNodeFunc[] nodes for local declarations
 ---@field indent_scopes table<string, true> nodes where code has addition indent inside
----@field debug_paths table<string, FieldNodeFunc> map of node types to FieldNodeFunc
----@field statements InlineNodeFunc[] nodes of statements in current scope
----@field function_body InlineNodeFunc[] nodes to find body for a function
+---@field debug_paths table<string, refactor.FieldNodeFunc> map of node types to FieldNodeFunc
+---@field statements refactor.InlineNodeFunc[] nodes of statements in current scope
+---@field function_body refactor.InlineNodeFunc[] nodes to find body for a function
 ---@field require_param_types? boolean flag to require parameter types for codegen
 ---@field valid_class_nodes? table<string, 0|1|true> nodes that mean scope is a class function
----@field class_names? InlineNodeFunc[] nodes to get class names
----@field class_type? InlineNodeFunc[] nodes to get types for classes
----@field ident_with_type? InlineFilteredNodeFunc[] nodes to get all identifiers and types for a scope
+---@field class_names? refactor.InlineNodeFunc[] nodes to get class names
+---@field class_type? refactor.InlineNodeFunc[] nodes to get types for classes
+---@field ident_with_type? refactor.InlineFilteredNodeFunc[] nodes to get all identifiers and types for a scope
 ---@field require_class_name? boolean flag to require class name for codegen
 ---@field require_class_type? boolean flag to require class type for codegen
 ---@field require_special_var_format? boolean: flag to require special variable format for codegen
@@ -32,22 +32,22 @@ local iter = vim.iter
 ---@field should_check_parent_node_print_var? fun(curren_node: TSNode): boolean function to check if it's necesary to check the parent node for print_var
 ---@field reference_filter? fun(node: TSNode): boolean
 ---@field include_end_of_line? boolean flag to indicate if end of line should be included in a region
----@field return_values? InlineNodeFunc[] nodes that are return values
----@field function_references? InlineNodeFunc[] nodes that are references of function
----@field caller_args? InlineNodeFunc[] nodes that are arguments passed to a function when it's called
----@field return_statement? InlineNodeFunc[] nodes that are return statements
+---@field return_values? refactor.InlineNodeFunc[] nodes that are return values
+---@field function_references? refactor.InlineNodeFunc[] nodes that are references of function
+---@field caller_args? refactor.InlineNodeFunc[] nodes that are arguments passed to a function when it's called
+---@field return_statement? refactor.InlineNodeFunc[] nodes that are return statements
 ---@field is_return_statement? fun(statement: string): boolean function to check if a statement is a return statement
 
----@class TreeSitter: TreeSitterLanguageConfig
+---@class refactor.TreeSitter: refactor.TreeSitterLanguageConfig
 ---@field language_tree vim.treesitter.LanguageTree
 local TreeSitter = {}
 TreeSitter.__index = TreeSitter
 
----@param config TreeSitterLanguageConfig
+---@param config refactor.TreeSitterLanguageConfig
 ---@param bufnr integer
----@return TreeSitter
+---@return refactor.TreeSitter
 function TreeSitter:new(config, bufnr)
-    ---@class TreeSitterLanguageConfig
+    ---@class refactor.TreeSitterLanguageConfig
     local default_config = {
         scope_names = {},
         valid_class_nodes = {},
@@ -134,7 +134,7 @@ function TreeSitter:is_indent_scope(scope)
 end
 
 ---@param scope TSNode
----@param inline_nodes InlineNodeFunc[]
+---@param inline_nodes refactor.InlineNodeFunc[]
 ---@return TSNode[]
 function TreeSitter:loop_thru_nodes(scope, inline_nodes)
     local out = {}
@@ -148,8 +148,8 @@ function TreeSitter:loop_thru_nodes(scope, inline_nodes)
 end
 
 ---@param scope TSNode
----@param inline_nodes InlineFilteredNodeFunc[]
----@param filter NodeFilter
+---@param inline_nodes refactor.InlineFilteredNodeFunc[]
+---@param filter refactor.NodeFilter
 ---@return TSNode[]
 function TreeSitter:loop_thru_filtered_nodes(scope, inline_nodes, filter)
     local out = {}
@@ -163,7 +163,7 @@ function TreeSitter:loop_thru_filtered_nodes(scope, inline_nodes, filter)
 end
 
 ---@param scope TSNode
----@param region RefactorRegion
+---@param region refactor.Region
 ---@return TSNode[]
 function TreeSitter:get_local_defs(scope, region)
     self:validate_setting("function_args")
@@ -284,7 +284,7 @@ function TreeSitter:get_references(scope)
 end
 
 ---@param scope TSNode
----@param region RefactorRegion
+---@param region refactor.Region
 ---@return TSNode[]
 function TreeSitter:get_region_refs(scope, region)
     local nodes = iter(self:get_references(scope)):filter(function(node)
@@ -419,7 +419,7 @@ function TreeSitter:indent_scope_difference(ancestor, child)
 end
 
 ---@param node TSNode
----@return FieldnameNode[]
+---@return refactor.FieldnameNode[]
 function TreeSitter:get_debug_path(node)
     self:validate_setting("debug_paths")
     local path = {}
@@ -459,7 +459,7 @@ function TreeSitter:get_local_declarations(scope)
 end
 
 ---@param scope TSNode
----@param region  RefactorRegion
+---@param region  refactor.Region
 ---@return TSNode[]
 function TreeSitter:local_declarations_in_region(scope, region)
     return iter(self:get_local_declarations(scope)):filter(function(node)

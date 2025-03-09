@@ -2,7 +2,7 @@ local Point = require("refactoring.point")
 
 local api = vim.api
 
----@class RefactorRegion
+---@class refactor.Region
 ---@field start_row number: The 1-based row
 ---@field start_col number: The 1-based col
 ---@field end_row number: The 1-based row
@@ -14,7 +14,7 @@ Region.__index = Region
 
 --- Get a Region from motion (marks [ and ])
 ---@param opts {include_end_of_line: boolean, type :"v" | "V" | "" | nil, bufnr: integer} | nil
----@return RefactorRegion
+---@return refactor.Region
 function Region:from_motion(opts)
     local type = opts and opts.type or "v"
     local bufnr = opts and opts.bufnr or api.nvim_get_current_buf()
@@ -47,7 +47,7 @@ end
 ---@param end_row integer
 ---@param end_col integer
 ---@param type "v" | "V" | "" | nil
----@return RefactorRegion
+---@return refactor.Region
 function Region:from_values(bufnr, start_row, start_col, end_row, end_col, type)
     type = type or "v"
     return setmetatable({
@@ -61,7 +61,7 @@ function Region:from_values(bufnr, start_row, start_col, end_row, end_col, type)
 end
 
 ---@param bufnr integer
----@return RefactorRegion
+---@return refactor.Region
 function Region:empty(bufnr)
     return setmetatable({
         bufnr = bufnr,
@@ -85,7 +85,7 @@ end
 --- Get a region from a Treesitter Node
 ---@param node TSNode
 ---@param bufnr? number
----@return RefactorRegion
+---@return refactor.Region
 function Region:from_node(node, bufnr)
     bufnr = bufnr or api.nvim_get_current_buf()
     local start_row, start_col, end_row, end_col = node:range()
@@ -110,9 +110,9 @@ function Region:from_node(node, bufnr)
 end
 
 --- Get a region from a given point.
----@param point RefactorPoint the point to use as start- and endpoint
+---@param point refactor.Point the point to use as start- and endpoint
 ---@param bufnr? number  the bufnr for the region
----@return RefactorRegion
+---@return refactor.Region
 function Region:from_point(point, bufnr)
     bufnr = bufnr or api.nvim_get_current_buf()
 
@@ -126,9 +126,9 @@ function Region:from_point(point, bufnr)
     }, self)
 end
 
----@param lsp_range LspRange
+---@param lsp_range lsp.Range
 ---@param bufnr integer|nil
----@return RefactorRegion
+---@return refactor.Region
 function Region:from_lsp_range_insert(lsp_range, bufnr)
     bufnr = bufnr or api.nvim_get_current_buf()
 
@@ -142,9 +142,9 @@ function Region:from_lsp_range_insert(lsp_range, bufnr)
     }, self)
 end
 
----@param lsp_range LspRange
+---@param lsp_range lsp.Range
 ---@param bufnr integer|nil
----@return RefactorRegion
+---@return refactor.Region
 function Region:from_lsp_range_replace(lsp_range, bufnr)
     bufnr = bufnr or api.nvim_get_current_buf()
 
@@ -193,13 +193,13 @@ function Region:get_lines()
 end
 
 --- Get the left boundary of the region
----@return RefactorPoint
+---@return refactor.Point
 function Region:get_start_point()
     return Point:from_values(self.start_row, self.start_col)
 end
 
 --- Get the right boundary of the region
----@return RefactorPoint
+---@return refactor.Point
 function Region:get_end_point()
     return Point:from_values(self.end_row, self.end_col)
 end
@@ -221,16 +221,8 @@ function Region:get_text()
     return text
 end
 
----@class LspPoint
----@field line number
----@field character number
-
----@class LspRange
----@field start LspPoint
----@field end LspPoint
-
 --- Convert a region to an LSP Range inteded to be used to insert text (start and end should the same despite end being exclusive)
----@return LspRange
+---@return lsp.Range
 function Region:to_lsp_range_insert()
     return {
         ["start"] = {
@@ -245,7 +237,7 @@ function Region:to_lsp_range_insert()
 end
 
 --- Convert a region to an LSP Range intended to be used to replace text (end should be exclusive)
----@return LspRange
+---@return lsp.Range
 function Region:to_lsp_range_replace()
     return {
         ["start"] = {
@@ -259,13 +251,11 @@ function Region:to_lsp_range_replace()
     }
 end
 
----@class RefactorTextEdit
----@field range LspRange
----@field newText string
+---@class refactor.TextEdit : lsp.TextEdit
 ---@field bufnr integer?
 
 ---@param text string
----@return RefactorTextEdit
+---@return refactor.TextEdit
 function Region:to_lsp_text_edit_insert(text)
     return {
         range = self:to_lsp_range_insert(),
@@ -274,7 +264,7 @@ function Region:to_lsp_text_edit_insert(text)
 end
 
 ---@param text string
----@return RefactorTextEdit
+---@return refactor.TextEdit
 function Region:to_lsp_text_edit_replace(text)
     return {
         range = self:to_lsp_range_replace(),
@@ -282,7 +272,7 @@ function Region:to_lsp_text_edit_replace(text)
     }
 end
 
----@return RefactorRegion
+---@return refactor.Region
 function Region:clone()
     local clone = Region:empty(self.bufnr)
 
@@ -296,7 +286,7 @@ function Region:clone()
 end
 
 --- Returns true if self contains region.
----@param region RefactorRegion
+---@param region refactor.Region
 ---@return boolean
 function Region:contains(region)
     if region.bufnr ~= self.bufnr then
@@ -308,7 +298,7 @@ function Region:contains(region)
 end
 
 --- Returns true if self is above region
----@param region RefactorRegion
+---@param region refactor.Region
 ---@return boolean
 function Region:above(region)
     if region.bufnr ~= self.bufnr then
@@ -320,14 +310,14 @@ function Region:above(region)
 end
 
 --- Returns true if self contains point.
----@param point RefactorPoint
+---@param point refactor.Point
 ---@return boolean
 function Region:contains_point(point)
     return self:get_start_point():leq(point) and self:get_end_point():geq(point)
 end
 
 --- Return true if the position of self lies after the position of region
----@param region RefactorRegion
+---@param region refactor.Region
 ---@return boolean
 function Region:is_after(region)
     return self:get_start_point():gt(region:get_end_point())

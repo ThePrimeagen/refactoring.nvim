@@ -11,8 +11,8 @@ local api = vim.api
 
 local M = {}
 
----@param opts c
----@param refactor Refactor
+---@param opts refactor.c
+---@param refactor refactor.Refactor
 ---@return string|nil
 function M.get_print_var_statement(opts, refactor)
     local default_print_var_statement =
@@ -46,17 +46,17 @@ end
 
 ---@param bufnr integer
 ---@param region_type 'v' | 'V' | '' | nil
----@param config Config
+---@param config refactor.Config
 function M.print_debug(bufnr, region_type, config)
     local seed = tasks.refactor_seed(bufnr, region_type, config)
     Pipeline:from_task(
-        ---@param refactor Refactor
+        ---@param refactor refactor.Refactor
         function(refactor)
             return tasks.ensure_code_gen(refactor, { "print_var", "comment" })
         end
     )
         :add_task(
-            ---@param refactor Refactor
+            ---@param refactor refactor.Refactor
             function(refactor)
                 local opts = refactor.config:get()
 

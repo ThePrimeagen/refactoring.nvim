@@ -60,7 +60,7 @@ local function java_constant(opts)
     return constant_string_pattern
 end
 
----@type code_generation
+---@type refactor.CodeGeneration
 local java = {
     comment = function(statement)
         return ("// %s"):format(statement)

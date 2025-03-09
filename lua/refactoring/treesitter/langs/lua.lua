@@ -6,11 +6,11 @@ local StringNode = Nodes.StringNode
 local QueryNode = Nodes.QueryNode
 local InlineNode = Nodes.InlineNode
 
----@class TreeSitterInstance
+---@class refactor.TreeSitterInstance
 local Lua = {}
 
 function Lua.new(bufnr, ft)
-    ---@type TreeSitterLanguageConfig
+    ---@type refactor.TreeSitterLanguageConfig
     local config = {
         filetype = ft,
         bufnr = bufnr,

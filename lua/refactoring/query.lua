@@ -7,8 +7,8 @@ local ts = vim.treesitter
 ---     'Baz',          -- Takes value 11
 --- }
 
----@class RefactorQuery
----@field query? treesitter.Query
+---@class refactor.Query
+---@field query? vim.treesitter.Query
 ---@field bufnr integer
 ---@field filetype string
 ---@field root TSNode
@@ -38,7 +38,7 @@ end
 ---@param bufnr integer
 ---@param filetype string
 ---@param query_name string
----@return RefactorQuery
+---@return refactor.Query
 function Query.from_query_name(bufnr, filetype, query_name)
     local lang = ts.language.get_lang(filetype)
 
@@ -63,7 +63,7 @@ end
 ---@param bufnr integer
 ---@param filetype string
 ---@param query vim.treesitter.Query
----@return RefactorQuery
+---@return refactor.Query
 function Query:new(bufnr, filetype, query)
     return setmetatable({
         query = query,
