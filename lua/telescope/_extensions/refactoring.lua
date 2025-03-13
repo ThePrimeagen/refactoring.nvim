@@ -4,7 +4,12 @@ local function refactor(prompt_bufnr)
     local content =
         require("telescope.actions.state").get_selected_entry(prompt_bufnr)
     require("telescope.actions").close(prompt_bufnr)
-    refactoring.refactor(content.value)
+    local keys = refactoring.refactor(content.value)
+
+    if keys == "g@" then
+        keys = "gvg@"
+    end
+    vim.cmd.normal(keys)
 end
 
 local function telescope_refactoring(opts)

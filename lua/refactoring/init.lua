@@ -78,12 +78,6 @@ end
 function M.select_refactor(opts)
     local prefer_ex_cmd = opts and opts.prefer_ex_cmd or false
 
-    -- vim.ui.select exits visual mode without setting the `<` and `>` marks
-    local utils = require("refactoring.utils")
-    if utils.is_visual_mode() then
-        utils.exit_to_normal_mode()
-    end
-
     require("plenary.async").void(function()
         local ui = require("refactoring.ui")
         local selected_refactor = ui.select(
@@ -103,7 +97,11 @@ function M.select_refactor(opts)
                 require("refactoring.refactor").refactor_names[selected_refactor]
             api.nvim_input((":Refactor %s "):format(refactor_name))
         else
-            M.refactor(selected_refactor, opts)
+            local keys = M.refactor(selected_refactor, opts)
+            if keys == "g@" then
+                keys = "gvg@"
+            end
+            vim.cmd.normal(keys)
         end
     end)()
 end
