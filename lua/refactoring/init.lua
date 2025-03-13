@@ -103,7 +103,7 @@ function M.select_refactor(opts)
                 require("refactoring.refactor").refactor_names[selected_refactor]
             api.nvim_input((":Refactor %s "):format(refactor_name))
         else
-            M.refactor(selected_refactor, opts)
+            api.nvim_input(M.refactor(selected_refactor, opts))
         end
     end)()
 end
