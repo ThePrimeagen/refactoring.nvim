@@ -23,6 +23,7 @@ function Typescript.new(bufnr, ft)
         },
         block_scope = {
             statement_block = true,
+            program = true,
         },
         variable_scope = {
             lexical_declaration = true,

@@ -22,6 +22,7 @@ function JavaScript.new(bufnr, ft)
         block_scope = {
             statement_block = true,
             function_declaration = true,
+            program = true,
         },
         variable_scope = {
             variable_declaration = true,
