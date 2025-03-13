@@ -112,6 +112,27 @@ function Typescript.new(bufnr, ft)
             ),
             InlineNode("(arrow_function (statement_block (_) @tmp_capture))"),
         },
+        should_check_parent_node_print_var = function(node)
+            local parent = node:parent()
+            if not parent then
+                return false
+            end
+            local parent_type = parent:type()
+            if parent_type == "member_expression" then
+                local property_node = parent:field("property")[1]
+                if not property_node then
+                    return false
+                end
+                if not property_node:equal(node) then
+                    return false
+                end
+                return true
+            elseif parent_type == "call_expression" then
+                return true
+            else
+                return false
+            end
+        end,
     }
     local ts = TreeSitter:new(config, bufnr)
 
