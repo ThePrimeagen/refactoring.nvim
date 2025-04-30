@@ -1,5 +1,7 @@
 local code_utils = require("refactoring.code_generation.utils")
 
+---@param opts refactor.FuncParams
+---@return string
 local function lua_function(opts)
     return ([[
 local function %s(%s)

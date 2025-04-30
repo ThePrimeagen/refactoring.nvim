@@ -1,8 +1,11 @@
 local code_utils = require("refactoring.code_generation.utils")
 local ts = require("refactoring.code_generation.langs.typescript")
 
+---@param args string[]
+---@param arg_types table<string, string>
+---@return string[]
 local function build_args(args, arg_types)
-    local final_args = {}
+    local final_args = {} ---@type string[]
     for i, arg in pairs(args) do
         if arg_types[arg] ~= code_utils.default_func_param_type() then
             final_args[i] = arg .. ": " .. arg_types[arg]
@@ -15,15 +18,19 @@ end
 
 ---@param opts refactor.code_gen.function.Opts
 local function tsx_function(opts)
-    if opts.region_type == "jsx_element" then
-        local args
-        if opts.args_types ~= nil then
-            args = build_args(opts.args, opts.args_types)
-        else
-            args = opts.args
-        end
+    if opts.region_type ~= "jsx_element" then
+        return ts["function"](opts)
+    end
 
-        return ([[
+    local args ---@type string[]
+    if opts.args_types ~= nil then
+        args = build_args(opts.args, opts.args_types)
+    else
+        args = opts.args
+    end
+    assert(args)
+
+    return ([[
 %sfunction %s({%s}) {
 return (
 <>
@@ -33,15 +40,12 @@ return (
 %s}
 
 ]]):format(
-            opts.func_header,
-            opts.name,
-            table.concat(args, ", "),
-            code_utils.stringify_code(opts.body),
-            opts.func_header
-        )
-    else
-        return ts["function"](opts)
-    end
+        opts.func_header,
+        opts.name,
+        table.concat(args, ", "),
+        code_utils.stringify_code(opts.body),
+        opts.func_header
+    )
 end
 
 ---@param opts refactor.code_gen.call_function.Opts

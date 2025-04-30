@@ -81,7 +81,7 @@ end
 ---@param args string[]
 ---@return table<string, string|nil>
 local function get_function_param_types(refactor, args)
-    local args_types = {}
+    local args_types = {} ---@type table<string, string>
 
     local local_types = refactor.ts:get_local_types(refactor.scope)
 
@@ -166,6 +166,7 @@ end
 
 ---@class refactor.FuncParams
 ---@field func_header? string
+---@field args_types? table<string, string>
 ---@field contains_jsx? boolean
 ---@field class_name? string
 ---@field visibility? string
