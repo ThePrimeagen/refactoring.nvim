@@ -11,6 +11,15 @@ end
 local Point = {}
 Point.__index = Point
 
+---@param self refactor.Point
+function Point.__tostring(self)
+    return ([[
+{
+  row = %s,
+  col = %s,
+}]]):format(self.row, self.col)
+end
+
 --- Get a Point from the current selection
 ---@return refactor.Point
 function Point:from_cursor()

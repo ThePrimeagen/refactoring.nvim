@@ -119,9 +119,9 @@ function Region:from_point(point, bufnr)
     return setmetatable({
         bufnr = bufnr,
         start_row = point.row,
-        start_col = point.col,
+        start_col = point.col + 1,
         end_row = point.row,
-        end_col = point.col,
+        end_col = point.col + 1,
         type = "v",
     }, self)
 end
@@ -195,13 +195,13 @@ end
 --- Get the left boundary of the region
 ---@return refactor.Point
 function Region:get_start_point()
-    return Point:from_values(self.start_row, self.start_col)
+    return Point:from_values(self.start_row, self.start_col - 1)
 end
 
 --- Get the right boundary of the region
 ---@return refactor.Point
 function Region:get_end_point()
-    return Point:from_values(self.end_row, self.end_col)
+    return Point:from_values(self.end_row, self.end_col - 1)
 end
 
 ---@return string[]

@@ -3,8 +3,6 @@ local Region = require("refactoring.region")
 
 local M = {}
 
-local MAX_COL = vim.v.maxcol
-
 ---@param point_or_region refactor.Region|refactor.Point
 ---@return refactor.Region
 local function to_region(point_or_region)
@@ -39,8 +37,8 @@ function M.insert_new_line_text(point_or_region, text, opts)
     end
 
     if opts._end then
-        region.start_col = MAX_COL
-        region.end_col = MAX_COL
+        region.start_col = vim.v.maxcol
+        region.end_col = vim.v.maxcol
     else
         region.start_col = 1
         region.end_col = 1

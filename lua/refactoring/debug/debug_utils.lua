@@ -57,19 +57,22 @@ function M.get_debug_points(refactor, opts)
         end)
 
     local insert_pos = cursor:clone()
+    -- NOTE: I override the insert_pos col for the sake of clarify, but it's
+    -- overriding (in the same way) by `insert_new_line_text` anywaw
     local path_pos = cursor:clone()
     if current and not is_indent_scope then
         local start_row, start_col, end_row, end_col = current:range()
+        start_row, end_row = start_row + 1, end_row + 1
 
-        insert_pos.row = opts.below and end_row + 1 or start_row + 1
+        insert_pos.row = opts.below and end_row or start_row
         insert_pos.col = opts.below and end_col or start_col
 
-        path_pos.row = opts.below and end_row + 1 or start_row
-        path_pos.col = opts.below and end_col or vim.v.maxcol
+        path_pos.row = opts.below and end_row or start_row
+        path_pos.col = opts.below and vim.v.maxcol or end_col
     else
-        insert_pos.col = opts.below and 0 or vim.v.maxcol
+        insert_pos.col = opts.below and vim.v.maxcol or 0
 
-        path_pos.col = opts.below and 0 or vim.v.maxcol
+        path_pos.col = opts.below and vim.v.maxcol or 0
 
         if current and is_indent_scope then
             local start_row = current:range()
