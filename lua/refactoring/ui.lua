@@ -25,7 +25,7 @@ function M.select(items, question, format)
         return items[automation_input_number], automation_input_number
     end
 
-    return select(items, question, format, nil)
+    return select(items, question, format, "refactoring.nvim")
 end
 
 local input = async.wrap(function(prompt, text, completion, callback)

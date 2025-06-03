@@ -248,7 +248,7 @@ IMPORTANT: the keymaps **MUST** to be created using the `{ expr = true }` option
 #### Using Built-In Neovim Selection<a name="config-refactoring-builtin"></a>
 
 You can also set up the plugin to prompt for a refactoring operation to apply
-using Neovim's built in selection API. Here is an example remap to demonstrate
+using Neovim's built in selection API (`:h vim.ui.select()`, the `kind` `"refactoring.nvim"` is used to allow user customization). Here is an example remap to demonstrate
 this functionality:
 
 ```lua
