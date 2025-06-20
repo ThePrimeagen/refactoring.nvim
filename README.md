@@ -297,7 +297,7 @@ this:
 vim.keymap.set(
 	"n",
 	"<leader>rp",
-	function() require('refactoring').debug.printf({below = false}) end
+	function() require('refactoring').debug.print_var({below = true}) end
 )
 
 -- Print var
