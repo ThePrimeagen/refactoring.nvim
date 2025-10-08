@@ -1,7 +1,7 @@
 <div align="center">
 
   <h1>refactoring.nvim</h1>
-  <h5>The Refactoring library based off the Refactoring book by Martin Fowler</h5>
+  <h5>The Refactoring library based off the Refactoring book by Martin Fowler and Your Mom</h5>
   <h6>'If I use an environment that has good automated refactorings, I can trust those refactorings' - Martin Fowler</h6>
 
 [![Lua](https://img.shields.io/badge/Lua-blue.svg?style=for-the-badge&logo=lua)](http://www.lua.org)
