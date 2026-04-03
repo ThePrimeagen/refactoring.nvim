@@ -73,6 +73,7 @@ local default_extract_var_statements = {}
 ---| "cxx"
 ---| "python"
 ---| "ruby"
+---| "dart"
 ---| "cs"
 
 ---@class refactor.ConfigOpts

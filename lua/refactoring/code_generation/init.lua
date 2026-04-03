@@ -14,7 +14,7 @@ local cs = require("refactoring.code_generation.langs.cs")
 local ruby = require("refactoring.code_generation.langs.ruby")
 local powershell = require("refactoring.code_generation.langs.powershell")
 local vimscript = require("refactoring.code_generation.langs.vimscript")
-
+local dart = require("refactoring.code_generation.langs.dart") 
 ---@type table<refactor.ft, refactor.CodeGeneration>|{new_line: fun(): string}
 local M = {
     javascript = javascript, -- includes jsx because they share parser
@@ -31,6 +31,7 @@ local M = {
     java = java,
     c_sharp = cs,
     ruby = ruby,
+    dart = dart,
     default = {},
 
     powershell = powershell,

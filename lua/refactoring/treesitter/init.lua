@@ -14,7 +14,7 @@ local cs = require("refactoring.treesitter.langs.cs")
 local ruby = require("refactoring.treesitter.langs.ruby")
 local powershell = require("refactoring.treesitter.langs.powershell")
 local vimscript = require("refactoring.treesitter.langs.vimscript")
-
+local dart = require("refactoring.treesitter.langs.dart")
 local api = vim.api
 local ts = vim.treesitter
 
@@ -35,6 +35,7 @@ local M = {
     java = java,
     c_sharp = cs,
     ruby = ruby,
+    dart = dart,
 
     cpp = cpp,
     c = c,
