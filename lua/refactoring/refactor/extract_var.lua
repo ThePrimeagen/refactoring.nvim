@@ -276,6 +276,7 @@ function M.extract_var(range_type, config)
   end)
 
   task:raise_on_error()
+  if opts.preview_ns then task:wait() end
 end
 
 return M

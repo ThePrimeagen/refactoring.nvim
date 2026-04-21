@@ -138,6 +138,10 @@ Fields ~
                                                            *M.select_refactor()*
                           `M.select_refactor`({opts})
 Use |vim.ui.select()| to select a refactor.
+
+The `prefer_ex_cmd` option can be used to pre-populate the command line
+with the ex command needed to execute the refactor. This allows to previews
+changes.
 Parameters ~
 {opts?} (`refactor.select_refactor.Opts`)
 

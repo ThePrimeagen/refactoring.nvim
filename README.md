@@ -7,7 +7,7 @@
 ### Tree-sitter and LSP powered refactoring
 
 - Provides refactoring and print-debugging operators (see `:h operator`) powered by LSP and tree-sitter.
-- Supports dot-repeat and any textobject.
+- Supports dot-repeat and any textobject/motion.
 - Allows fine-grained customization while providing reasonable defaults.
 
 More details on [Features](#features)
@@ -98,6 +98,8 @@ The default configuration can be found at [./lua/refactoring/config.lua](./lua/r
 - globally: `require("refactoring").setup({...})`
 - for a single call: `require("refactoring").inline_var({...})`
 - for a given buffer: `vim.b.refactor_config = {...}`
+
+### Keymaps
 
 No keymaps are created by default. These are the suggested keymaps:
 
@@ -197,8 +199,9 @@ end, { desc = "Select refactor" })
 
 </details>
 
-> [!NOTE]
-> The `:Refactor` command can be used instead of keymaps, its biggest selling point is the live previewing of changes. However, live previewing user commands doesn't seem to play nicely with async functions, so it is disabled for all [Features](#Features) that rely on LSP.
+### User commands
+
+The `:Refactor` command can be used to run any refactor. It supports previewing changes and offers completions for available refactors. For refactors that require additional input, extra arguments to the `:Refactor` command will be used as input.
 
 ## Supported languages
 

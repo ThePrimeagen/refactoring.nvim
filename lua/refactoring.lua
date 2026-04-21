@@ -187,6 +187,10 @@ end
 ---@field prefer_ex_cmd boolean?
 
 --- Use |vim.ui.select()| to select a refactor.
+---
+--- The `prefer_ex_cmd` option can be used to pre-populate the command line
+--- with the ex command needed to execute the refactor. This allows to previews
+--- changes.
 ---@param opts? refactor.select_refactor.Opts
 function M.select_refactor(opts)
   local prefer_ex_cmd = opts and opts.prefer_ex_cmd or false

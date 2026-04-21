@@ -705,6 +705,7 @@ M.extract_func = function(range_type, config)
     }
   end)
   task:raise_on_error()
+  if opts.preview_ns then task:wait() end
 end
 
 ---@param range_type 'v' | 'V' | ''
@@ -746,6 +747,7 @@ M.extract_func_to_file = function(range_type, config)
     }
   end)
   task:raise_on_error()
+  if opts.preview_ns then task:wait() end
 end
 
 return M

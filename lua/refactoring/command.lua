@@ -45,23 +45,25 @@ local function preview(opts, ns)
   -- TODO: `:h command-preview` seems to be broken with async code (it doesn't
   -- show async updates to buffers and may crash Neovim (when modiying buffers
   -- with outdated information?)). Look more into it and open an issue upstream
-  -- if refactor == "inline_var" then vim.cmd.normal(require("refactoring").inline_var(refactor_opts)) end
+  if refactor == "inline_var" then vim.cmd.normal(require("refactoring").inline_var(refactor_opts)) end
   if refactor == "extract_var" then vim.cmd.normal("gv" .. require("refactoring").extract_var(refactor_opts)) end
-  -- if refactor == "inline_func" then vim.cmd.normal(require("refactoring").inline_func(refactor_opts)) end
+  if refactor == "inline_func" then vim.cmd.normal(require("refactoring").inline_func(refactor_opts)) end
   if refactor == "extract_func" then vim.cmd.normal("gv" .. require("refactoring").extract_func(refactor_opts)) end
   if refactor == "extract_func_to_file" then
     vim.cmd.normal("gv" .. require("refactoring").extract_func_to_file(refactor_opts))
   end
 
   if
-    -- refactor == "inline_var" or
-    refactor == "extract_var"
-    -- or refactor == "inline_func"
+    refactor == "inline_var"
+    or refactor == "extract_var"
+    or refactor == "inline_func"
     or refactor == "extract_func"
     or refactor == "extract_func_to_file"
   then
     return PREVIEW_IN_CURRENT_BUFFER
   end
+
+  return DO_NOT_PREVIEW
 end
 
 ---@param arg_lead string

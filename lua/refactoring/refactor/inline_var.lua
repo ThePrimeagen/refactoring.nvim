@@ -355,6 +355,7 @@ function M.inline_var(_, config)
     apply_text_edits(text_edits_by_buf)
   end)
   task:raise_on_error()
+  if opts.preview_ns then task:wait() end
 end
 
 return M
