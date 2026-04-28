@@ -1,9 +1,6 @@
 name: Run tests
 
 on:
-  push:
-    branches-ignore: [develop]
-    paths: ["lua/**", "tests/**", "plugin/**", "queries/**"]
   pull_request:
     paths: ["lua/**", "tests/**", "plugin/**", "queries/**"]
 
