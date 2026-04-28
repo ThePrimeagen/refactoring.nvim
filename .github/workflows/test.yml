@@ -15,7 +15,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        neovim_version: ["v0.12.1", "nightly"]
+        neovim_version: ["v0.12.2", "nightly"]
     runs-on: ubuntu-latest
 
     steps:
