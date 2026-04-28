@@ -56,6 +56,15 @@ function M.query_error(missing_query, lang)
   )
 end
 
+---@param lang string
+function M.commentstring_error(lang)
+  vim.notify(
+    ("Couldn't get the 'commentstring' for language %s"):format(lang),
+    vim.log.levels.ERROR,
+    { title = "refactoring.nvim" }
+  )
+end
+
 -- NOTE: the indent logic in `vim.text.indent` counts each char as 1 indent
 -- level. the indent logic in `vim.fn.indent` takes into account `expandtab`,
 -- `tabstop` and `shiftwidth`.

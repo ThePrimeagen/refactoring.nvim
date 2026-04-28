@@ -104,6 +104,7 @@ function M.print_loc(range_type, config)
   local query_error = require("refactoring.utils").query_error
   local get_debug_path_for_range = require("refactoring.utils").get_debug_path_for_range
   local get_statement_output_range = require("refactoring.debug.utils").get_statement_output_range
+  local commentstring_error = require("refactoring.utils").commentstring_error
 
   local opts = config.debug.print_loc
   local code_generation = opts.code_generation
@@ -182,16 +183,14 @@ function M.print_loc(range_type, config)
       :totable()
 
     ---@type string|nil
-    local commentstring, ft = iter(ts.language.get_filetypes(lang))
+    local commentstring = iter(ts.language.get_filetypes(lang))
       :map(function(ft)
-        return vim.filetype.get_option(ft, "commentstring"), ft
+        return vim.filetype.get_option(ft, "commentstring")
       end)
       :find(function(cms)
         return cms ~= ""
       end)
-    if not commentstring then
-      return vim.notify(("Couldn't get the 'commentstring' for filetype %s and language %s"):format(ft, lang))
-    end
+    if not commentstring then return commentstring_error(lang) end
     local print_loc_lines = {
       commentstring:format(start_marker),
       get_print_loc {
