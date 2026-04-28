@@ -304,8 +304,17 @@ function M.print_var(range_type, config)
         end
       )
       :totable()
-    -- TODO: commenstring isn't the correct one for injected languages
-    local commentstring = vim.bo[buf].commentstring
+    ---@type string|nil
+    local commentstring, ft = iter(ts.language.get_filetypes(lang))
+      :map(function(ft)
+        return vim.filetype.get_option(ft, "commentstring"), ft
+      end)
+      :find(function(cms)
+        return cms ~= ""
+      end)
+    if not commentstring then
+      return vim.notify(("Couldn't get the 'commentstring' for filetype %s and language %s"):format(ft, lang))
+    end
     table.insert(print_lines, 1, commentstring:format(start_marker))
     print_lines[#print_lines] = print_lines[#print_lines] .. commentstring:format(end_marker)
 

@@ -24,7 +24,7 @@ deps:
 	git clone --filter=blob:none https://github.com/mason-org/mason.nvim deps/mason.nvim
 	git clone --branch main --filter=blob:none https://github.com/nvim-treesitter/nvim-treesitter deps/nvim-treesitter
 	nvim --headless --clean -u scripts/minimal_init.lua -c "MasonInstall lua-language-server clangd" -c qall
-	nvim --headless --clean -u scripts/minimal_init.lua -l deps/nvim-treesitter/scripts/install-parsers.lua lua java php go powershell c c_sharp cpp javascript python ruby tsx vim
+	nvim --headless --clean -u scripts/minimal_init.lua -l deps/nvim-treesitter/scripts/install-parsers.lua lua java php go powershell c c_sharp cpp javascript python ruby tsx vim markdown
 
 docs:
 	nvim --headless --clean -u scripts/minimal_init.lua -c "lua require('mini.doc').generate()" -c "qa!"

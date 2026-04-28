@@ -83,4 +83,11 @@ T["lua"]["works above"] = function()
   validate(lines, { 7, 6 }, expected_lines, " pP")
 end
 
+T["lua"]["works injected"] = function()
+  local lines = read_file "./tests/files/print_loc_works_injected_before.md"
+  local expected_lines = read_file "./tests/files/print_loc_works_injected_after.md"
+  child.cmd "edit tmp.md"
+  validate(lines, { 2, 0 }, expected_lines, " pP")
+end
+
 return T
