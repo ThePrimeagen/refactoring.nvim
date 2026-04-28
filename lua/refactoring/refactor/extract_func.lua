@@ -354,10 +354,11 @@ local function extract_func(opts)
           )
         end
 
+        -- TODO: I can probably simplify this
         local srow, scol, erow, ecol = r.identifier:range()
         local node_start_pos = pos(in_buf, srow, scol)
         local node_end_pos = pos(in_buf, erow, ecol)
-        return node_start_pos <= selected_end_pos and node_end_pos <= node_end_pos and is_in_scope
+        return node_start_pos <= selected_end_pos and node_end_pos <= selected_end_pos and is_in_scope
       end
     )
     :fold(
