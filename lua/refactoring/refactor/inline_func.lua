@@ -84,16 +84,14 @@ local function get_processed_match_info(definitions, references, lang)
       iter(match_info.returns):each(
         ---@param return_info refactor.ReturnInfo
         function(return_info)
-          local srow, scol, erow, ecol = return_info["return"]:range()
-          local return_range = range(buf, srow, scol, erow, ecol)
+          local return_range = range(buf, return_info["return"]:range())
 
           ---@type nil|refactor.ProcessedFunctionInfo
           local function_for_return = iter(match_info.functions)
             :filter(
               ---@param function_info refactor.FunctionInfo
               function(function_info)
-                local f_srow, f_scol, f_erow, f_ecol = function_info["function"]:range()
-                local function_range = range(buf, f_srow, f_scol, f_erow, f_ecol)
+                local function_range = range(buf, function_info["function"]:range())
                 return function_range:has(return_range)
               end
             )
@@ -219,8 +217,7 @@ function M.inline_func(_, config)
           local function_info = iter(match_info.functions):find(
             ---@param function_info refactor.FunctionInfo
             function(function_info)
-              local srow, scol, erow, ecol = function_info["function"]:range()
-              local function_range = range(buf, srow, scol, erow, ecol)
+              local function_range = range(buf, function_info["function"]:range())
               return function_range:has(d_range)
             end
           )
@@ -285,8 +282,7 @@ function M.inline_func(_, config)
           local function_call_info = iter(match_info.function_calls):find(
             ---@param function_call_info refactor.FunctionCallInfo
             function(function_call_info)
-              local srow, scol, erow, ecol = function_call_info.function_call:range()
-              local function_call_range = range(buf, srow, scol, erow, ecol)
+              local function_call_range = range(buf, function_call_info.function_call:range())
               return function_call_range:has(r_range)
             end
           )
@@ -370,8 +366,7 @@ function M.inline_func(_, config)
           vim.list_extend(inlined_function_lines, vim.split(args_assignment, "\n"))
         end
 
-        local srow, scol, erow, ecol = (r.function_call_info.outside or r.function_call_info.function_call):range()
-        local fc_range = range(in_buf, srow, scol, erow, ecol)
+        local fc_range = range(in_buf, (r.function_call_info.outside or r.function_call_info.function_call):range())
         local fc_start_row, _, fc_end_row = fc_range:to_extmark()
         local function_call = table.concat(api.nvim_buf_get_lines(out_buf, fc_start_row, fc_end_row, true), "\n")
 
@@ -412,8 +407,7 @@ function M.inline_func(_, config)
     end
     local function_range = range(in_buf, srow, scol, erow, ecol)
     if function_info.comments then
-      local f_srow, f_scol, f_erow, f_ecol = function_info.comments[1]:range()
-      local highest_comment_range = range(in_buf, f_srow, f_scol, f_erow, f_ecol)
+      local highest_comment_range = range(in_buf, function_info.comments[1]:range())
       function_range.start_row, function_range.start_col =
         highest_comment_range.start_row, highest_comment_range.start_col
     end

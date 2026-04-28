@@ -34,8 +34,7 @@ local function get_definition_info(definition, variables_info)
             ---@param _ integer
             ---@param identifier TSNode
             function(_, identifier)
-              local srow, scol, erow, ecol = identifier:range()
-              local identifier_range = range(definition_buf, srow, scol, erow, ecol)
+              local identifier_range = range(definition_buf, identifier:range())
               return identifier_range:has(definition_start)
             end
           )
@@ -262,8 +261,7 @@ function M.inline_var(_, config)
             :filter(
               ---@param ri refactor.ReferenceInfo
               function(ri)
-                local srow, scol, erow, ecol = ri.identifier:range()
-                local identifier_range = range(reference_buf, srow, scol, erow, ecol)
+                local identifier_range = range(reference_buf, ri.identifier:range())
                 return identifier_range:has(reference_range)
               end
             )
@@ -303,8 +301,7 @@ function M.inline_var(_, config)
       function(rwi)
         local reference = rwi.reference
         local buf = vim.fn.bufadd(reference.filename)
-        local srow, scol, erow, ecol = rwi.info.identifier:range()
-        local identifier_range = range(buf, srow, scol, erow, ecol)
+        local identifier_range = range(buf, rwi.info.identifier:range())
 
         text_edits_by_buf[buf] = text_edits_by_buf[buf] or {}
         table.insert(text_edits_by_buf[buf], {
@@ -327,8 +324,7 @@ function M.inline_var(_, config)
         :map(
           ---@param n TSNode
           function(n)
-            local srow, scol, erow, ecol = n:range()
-            return range(definition_buf, srow, scol, erow, ecol)
+            return range(definition_buf, n:range())
           end
         )
         :each(

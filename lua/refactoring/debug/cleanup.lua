@@ -62,8 +62,7 @@ function M.cleanup(range_type, config)
       :filter(
         ---@param comment TSNode
         function(comment)
-          local srow, scol, erow, ecol = comment:range()
-          local comment_range = range(buf, srow, scol, erow, ecol)
+          local comment_range = range(buf, comment:range())
           return selected_range:has(comment_range)
         end
       )

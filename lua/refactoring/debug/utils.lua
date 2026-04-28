@@ -15,8 +15,7 @@ function M.get_statement_output_range(buf, output_statements, output_location, r
     :filter(
       ---@param os refactor.OutputStatementInfo
       function(os)
-        local os_srow, os_scol, os_erow, os_ecol = os.output_statement:range()
-        local os_range = range(buf, os_srow, os_scol, os_erow, os_ecol)
+        local os_range = range(buf, os.output_statement:range())
         return os_range:has(reference_pos)
       end
     )
@@ -44,8 +43,7 @@ function M.get_statement_output_range(buf, output_statements, output_location, r
   local output_range ---@type vim.Range
   local inserted_at ---@type 'start'|'end'
   if statement_for_range.inside and output_location == "above" then
-    local i_srow, i_scol, i_erow, i_ecol = statement_for_range.inside:range()
-    local inside_range = range(buf, i_srow, i_scol, i_erow, i_ecol)
+    local inside_range = range(buf, statement_for_range.inside:range())
 
     if reference_range > inside_range then
       local _, _, inside_erow, inside_ecol = inside_range:to_extmark()
@@ -56,8 +54,7 @@ function M.get_statement_output_range(buf, output_statements, output_location, r
       inserted_at = "start"
     end
   elseif statement_for_range.inside and output_location == "below" then
-    local i_srow, i_scol, i_erow, i_ecol = statement_for_range.inside:range()
-    local inside_range = range(buf, i_srow, i_scol, i_erow, i_ecol)
+    local inside_range = range(buf, statement_for_range.inside:range())
 
     if reference_range < inside_range then
       local inside_srow, inside_scol = inside_range:to_extmark()

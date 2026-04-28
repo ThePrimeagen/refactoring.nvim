@@ -130,8 +130,7 @@ local function smaller_containing_scope(buf, scopes_info, inner_range)
         local scope = iter(si.scope):find(
           ---@param s TSNode
           function(s)
-            local srow, scol, erow, ecol = s:range()
-            local scope_range = range(buf, srow, scol, erow, ecol)
+            local scope_range = range(buf, s:range())
             return scope_range:has(inner_range)
           end
         )
@@ -179,8 +178,7 @@ function M.get_declarations_by_scope(references, scopes_info, buf)
       ---@param acc refactor.declarations_by_scope
       ---@param d refactor.ReferenceInfo
       function(acc, d)
-        local srow, scol, erow, ecol = d.identifier:range()
-        local d_range = range(buf, srow, scol, erow, ecol)
+        local d_range = range(buf, d.identifier:range())
         local scope_info = smaller_containing_scope(buf, scopes_info, d_range)
         local identifier = ts.get_node_text(d.identifier, buf)
         assert(scope_info)
@@ -201,8 +199,7 @@ end
 ---@param buf integer
 ---@return refactor.ScopeInfo|nil
 function M.get_declaration_scope(declarations_by_scope, all_scopes, reference, buf)
-  local srow, scol, erow, ecol = reference.identifier:range()
-  local reference_range = range(buf, srow, scol, erow, ecol)
+  local reference_range = range(buf, reference.identifier:range())
   local scopes_for_reference = M.scopes_for_range(buf, all_scopes, reference_range)
   table.sort(scopes_for_reference, function(a, b)
     local a_row, a_col, a_bytes = a.scope[1]:start()
@@ -213,7 +210,7 @@ function M.get_declaration_scope(declarations_by_scope, all_scopes, reference, b
   end)
 
   local identifier = ts.get_node_text(reference.identifier, buf)
-  local reference_start = pos(buf, srow, scol)
+  local reference_start = pos(buf, reference_range.start_row, reference_range.start_col)
   return iter(scopes_for_reference):find(
     ---@param si refactor.ScopeInfo
     function(si)
@@ -226,8 +223,7 @@ function M.get_declaration_scope(declarations_by_scope, all_scopes, reference, b
         :filter(
           ---@param d refactor.ReferenceInfo
           function(d)
-            local d_srow, d_scol = d.identifier:start()
-            local d_start = pos(buf, d_srow, d_scol)
+            local d_start = pos(buf, d.identifier:start())
             return reference_start >= d_start
           end
         )
@@ -238,10 +234,8 @@ function M.get_declaration_scope(declarations_by_scope, all_scopes, reference, b
           function(acc, d)
             if not acc then return d end
 
-            local d_srow, d_scol = d.identifier:start()
-            local d_start = pos(buf, d_srow, d_scol)
-            local acc_srow, acc_scol = d.identifier:start()
-            local acc_start = pos(buf, acc_srow, acc_scol)
+            local d_start = pos(buf, d.identifier:start())
+            local acc_start = pos(buf, d.identifier:start())
 
             local is_d_closer = M.is_first_closer(d_start, acc_start, reference_start)
             if is_d_closer then return d end
@@ -281,8 +275,7 @@ function M.scopes_for_range(buf, all_scopes, reference_range)
         return iter(si.scope):any(
           ---@param s TSNode
           function(s)
-            local srow, scol, erow, ecol = s:range()
-            local scope_range = range(buf, srow, scol, erow, ecol)
+            local scope_range = range(buf, s:range())
             return scope_range:has(reference_start)
               or scope_range:has(reference_end)
               or reference_range:has(scope_range)
@@ -674,10 +667,8 @@ function M.get_debug_path_for_range(buf, lang_tree, output_range)
     :totable()
 
   table.sort(debug_path_segments_for_range, function(a, b)
-    local a_srow, a_scol = a.debug_path_segment:range()
-    local a_start_pos = pos(buf, a_srow, a_scol)
-    local b_srow, b_scol = b.debug_path_segment:range()
-    local b_start_pos = pos(buf, b_srow, b_scol)
+    local a_start_pos = pos(buf, a.debug_path_segment:range())
+    local b_start_pos = pos(buf, b.debug_path_segment:range())
     return a_start_pos < b_start_pos
   end)
 

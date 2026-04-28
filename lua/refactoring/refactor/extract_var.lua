@@ -132,8 +132,7 @@ function M.extract_var(range_type, config)
     iter(matching_nodes):each(
       ---@param n TSNode
       function(n)
-        local srow, scol, erow, ecol = n:range()
-        local node_range = range(buf, srow, scol, erow, ecol)
+        local node_range = range(buf, n:range())
         table.insert(text_edits_by_buf[buf], { range = node_range, lines = { variable } })
       end
     )
@@ -146,13 +145,11 @@ function M.extract_var(range_type, config)
           local scope = iter(si.scope):find(
             ---@param s TSNode
             function(s)
-              local srow, scol, erow, ecol = s:range()
-              local scope_range = range(buf, srow, scol, erow, ecol)
+              local scope_range = range(buf, s:range())
               return iter(matching_nodes):all(
                 ---@param n TSNode
                 function(n)
-                  local n_srow, n_scol, n_erow, n_ecol = n:range()
-                  local node_range = range(buf, n_srow, n_scol, n_erow, n_ecol)
+                  local node_range = range(buf, n:range())
                   return scope_range:has(node_range)
                 end
               )
@@ -188,8 +185,7 @@ function M.extract_var(range_type, config)
     end
     local smallest_common_scope = smallest_common_scope_with_node.si
 
-    local srow, scol, erow, ecol = smallest_common_scope.inside:range()
-    local smallest_common_inside_scope_range = range(buf, srow, scol, erow, ecol)
+    local smallest_common_inside_scope_range = range(buf, smallest_common_scope.inside:range())
 
     ---@type vim.Range[]
     local nested_scope_ranges = iter(scopes_info)
@@ -198,8 +194,7 @@ function M.extract_var(range_type, config)
         function(si)
           if si == smallest_common_scope then return false end
 
-          local si_srow, si_scol, si_erow, si_ecol = si.inside:range()
-          local si_range = range(buf, si_srow, si_scol, si_erow, si_ecol)
+          local si_range = range(buf, si.inside:range())
 
           return smallest_common_inside_scope_range:has(si_range)
         end
@@ -207,8 +202,7 @@ function M.extract_var(range_type, config)
       :map(
         ---@param si refactor.ScopeInfo
         function(si)
-          local si_srow, si_scol, si_erow, si_ecol = si.inside:range()
-          return range(buf, si_srow, si_scol, si_erow, si_ecol)
+          return range(buf, si.inside:range())
         end
       )
       :totable()
@@ -225,9 +219,8 @@ function M.extract_var(range_type, config)
       :filter(
         ---@param os refactor.OutputStatementInfo
         function(os)
-          local os_srow, os_scol, os_erow, os_ecol = os.output_statement:range()
-          local os_range = range(buf, os_srow, os_scol, os_erow, os_ecol)
-          local os_start_pos = pos(buf, os_srow, os_scol)
+          local os_range = range(buf, os.output_statement:range())
+          local os_start_pos = pos(buf, os_range.start_row, os_range.start_col)
           local is_in_nested_scope = iter(nested_scope_ranges):any(
             ---@param ns_range vim.Range
             function(ns_range)
@@ -237,8 +230,7 @@ function M.extract_var(range_type, config)
           local is_before_matching_nodes = iter(matching_nodes):all(
             ---@param n TSNode
             function(n)
-              local n_srow, n_scol = n:start()
-              local node_start_pos = pos(buf, n_srow, n_scol)
+              local node_start_pos = pos(buf, n:start())
               return os_start_pos <= node_start_pos
             end
           )
@@ -254,10 +246,8 @@ function M.extract_var(range_type, config)
         ---@param os refactor.OutputStatementInfo
         function(acc, os)
           if not acc then return os end
-          local acc_srow, acc_scol = acc.output_statement:start()
-          local acc_start_pos = pos(buf, acc_srow, acc_scol)
-          local os_srow, os_scol = os.output_statement:start()
-          local os_start_pos = pos(buf, os_srow, os_scol)
+          local acc_start_pos = pos(buf, acc.output_statement:start())
+          local os_start_pos = pos(buf, os.output_statement:start())
           if os_start_pos > acc_start_pos then return os end
           return acc
         end
