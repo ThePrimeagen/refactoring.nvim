@@ -23,8 +23,6 @@ local function node_comp_asc(a, b)
   return (a_col < b_col or a_col + a_bytes < b_col + b_bytes)
 end
 
--- TODO: add some kind of success message of how many statements where cleared
--- like in inline_var/extract_var
 ---@param range_type 'v' | 'V' | ''
 ---@param config refactor.Config
 function M.cleanup(range_type, config)
@@ -42,7 +40,7 @@ function M.cleanup(range_type, config)
     local lang_tree, err1 = ts.get_parser(buf, nil, { error = false })
     if not lang_tree then
       ---@cast err1 -nil
-      vim.notify(err1, vim.log.levels.ERROR)
+      vim.notify(err1, vim.log.levels.ERROR, { title = "refactoring.nvim" })
       return
     end
     -- TODO: use async parsing
@@ -99,7 +97,7 @@ function M.cleanup(range_type, config)
       )
       :fold(
         {},
-        ---@param acc vim.Range|{current_start: vim.Pos}
+        ---@param acc vim.Range[]|{current_start: vim.Pos}
         ---@param kind 'start'|'end'
         ---@param position vim.Pos
         function(acc, kind, position)
@@ -124,6 +122,13 @@ function M.cleanup(range_type, config)
     )
 
     apply_text_edits(text_edits_by_buf)
+    if config.show_success_message then
+      vim.notify(
+        ("Cleaned up %d print-debugs"):format(#ranges_to_cleanup),
+        vim.log.levels.INFO,
+        { title = "refactoring.nvim" }
+      )
+    end
 
     local last_view = require("refactoring.debug")._last_view
     if opts.restore_view and last_view then vim.fn.winrestview(last_view) end

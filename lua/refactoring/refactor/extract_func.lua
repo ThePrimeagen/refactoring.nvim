@@ -67,7 +67,7 @@ local function get_output_node(in_buf, out_buf, lang, selected_range)
   local lang_tree, err1 = ts.get_parser(out_buf, nil, { error = false })
   if not lang_tree then
     ---@cast err1 -nil
-    vim.notify(err1, vim.log.levels.ERROR)
+    vim.notify(err1, vim.log.levels.ERROR, { title = "refactoring.nvim" })
     return
   end
   if in_buf ~= out_buf then
@@ -232,7 +232,7 @@ end
 ---@field lines string[]
 ---@field out_buf integer
 ---@field fn_name string
----@field config_opts refactor.refactor.extract_func.Opts
+---@field config refactor.Config
 
 ---@param opts refactor.extract_func.Opts
 local function extract_func(opts)
@@ -246,7 +246,7 @@ local function extract_func(opts)
   local get_scopes_info = require("refactoring.utils").get_scopes_info
   local query_error = require("refactoring.utils").query_error
 
-  local code_generation = opts.config_opts.code_generation
+  local code_generation = opts.config.refactor.extract_func.code_generation
 
   local selected_range = opts.selected_range
   local in_buf = opts.in_buf
@@ -257,7 +257,7 @@ local function extract_func(opts)
   local lang_tree, err1 = ts.get_parser(in_buf, nil, { error = false })
   if not lang_tree then
     ---@cast err1 -nil
-    vim.notify(err1, vim.log.levels.ERROR)
+    vim.notify(err1, vim.log.levels.ERROR, { title = "refactoring.nvim" })
     return
   end
   -- TODO: use async parsing
@@ -673,6 +673,10 @@ local function extract_func(opts)
   })
   apply_text_edits(text_edits_by_buf)
 
+  if opts.config.show_success_message then
+    vim.notify("Function extracted", vim.log.levels.INFO, { title = "refactoring.nvim" })
+  end
+
   -- TODO: maybe use snippets to expand the generated function and navigate
   -- through type placeholders? Although, that won't work for multiple text
   -- edits, snippets work for a single text edit. So, maybe use set the qf list
@@ -701,7 +705,7 @@ M.extract_func = function(range_type, config)
       selected_range = selected_range,
       lines = lines,
       fn_name = fn_name,
-      config_opts = opts,
+      config = config,
     }
   end)
   task:raise_on_error()
@@ -743,7 +747,7 @@ M.extract_func_to_file = function(range_type, config)
       selected_range = selected_range,
       lines = lines,
       fn_name = fn_name,
-      config_opts = opts,
+      config = config,
     }
   end)
   task:raise_on_error()

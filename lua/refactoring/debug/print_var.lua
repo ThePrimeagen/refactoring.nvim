@@ -127,7 +127,7 @@ function M.print_var(range_type, config)
     local lang_tree, err1 = ts.get_parser(buf, nil, { error = false })
     if not lang_tree then
       ---@cast err1 -nil
-      vim.notify(err1, vim.log.levels.ERROR)
+      vim.notify(err1, vim.log.levels.ERROR, { title = "refactoring.nvim" })
       return
     end
     -- TODO: use async parsing
@@ -275,7 +275,8 @@ function M.print_var(range_type, config)
     if #filtered_references == 0 then
       return vim.notify(
         "Couldn't find any reference inside of the extracted range with a declaration above output range using Treesitter",
-        vim.log.levels.ERROR
+        vim.log.levels.ERROR,
+        { title = "refactoring.nvim" }
       )
     end
     ---@type string[]

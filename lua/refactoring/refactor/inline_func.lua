@@ -50,7 +50,7 @@ local function get_processed_match_info(definitions, references, lang)
         local lang_tree, err2 = ts.get_parser(buf, lang, { error = false })
         if not lang_tree then
           ---@cast err2 -nil
-          vim.notify(err2, vim.log.levels.ERROR)
+          vim.notify(err2, vim.log.levels.ERROR, { title = "refactoring.nvim" })
           return
         end
         lang_tree:parse(true)
@@ -174,7 +174,7 @@ function M.inline_func(_, config)
   local lang_tree, err1 = ts.get_parser(nil, nil, { error = false })
   if not lang_tree then
     ---@cast err1 -nil
-    vim.notify(err1, vim.log.levels.ERROR)
+    vim.notify(err1, vim.log.levels.ERROR, { title = "refactoring.nvim" })
     return
   end
   -- TODO: use async parsing
@@ -237,7 +237,11 @@ function M.inline_func(_, config)
       :totable()
 
     if #definitions_with_function_info == 0 then
-      vim.notify("Couldn't find the definition of the symbol under cursor using treesitter", vim.log.levels.ERROR)
+      vim.notify(
+        "Couldn't find the definition of the symbol under cursor using treesitter",
+        vim.log.levels.ERROR,
+        { title = "refactoring.nvim" }
+      )
       return
     end
     local definition_with_function_info = #definitions_with_function_info == 1 and definitions_with_function_info[1]
@@ -256,7 +260,7 @@ function M.inline_func(_, config)
       definition_with_function_info.definition, definition_with_function_info.function_info
     local in_buf = vim.fn.bufadd(definition.filename)
     if function_info.returns_info and #function_info.returns_info > 1 then
-      vim.notify("The function has multiple return statements", vim.log.levels.WARN)
+      vim.notify("The function has multiple return statements", vim.log.levels.ERROR, { title = "refactoring.nvim" })
       return
     end
 
@@ -421,6 +425,13 @@ function M.inline_func(_, config)
     })
 
     apply_text_edits(text_edits_by_buf)
+    if config.show_success_message then
+      vim.notify(
+        ("Inlined %d function occurrences"):format(#references_with_function_call_info),
+        vim.log.levels.INFO,
+        { title = "refactoring.nvim" }
+      )
+    end
   end)
   task:raise_on_error()
   if opts.preview_ns then task:wait() end

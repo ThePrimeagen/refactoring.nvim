@@ -12,7 +12,7 @@ local T = MiniTest.new_set {
       child.bo.readonly = false
       -- NOTE: we use `vim.notify` to show warnings to users, this makes
       -- it easier to catch them with mini.test
-      child.lua "vim.notify = function(msg) error(msg) end"
+      child.lua "vim.notify = function(msg, level) if level == vim.log.levels.ERROR then error(msg) end end"
     end,
     post_once = child.stop,
   },

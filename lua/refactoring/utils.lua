@@ -41,14 +41,19 @@ end)
 function M.code_gen_error(missing_code_gen, lang)
   vim.notify(
     ("There's no `%s` code generation defined for language %s"):format(missing_code_gen, lang),
-    vim.log.levels.ERROR
+    vim.log.levels.ERROR,
+    { title = "refactoring.nvim" }
   )
 end
 
 ---@param missing_query string
 ---@param lang string
 function M.query_error(missing_query, lang)
-  vim.notify(("There is no `%s` query file for language %s"):format(missing_query, lang), vim.log.levels.ERROR)
+  vim.notify(
+    ("There is no `%s` query file for language %s"):format(missing_query, lang),
+    vim.log.levels.ERROR,
+    { title = "refactoring.nvim" }
+  )
 end
 
 -- NOTE: the indent logic in `vim.text.indent` counts each char as 1 indent

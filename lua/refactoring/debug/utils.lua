@@ -31,7 +31,11 @@ function M.get_statement_output_range(buf, output_statements, output_location, r
       end
     )
   if not statement_for_range then
-    return vim.notify("Couldn't find statement for extracted range using Treesitter", vim.log.levels.ERROR)
+    return vim.notify(
+      "Couldn't find statement for extracted range using Treesitter",
+      vim.log.levels.ERROR,
+      { title = "refactoring.nvim" }
+    )
   end
 
   local o_srow, o_scol, o_erow, o_ecol = statement_for_range.output_statement:range()

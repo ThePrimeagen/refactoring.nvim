@@ -115,7 +115,7 @@ function M.print_loc(range_type, config)
     local lang_tree, err1 = ts.get_parser(buf, nil, { error = false })
     if not lang_tree then
       ---@cast err1 -nil
-      vim.notify(err1, vim.log.levels.ERROR)
+      vim.notify(err1, vim.log.levels.ERROR, { title = "refactoring.nvim" })
       return
     end
 

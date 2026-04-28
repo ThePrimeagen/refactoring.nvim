@@ -46,6 +46,7 @@ Features:
 ------------------------------------------------------------------------------
 *refactor.refactor.extract_func.UserOpts*
 Fields ~
+{show_success_message} (`boolean?`)
 {input} (`string[]?`)
 {preview_ns} (`integer?`)
 {code_generation?} (`refactor.extract_func.UserCodeGeneration`)
@@ -53,6 +54,7 @@ Fields ~
 ------------------------------------------------------------------------------
 *refactor.refactor.extract_var.UserOpts*
 Fields ~
+{show_success_message} (`boolean?`)
 {input} (`string[]?`)
 {preview_ns} (`integer?`)
 {code_generation?} (`refactor.extract_var.UserCodeGeneration`)
@@ -60,6 +62,7 @@ Fields ~
 ------------------------------------------------------------------------------
 *refactor.refactor.inline_var.UserOpts*
 Fields ~
+{show_success_message} (`boolean?`)
 {input} (`string[]?`)
 {preview_ns} (`integer?`)
 {code_generation?} (`refactor.inline_var.UserCodeGeneration`)
@@ -67,6 +70,7 @@ Fields ~
 ------------------------------------------------------------------------------
 *refactor.refactor.inline_func.UserOpts*
 Fields ~
+{show_success_message} (`boolean?`)
 {input} (`string[]?`)
 {preview_ns} (`integer?`)
 {code_generation?} (`refactor.inline_func.UserCodeGeneration`)
@@ -175,7 +179,7 @@ Fields ~
 Fields ~
 {markers?} (`refactor.debug.UserMarkers`)
 {types?} (`('print_var'|'print_loc'|'print_exp')[]`)
-{restore_view?} (`boolean`)
+{restore_view?} (`boolean`) Does not work with dot-repeat
 
 ------------------------------------------------------------------------------
 *refactor.debug.print_var.UserOpts*

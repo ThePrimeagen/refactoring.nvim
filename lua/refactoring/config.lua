@@ -28,10 +28,12 @@ local M = {}
 ---@field print_loc? refactor.debug.print_loc.UserOpts
 
 ---@class refactor.Config
+---@field show_success_message boolean
 ---@field refactor refactor.refactor.Config
 ---@field debug refactor.debug.Config
 
 ---@class refactor.UserConfig
+---@field show_success_message? boolean
 ---@field refactor? refactor.refactor.UserConfig
 ---@field debug? refactor.debug.UserConfig
 
@@ -505,8 +507,9 @@ endfunction]]):format(opts.name, args, opts.body)
 
       if #opts.return_values > 1 then
         vim.notify(
-          "The extracted function requires multiple return values, but Java lacks support doing it",
-          vim.log.levels.WARN
+          "The extracted function requires multiple return values, but Java lacks support for it",
+          vim.log.levels.WARN,
+          { title = "refactoring.nvim" }
         )
       end
 
@@ -943,6 +946,7 @@ local inline_var_code_generation = {
 
 ---@type refactor.Config
 local default_config = {
+  show_success_message = true,
   refactor = {
     extract_func = {
       code_generation = extract_func_code_generation,

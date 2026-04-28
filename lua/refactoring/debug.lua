@@ -18,12 +18,12 @@ local M = {}
 ---@private
 ---@class refactor.debug.cleanup.Opts
 ---@field types ('print_var'|'print_loc'|'print_exp')[]
----@field restore_view boolean Does not work with dot-repeat
+---@field restore_view boolean
 
 ---@class refactor.debug.cleanup.UserOpts
 ---@field markers? refactor.debug.UserMarkers
 ---@field types? ('print_var'|'print_loc'|'print_exp')[]
----@field restore_view? boolean
+---@field restore_view? boolean Does not work with dot-repeat
 
 ---@private
 ---@class refactor.debug.print_var.Opts

@@ -54,6 +54,7 @@ local M = {}
 ---@field code_generation refactor.extract_func.CodeGeneration
 
 ---@class refactor.refactor.extract_func.UserOpts
+---@field show_success_message boolean?
 ---@field input string[]?
 ---@field preview_ns integer?
 ---@field code_generation? refactor.extract_func.UserCodeGeneration
@@ -65,6 +66,7 @@ local M = {}
 ---@field code_generation refactor.extract_var.CodeGeneration
 
 ---@class refactor.refactor.extract_var.UserOpts
+---@field show_success_message boolean?
 ---@field input string[]?
 ---@field preview_ns integer?
 ---@field code_generation? refactor.extract_var.UserCodeGeneration
@@ -76,6 +78,7 @@ local M = {}
 ---@field code_generation refactor.inline_var.CodeGeneration
 
 ---@class refactor.refactor.inline_var.UserOpts
+---@field show_success_message boolean?
 ---@field input string[]?
 ---@field preview_ns integer?
 ---@field code_generation? refactor.inline_var.UserCodeGeneration
@@ -87,6 +90,7 @@ local M = {}
 ---@field code_generation refactor.inline_func.CodeGeneration
 
 ---@class refactor.refactor.inline_func.UserOpts
+---@field show_success_message boolean?
 ---@field input string[]?
 ---@field preview_ns integer?
 ---@field code_generation? refactor.inline_func.UserCodeGeneration
@@ -112,7 +116,12 @@ end
 ---   `refactor_output_function` and `refactor_input_function`)
 ---@param opts refactor.refactor.extract_func.UserOpts?
 function M.extract_func(opts)
-  local config = require("refactoring.config").get_config(0, { refactor = { extract_func = opts } })
+  local config = require("refactoring.config").get_config(0, {
+    show_success_message = opts and opts.show_success_message,
+    refactor = {
+      extract_func = opts,
+    },
+  })
 
   vim.o.operatorfunc = "v:lua.require'refactoring'.refactor_operatorfunc"
   last_refactor = require("refactoring.refactor.extract_func").extract_func
@@ -128,7 +137,12 @@ end
 ---   `refactor_output_function` and `refactor_input_function`)
 ---@param opts refactor.refactor.extract_func.UserOpts?
 function M.extract_func_to_file(opts)
-  local config = require("refactoring.config").get_config(0, { refactor = { extract_func = opts } })
+  local config = require("refactoring.config").get_config(0, {
+    show_success_message = opts and opts.show_success_message,
+    refactor = {
+      extract_func = opts,
+    },
+  })
 
   vim.o.operatorfunc = "v:lua.require'refactoring'.refactor_operatorfunc"
   last_refactor = require("refactoring.refactor.extract_func").extract_func_to_file
@@ -143,7 +157,12 @@ end
 ---   `refactor_output_statement`)
 ---@param opts refactor.refactor.extract_var.UserOpts?
 function M.extract_var(opts)
-  local config = require("refactoring.config").get_config(0, { refactor = { extract_var = opts } })
+  local config = require("refactoring.config").get_config(0, {
+    show_success_message = opts and opts.show_success_message,
+    refactor = {
+      extract_var = opts,
+    },
+  })
 
   vim.o.operatorfunc = "v:lua.require'refactoring'.refactor_operatorfunc"
   last_refactor = require("refactoring.refactor.extract_var").extract_var
@@ -158,7 +177,12 @@ end
 ---   - Tree-sitter parser and queries (`refactor_reference` and `refactor_variable`)
 ---@param opts refactor.refactor.inline_var.UserOpts?
 function M.inline_var(opts)
-  local config = require("refactoring.config").get_config(0, { refactor = { inline_var = opts } })
+  local config = require("refactoring.config").get_config(0, {
+    show_success_message = opts and opts.show_success_message,
+    refactor = {
+      inline_var = opts,
+    },
+  })
 
   vim.o.operatorfunc = "v:lua.require'refactoring'.refactor_operatorfunc"
   last_refactor = require("refactoring.refactor.inline_var").inline_var
@@ -175,7 +199,12 @@ end
 ---   `refactor_function_call`)
 ---@param opts refactor.refactor.inline_func.UserOpts?
 function M.inline_func(opts)
-  local config = require("refactoring.config").get_config(0, { refactor = { inline_func = opts } })
+  local config = require("refactoring.config").get_config(0, {
+    show_success_message = opts and opts.show_success_message,
+    refactor = {
+      inline_func = opts,
+    },
+  })
 
   vim.o.operatorfunc = "v:lua.require'refactoring'.refactor_operatorfunc"
   last_refactor = require("refactoring.refactor.inline_func").inline_func

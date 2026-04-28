@@ -74,7 +74,7 @@ function M.extract_var(range_type, config)
     local lang_tree, err1 = ts.get_parser(buf, nil, { error = false })
     if not lang_tree then
       ---@cast err1 -nil
-      vim.notify(err1, vim.log.levels.ERROR)
+      vim.notify(err1, vim.log.levels.ERROR, { title = "refactoring.nvim" })
       return
     end
     -- TODO: use async parsing
@@ -85,7 +85,11 @@ function M.extract_var(range_type, config)
     local lang = nested_lang_tree:lang()
     local encompassing_node = nested_lang_tree:node_for_range(selected_range_ts)
     if not encompassing_node then
-      vim.notify("Couldn't find a Treesitter node that contains the selected range", vim.log.levels.WARN)
+      vim.notify(
+        "Couldn't find a Treesitter node that contains the selected range",
+        vim.log.levels.ERROR,
+        { title = "refactoring.nvim" }
+      )
       return
     end
 
@@ -100,7 +104,8 @@ function M.extract_var(range_type, config)
     if not ok then
       vim.notify(
         "The selected text couldn't be parser using Treesitter to look for similar occurrences.",
-        vim.log.levels.ERROR
+        vim.log.levels.ERROR,
+        { title = "refactoring.nvim" }
       )
       return
     end
@@ -174,9 +179,12 @@ function M.extract_var(range_type, config)
         end
       )
     if not smallest_common_scope_with_node then
-      -- TODO: put all of this notifies into a single function and return to
-      -- put into a single line
-      return vim.notify "Couldn't find the smallest common scope using Treesitter"
+      vim.notify(
+        "Couldn't find the smallest common scope using Treesitter",
+        vim.log.levels.ERROR,
+        { title = "refactoring.nvim" }
+      )
+      return
     end
     local smallest_common_scope = smallest_common_scope_with_node.si
 
@@ -273,6 +281,14 @@ function M.extract_var(range_type, config)
     })
 
     apply_text_edits(text_edits_by_buf)
+
+    if config.show_success_message then
+      vim.notify(
+        ("Extracted %d expressions into a variable"):format(#matching_nodes),
+        vim.log.levels.INFO,
+        { title = "refactoring.nvim" }
+      )
+    end
   end)
 
   task:raise_on_error()
