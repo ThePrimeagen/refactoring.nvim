@@ -349,16 +349,21 @@ function M.inline_func(_, config)
 
         if args or r.function_call_info.args then
           local params = r.function_call_info.args
-            and iter(r.function_call_info.args)
-              :map(
-                ---@param arg TSNode
-                function(arg)
-                  return ts.get_node_text(arg, out_buf)
-                end
-              )
-              :totable()
-          -- TODO: check if args[i] == params[i] and remove both of the from the
-          -- lists if true
+              and iter(r.function_call_info.args)
+                :map(
+                  ---@param arg TSNode
+                  function(arg)
+                    return ts.get_node_text(arg, out_buf)
+                  end
+                )
+                :totable()
+            or {}
+          for i = #params, 1, -1 do
+            if args and args[i] == params[i] then
+              table.remove(args, i)
+              table.remove(params, i)
+            end
+          end
           local args_assignment = get_assignment {
             left = args or {},
             right = params or {},
@@ -376,14 +381,21 @@ function M.inline_func(_, config)
 
         if function_return_values or r.function_call_info.return_values then
           local function_call_return_values = r.function_call_info.return_values
-            and iter(r.function_call_info.return_values)
-              :map(
-                ---@param return_value TSNode
-                function(return_value)
-                  return ts.get_node_text(return_value, out_buf)
-                end
-              )
-              :totable()
+              and iter(r.function_call_info.return_values)
+                :map(
+                  ---@param return_value TSNode
+                  function(return_value)
+                    return ts.get_node_text(return_value, out_buf)
+                  end
+                )
+                :totable()
+            or {}
+          for i = #function_call_return_values, 1, -1 do
+            if function_return_values and function_return_values[i] == function_call_return_values[i] then
+              table.remove(function_return_values, i)
+              table.remove(function_call_return_values, i)
+            end
+          end
           local return_values_assignment = get_assignment {
             left = function_call_return_values or {},
             right = function_return_values or {},

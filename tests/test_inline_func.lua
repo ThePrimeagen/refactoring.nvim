@@ -92,4 +92,12 @@ T["lua"]["anonymous function declaration"] = function()
   validate(lines, { 1, 6 }, expected_lines)
 end
 
+T["lua"]["removes redundant assignments"] = function()
+  local lines = read_file "./tests/files/inline_func_removes_redundant_assignments_before.lua"
+  local expected_lines = read_file "./tests/files/inline_func_removes_redundant_assignments_after.lua"
+
+  child.cmd "edit tmp.lua"
+  validate(lines, { 1, 15 }, expected_lines)
+end
+
 return T
