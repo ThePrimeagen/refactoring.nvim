@@ -85,7 +85,7 @@ local function get_processed_match_info(definitions, references, lang)
         ---@param return_info refactor.ReturnInfo
         function(return_info)
           local srow, scol, erow, ecol = return_info["return"]:range()
-          local return_range = range(srow, scol, erow, ecol, { buf = buf })
+          local return_range = range(buf, srow, scol, erow, ecol)
 
           ---@type nil|refactor.ProcessedFunctionInfo
           local function_for_return = iter(match_info.functions)
@@ -93,7 +93,7 @@ local function get_processed_match_info(definitions, references, lang)
               ---@param function_info refactor.FunctionInfo
               function(function_info)
                 local f_srow, f_scol, f_erow, f_ecol = function_info["function"]:range()
-                local function_range = range(f_srow, f_scol, f_erow, f_ecol, { buf = buf })
+                local function_range = range(buf, f_srow, f_scol, f_erow, f_ecol)
                 return function_range:has(return_range)
               end
             )
@@ -215,12 +215,12 @@ function M.inline_func(_, config)
 
           local match_info = match_info_by_buf[buf]
           -- TODO: add range.vimscript
-          local d_range = range(d.lnum - 1, d.col - 1, d.end_lnum - 1, d.end_col - 1, { buf = buf })
+          local d_range = range(buf, d.lnum - 1, d.col - 1, d.end_lnum - 1, d.end_col - 1)
           local function_info = iter(match_info.functions):find(
             ---@param function_info refactor.FunctionInfo
             function(function_info)
               local srow, scol, erow, ecol = function_info["function"]:range()
-              local function_range = range(srow, scol, erow, ecol, { buf = buf })
+              local function_range = range(buf, srow, scol, erow, ecol)
               return function_range:has(d_range)
             end
           )
@@ -281,12 +281,12 @@ function M.inline_func(_, config)
 
           local match_info = match_info_by_buf[buf]
           -- TODO: add range.vimscript
-          local r_range = range(r.lnum - 1, r.col - 1, r.end_lnum - 1, r.end_col - 1, { buf = buf })
+          local r_range = range(buf, r.lnum - 1, r.col - 1, r.end_lnum - 1, r.end_col - 1)
           local function_call_info = iter(match_info.function_calls):find(
             ---@param function_call_info refactor.FunctionCallInfo
             function(function_call_info)
               local srow, scol, erow, ecol = function_call_info.function_call:range()
-              local function_call_range = range(srow, scol, erow, ecol, { buf = buf })
+              local function_call_range = range(buf, srow, scol, erow, ecol)
               return function_call_range:has(r_range)
             end
           )
@@ -309,7 +309,7 @@ function M.inline_func(_, config)
     else
       body_end_row, body_end_col = function_info.returns_info[1]["return"]:start()
     end
-    local body_range = range(body_start_row, body_start_col, body_end_row, body_end_col, { buf = in_buf })
+    local body_range = range(in_buf, body_start_row, body_start_col, body_end_row, body_end_col)
     local b_srow, b_scol, b_erow, b_ecol = body_range:to_extmark()
 
     local body_lines_without_return = api.nvim_buf_get_text(in_buf, b_srow, b_scol, b_erow, b_ecol, {})
@@ -371,7 +371,7 @@ function M.inline_func(_, config)
         end
 
         local srow, scol, erow, ecol = (r.function_call_info.outside or r.function_call_info.function_call):range()
-        local fc_range = range(srow, scol, erow, ecol, { buf = in_buf })
+        local fc_range = range(in_buf, srow, scol, erow, ecol)
         local fc_start_row, _, fc_end_row = fc_range:to_extmark()
         local function_call = table.concat(api.nvim_buf_get_lines(out_buf, fc_start_row, fc_end_row, true), "\n")
 
@@ -410,10 +410,10 @@ function M.inline_func(_, config)
       erow = erow + 1
       ecol = 0
     end
-    local function_range = range(srow, scol, erow, ecol, { buf = in_buf })
+    local function_range = range(in_buf, srow, scol, erow, ecol)
     if function_info.comments then
       local f_srow, f_scol, f_erow, f_ecol = function_info.comments[1]:range()
-      local highest_comment_range = range(f_srow, f_scol, f_erow, f_ecol, { buf = in_buf })
+      local highest_comment_range = range(in_buf, f_srow, f_scol, f_erow, f_ecol)
       function_range.start_row, function_range.start_col =
         highest_comment_range.start_row, highest_comment_range.start_col
     end

@@ -61,9 +61,9 @@ local function get_all_print_loc(buf, nested_lang_tree, start_marker, end_marker
         local srow, _, erow, _ = comment:range()
 
         local is_start = text:find(start_marker) ~= nil
-        if is_start then return "start", pos(srow, 0, { buf = buf }) end
+        if is_start then return "start", pos(buf, srow, 0) end
         local is_end = text:find(end_marker) ~= nil
-        if is_end then return "end", pos(erow + 1, 0, { buf = buf }) end
+        if is_end then return "end", pos(buf, erow + 1, 0) end
       end
     )
     :filter(
@@ -142,8 +142,8 @@ function M.print_loc(range_type, config)
     local _, selected_start_line_first_non_white = selected_range_start_line:find "^%s*"
     selected_start_line_first_non_white = selected_start_line_first_non_white or 0
     local selected_reference_pos = opts.output_location == "below"
-        and pos(selected_range.end_row, selected_range.end_col)
-      or pos(selected_range.start_row, selected_start_line_first_non_white)
+        and pos(buf, selected_range.end_row, selected_range.end_col)
+      or pos(buf, selected_range.start_row, selected_start_line_first_non_white)
     local output_range, inserted_at =
       get_statement_output_range(buf, output_statements, opts.output_location, selected_range, selected_reference_pos)
     if not output_range or not inserted_at then return end
@@ -244,8 +244,7 @@ function M.print_loc(range_type, config)
           if not count_start or not count_end then return end
 
           local update_count_srow = srow + i - 1
-          local update_count_range =
-            range(update_count_srow, count_start - 1, update_count_srow, count_end, { buf = buf })
+          local update_count_range = range(buf, update_count_srow, count_start - 1, update_count_srow, count_end)
           table.insert(
             text_edits_by_buf[buf],
             { range = update_count_range, lines = { ("┊%d┊"):format(old_count + 1) } }

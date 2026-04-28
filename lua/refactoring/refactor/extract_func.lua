@@ -100,7 +100,7 @@ local function get_output_node(in_buf, out_buf, lang, selected_range)
   if in_buf ~= out_buf and outputs[#outputs] then return choose_output(outputs[#outputs]) end
   if in_buf ~= out_buf then return end
 
-  local selected_start_pos = pos(selected_range.start_row, selected_range.start_col, { buf = selected_range.buf })
+  local selected_start_pos = pos(selected_range.buf, selected_range.start_row, selected_range.start_col)
   ---@type refactor.OutputFunctionInfo|nil
   local selected_output = iter(outputs)
     :filter(
@@ -108,7 +108,7 @@ local function get_output_node(in_buf, out_buf, lang, selected_range)
       function(o)
         local n = choose_output(o)
         local srow, scol = n:start()
-        local n_start = pos(srow, scol, { buf = out_buf })
+        local n_start = pos(out_buf, srow, scol)
         return n_start < selected_start_pos
       end
     )
@@ -121,10 +121,10 @@ local function get_output_node(in_buf, out_buf, lang, selected_range)
 
         local n = choose_output(o)
         local n_srow, n_scol = n:start()
-        local o_start = pos(n_srow, n_scol, { buf = out_buf })
+        local o_start = pos(out_buf, n_srow, n_scol)
         local acc_n = choose_output(acc)
         local acc_srow, acc_scol = acc_n:start()
-        local acc_start = pos(acc_srow, acc_scol, { buf = out_buf })
+        local acc_start = pos(out_buf, acc_srow, acc_scol)
 
         local is_o_closer = is_first_closer(o_start, acc_start, selected_start_pos)
         if is_o_closer then return o end
@@ -158,7 +158,7 @@ local function get_input_info(buf, nested_lang_tree, selected_range)
       ---@param i refactor.InputFunctionInfo
       function(i)
         local srow, scol, erow, ecol = i.fn:range()
-        local n_range = range(srow, scol, erow, ecol, { buf = buf })
+        local n_range = range(buf, srow, scol, erow, ecol)
         return n_range:has(selected_range)
       end
     )
@@ -176,14 +176,14 @@ local function get_input_info(buf, nested_lang_tree, selected_range)
 
   if surrounding_input then return surrounding_input end
 
-  local selected_start_pos = pos(selected_range.start_row, selected_range.start_col, { buf = selected_range.buf })
+  local selected_start_pos = pos(selected_range.buf, selected_range.start_row, selected_range.start_col)
   ---@type refactor.InputFunctionInfo|nil
   local previous_input = iter(inputs)
     :filter(
       ---@param i refactor.InputFunctionInfo
       function(i)
         local srow, scol = i.fn:start()
-        local n_start = pos(srow, scol, { buf = buf })
+        local n_start = pos(buf, srow, scol)
         return n_start < selected_start_pos
       end
     )
@@ -195,9 +195,9 @@ local function get_input_info(buf, nested_lang_tree, selected_range)
         if not acc then return i end
 
         local n_srow, n_scol = i.fn:start()
-        local i_start = pos(n_srow, n_scol, { buf = buf })
+        local i_start = pos(buf, n_srow, n_scol)
         local acc_srow, acc_scol = acc.fn:start()
-        local acc_start = pos(acc_srow, acc_scol, { buf = buf })
+        local acc_start = pos(buf, acc_srow, acc_scol)
 
         local is_i_closer = is_first_closer(i_start, acc_start, selected_start_pos)
         if is_i_closer then return i end
@@ -279,21 +279,21 @@ local function extract_func(opts)
   local output_range ---@type vim.Range
   if output_node then
     local srow, scol = output_node:start()
-    local output_start = pos(srow, scol, { buf = in_buf })
+    local output_start = pos(in_buf, srow, scol)
     local row, col = output_start:to_extmark()
-    output_range = range.extmark(row, col, row, col, { buf = out_buf })
+    output_range = range.extmark(out_buf, row, col, row, col)
   elseif in_buf == out_buf then
     -- TODO: Is this a good default possition when in_buf == out_buf? Which could be a better one?
     output_range = range(
+      selected_range.buf,
       selected_range.start_row,
       selected_range.start_col,
       selected_range.start_row,
-      selected_range.start_col,
-      { buf = selected_range.buf }
+      selected_range.start_col
     )
   else
     -- TODO: Is this a good default possition when in_buf ~= out_buf? Which could be a better one?
-    output_range = range.extmark(0, 0, 0, 0, { buf = out_buf })
+    output_range = range.extmark(out_buf, 0, 0, 0, 0)
   end
 
   local references_info = get_references_info(in_buf, nested_lang_tree, reference_query)
@@ -327,14 +327,14 @@ local function extract_func(opts)
     ---@param b refactor.ReferenceInfo
     function(a, b)
       local a_srow, a_scol, a_erow, a_ecol = a.identifier:range()
-      local a_range = range(a_srow, a_scol, a_erow, a_ecol, { buf = in_buf })
+      local a_range = range(in_buf, a_srow, a_scol, a_erow, a_ecol)
       local b_srow, b_scol, b_erow, b_ecol = b.identifier:range()
-      local b_range = range(b_srow, b_scol, b_erow, b_ecol, { buf = in_buf })
+      local b_range = range(in_buf, b_srow, b_scol, b_erow, b_ecol)
 
       return a_range < b_range
     end
   )
-  local selected_end_pos = pos(selected_range.end_row, selected_range.end_col, { buf = selected_range.buf })
+  local selected_end_pos = pos(selected_range.buf, selected_range.end_row, selected_range.end_col)
   ---@type {[refactor.ScopeInfo]: {scope_info: refactor.ScopeInfo, types: {[string]: string|{identifier: string}}}}
   local types_by_scope_up_to_selected_range_end = iter(typed_references_info)
     :filter(
@@ -355,8 +355,8 @@ local function extract_func(opts)
         end
 
         local srow, scol, erow, ecol = r.identifier:range()
-        local node_start_pos = pos(srow, scol, { buf = in_buf })
-        local node_end_pos = pos(erow, ecol, { buf = in_buf })
+        local node_start_pos = pos(in_buf, srow, scol)
+        local node_end_pos = pos(in_buf, erow, ecol)
         return node_start_pos <= selected_end_pos and node_end_pos <= node_end_pos and is_in_scope
       end
     )
@@ -383,9 +383,9 @@ local function extract_func(opts)
   local types_with_scope_up_to_selected_range_end = vim.tbl_values(types_by_scope_up_to_selected_range_end)
   table.sort(types_with_scope_up_to_selected_range_end, function(a, b)
     local a_srow, a_scol, a_erow, a_ecol = a.scope_info.scope[1]:range()
-    local a_range = range(a_srow, a_scol, a_erow, a_ecol, { buf = in_buf })
+    local a_range = range(in_buf, a_srow, a_scol, a_erow, a_ecol)
     local b_srow, b_scol, b_erow, b_ecol = b.scope_info.scope[1]:range()
-    local b_range = range(b_srow, b_scol, b_erow, b_ecol, { buf = in_buf })
+    local b_range = range(in_buf, b_srow, b_scol, b_erow, b_ecol)
 
     return a_range < b_range
   end)
@@ -432,7 +432,7 @@ local function extract_func(opts)
       function(r)
         local n = r.identifier
         local srow, scol, erow, ecol = n:range()
-        local node_range = range(srow, scol, erow, ecol, { buf = in_buf })
+        local node_range = range(in_buf, srow, scol, erow, ecol)
         return selected_range:has(node_range)
       end
     )
@@ -491,7 +491,7 @@ local function extract_func(opts)
       ---@param r refactor.ReferenceInfo
       function(r)
         local srow, scol, erow, ecol = r.identifier:range()
-        local r_range = range(srow, scol, erow, ecol, { buf = in_buf })
+        local r_range = range(in_buf, srow, scol, erow, ecol)
         return selected_range:has(r_range)
       end
     )
@@ -516,7 +516,7 @@ local function extract_func(opts)
         end
 
         local srow, scol, erow, ecol = r.identifier:range()
-        local node_range = range(srow, scol, erow, ecol, { buf = in_buf })
+        local node_range = range(in_buf, srow, scol, erow, ecol)
         return node_range <= output_range and is_in_scope
       end
     )
@@ -540,7 +540,7 @@ local function extract_func(opts)
         end
 
         local srow, scol, erow, ecol = r.identifier:range()
-        local node_range = range(srow, scol, erow, ecol, { buf = in_buf })
+        local node_range = range(in_buf, srow, scol, erow, ecol)
         return node_range <= selected_range and is_in_scope
       end
     )
@@ -580,7 +580,7 @@ local function extract_func(opts)
         end
 
         local srow, scol, erow, ecol = r.identifier:range()
-        local node_range = range(srow, scol, erow, ecol, { buf = in_buf })
+        local node_range = range(in_buf, srow, scol, erow, ecol)
         return node_range > selected_range and is_in_scope
       end
     )

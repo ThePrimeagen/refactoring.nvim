@@ -131,7 +131,7 @@ local function smaller_containing_scope(buf, scopes_info, inner_range)
           ---@param s TSNode
           function(s)
             local srow, scol, erow, ecol = s:range()
-            local scope_range = range(srow, scol, erow, ecol, { buf = buf })
+            local scope_range = range(buf, srow, scol, erow, ecol)
             return scope_range:has(inner_range)
           end
         )
@@ -180,7 +180,7 @@ function M.get_declarations_by_scope(references, scopes_info, buf)
       ---@param d refactor.ReferenceInfo
       function(acc, d)
         local srow, scol, erow, ecol = d.identifier:range()
-        local d_range = range(srow, scol, erow, ecol, { buf = buf })
+        local d_range = range(buf, srow, scol, erow, ecol)
         local scope_info = smaller_containing_scope(buf, scopes_info, d_range)
         local identifier = ts.get_node_text(d.identifier, buf)
         assert(scope_info)
@@ -202,7 +202,7 @@ end
 ---@return refactor.ScopeInfo|nil
 function M.get_declaration_scope(declarations_by_scope, all_scopes, reference, buf)
   local srow, scol, erow, ecol = reference.identifier:range()
-  local reference_range = range(srow, scol, erow, ecol, { buf = buf })
+  local reference_range = range(buf, srow, scol, erow, ecol)
   local scopes_for_reference = M.scopes_for_range(buf, all_scopes, reference_range)
   table.sort(scopes_for_reference, function(a, b)
     local a_row, a_col, a_bytes = a.scope[1]:start()
@@ -213,7 +213,7 @@ function M.get_declaration_scope(declarations_by_scope, all_scopes, reference, b
   end)
 
   local identifier = ts.get_node_text(reference.identifier, buf)
-  local reference_start = pos(srow, scol, { buf = buf })
+  local reference_start = pos(buf, srow, scol)
   return iter(scopes_for_reference):find(
     ---@param si refactor.ScopeInfo
     function(si)
@@ -227,7 +227,7 @@ function M.get_declaration_scope(declarations_by_scope, all_scopes, reference, b
           ---@param d refactor.ReferenceInfo
           function(d)
             local d_srow, d_scol = d.identifier:start()
-            local d_start = pos(d_srow, d_scol, { buf = buf })
+            local d_start = pos(buf, d_srow, d_scol)
             return reference_start >= d_start
           end
         )
@@ -239,9 +239,9 @@ function M.get_declaration_scope(declarations_by_scope, all_scopes, reference, b
             if not acc then return d end
 
             local d_srow, d_scol = d.identifier:start()
-            local d_start = pos(d_srow, d_scol, { buf = buf })
+            local d_start = pos(buf, d_srow, d_scol)
             local acc_srow, acc_scol = d.identifier:start()
-            local acc_start = pos(acc_srow, acc_scol, { buf = buf })
+            local acc_start = pos(buf, acc_srow, acc_scol)
 
             local is_d_closer = M.is_first_closer(d_start, acc_start, reference_start)
             if is_d_closer then return d end
@@ -272,8 +272,8 @@ end
 ---@param reference_range vim.Range
 ---@return refactor.ScopeInfo[]
 function M.scopes_for_range(buf, all_scopes, reference_range)
-  local reference_start = pos(reference_range.start_row, reference_range.start_col, { buf = buf })
-  local reference_end = pos(reference_range.end_row, reference_range.end_col, { buf = buf })
+  local reference_start = pos(buf, reference_range.start_row, reference_range.start_col)
+  local reference_end = pos(buf, reference_range.end_row, reference_range.end_col)
   return iter(all_scopes)
     :filter(
       ---@param si refactor.ScopeInfo
@@ -282,7 +282,7 @@ function M.scopes_for_range(buf, all_scopes, reference_range)
           ---@param s TSNode
           function(s)
             local srow, scol, erow, ecol = s:range()
-            local scope_range = range(srow, scol, erow, ecol, { buf = buf })
+            local scope_range = range(buf, srow, scol, erow, ecol)
             return scope_range:has(reference_start)
               or scope_range:has(reference_end)
               or reference_range:has(scope_range)
@@ -307,7 +307,7 @@ function M.get_selected_range(buf, range_type)
     range_end[2] = #api.nvim_buf_get_lines(buf, range_end[1], range_end[1] + 1, true)[1]
   end
 
-  return range(range_start[1], range_start[2], range_end[1], range_end[2], { buf = buf })
+  return range(buf, range_start[1], range_start[2], range_end[1], range_end[2])
 end
 
 ---@class refactor.TsInfo
@@ -666,7 +666,7 @@ function M.get_debug_path_for_range(buf, lang_tree, output_range)
         -- right outside it. So, we add an offset to compensate
         -- TODO: do I need to handle this anywhere else?
         local end_offset = lang == "python" and 1 or 0
-        local dp_range = range(dp_srow, dp_scol, dp_erow, dp_ecol + end_offset, { buf = buf })
+        local dp_range = range(buf, dp_srow, dp_scol, dp_erow, dp_ecol + end_offset)
 
         return dp_range:has(output_range)
       end
@@ -675,9 +675,9 @@ function M.get_debug_path_for_range(buf, lang_tree, output_range)
 
   table.sort(debug_path_segments_for_range, function(a, b)
     local a_srow, a_scol = a.debug_path_segment:range()
-    local a_start_pos = pos(a_srow, a_scol, { buf = buf })
+    local a_start_pos = pos(buf, a_srow, a_scol)
     local b_srow, b_scol = b.debug_path_segment:range()
-    local b_start_pos = pos(b_srow, b_scol, { buf = buf })
+    local b_start_pos = pos(buf, b_srow, b_scol)
     return a_start_pos < b_start_pos
   end)
 

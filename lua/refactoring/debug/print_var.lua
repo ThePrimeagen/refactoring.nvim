@@ -56,9 +56,9 @@ local function get_all_print_var(buf, nested_lang_tree, start_marker, end_marker
         local srow, _, erow, _ = comment:range()
 
         local is_start = text:find(start_marker) ~= nil
-        if is_start then return "start", pos(srow, 0, { buf = buf }) end
+        if is_start then return "start", pos(buf, srow, 0) end
         local is_end = text:find(end_marker) ~= nil
-        if is_end then return "end", pos(erow + 1, 0, { buf = buf }) end
+        if is_end then return "end", pos(buf, erow + 1, 0) end
       end
     )
     :filter(
@@ -162,8 +162,8 @@ function M.print_var(range_type, config)
     local _, selected_start_line_first_non_white = selected_range_start_line:find "^%s*"
     selected_start_line_first_non_white = selected_start_line_first_non_white or 0
     local selected_reference_pos = opts.output_location == "below"
-        and pos(selected_range.end_row, selected_range.end_col)
-      or pos(selected_range.start_row, selected_start_line_first_non_white)
+        and pos(buf, selected_range.end_row, selected_range.end_col)
+      or pos(buf, selected_range.start_row, selected_start_line_first_non_white)
     local output_range, inserted_at =
       get_statement_output_range(buf, output_statements, opts.output_location, selected_range, selected_reference_pos)
     if not output_range or not inserted_at then return end
@@ -194,8 +194,7 @@ function M.print_var(range_type, config)
             )
           end
 
-          local r_srow, r_scol, r_erow, r_ecol = r.identifier:range()
-          local r_range = range(r_srow, r_scol, r_erow, r_ecol, { buf = buf })
+          local r_range = range(buf, r.identifier:range())
           return r_range < output_range and is_in_scope
         end
       )
@@ -241,17 +240,14 @@ function M.print_var(range_type, config)
       :filter(
         ---@param r refactor.ReferenceInfo
         function(r)
-          local r_srow, r_scol, r_erow, r_ecol = r.identifier:range()
-          local r_range = range(r_srow, r_scol, r_erow, r_ecol, { buf = buf })
+          local r_range = range(buf, r.identifier:range())
           return selected_range:has(r_range)
         end
       )
       :totable()
     table.sort(selected_references, function(a, b)
-      local a_srow, a_scol, a_erow, a_ecol = a.identifier:range()
-      local a_range = range(a_srow, a_scol, a_erow, a_ecol, { buf = buf })
-      local b_srow, b_scol, b_erow, b_ecol = b.identifier:range()
-      local b_range = range(b_srow, b_scol, b_erow, b_ecol, { buf = buf })
+      local a_range = range(buf, a.identifier:range())
+      local b_range = range(buf, b.identifier:range())
 
       return a_range < b_range
     end)
@@ -377,8 +373,7 @@ function M.print_var(range_type, config)
               if not count_start or not count_end then return end
 
               local update_count_srow = srow + i - 1
-              local update_count_range =
-                range(update_count_srow, count_start - 1, update_count_srow, count_end, { buf = buf })
+              local update_count_range = range(buf, update_count_srow, count_start - 1, update_count_srow, count_end)
               table.insert(
                 text_edits_by_buf[buf],
                 { range = update_count_range, lines = { ("┊%d┊"):format(old_count + 1) } }
