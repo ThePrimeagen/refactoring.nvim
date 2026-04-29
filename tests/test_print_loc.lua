@@ -90,4 +90,11 @@ T["lua"]["works injected"] = function()
   validate(lines, { 2, 0 }, expected_lines, " pP")
 end
 
+T["lua"]["works midline statement"] = function()
+  local lines = read_file "./tests/files/print_loc_works_midline_statement_before.lua"
+  local expected_lines = read_file "./tests/files/print_loc_midline_statement_after.lua"
+  child.cmd "edit tmp.lua"
+  validate(lines, { 2, 41 }, expected_lines, " pp", " pP")
+end
+
 return T

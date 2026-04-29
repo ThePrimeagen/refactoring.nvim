@@ -76,4 +76,11 @@ T["lua"]["works"] = function()
   validate(lines, { 1, 0 }, expected_lines, "VG", " pc")
 end
 
+T["lua"]["does not leave whitespace behind"] = function()
+  local lines = read_file "./tests/files/cleanup_does_not_leave_whitespace_behind_before.lua"
+  local expected_lines = read_file "./tests/files/cleanup_does_not_leave_whitespace_behind_after.lua"
+  child.cmd "edit tmp.lua"
+  validate(lines, { 1, 0 }, expected_lines, "VG", " pc")
+end
+
 return T

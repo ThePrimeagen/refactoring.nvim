@@ -105,6 +105,7 @@ function M.print_loc(range_type, config)
   local get_debug_path_for_range = require("refactoring.utils").get_debug_path_for_range
   local get_statement_output_range = require("refactoring.debug.utils").get_statement_output_range
   local commentstring_error = require("refactoring.utils").commentstring_error
+  local get_is_in_midline = require("refactoring.debug.utils").get_is_in_midline
 
   local opts = config.debug.print_loc
   local code_generation = opts.code_generation
@@ -137,14 +138,9 @@ function M.print_loc(range_type, config)
 
     local output_statements = get_output_statements_info(buf, nested_lang_tree, output_statement_query)
 
-    -- NOTE: treesitter nodes usualy do not include leading whitespace
-    local e_srow = selected_range:to_extmark()
-    local selected_range_start_line = api.nvim_buf_get_lines(buf, e_srow, e_srow + 1, true)[1]
-    local _, selected_start_line_first_non_white = selected_range_start_line:find "^%s*"
-    selected_start_line_first_non_white = selected_start_line_first_non_white or 0
     local selected_reference_pos = opts.output_location == "below"
         and pos(buf, selected_range.end_row, selected_range.end_col)
-      or pos(buf, selected_range.start_row, selected_start_line_first_non_white)
+      or pos(buf, selected_range.start_row, selected_range.start_col)
     local output_range, inserted_at =
       get_statement_output_range(buf, output_statements, opts.output_location, selected_range, selected_reference_pos)
     if not output_range or not inserted_at then return end
@@ -191,7 +187,7 @@ function M.print_loc(range_type, config)
         return cms ~= ""
       end)
     if not commentstring then return commentstring_error(lang) end
-    local print_loc_lines = {
+    local print_lines = {
       commentstring:format(start_marker),
       get_print_loc {
         debug_path = debug_path_for_range,
@@ -199,22 +195,25 @@ function M.print_loc(range_type, config)
       } .. commentstring:format(end_marker),
     }
 
-    local o_srow = output_range:to_extmark()
+    local output_srow = output_range:to_extmark()
     local expandtab = vim.bo[buf].expandtab
-    local _, indent_amount = indent(expandtab, 0, api.nvim_buf_get_lines(buf, o_srow, o_srow + 1, true)[1])
-    local print_text = table.concat(print_loc_lines, "\n")
+    local _, indent_amount = indent(expandtab, 0, api.nvim_buf_get_lines(buf, output_srow, output_srow + 1, true)[1])
+    local print_text = table.concat(print_lines, "\n")
     print_text = indent(expandtab, indent_amount, print_text)
-    print_loc_lines = vim.split(print_text, "\n")
-    if inserted_at == "end" then table.insert(print_loc_lines, 1, "") end
+    print_lines = vim.split(print_text, "\n")
+    local is_in_mid_line = get_is_in_midline(output_range, buf, opts.output_location)
+    if inserted_at == "end" then table.insert(print_lines, 1, "") end
+    if inserted_at == "end" and is_in_mid_line then table.insert(print_lines, "") end
     if inserted_at == "start" then
-      print_loc_lines[1] = indent(expandtab, 0, print_loc_lines[1])
-      table.insert(print_loc_lines, (expandtab and " " or "\t"):rep(indent_amount))
+      print_lines[1] = indent(expandtab, 0, print_lines[1])
+      table.insert(print_lines, (expandtab and " " or "\t"):rep(indent_amount))
     end
+    if inserted_at == "start" and is_in_mid_line then table.insert(print_lines, 1, "") end
 
     ---@type {[integer]: refactor.TextEdit[]}
     local text_edits_by_buf = {}
     text_edits_by_buf[buf] = {}
-    table.insert(text_edits_by_buf[buf], { range = output_range, lines = print_loc_lines })
+    table.insert(text_edits_by_buf[buf], { range = output_range, lines = print_lines })
 
     iter(ipairs(matching_print_loc))
       :filter(

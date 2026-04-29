@@ -1,7 +1,30 @@
 local range = require "refactoring.range"
 local iter = vim.iter
+local api = vim.api
 
 local M = {}
+
+---@param output_range vim.Range
+---@param buf integer
+---@return boolean, integer|nil
+local function get_has_indent_before(output_range, buf)
+  local s_srow = output_range:to_extmark()
+  local output_line = api.nvim_buf_get_lines(buf, s_srow, s_srow + 1, true)[1]
+  local s, e = output_line:find "%s+"
+  local space_start, space_end ---@type integer|nil, integer|nil
+  while s and e do
+    s, e = output_line:find("%s+", e + 1)
+    if e and e > output_range.start_col then break end
+    space_start, space_end = s, e
+  end
+  if not space_start or not space_end then return false, nil end
+
+  local space_length = space_end - space_start + 1
+  local indent_width = vim.bo[buf].shiftwidth > 0 and vim.bo[buf].shiftwidth or vim.bo[buf].tabstop
+  local has_indent_before = math.floor(space_length / indent_width) > 0
+
+  return has_indent_before, space_start
+end
 
 ---@param buf integer
 ---@param output_statements refactor.OutputStatementInfo[]
@@ -74,7 +97,27 @@ function M.get_statement_output_range(buf, output_statements, output_location, r
     end
   end
 
+  local has_indent_before, space_start = get_has_indent_before(output_range, buf)
+  if output_location == "above" and has_indent_before then output_range.start_col = space_start - 1 end
+
   return output_range, inserted_at
+end
+
+---@param output_range vim.Range
+---@param buf integer
+---@param output_location 'above'|'below'
+---@return boolean
+function M.get_is_in_midline(output_range, buf, output_location)
+  local s_srow = output_range:to_extmark()
+  local output_line = api.nvim_buf_get_lines(buf, s_srow, s_srow + 1, true)[1]
+  local is_in_mid_line = false
+  if output_location == "below" then is_in_mid_line = output_line:find("[^%s]+", output_range.end_col + 1) ~= nil end
+  if output_location == "above" then
+    local s = output_line:find "[^%s]+"
+    is_in_mid_line = s and s < output_range.start_col or false
+  end
+
+  return is_in_mid_line
 end
 
 return M

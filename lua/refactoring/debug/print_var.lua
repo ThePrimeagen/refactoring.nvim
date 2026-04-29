@@ -117,6 +117,7 @@ function M.print_var(range_type, config)
   local get_statement_output_range = require("refactoring.debug.utils").get_statement_output_range
   local get_debug_path_for_range = require("refactoring.utils").get_debug_path_for_range
   local commentstring_error = require("refactoring.utils").commentstring_error
+  local get_is_in_midline = require("refactoring.debug.utils").get_is_in_midline
 
   local opts = config.debug.print_var
   local code_generation = opts.code_generation
@@ -157,14 +158,9 @@ function M.print_var(range_type, config)
     local output_statements = get_output_statements_info(buf, nested_lang_tree, output_statement_query)
     local scopes_info = get_scopes_info(buf, nested_lang_tree, scope_query)
 
-    -- NOTE: treesitter nodes usualy do not include leading whitespace
-    local e_srow = selected_range:to_extmark()
-    local selected_range_start_line = api.nvim_buf_get_lines(buf, e_srow, e_srow + 1, true)[1]
-    local _, selected_start_line_first_non_white = selected_range_start_line:find "^%s*"
-    selected_start_line_first_non_white = selected_start_line_first_non_white or 0
     local selected_reference_pos = opts.output_location == "below"
         and pos(buf, selected_range.end_row, selected_range.end_col)
-      or pos(buf, selected_range.start_row, selected_start_line_first_non_white)
+      or pos(buf, selected_range.start_row, selected_range.start_col)
     local output_range, inserted_at =
       get_statement_output_range(buf, output_statements, opts.output_location, selected_range, selected_reference_pos)
     if not output_range or not inserted_at then return end
@@ -323,11 +319,14 @@ function M.print_var(range_type, config)
     local print_text = table.concat(print_lines, "\n")
     print_text = indent(expandtab, indent_amount, print_text)
     print_lines = vim.split(print_text, "\n")
+    local is_in_mid_line = get_is_in_midline(output_range, buf, opts.output_location)
     if inserted_at == "end" then table.insert(print_lines, 1, "") end
+    if inserted_at == "end" and is_in_mid_line then table.insert(print_lines, "") end
     if inserted_at == "start" then
       print_lines[1] = indent(expandtab, 0, print_lines[1])
       table.insert(print_lines, (expandtab and " " or "\t"):rep(indent_amount))
     end
+    if inserted_at == "start" and is_in_mid_line then table.insert(print_lines, 1, "") end
 
     ---@type {[integer]: refactor.TextEdit[]}
     local text_edits_by_buf = {}

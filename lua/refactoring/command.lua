@@ -31,6 +31,7 @@ local required_input = {
   extract_func_to_file = 2,
 }
 
+-- TODO: cache on preview, use cache always, invalidate cache on CmdlineLeave
 ---@param opts vim.api.keyset.create_user_command.command_args
 ---@param ns integer
 local function preview(opts, ns)
