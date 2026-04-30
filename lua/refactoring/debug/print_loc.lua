@@ -20,6 +20,7 @@ local M = {}
 ---@class refactor.DebugPathSegmentInfo
 ---@field debug_path_segment TSNode
 ---@field text string
+---@field metadata vim.treesitter.query.TSMetadata
 
 ---@class refactor.OutputStatementInfo
 ---@field output_statement TSNode

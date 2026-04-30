@@ -340,7 +340,10 @@ function M.get_debug_path_segments_info(buf, nested_lang_tree, query)
           for i, node in ipairs(nodes) do
             local text = type(metadata.text) == "string" and metadata.text
               or ts.get_node_text(match[metadata.text][i], buf)
-            table.insert(debug_path_segments_info, { debug_path_segment = node, text = text })
+            table.insert(
+              debug_path_segments_info,
+              { debug_path_segment = node, text = text, metadata = metadata[capture_id] }
+            )
           end
         end
       end
@@ -669,13 +672,9 @@ function M.get_debug_path_for_range(buf, lang_tree, output_range)
     :filter(
       ---@param dp refactor.DebugPathSegmentInfo
       function(dp)
-        local dp_srow, dp_scol, dp_erow, dp_ecol = dp.debug_path_segment:range()
-        -- NOTE: in languages without end delimiters (like python) the range of
-        -- the `debug_path_segment` won't contain the `output_range`, it'll be
-        -- right outside it. So, we add an offset to compensate
-        -- TODO: do I need to handle this anywhere else?
-        local end_offset = lang == "python" and 1 or 0
-        local dp_range = range(buf, dp_srow, dp_scol, dp_erow, dp_ecol + end_offset)
+        ---@type integer, integer, integer, integer, integer
+        local dp_srow, dp_scol, _, dp_erow, dp_ecol = unpack(ts.get_range(dp.debug_path_segment, buf, dp.metadata))
+        local dp_range = range(buf, dp_srow, dp_scol, dp_erow, dp_ecol)
 
         return dp_range:has(output_range)
       end
