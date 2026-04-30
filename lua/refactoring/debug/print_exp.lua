@@ -106,8 +106,7 @@ function M.print_exp(range_type, config)
   local buf = api.nvim_get_current_buf()
   local selected_range = get_selected_range(buf, range_type)
   local lines = vim.fn.getregion(vim.fn.getpos "'[", vim.fn.getpos "']", { type = range_type })
-  -- TODO: is there a better way to handle multliple lines?
-  local expression = lines[1]
+  local expression = table.concat(lines)
 
   local task = async.run(function()
     local lang_tree, err1 = ts.get_parser(buf, nil, { error = false })
