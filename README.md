@@ -142,13 +142,19 @@ keymap.set({ "n", "x" }, "<leader>rs", function()
 end, { desc = "Select refactor" })
 
 -- `iw` is the builtin textobject for "in word". You can use any other textobject or even create the keymap without any textobject if you prefer to provide one yourself each time that you use the keymap
-keymap.set({ "x", "n" }, "<leader>pv", function()
+keymap.set( "n" , "<leader>pv", function()
   return require("refactoring.debug").print_var { output_location = "below" } .. "iw"
+end, { desc = "Debug print var below", expr = true })
+keymap.set( "x" , "<leader>pv", function()
+  return require("refactoring.debug").print_var { output_location = "below" }
 end, { desc = "Debug print var below", expr = true })
 
 -- `iw` is the builtin textobject for "in word". You can use any other textobject or even create the keymap without any textobject if you prefer to provide one yourself each time that you use the keymap
-keymap.set({ "x", "n" }, "<leader>pV", function()
+keymap.set( "n" , "<leader>pV", function()
   return require("refactoring.debug").print_var { output_location = "above" } .. "iw"
+end, { desc = "Debug print var above", expr = true })
+keymap.set( "x", "<leader>pV", function()
+  return require("refactoring.debug").print_var { output_location = "above" }
 end, { desc = "Debug print var above", expr = true })
 
 keymap.set({ "x", "n" }, "<leader>pe", function()
