@@ -40,7 +40,7 @@ local function preview(opts, ns)
 
   if not required_input[refactor] or #input < required_input[refactor] then return DO_NOT_PREVIEW end
 
-  local refactor_opts = { input = input, preview_ns = ns }
+  local refactor_opts = { input = input, preview_ns = ns, show_success_message = false }
 
   -- TODO: `:h command-preview` seems to be broken with async code (it doesn't
   -- show async updates to buffers and may crash Neovim (when modiying buffers
