@@ -37,18 +37,18 @@ local M = {}
 ---@field function_call? {[string]: nil|fun(opts: refactor.extract_func.code_generation.function_call.Opts): string}
 ---@field return_statement? {[string]: nil|fun(opts: refactor.extract_func.code_generation.return_statement.Opts): string}
 
----@class refactor.OutputFunctionInfo
+---@class refactor.OutputFunction
 ---@field comment TSNode[]?
 ---@field fn TSNode
 
----@class refactor.InputFunctionInfo
+---@class refactor.InputFunction
 ---@field fn TSNode
 ---@field method boolean?
 ---@field singleton boolean?
 ---@field struct_name string?
 ---@field struct_var_name string?
 
----@param o refactor.OutputFunctionInfo
+---@param o refactor.OutputFunction
 ---@return TSNode
 local function choose_output(o)
   return o.comment and o.comment[1] or o.fn
@@ -62,7 +62,7 @@ end
 local function get_output_node(in_buf, out_buf, lang, selected_range)
   local is_first_closer = require("refactoring.utils").is_first_closer
   local query_error = require("refactoring.utils").query_error
-  local get_output_functions_info = require("refactoring.utils").get_output_functions_info
+  local get_output_functions = require("refactoring.utils").get_output_functions
 
   local lang_tree, err1 = ts.get_parser(out_buf, nil, { error = false })
   if not lang_tree then
@@ -95,16 +95,16 @@ local function get_output_node(in_buf, out_buf, lang, selected_range)
   local output_function_query = ts.query.get(lang, "refactor_output_function")
   if not output_function_query then return query_error("refactor_output_function", lang) end
 
-  local outputs = get_output_functions_info(out_buf, nested_lang_tree, output_function_query)
+  local output_fns = get_output_functions(out_buf, nested_lang_tree, output_function_query)
 
-  if in_buf ~= out_buf and outputs[#outputs] then return choose_output(outputs[#outputs]) end
+  if in_buf ~= out_buf and output_fns[#output_fns] then return choose_output(output_fns[#output_fns]) end
   if in_buf ~= out_buf then return end
 
   local selected_start_pos = pos(selected_range.buf, selected_range.start_row, selected_range.start_col)
-  ---@type refactor.OutputFunctionInfo|nil
-  local selected_output = iter(outputs)
+  ---@type refactor.OutputFunction|nil
+  local selected_output = iter(output_fns)
     :filter(
-      ---@param o refactor.OutputFunctionInfo
+      ---@param o refactor.OutputFunction
       function(o)
         local n = choose_output(o)
         local n_start = pos(out_buf, n:start())
@@ -113,8 +113,8 @@ local function get_output_node(in_buf, out_buf, lang, selected_range)
     )
     :fold(
       nil,
-      ---@param acc refactor.OutputFunctionInfo|nil
-      ---@param o refactor.OutputFunctionInfo
+      ---@param acc refactor.OutputFunction|nil
+      ---@param o refactor.OutputFunction
       function(acc, o)
         if not acc then return o end
 
@@ -137,22 +137,22 @@ end
 ---@param buf integer
 ---@param nested_lang_tree vim.treesitter.LanguageTree
 ---@param selected_range vim.Range
----@return refactor.InputFunctionInfo?
-local function get_input_info(buf, nested_lang_tree, selected_range)
+---@return refactor.InputFunction?
+local function get_input_fn(buf, nested_lang_tree, selected_range)
   local query_error = require("refactoring.utils").query_error
-  local get_input_functions_info = require("refactoring.utils").get_input_functions_info
+  local get_input_functions = require("refactoring.utils").get_input_functions
   local is_first_closer = require("refactoring.utils").is_first_closer
 
   local lang = nested_lang_tree:lang()
   local output_function_query = ts.query.get(lang, "refactor_input_function")
   if not output_function_query then return query_error("refactor_input_function", lang) end
 
-  local inputs = get_input_functions_info(buf, nested_lang_tree, output_function_query)
+  local input_fns = get_input_functions(buf, nested_lang_tree, output_function_query)
 
-  ---@type refactor.InputFunctionInfo|nil
-  local surrounding_input = iter(inputs)
+  ---@type refactor.InputFunction|nil
+  local surrounding_input = iter(input_fns)
     :filter(
-      ---@param i refactor.InputFunctionInfo
+      ---@param i refactor.InputFunction
       function(i)
         local n_range = range(buf, i.fn:range())
         return n_range:has(selected_range)
@@ -160,8 +160,8 @@ local function get_input_info(buf, nested_lang_tree, selected_range)
     )
     :fold(
       nil,
-      ---@param acc refactor.InputFunctionInfo|nil
-      ---@param i refactor.InputFunctionInfo
+      ---@param acc refactor.InputFunction|nil
+      ---@param i refactor.InputFunction
       function(acc, i)
         if not acc then return i end
 
@@ -173,10 +173,10 @@ local function get_input_info(buf, nested_lang_tree, selected_range)
   if surrounding_input then return surrounding_input end
 
   local selected_start_pos = pos(selected_range.buf, selected_range.start_row, selected_range.start_col)
-  ---@type refactor.InputFunctionInfo|nil
-  local previous_input = iter(inputs)
+  ---@type refactor.InputFunction|nil
+  local previous_input = iter(input_fns)
     :filter(
-      ---@param i refactor.InputFunctionInfo
+      ---@param i refactor.InputFunction
       function(i)
         local n_start = pos(buf, i.fn:start())
         return n_start < selected_start_pos
@@ -184,8 +184,8 @@ local function get_input_info(buf, nested_lang_tree, selected_range)
     )
     :fold(
       nil,
-      ---@param acc refactor.InputFunctionInfo|nil
-      ---@param i refactor.InputFunctionInfo
+      ---@param acc refactor.InputFunction|nil
+      ---@param i refactor.InputFunction
       function(acc, i)
         if not acc then return i end
 
@@ -207,7 +207,7 @@ local function get_input_info(buf, nested_lang_tree, selected_range)
   return previous_input
 end
 
----@class refactor.ReferenceInfo
+---@class refactor.Reference
 ---@field identifier TSNode
 ---@field type string|{identifier: string}|vim.NIL|nil
 ---@field reference_type 'read'|'write'
@@ -235,8 +235,8 @@ local function extract_func(opts)
   local get_declarations_by_scope = require("refactoring.utils").get_declarations_by_scope
   local scopes_for_range = require("refactoring.utils").scopes_for_range
   local get_declaration_scope = require("refactoring.utils").get_declaration_scope
-  local get_references_info = require("refactoring.utils").get_references_info
-  local get_scopes_info = require("refactoring.utils").get_scopes_info
+  local get_references = require("refactoring.utils").get_references
+  local get_scopes = require("refactoring.utils").get_scopes
   local query_error = require("refactoring.utils").query_error
 
   local code_generation = opts.config.refactor.extract_func.code_generation
@@ -264,9 +264,9 @@ local function extract_func(opts)
   local scope_query = ts.query.get(lang, "refactor_scope")
   if not scope_query then return query_error("refactor_scope", lang) end
 
-  local input_info = get_input_info(in_buf, nested_lang_tree, selected_range)
-  -- TODO: maybe use a different type? `input_info.fn` is no needed after `get_input_info`
-  if not input_info then input_info = {} end
+  local input_fn = get_input_fn(in_buf, nested_lang_tree, selected_range)
+  -- TODO: maybe use a different type? `input_fn.fn` is no needed after `get_input_fn`
+  if not input_fn then input_fn = {} end
   local output_node = get_output_node(in_buf, out_buf, lang, selected_range)
 
   local output_range ---@type vim.Range
@@ -288,35 +288,35 @@ local function extract_func(opts)
     output_range = range.extmark(out_buf, 0, 0, 0, 0)
   end
 
-  local references_info = get_references_info(in_buf, nested_lang_tree, reference_query)
-  local scopes_info = get_scopes_info(in_buf, nested_lang_tree, scope_query)
+  local references = get_references(in_buf, nested_lang_tree, reference_query)
+  local scopes = get_scopes(in_buf, nested_lang_tree, scope_query)
 
-  local scopes_for_selected_range = scopes_for_range(in_buf, scopes_info, selected_range)
+  local scopes_for_selected_range = scopes_for_range(in_buf, scopes, selected_range)
 
-  local declarations_info = iter(references_info)
+  local declarations = iter(references)
     :filter(
-      ---@param r refactor.ReferenceInfo
+      ---@param r refactor.Reference
       function(r)
         return r.declaration
       end
     )
     :totable()
 
-  local declarations_info_by_scope = get_declarations_by_scope(references_info, scopes_info, in_buf)
+  local declarations_by_scope = get_declarations_by_scope(references, scopes, in_buf)
 
-  ---@type refactor.ReferenceInfo[]
-  local typed_references_info = iter(references_info)
+  ---@type refactor.Reference[]
+  local typed_references = iter(references)
     :filter(
-      ---@param r refactor.ReferenceInfo
+      ---@param r refactor.Reference
       function(r)
         return r.type ~= nil and r.type ~= vim.NIL
       end
     )
     :totable()
   table.sort(
-    typed_references_info,
-    ---@param a refactor.ReferenceInfo
-    ---@param b refactor.ReferenceInfo
+    typed_references,
+    ---@param a refactor.Reference
+    ---@param b refactor.Reference
     function(a, b)
       local a_range = range(in_buf, a.identifier:range())
       local b_range = range(in_buf, b.identifier:range())
@@ -325,19 +325,19 @@ local function extract_func(opts)
     end
   )
   local selected_end_pos = pos(selected_range.buf, selected_range.end_row, selected_range.end_col)
-  ---@type {[refactor.ScopeInfo]: {scope_info: refactor.ScopeInfo, types: {[string]: string|{identifier: string}}}}
-  local types_by_scope_up_to_selected_range_end = iter(typed_references_info)
+  ---@type {[refactor.Scope]: {scope: refactor.Scope, types: {[string]: string|{identifier: string}}}}
+  local types_by_scope_up_to_selected_range_end = iter(typed_references)
     :filter(
-      ---@param r refactor.ReferenceInfo
+      ---@param r refactor.Reference
       function(r)
         -- TODO: maybe extract this filter into some function, there are
         -- similar ones for all the `before_` variables
-        local declaration_scope = get_declaration_scope(declarations_info_by_scope, scopes_info, r, in_buf)
+        local declaration_scope = get_declaration_scope(declarations_by_scope, scopes, r, in_buf)
 
         local is_in_scope = false
         if declaration_scope then
           is_in_scope = iter(scopes_for_selected_range):any(
-            ---@param si refactor.ScopeInfo
+            ---@param si refactor.Scope
             function(si)
               return si == declaration_scope
             end
@@ -353,35 +353,35 @@ local function extract_func(opts)
     )
     :fold(
       {},
-      ---@param acc {[refactor.ScopeInfo]: {scope_info: refactor.ScopeInfo, types: {[string]: string|{identifier: string}}}}
-      ---@param r refactor.ReferenceInfo
+      ---@param acc {[refactor.Scope]: {scope: refactor.Scope, types: {[string]: string|{identifier: string}}}}
+      ---@param r refactor.Reference
       function(acc, r)
         if r.type == nil or r.type == vim.NIL then return acc end
 
-        local scope = get_declaration_scope(declarations_info_by_scope, scopes_info, r, in_buf)
+        local scope = get_declaration_scope(declarations_by_scope, scopes, r, in_buf)
         if not scope then return acc end
 
         acc[scope] = acc[scope] or {}
         acc[scope].types = acc[scope].types or {}
         local identifier = ts.get_node_text(r.identifier, in_buf)
         acc[scope].types[identifier] = r.type
-        acc[scope].scope_info = scope
+        acc[scope].scope = scope
         return acc
       end
     )
 
-  ---@type {scope_info: refactor.ScopeInfo, types: {[string]: string|{identifier: string}}}[]
+  ---@type {scope: refactor.Scope, types: {[string]: string|{identifier: string}}}[]
   local types_with_scope_up_to_selected_range_end = vim.tbl_values(types_by_scope_up_to_selected_range_end)
   table.sort(types_with_scope_up_to_selected_range_end, function(a, b)
-    local a_range = range(in_buf, a.scope_info.scope[1]:range())
-    local b_range = range(in_buf, b.scope_info.scope[1]:range())
+    local a_range = range(in_buf, a.scope.scope[1]:range())
+    local b_range = range(in_buf, b.scope.scope[1]:range())
 
     return a_range < b_range
   end)
   ---@type {[string]: string|{identifier: string}}[]
   local scoped_types_up_to_selected_range_end = iter(types_with_scope_up_to_selected_range_end)
     :map(
-      ---@param a {scope_info: refactor.ScopeInfo, types: {[string]: string|{identifier: string}}}
+      ---@param a {scope: refactor.Scope, types: {[string]: string|{identifier: string}}}
       function(a)
         return a.types
       end
@@ -414,10 +414,10 @@ local function extract_func(opts)
   -- Actuallyx2, they will be if I resolve the types in the correct order
   ---@cast scoped_types_up_to_selected_range_end{[string]: string}[]
 
-  ---@type refactor.ReferenceInfo[]
-  local references_inside_selected_range = iter(references_info)
+  ---@type refactor.Reference[]
+  local references_inside_selected_range = iter(references)
     :filter(
-      ---@param r refactor.ReferenceInfo
+      ---@param r refactor.Reference
       function(r)
         local n = r.identifier
         local node_range = range(in_buf, n:range())
@@ -427,7 +427,7 @@ local function extract_func(opts)
     :totable()
 
   local reference_to_variable =
-    ---@param ri refactor.ReferenceInfo
+    ---@param ri refactor.Reference
     function(ri)
       local identifier = ts.get_node_text(ri.identifier, in_buf)
 
@@ -457,14 +457,14 @@ local function extract_func(opts)
     :totable()
 
   local reference_to_text =
-    ---@param reference refactor.ReferenceInfo
+    ---@param reference refactor.Reference
     function(reference)
       return ts.get_node_text(reference.identifier, in_buf)
     end
   ---@type string[]
   local write_identifiers_inside_selected_range = iter(references_inside_selected_range)
     :filter(
-      ---@param r refactor.ReferenceInfo
+      ---@param r refactor.Reference
       function(r)
         return r.reference_type == "write"
       end
@@ -474,9 +474,9 @@ local function extract_func(opts)
     :totable()
 
   ---@type string[]
-  local declarations_inside_selected_range = iter(declarations_info)
+  local declarations_inside_selected_range = iter(declarations)
     :filter(
-      ---@param r refactor.ReferenceInfo
+      ---@param r refactor.Reference
       function(r)
         local r_range = range(in_buf, r.identifier:range())
         return selected_range:has(r_range)
@@ -486,16 +486,16 @@ local function extract_func(opts)
     :totable()
 
   ---@type string[]
-  local declarations_before_output_range = iter(declarations_info)
+  local declarations_before_output_range = iter(declarations)
     :filter(
-      ---@param r refactor.ReferenceInfo
+      ---@param r refactor.Reference
       function(r)
-        local declaration_scope = get_declaration_scope(declarations_info_by_scope, scopes_info, r, in_buf)
+        local declaration_scope = get_declaration_scope(declarations_by_scope, scopes, r, in_buf)
 
         local is_in_scope = false
         if declaration_scope then
           is_in_scope = iter(scopes_for_selected_range):any(
-            ---@param si refactor.ScopeInfo
+            ---@param si refactor.Scope
             function(si)
               return si == declaration_scope
             end
@@ -509,16 +509,16 @@ local function extract_func(opts)
     :map(reference_to_text)
     :totable()
   ---@type string[]
-  local declarations_before_selected_range = iter(declarations_info)
+  local declarations_before_selected_range = iter(declarations)
     :filter(
-      ---@param r refactor.ReferenceInfo
+      ---@param r refactor.Reference
       function(r)
-        local declaration_scope = get_declaration_scope(declarations_info_by_scope, scopes_info, r, in_buf)
+        local declaration_scope = get_declaration_scope(declarations_by_scope, scopes, r, in_buf)
 
         local is_in_scope = false
         if declaration_scope then
           is_in_scope = iter(scopes_for_selected_range):any(
-            ---@param si refactor.ScopeInfo
+            ---@param si refactor.Scope
             function(si)
               return si == declaration_scope
             end
@@ -548,16 +548,16 @@ local function extract_func(opts)
     :totable()
 
   ---@type string[]
-  local variables_after_selected_range = iter(references_info)
+  local variables_after_selected_range = iter(references)
     :filter(
-      ---@param r refactor.ReferenceInfo
+      ---@param r refactor.Reference
       function(r)
-        local declaration_scope = get_declaration_scope(declarations_info_by_scope, scopes_info, r, in_buf)
+        local declaration_scope = get_declaration_scope(declarations_by_scope, scopes, r, in_buf)
 
         local is_in_scope = false
         if declaration_scope then
           is_in_scope = iter(scopes_for_selected_range):any(
-            ---@param si refactor.ScopeInfo
+            ---@param si refactor.Scope
             function(si)
               return si == declaration_scope
             end
@@ -614,12 +614,12 @@ local function extract_func(opts)
     body = body,
     name = fn_name,
     return_values = return_values,
-    method = input_info.method,
-    singleton = input_info.singleton,
-    struct_name = input_info.struct_name,
-    struct_var_name = input_info.struct_var_name,
+    method = input_fn.method,
+    singleton = input_fn.singleton,
+    struct_name = input_fn.struct_name,
+    struct_var_name = input_fn.struct_var_name,
   } .. "\n\n"
-  function_declaration = vim.text.indent((input_info.method and 1 or 0) * indent_width, function_declaration)
+  function_declaration = vim.text.indent((input_fn.method and 1 or 0) * indent_width, function_declaration)
   if not expandtab then function_declaration:gsub("^(%s+)", function(spaces)
     return ("\t"):rep(#spaces)
   end) end
@@ -627,8 +627,8 @@ local function extract_func(opts)
     args = args,
     name = fn_name,
     return_values = return_values,
-    method = input_info.method,
-    struct_var_name = input_info.struct_var_name,
+    method = input_fn.method,
+    struct_var_name = input_fn.struct_var_name,
   }
   function_call = indent(expandtab, body_indent, function_call)
 
@@ -638,7 +638,7 @@ local function extract_func(opts)
   table.insert(text_edits_by_buf[in_buf], { range = selected_range, lines = vim.split(function_call, "\n") })
 
   local function_definition_lines = vim.split(function_declaration, "\n")
-  if input_info.method then
+  if input_fn.method then
     -- NOTE: treesitter nodes don't include whitespace. So, output region's
     -- first line it's (probably) already indented
     function_definition_lines[1] = indent(expandtab, 0, function_definition_lines[1])

@@ -16,20 +16,21 @@ local M = {}
 ---@class refactor.inline_var.UserCodeGeneration
 ---@field group_expression? {[string]: nil|fun(opts: refactor.inline_var.code_generation.group_expression.Opts): string}
 
----@param definition vim.quickfix.entry
----@param variables_info refactor.VariableInfo[]
----@return nil|refactor.ProcessedVariableInfo
-local function get_definition_info(definition, variables_info)
-  local definition_buf = vim.fn.bufadd(definition.filename)
+---@param lsp_definition vim.quickfix.entry
+---@param variables refactor.Variable[]
+---@return nil|refactor.ProcessedVariable
+local function get_definition(lsp_definition, variables)
+  local definition_buf = vim.fn.bufadd(lsp_definition.filename)
 
   -- TODO: add pos.vimscript
-  local definition_start = pos(definition_buf, definition.lnum - 1, definition.col - 1)
-  ---@type refactor.ProcessedVariableInfo
-  local variable_info = iter(variables_info)
+  local definition_start = pos(definition_buf, lsp_definition.lnum - 1, lsp_definition.col - 1)
+  ---@type refactor.ProcessedVariable
+  local definition = iter(variables)
     :map(
-      ---@param info refactor.VariableInfo
-      function(info)
-        local variable_info = iter(ipairs(info.identifier))
+      ---@param variable refactor.Variable
+      function(variable)
+        ---@type refactor.ProcessedVariable|nil
+        local maybe_definition = iter(ipairs(variable.identifier))
           :filter(
             ---@param _ integer
             ---@param identifier TSNode
@@ -41,46 +42,47 @@ local function get_definition_info(definition, variables_info)
           :map(
             ---@param i integer
             ---@param identifier TSNode
-            ---@return refactor.ProcessedVariableInfo
+            ---@return refactor.ProcessedVariable
             function(i, identifier)
               return {
                 identifier = identifier,
-                identifier_separator = info.identifier_separator
-                  and (info.identifier_separator[i] or info.identifier_separator[i - 1]),
-                value = info.value[i],
-                value_separator = info.value_separator and (info.value_separator[i] or info.value_separator[i - 1]),
+                identifier_separator = variable.identifier_separator
+                  and (variable.identifier_separator[i] or variable.identifier_separator[i - 1]),
+                value = variable.value[i],
+                value_separator = variable.value_separator
+                  and (variable.value_separator[i] or variable.value_separator[i - 1]),
                 -- NOTE: captures must only have one declaration
-                declaration = info.declaration[1],
+                declaration = variable.declaration[1],
               }
             end
           )
           :next()
-        return variable_info
+        return maybe_definition
       end
     )
     :filter(
-      ---@param variable_info refactor.ProcessedVariableInfo
-      function(variable_info)
-        return variable_info ~= nil
+      ---@param variable refactor.ProcessedVariable
+      function(variable)
+        return variable ~= nil
       end
     )
     :next()
 
-  return variable_info
+  return definition
 end
 
----@class refactor.inline_var.MatchInfo
----@field variables refactor.VariableInfo[]
----@field references refactor.ReferenceInfo[]
+---@class refactor.inline_var.Match
+---@field variables refactor.Variable[]
+---@field references refactor.Reference[]
 
 --As a side effect, loads all the buffers for all of the definitions and references
 ---@param definitions vim.quickfix.entry[]
 ---@param references vim.quickfix.entry[]
 ---@param lang string
----@return nil|{[integer]: refactor.inline_var.MatchInfo}
-local function get_match_info(definitions, references, lang)
-  local get_references_info = require("refactoring.utils").get_references_info
-  local get_variables_info = require("refactoring.utils").get_variables_info
+---@return nil|{[integer]: refactor.inline_var.Match}
+local function get_match(definitions, references, lang)
+  local get_references = require("refactoring.utils").get_references
+  local get_variables = require("refactoring.utils").get_variables
   local query_error = require("refactoring.utils").query_error
 
   local reference_query = ts.query.get(lang, "refactor_reference")
@@ -88,8 +90,8 @@ local function get_match_info(definitions, references, lang)
   local variable_query = ts.query.get(lang, "refactor_variable")
   if not variable_query then return query_error("refactor_variable", lang) end
 
-  ---@type {[integer]: refactor.inline_var.MatchInfo}
-  local match_info = iter({ definitions, references })
+  ---@type {[integer]: refactor.inline_var.Match}
+  local match = iter({ definitions, references })
     :flatten(1)
     :map(
       ---@param item vim.quickfix.entry
@@ -111,33 +113,33 @@ local function get_match_info(definitions, references, lang)
         end
         lang_tree:parse(true)
 
-        local variables_info = get_variables_info(buf, lang_tree, variable_query)
-        local references_info = get_references_info(buf, lang_tree, reference_query)
+        local variables = get_variables(buf, lang_tree, variable_query)
+        local references = get_references(buf, lang_tree, reference_query)
 
-        return buf, { variables = variables_info, references = references_info }
+        return buf, { variables = variables, references = references }
       end
     )
     :fold(
       {},
-      ---@param acc {[integer]: refactor.inline_var.MatchInfo}
+      ---@param acc {[integer]: refactor.inline_var.Match}
       ---@param k integer
-      ---@param v nil|refactor.inline_var.MatchInfo
+      ---@param v nil|refactor.inline_var.Match
       function(acc, k, v)
         acc[k] = v
         return acc
       end
     )
-  return match_info
+  return match
 end
 
----@class refactor.VariableInfo
+---@class refactor.Variable
 ---@field identifier TSNode[]
 ---@field identifier_separator TSNode[]|nil
 ---@field value TSNode[]
 ---@field value_separator TSNode[]|nil
 ---@field declaration TSNode[]
 
----@class refactor.ProcessedVariableInfo
+---@class refactor.ProcessedVariable
 ---@field identifier TSNode
 ---@field identifier_separator TSNode|nil
 ---@field value TSNode
@@ -148,8 +150,8 @@ end
 function M.inline_var(_, config)
   local apply_text_edits = require("refactoring.utils").apply_text_edits
   local select = require("refactoring.utils").select
-  local get_definitions = require("refactoring.utils").get_definitions
-  local get_references = require("refactoring.utils").get_references
+  local get_lsp_definitions = require("refactoring.utils").get_lsp_definitions
+  local get_lsp_references = require("refactoring.utils").get_lsp_references
   local code_gen_error = require("refactoring.utils").code_gen_error
 
   local opts = config.refactor.inline_var
@@ -175,38 +177,38 @@ function M.inline_var(_, config)
   local is_preview = opts.preview_ns ~= nil
   local task = async.run(function()
     local results = async.await_all {
-      async.run(get_definitions, is_preview),
-      async.run(get_references, is_preview),
+      async.run(get_lsp_definitions, is_preview),
+      async.run(get_lsp_references, is_preview),
     }
     local definitions = unpack(results[1]) ---@type vim.quickfix.entry[]
     local references = unpack(results[2]) ---@type vim.quickfix.entry[]
 
-    local match_info_by_buf = get_match_info(definitions, references, lang)
-    if not match_info_by_buf then return end
+    local match_by_buf = get_match(definitions, references, lang)
+    if not match_by_buf then return end
 
     local get_grouped_expression = code_generation.group_expression[lang]
     if not get_grouped_expression then return code_gen_error("group_expression", lang) end
 
-    ---@type {definition: vim.quickfix.entry, info: refactor.ProcessedVariableInfo}[]
-    local definitions_with_info = iter(definitions)
+    ---@type {lsp: vim.quickfix.entry, ts: refactor.ProcessedVariable}[]
+    local processed_definitions = iter(definitions)
       :map(
         ---@param d vim.quickfix.entry
         function(d)
           local definition_buf = vim.fn.bufadd(d.filename)
-          local variables_info = match_info_by_buf[definition_buf].variables
-          local definition_info = get_definition_info(d, variables_info)
-          return { definition = d, info = definition_info }
+          local variables = match_by_buf[definition_buf].variables
+          local definition = get_definition(d, variables)
+          return { lsp = d, ts = definition }
         end
       )
       :filter(
-        ---@param dwi {definition: vim.quickfix.entry, info: refactor.ProcessedVariableInfo|nil}
+        ---@param dwi {lsp: vim.quickfix.entry, ts: refactor.ProcessedVariable|nil}
         function(dwi)
-          return dwi.info ~= nil
+          return dwi.ts ~= nil
         end
       )
       :totable()
 
-    if #definitions_with_info == 0 then
+    if #processed_definitions == 0 then
       vim.notify(
         "Couldn't find the definition of the symbol under cursor using treesitter",
         vim.log.levels.ERROR,
@@ -214,25 +216,25 @@ function M.inline_var(_, config)
       )
       return
     end
-    local definition_with_info = #definitions_with_info == 1 and definitions_with_info[1]
-      or select(definitions_with_info, {
+    local processed_definition = #processed_definitions == 1 and processed_definitions[1]
+      or select(processed_definitions, {
         prompt = "Mutliple definitions found, select one",
         format_item =
-          ---@param item {definition: vim.quickfix.entry, info: refactor.ProcessedVariableInfo}
+          ---@param item {lsp: vim.quickfix.entry, ts: refactor.ProcessedVariable}
           function(item)
-            local buf = vim.fn.bufadd(item.definition.filename)
-            return ts.get_node_text(item.info.declaration, buf)
+            local buf = vim.fn.bufadd(item.lsp.filename)
+            return ts.get_node_text(item.ts.declaration, buf)
           end,
       })
-    if not definition_with_info then return end
+    if not processed_definition then return end
 
-    local definition, definition_info = definition_with_info.definition, definition_with_info.info
-    local definition_buf = vim.fn.bufadd(definition.filename)
+    local lsp_definition, definition = processed_definition.lsp, processed_definition.ts
+    local definition_buf = vim.fn.bufadd(lsp_definition.filename)
     -- TODO: add pos.vimscript
-    local definition_start = pos(definition_buf, definition.lnum - 1, definition.col - 1)
+    local definition_start = pos(definition_buf, lsp_definition.lnum - 1, lsp_definition.col - 1)
 
-    ---@type {reference: vim.quickfix.entry, info: refactor.ReferenceInfo|nil}[]
-    local references_with_info = iter(references)
+    ---@type {lsp: vim.quickfix.entry, ts: refactor.Reference|nil}[]
+    local processed_references = iter(references)
       :unique(
         ---@param r vim.quickfix.entry
         function(r)
@@ -257,10 +259,10 @@ function M.inline_var(_, config)
           -- TODO: add range.vimscript
           local reference_range = range(reference_buf, r.lnum - 1, r.col - 1, r.end_lnum - 1, r.end_col - 1)
 
-          local references_info = match_info_by_buf[reference_buf].references
-          local reference_info = iter(references_info)
+          local buf_references = match_by_buf[reference_buf].references
+          local buf_reference = iter(buf_references)
             :filter(
-              ---@param ri refactor.ReferenceInfo
+              ---@param ri refactor.Reference
               function(ri)
                 local identifier_range = range(reference_buf, ri.identifier:range())
                 return identifier_range:has(reference_range)
@@ -268,8 +270,8 @@ function M.inline_var(_, config)
             )
             :fold(
               nil,
-              ---@param acc nil|refactor.ReferenceInfo
-              ---@param ri refactor.ReferenceInfo
+              ---@param acc nil|refactor.Reference
+              ---@param ri refactor.Reference
               function(acc, ri)
                 if not acc then return ri end
                 if ri.identifier:byte_length() < acc.identifier:byte_length() then return ri end
@@ -277,32 +279,32 @@ function M.inline_var(_, config)
               end
             )
 
-          return { reference = r, info = reference_info }
+          return { lsp = r, ts = buf_reference }
         end
       )
       :filter(
-        ---@param rwi {reference: vim.quickfix.entry, info: refactor.ReferenceInfo|nil}
+        ---@param rwi {lsp: vim.quickfix.entry, ts: refactor.Reference|nil}
         function(rwi)
-          return rwi.info ~= nil
+          return rwi.ts ~= nil
         end
       )
       :totable()
 
-    local declaration_node = definition_info.declaration
-    local identifier_node = definition_info.identifier
-    local value_node = definition_info.value
+    local declaration_node = definition.declaration
+    local identifier_node = definition.identifier
+    local value_node = definition.value
 
     local value_text = ts.get_node_text(value_node, definition_buf)
     local grouped_value_text = get_grouped_expression { expression = value_text }
 
     ---@type {[integer]: refactor.TextEdit[]}
     local text_edits_by_buf = {}
-    iter(references_with_info):each(
-      ---@param rwi {reference: vim.quickfix.entry, info: refactor.ReferenceInfo|nil}
+    iter(processed_references):each(
+      ---@param rwi {lsp: vim.quickfix.entry, ts: refactor.Reference|nil}
       function(rwi)
-        local reference = rwi.reference
+        local reference = rwi.lsp
         local buf = vim.fn.bufadd(reference.filename)
-        local identifier_range = range(buf, rwi.info.identifier:range())
+        local identifier_range = range(buf, rwi.ts.identifier:range())
 
         text_edits_by_buf[buf] = text_edits_by_buf[buf] or {}
         table.insert(text_edits_by_buf[buf], {
@@ -312,11 +314,11 @@ function M.inline_var(_, config)
       end
     )
 
-    if definition_info.value_separator or definition_info.identifier_separator then
+    if definition.value_separator or definition.identifier_separator then
       iter({
-          definition_info.value_separator,
+          definition.value_separator,
           value_node,
-          definition_info.identifier_separator,
+          definition.identifier_separator,
           identifier_node,
         })
         :filter(function(n)
@@ -355,7 +357,7 @@ function M.inline_var(_, config)
     apply_text_edits(text_edits_by_buf)
     if config.show_success_message then
       vim.notify(
-        ("Inlined %d variable occurrences"):format(#references_with_info),
+        ("Inlined %d variable occurrences"):format(#processed_references),
         vim.log.levels.INFO,
         { title = "refactoring.nvim" }
       )

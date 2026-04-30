@@ -88,7 +88,7 @@ end
 
 local cached_definitions ---@type vim.quickfix.entry[]|nil
 ---@type async fun(): vim.quickfix.entry[]
-M.get_definitions = async.wrap(2, function(is_preview, cb)
+M.get_lsp_definitions = async.wrap(2, function(is_preview, cb)
   if cached_definitions then return cb(cached_definitions) end
 
   lsp.buf.definition {
@@ -109,7 +109,7 @@ end)
 
 local cached_references ---@type vim.quickfix.entry[]|nil
 ---@type async fun(): vim.quickfix.entry[]
-M.get_references = async.wrap(2, function(is_preview, cb)
+M.get_lsp_references = async.wrap(2, function(is_preview, cb)
   if cached_references then return cb(cached_references) end
 
   lsp.buf.references({
@@ -133,14 +133,14 @@ end)
 -- TODO: maybe move all scope/reference related functions into a diferent file
 
 ---@param buf integer
----@param scopes_info refactor.ScopeInfo[]
+---@param scopes refactor.Scope[]
 ---@param inner_range vim.Range
----@return refactor.ScopeInfo|nil
-local function smaller_containing_scope(buf, scopes_info, inner_range)
-  ---@type {si: refactor.ScopeInfo, s: TSNode}|nil
-  local declaration_scope = iter(scopes_info)
+---@return refactor.Scope|nil
+local function smaller_containing_scope(buf, scopes, inner_range)
+  ---@type {si: refactor.Scope, s: TSNode}|nil
+  local declaration_scope = iter(scopes)
     :map(
-      ---@param si refactor.ScopeInfo
+      ---@param si refactor.Scope
       function(si)
         ---@type TSNode|nil
         local scope = iter(si.scope):find(
@@ -161,8 +161,8 @@ local function smaller_containing_scope(buf, scopes_info, inner_range)
     )
     :fold(
       nil,
-      ---@param acc nil|{si: refactor.ScopeInfo, s: TSNode}
-      ---@param si refactor.ScopeInfo
+      ---@param acc nil|{si: refactor.Scope, s: TSNode}
+      ---@param si refactor.Scope
       ---@param s TSNode
       function(acc, si, s)
         if not acc then return { si = si, s = s } end
@@ -175,16 +175,16 @@ local function smaller_containing_scope(buf, scopes_info, inner_range)
   return declaration_scope.si
 end
 
----@alias refactor.declarations_by_scope {[refactor.ScopeInfo]: {[string]: refactor.ReferenceInfo[]}}
+---@alias refactor.declarations_by_scope {[refactor.Scope]: {[string]: refactor.Reference[]}}
 
----@param references refactor.ReferenceInfo[]
----@param scopes_info refactor.ScopeInfo[]
+---@param references refactor.Reference[]
+---@param scopes refactor.Scope[]
 ---@param buf integer
 ---@return refactor.declarations_by_scope
-function M.get_declarations_by_scope(references, scopes_info, buf)
+function M.get_declarations_by_scope(references, scopes, buf)
   local declarations_by_scope = iter(references)
     :filter(
-      ---@param r refactor.ReferenceInfo
+      ---@param r refactor.Reference
       function(r)
         return r.declaration
       end
@@ -192,15 +192,15 @@ function M.get_declarations_by_scope(references, scopes_info, buf)
     :fold(
       {},
       ---@param acc refactor.declarations_by_scope
-      ---@param d refactor.ReferenceInfo
+      ---@param d refactor.Reference
       function(acc, d)
         local d_range = range(buf, d.identifier:range())
-        local scope_info = smaller_containing_scope(buf, scopes_info, d_range)
+        local scope = smaller_containing_scope(buf, scopes, d_range)
         local identifier = ts.get_node_text(d.identifier, buf)
-        assert(scope_info)
-        acc[scope_info] = acc[scope_info] or {}
-        acc[scope_info][identifier] = acc[scope_info][identifier] or {}
-        table.insert(acc[scope_info][identifier], d)
+        assert(scope)
+        acc[scope] = acc[scope] or {}
+        acc[scope][identifier] = acc[scope][identifier] or {}
+        table.insert(acc[scope][identifier], d)
 
         return acc
       end
@@ -210,10 +210,10 @@ function M.get_declarations_by_scope(references, scopes_info, buf)
 end
 
 ---@param declarations_by_scope refactor.declarations_by_scope
----@param all_scopes refactor.ScopeInfo[]
----@param reference refactor.ReferenceInfo
+---@param all_scopes refactor.Scope[]
+---@param reference refactor.Reference
 ---@param buf integer
----@return refactor.ScopeInfo|nil
+---@return refactor.Scope|nil
 function M.get_declaration_scope(declarations_by_scope, all_scopes, reference, buf)
   local reference_range = range(buf, reference.identifier:range())
   local scopes_for_reference = M.scopes_for_range(buf, all_scopes, reference_range)
@@ -228,7 +228,7 @@ function M.get_declaration_scope(declarations_by_scope, all_scopes, reference, b
   local identifier = ts.get_node_text(reference.identifier, buf)
   local reference_start = pos(buf, reference_range.start_row, reference_range.start_col)
   return iter(scopes_for_reference):find(
-    ---@param si refactor.ScopeInfo
+    ---@param si refactor.Scope
     function(si)
       local scope_declarations = declarations_by_scope[si]
       if not scope_declarations then return end
@@ -237,7 +237,7 @@ function M.get_declaration_scope(declarations_by_scope, all_scopes, reference, b
 
       return iter(identifier_declarations)
         :filter(
-          ---@param d refactor.ReferenceInfo
+          ---@param d refactor.Reference
           function(d)
             local d_start = pos(buf, d.identifier:start())
             return reference_start >= d_start
@@ -245,8 +245,8 @@ function M.get_declaration_scope(declarations_by_scope, all_scopes, reference, b
         )
         :fold(
           nil,
-          ---@param acc refactor.ReferenceInfo|nil
-          ---@param d refactor.ReferenceInfo
+          ---@param acc refactor.Reference|nil
+          ---@param d refactor.Reference
           function(acc, d)
             if not acc then return d end
 
@@ -278,15 +278,15 @@ function M.is_first_closer(first, second, position)
 end
 
 ---@param buf integer
----@param all_scopes refactor.ScopeInfo[]
+---@param all_scopes refactor.Scope[]
 ---@param reference_range vim.Range
----@return refactor.ScopeInfo[]
+---@return refactor.Scope[]
 function M.scopes_for_range(buf, all_scopes, reference_range)
   local reference_start = pos(buf, reference_range.start_row, reference_range.start_col)
   local reference_end = pos(buf, reference_range.end_row, reference_range.end_col)
   return iter(all_scopes)
     :filter(
-      ---@param si refactor.ScopeInfo
+      ---@param si refactor.Scope
       function(si)
         return iter(si.scope):any(
           ---@param s TSNode
@@ -319,18 +319,13 @@ function M.get_selected_range(buf, range_type)
   return range(buf, range_start[1], range_start[2], range_end[1], range_end[2])
 end
 
----@class refactor.TsInfo
----@field functions_info refactor.FunctionCallInfo[]
----@field function_calls_info refactor.FunctionInfo[]
----@field returns_info refactor.ReturnInfo[]
-
 ---@param buf integer
 ---@param nested_lang_tree vim.treesitter.LanguageTree
 ---@param query vim.treesitter.Query
----@return refactor.DebugPathSegmentInfo[]
-function M.get_debug_path_segments_info(buf, nested_lang_tree, query)
-  ---@type refactor.DebugPathSegmentInfo[]
-  local debug_path_segments_info = {}
+---@return refactor.DebugPathSegment[]
+function M.get_debug_path_segments(buf, nested_lang_tree, query)
+  ---@type refactor.DebugPathSegment[]
+  local debug_path_segments = {}
 
   for _, tree in ipairs(nested_lang_tree:trees()) do
     for _, match, metadata in query:iter_matches(tree:root(), buf) do
@@ -341,7 +336,7 @@ function M.get_debug_path_segments_info(buf, nested_lang_tree, query)
             local text = type(metadata.text) == "string" and metadata.text
               or ts.get_node_text(match[metadata.text][i], buf)
             table.insert(
-              debug_path_segments_info,
+              debug_path_segments,
               { debug_path_segment = node, text = text, metadata = metadata[capture_id] }
             )
           end
@@ -350,20 +345,20 @@ function M.get_debug_path_segments_info(buf, nested_lang_tree, query)
     end
   end
 
-  return debug_path_segments_info
+  return debug_path_segments
 end
 
 ---@param buf integer
 ---@param nested_lang_tree vim.treesitter.LanguageTree
 ---@param query vim.treesitter.Query
----@return refactor.OutputStatementInfo[]
-function M.get_output_statements_info(buf, nested_lang_tree, query)
-  ---@type refactor.OutputStatementInfo[]
-  local output_statements_info = {}
+---@return refactor.OutputStatement[]
+function M.get_output_statements(buf, nested_lang_tree, query)
+  ---@type refactor.OutputStatement[]
+  local output_statements = {}
 
   for _, tree in ipairs(nested_lang_tree:trees()) do
     for _, match, metadata in query:iter_matches(tree:root(), buf) do
-      local output_statement ---@type nil|refactor.OutputStatementInfo
+      local output_statement ---@type nil|refactor.OutputStatement
       if metadata then
         output_statement = output_statement or {}
         output_statement.inside_only = metadata.inside_only
@@ -380,20 +375,20 @@ function M.get_output_statements_info(buf, nested_lang_tree, query)
         end
       end
 
-      if output_statement then table.insert(output_statements_info, output_statement) end
+      if output_statement then table.insert(output_statements, output_statement) end
     end
   end
 
-  return output_statements_info
+  return output_statements
 end
 
 ---@param buf integer
 ---@param nested_lang_tree vim.treesitter.LanguageTree
 ---@param query vim.treesitter.Query
----@return refactor.ReferenceInfo[]
-function M.get_references_info(buf, nested_lang_tree, query)
-  ---@type refactor.ReferenceInfo[]
-  local references_info = {}
+---@return refactor.Reference[]
+function M.get_references(buf, nested_lang_tree, query)
+  ---@type refactor.Reference[]
+  local references = {}
 
   for _, tree in ipairs(nested_lang_tree:trees()) do
     for _, match, metadata in query:iter_matches(tree:root(), buf) do
@@ -402,7 +397,7 @@ function M.get_references_info(buf, nested_lang_tree, query)
 
         if name == "reference.identifier" then
           for i, node in ipairs(nodes) do
-            table.insert(references_info, {
+            table.insert(references, {
               identifier = node,
               reference_type = metadata.reference_type,
               type = metadata.types and metadata.types[i],
@@ -416,36 +411,36 @@ function M.get_references_info(buf, nested_lang_tree, query)
     end
   end
 
-  return references_info
+  return references
 end
 
 ---@param buf integer
 ---@param nested_lang_tree vim.treesitter.LanguageTree
 ---@param query vim.treesitter.Query
----@return refactor.ScopeInfo[]
-function M.get_scopes_info(buf, nested_lang_tree, query)
-  ---@type refactor.ScopeInfo[]
-  local scopes_info = {}
+---@return refactor.Scope[]
+function M.get_scopes(buf, nested_lang_tree, query)
+  ---@type refactor.Scope[]
+  local scopes = {}
 
   for _, tree in ipairs(nested_lang_tree:trees()) do
     for _, match in query:iter_matches(tree:root(), buf) do
-      local scope_info ---@type refactor.ScopeInfo|nil
+      local scope ---@type refactor.Scope|nil
       for capture_id, nodes in pairs(match) do
         local name = query.captures[capture_id]
 
         if name == "scope" then
-          scope_info = scope_info or {}
-          scope_info.scope = nodes
+          scope = scope or {}
+          scope.scope = nodes
         elseif name == "scope.inside" then
-          scope_info = scope_info or {}
-          scope_info.inside = nodes[1]
+          scope = scope or {}
+          scope.inside = nodes[1]
         end
       end
-      if scope_info then table.insert(scopes_info, scope_info) end
+      if scope then table.insert(scopes, scope) end
     end
   end
 
-  return scopes_info
+  return scopes
 end
 
 ---@param buf integer
@@ -472,14 +467,14 @@ end
 ---@param buf integer
 ---@param nested_lang_tree vim.treesitter.LanguageTree
 ---@param query vim.treesitter.Query
----@return refactor.OutputFunctionInfo[]
-function M.get_output_functions_info(buf, nested_lang_tree, query)
-  ---@type refactor.OutputFunctionInfo[]
-  local output_functions_info = {}
+---@return refactor.OutputFunction[]
+function M.get_output_functions(buf, nested_lang_tree, query)
+  ---@type refactor.OutputFunction[]
+  local output_functions = {}
 
   for _, tree in ipairs(nested_lang_tree:trees()) do
     for _, match in query:iter_matches(tree:root(), buf) do
-      local output_function ---@type refactor.OutputFunctionInfo|nil
+      local output_function ---@type refactor.OutputFunction|nil
       for capture_id, nodes in pairs(match) do
         local name = query.captures[capture_id]
 
@@ -491,24 +486,24 @@ function M.get_output_functions_info(buf, nested_lang_tree, query)
           output_function.fn = nodes[1]
         end
       end
-      if output_function then table.insert(output_functions_info, output_function) end
+      if output_function then table.insert(output_functions, output_function) end
     end
   end
 
-  return output_functions_info
+  return output_functions
 end
 
 ---@param buf integer
 ---@param nested_lang_tree vim.treesitter.LanguageTree
 ---@param query vim.treesitter.Query
----@return refactor.InputFunctionInfo[]
-function M.get_input_functions_info(buf, nested_lang_tree, query)
-  ---@type refactor.InputFunctionInfo[]
-  local input_functions_info = {}
+---@return refactor.InputFunction[]
+function M.get_input_functions(buf, nested_lang_tree, query)
+  ---@type refactor.InputFunction[]
+  local input_functions = {}
 
   for _, tree in ipairs(nested_lang_tree:trees()) do
     for _, match, metadata in query:iter_matches(tree:root(), buf) do
-      local input_function ---@type refactor.InputFunctionInfo|nil
+      local input_function ---@type refactor.InputFunction|nil
       for capture_id, nodes in pairs(match) do
         local name = query.captures[capture_id]
 
@@ -524,138 +519,138 @@ function M.get_input_functions_info(buf, nested_lang_tree, query)
           if struct_var_name then input_function.struct_var_name = ts.get_node_text(match[struct_var_name][1], buf) end
         end
       end
-      if input_function then table.insert(input_functions_info, input_function) end
+      if input_function then table.insert(input_functions, input_function) end
     end
   end
 
-  return input_functions_info
+  return input_functions
 end
 
 ---@param buf integer
 ---@param nested_lang_tree vim.treesitter.LanguageTree
 ---@param query vim.treesitter.Query
----@return refactor.VariableInfo[]
-function M.get_variables_info(buf, nested_lang_tree, query)
-  ---@type refactor.VariableInfo[]
-  local variables_info = {}
+---@return refactor.Variable[]
+function M.get_variables(buf, nested_lang_tree, query)
+  ---@type refactor.Variable[]
+  local variables = {}
 
   for _, tree in ipairs(nested_lang_tree:trees()) do
     for _, match in query:iter_matches(tree:root(), buf) do
-      local variable_info ---@type refactor.VariableInfo|nil
+      local variable ---@type refactor.Variable|nil
       for capture_id, nodes in pairs(match) do
         local name = query.captures[capture_id]
 
         if name == "variable.identifier" then
-          variable_info = variable_info or {}
-          variable_info.identifier = nodes
+          variable = variable or {}
+          variable.identifier = nodes
         elseif name == "variable.identifier_separator" then
-          variable_info = variable_info or {}
-          variable_info.identifier_separator = nodes
+          variable = variable or {}
+          variable.identifier_separator = nodes
         elseif name == "variable.value_separator" then
-          variable_info = variable_info or {}
-          variable_info.value_separator = nodes
+          variable = variable or {}
+          variable.value_separator = nodes
         elseif name == "variable.value" then
-          variable_info = variable_info or {}
-          variable_info.value = nodes
+          variable = variable or {}
+          variable.value = nodes
         elseif name == "variable.declaration" then
-          variable_info = variable_info or {}
-          variable_info.declaration = nodes
+          variable = variable or {}
+          variable.declaration = nodes
         end
       end
-      if variable_info then table.insert(variables_info, variable_info) end
+      if variable then table.insert(variables, variable) end
     end
   end
 
-  return variables_info
+  return variables
 end
 
 ---@param buf integer
 ---@param nested_lang_tree vim.treesitter.LanguageTree
 ---@param query vim.treesitter.Query
----@return refactor.FunctionInfo[]
----@return refactor.ReturnInfo[]
-function M.get_functions_info(buf, nested_lang_tree, query)
-  ---@type refactor.FunctionInfo[]
-  local functions_info = {}
-  ---@type refactor.ReturnInfo[]
-  local returns_info = {}
+---@return refactor.Function[]
+---@return refactor.Return[]
+function M.get_functions(buf, nested_lang_tree, query)
+  ---@type refactor.Function[]
+  local functions = {}
+  ---@type refactor.Return[]
+  local returns = {}
 
   for _, tree in ipairs(nested_lang_tree:trees()) do
     for _, match in query:iter_matches(tree:root(), buf) do
-      local function_info ---@type nil|refactor.FunctionInfo
-      local return_info ---@type nil|refactor.ReturnInfo
+      local function_ ---@type nil|refactor.Function
+      local return_ ---@type nil|refactor.Return
       for capture_id, nodes in pairs(match) do
         local name = query.captures[capture_id]
 
         if name == "function" then
-          function_info = function_info or {}
-          function_info["function"] = nodes[1]
+          function_ = function_ or {}
+          function_["function"] = nodes[1]
         elseif name == "function.outside" then
-          function_info = function_info or {}
-          function_info.outside = nodes[1]
+          function_ = function_ or {}
+          function_.outside = nodes[1]
         elseif name == "function.body" then
-          function_info = function_info or {}
-          function_info.body = nodes
+          function_ = function_ or {}
+          function_.body = nodes
         elseif name == "function.comment" then
-          function_info = function_info or {}
-          function_info.comments = nodes
+          function_ = function_ or {}
+          function_.comments = nodes
         elseif name == "function.arg" then
-          function_info = function_info or {}
-          function_info.args = nodes
+          function_ = function_ or {}
+          function_.args = nodes
         end
 
         if name == "return" then
-          return_info = return_info or {}
-          return_info["return"] = nodes[1]
+          return_ = return_ or {}
+          return_["return"] = nodes[1]
         elseif name == "return.value" then
-          return_info = return_info or {}
-          return_info.values = nodes
+          return_ = return_ or {}
+          return_.values = nodes
         end
       end
-      if function_info then table.insert(functions_info, function_info) end
-      if return_info then table.insert(returns_info, return_info) end
+      if function_ then table.insert(functions, function_) end
+      if return_ then table.insert(returns, return_) end
     end
   end
 
-  return functions_info, returns_info
+  return functions, returns
 end
 
 ---@param buf integer
 ---@param nested_lang_tree vim.treesitter.LanguageTree
 ---@param query vim.treesitter.Query
----@return refactor.FunctionCallInfo[]
-function M.get_function_calls_info(buf, nested_lang_tree, query)
-  ---@type refactor.FunctionCallInfo[]
-  local function_calls_info = {}
+---@return refactor.FunctionCall[]
+function M.get_function_calls(buf, nested_lang_tree, query)
+  ---@type refactor.FunctionCall[]
+  local function_calls = {}
 
   for _, tree in ipairs(nested_lang_tree:trees()) do
     for _, match in query:iter_matches(tree:root(), buf) do
-      local function_call_info ---@type nil|refactor.FunctionCallInfo
+      local function_call ---@type nil|refactor.FunctionCall
       for capture_id, nodes in pairs(match) do
         local name = query.captures[capture_id]
 
         if name == "function_call" then
-          function_call_info = function_call_info or {}
-          function_call_info.function_call = nodes[1]
+          function_call = function_call or {}
+          function_call.function_call = nodes[1]
         elseif name == "function_call.name" then
-          function_call_info = function_call_info or {}
-          function_call_info.name = nodes[1]
+          function_call = function_call or {}
+          function_call.name = nodes[1]
         elseif name == "function_call.arg" then
-          function_call_info = function_call_info or {}
-          function_call_info.args = nodes
+          function_call = function_call or {}
+          function_call.args = nodes
         elseif name == "function_call.return_value" then
-          function_call_info = function_call_info or {}
-          function_call_info.return_values = nodes
+          function_call = function_call or {}
+          function_call.return_values = nodes
         elseif name == "function_call.outside" then
-          function_call_info = function_call_info or {}
-          function_call_info.outside = nodes[1]
+          function_call = function_call or {}
+          function_call.outside = nodes[1]
         end
       end
-      if function_call_info then table.insert(function_calls_info, function_call_info) end
+      if function_call then table.insert(function_calls, function_call) end
     end
   end
 
-  return function_calls_info
+  return function_calls
 end
 
 ---@param buf integer
@@ -666,11 +661,11 @@ function M.get_debug_path_for_range(buf, lang_tree, output_range)
   local query = ts.query.get(lang, "refactor_debug_path")
   if not query then return M.query_error("refactor_debug_path", lang) end
 
-  local debug_path_segments = M.get_debug_path_segments_info(buf, lang_tree, query)
-  ---@type refactor.DebugPathSegmentInfo[]
+  local debug_path_segments = M.get_debug_path_segments(buf, lang_tree, query)
+  ---@type refactor.DebugPathSegment[]
   local debug_path_segments_for_range = iter(debug_path_segments)
     :filter(
-      ---@param dp refactor.DebugPathSegmentInfo
+      ---@param dp refactor.DebugPathSegment
       function(dp)
         ---@type integer, integer, integer, integer, integer
         local dp_srow, dp_scol, _, dp_erow, dp_ecol = unpack(ts.get_range(dp.debug_path_segment, buf, dp.metadata))
@@ -689,7 +684,7 @@ function M.get_debug_path_for_range(buf, lang_tree, output_range)
 
   local debug_path_for_range = iter(debug_path_segments_for_range)
     :map(
-      ---@param dp refactor.DebugPathSegmentInfo
+      ---@param dp refactor.DebugPathSegment
       function(dp)
         return dp.text
       end

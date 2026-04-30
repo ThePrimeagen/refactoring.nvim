@@ -21,10 +21,10 @@ local M = {}
 ---@param definitions vim.quickfix.entry[]
 ---@param references vim.quickfix.entry[]
 ---@param lang string
----@return nil|{[integer]: refactor.inline_func.ProcessedMatchInfo}
-local function get_processed_match_info(definitions, references, lang)
-  local get_functions_info = require("refactoring.utils").get_functions_info
-  local get_function_calls_info = require("refactoring.utils").get_function_calls_info
+---@return nil|{[integer]: refactor.inline_func.ProcessedMatch}
+local function get_processed_match(definitions, references, lang)
+  local get_functions = require("refactoring.utils").get_functions
+  local get_function_calls = require("refactoring.utils").get_function_calls
   local query_error = require("refactoring.utils").query_error
 
   local function_query = ts.query.get(lang, "refactor_function")
@@ -32,8 +32,8 @@ local function get_processed_match_info(definitions, references, lang)
   local function_call_query = ts.query.get(lang, "refactor_function_call")
   if not function_call_query then return query_error("refactor_function_call", lang) end
 
-  ---@type {[integer]: refactor.inline_func.MatchInfo}
-  local match_info_by_buf = iter({ definitions, references })
+  ---@type {[integer]: refactor.inline_func.Match}
+  local match_by_buf = iter({ definitions, references })
     :flatten(1)
     :map(
       ---@param item vim.quickfix.entry
@@ -55,107 +55,107 @@ local function get_processed_match_info(definitions, references, lang)
         end
         lang_tree:parse(true)
 
-        local functions_info, returns_info = get_functions_info(buf, lang_tree, function_query)
-        local function_calls_info = get_function_calls_info(buf, lang_tree, function_call_query)
+        local functions, returns = get_functions(buf, lang_tree, function_query)
+        local function_calls = get_function_calls(buf, lang_tree, function_call_query)
 
         return buf,
           {
-            functions = functions_info,
-            function_calls = function_calls_info,
-            returns = returns_info,
+            functions = functions,
+            function_calls = function_calls,
+            returns = returns,
           }
       end
     )
     :fold(
       {},
-      ---@param acc {[integer]: refactor.inline_func.MatchInfo}
+      ---@param acc {[integer]: refactor.inline_func.Match}
       ---@param k integer
-      ---@param v nil|refactor.inline_func.MatchInfo
+      ---@param v nil|refactor.inline_func.Match
       function(acc, k, v)
         acc[k] = v
         return acc
       end
     )
 
-  iter(pairs(match_info_by_buf)):each(
+  iter(pairs(match_by_buf)):each(
     ---@param buf integer
-    ---@param match_info refactor.inline_func.MatchInfo
-    function(buf, match_info)
-      iter(match_info.returns):each(
-        ---@param return_info refactor.ReturnInfo
-        function(return_info)
-          local return_range = range(buf, return_info["return"]:range())
+    ---@param match refactor.inline_func.Match
+    function(buf, match)
+      iter(match.returns):each(
+        ---@param return_ refactor.Return
+        function(return_)
+          local return_range = range(buf, return_["return"]:range())
 
-          ---@type nil|refactor.ProcessedFunctionInfo
-          local function_for_return = iter(match_info.functions)
+          ---@type nil|refactor.ProcessedFunction
+          local function_for_return = iter(match.functions)
             :filter(
-              ---@param function_info refactor.FunctionInfo
-              function(function_info)
-                local function_range = range(buf, function_info["function"]:range())
+              ---@param function_ refactor.Function
+              function(function_)
+                local function_range = range(buf, function_["function"]:range())
                 return function_range:has(return_range)
               end
             )
             :fold(
               nil,
-              ---@param acc nil|refactor.FunctionInfo
-              ---@param function_info refactor.FunctionInfo
-              function(acc, function_info)
-                if not acc then return function_info end
-                if function_info["function"]:byte_length() < acc["function"]:byte_length() then return function_info end
+              ---@param acc nil|refactor.Function
+              ---@param function_ refactor.Function
+              function(acc, function_)
+                if not acc then return function_ end
+                if function_["function"]:byte_length() < acc["function"]:byte_length() then return function_ end
                 return acc
               end
             )
           if not function_for_return then return end
 
-          function_for_return.returns_info = function_for_return.returns_info or {}
-          table.insert(function_for_return.returns_info, return_info)
+          function_for_return.returns = function_for_return.returns or {}
+          table.insert(function_for_return.returns, return_)
         end
       )
     end
   )
   ---@diagnostic disable-next-line: cast-type-mismatch
-  ---@cast match_info_by_buf {[integer]: refactor.inline_func.ProcessedMatchInfo}
+  ---@cast match_by_buf {[integer]: refactor.inline_func.ProcessedMatch}
 
-  return match_info_by_buf
+  return match_by_buf
 end
 
 -- TODO: be consistent about what is singular/plural ins this kind of classes.
 -- Captures will be singular, but lua structures plural
----@class refactor.ReturnInfo
+---@class refactor.Return
 ---@field return TSNode
 ---@field values TSNode[]?
 
----@class refactor.FunctionInfo
+---@class refactor.Function
 ---@field function TSNode
 ---@field outside TSNode?
 ---@field body TSNode[]
 ---@field comments TSNode[]?
 ---@field args TSNode[]?
 
----@class refactor.FunctionCallInfo
+---@class refactor.FunctionCall
 ---@field function_call TSNode
 ---@field name TSNode
 ---@field args TSNode[]?
 ---@field return_values TSNode[]?
 ---@field outside TSNode?
 
----@class refactor.ProcessedFunctionInfo
+---@class refactor.ProcessedFunction
 ---@field function TSNode
 ---@field outside TSNode?
 ---@field body TSNode[]
 ---@field comments TSNode[]?
 ---@field args TSNode[]?
----@field returns_info nil|refactor.ReturnInfo[]
+---@field returns nil|refactor.Return[]
 
----@class refactor.inline_func.MatchInfo
----@field functions refactor.FunctionInfo[]
----@field function_calls refactor.FunctionCallInfo[]
----@field returns refactor.ReturnInfo[]
+---@class refactor.inline_func.Match
+---@field functions refactor.Function[]
+---@field function_calls refactor.FunctionCall[]
+---@field returns refactor.Return[]
 
----@class refactor.inline_func.ProcessedMatchInfo
----@field functions refactor.ProcessedFunctionInfo[]
----@field function_calls refactor.FunctionCallInfo[]
----@field returns refactor.ReturnInfo[]
+---@class refactor.inline_func.ProcessedMatch
+---@field functions refactor.ProcessedFunction[]
+---@field function_calls refactor.FunctionCall[]
+---@field returns refactor.Return[]
 
 ---@param config refactor.Config
 function M.inline_func(_, config)
@@ -163,8 +163,8 @@ function M.inline_func(_, config)
   local code_gen_error = require("refactoring.utils").code_gen_error
   local select = require("refactoring.utils").select
   local indent = require("refactoring.utils").indent
-  local get_definitions = require("refactoring.utils").get_definitions
-  local get_references = require("refactoring.utils").get_references
+  local get_lsp_definitions = require("refactoring.utils").get_lsp_definitions
+  local get_lsp_references = require("refactoring.utils").get_lsp_references
 
   local opts = config.refactor.inline_func
   local code_generation = opts.code_generation
@@ -192,49 +192,49 @@ function M.inline_func(_, config)
   local is_preview = opts.preview_ns ~= nil
   local task = async.run(function()
     local results = async.await_all {
-      async.run(get_definitions, is_preview),
-      async.run(get_references, is_preview),
+      async.run(get_lsp_definitions, is_preview),
+      async.run(get_lsp_references, is_preview),
     }
-    local definitions = unpack(results[1]) ---@type vim.quickfix.entry[]
-    local references = unpack(results[2]) ---@type vim.quickfix.entry[]
+    local lsp_definitions = unpack(results[1]) ---@type vim.quickfix.entry[]
+    local lsp_references = unpack(results[2]) ---@type vim.quickfix.entry[]
 
-    local match_info_by_buf = get_processed_match_info(definitions, references, lang)
-    if not match_info_by_buf then return end
+    local match_by_buf = get_processed_match(lsp_definitions, lsp_references, lang)
+    if not match_by_buf then return end
 
-    ---@class refactor.inline_func.DefinitionWithFunctionInfo
+    ---@class refactor.inline_func.DefinitionWithFunction
     ---@field definition vim.quickfix.entry
-    ---@field function_info refactor.ProcessedFunctionInfo
+    ---@field function_ refactor.ProcessedFunction
 
-    ---@type refactor.inline_func.DefinitionWithFunctionInfo[]
-    local definitions_with_function_info = iter(definitions)
+    ---@type refactor.inline_func.DefinitionWithFunction[]
+    local definitions_with_function = iter(lsp_definitions)
       :map(
         ---@param d vim.quickfix.entry
         function(d)
           local buf = vim.fn.bufadd(d.filename)
 
-          local match_info = match_info_by_buf[buf]
+          local match = match_by_buf[buf]
           -- TODO: add range.vimscript
           local d_range = range(buf, d.lnum - 1, d.col - 1, d.end_lnum - 1, d.end_col - 1)
-          local function_info = iter(match_info.functions):find(
-            ---@param function_info refactor.FunctionInfo
-            function(function_info)
-              local function_range = range(buf, function_info["function"]:range())
+          local function_ = iter(match.functions):find(
+            ---@param function_ refactor.Function
+            function(function_)
+              local function_range = range(buf, function_["function"]:range())
               return function_range:has(d_range)
             end
           )
 
-          return { definition = d, function_info = function_info }
+          return { definition = d, function_ = function_ }
         end
       )
       :filter(
-        ---@param definition_with_function_info refactor.inline_func.DefinitionWithFunctionInfo
-        function(definition_with_function_info)
-          return definition_with_function_info.function_info ~= nil
+        ---@param definition_with_function refactor.inline_func.DefinitionWithFunction
+        function(definition_with_function)
+          return definition_with_function.function_ ~= nil
         end
       )
       :totable()
 
-    if #definitions_with_function_info == 0 then
+    if #definitions_with_function == 0 then
       vim.notify(
         "Couldn't find the definition of the symbol under cursor using treesitter",
         vim.log.levels.ERROR,
@@ -242,69 +242,68 @@ function M.inline_func(_, config)
       )
       return
     end
-    local definition_with_function_info = #definitions_with_function_info == 1 and definitions_with_function_info[1]
-      or select(definitions_with_function_info, {
+    local definition_with_function = #definitions_with_function == 1 and definitions_with_function[1]
+      or select(definitions_with_function, {
         prompt = "Multiple definitions found, select one",
         format_item =
-          ---@param item refactor.inline_func.DefinitionWithFunctionInfo
+          ---@param item refactor.inline_func.DefinitionWithFunction
           function(item)
             local buf = vim.fn.bufadd(item.definition.filename)
-            return ts.get_node_text(item.function_info["function"], buf)
+            return ts.get_node_text(item.function_["function"], buf)
           end,
       })
-    if not definition_with_function_info then return end
+    if not definition_with_function then return end
 
-    local definition, function_info =
-      definition_with_function_info.definition, definition_with_function_info.function_info
+    local definition, function_ = definition_with_function.definition, definition_with_function.function_
     local in_buf = vim.fn.bufadd(definition.filename)
-    if function_info.returns_info and #function_info.returns_info > 1 then
+    if function_.returns and #function_.returns > 1 then
       vim.notify("The function has multiple return statements", vim.log.levels.ERROR, { title = "refactoring.nvim" })
       return
     end
 
-    ---@class refactor.inline_func.ReferenceWithFunctionCallInfo
+    ---@class refactor.inline_func.ReferenceWithFunctionCall
     ---@field reference vim.quickfix.entry
-    ---@field function_call_info refactor.FunctionCallInfo
+    ---@field function_call refactor.FunctionCall
 
     -- TODO: some LSPs (like lua_ls) may give a reference to a symbol that is
     -- not a function_call (i.e. the variable declaration on `require`). Maybe
     -- give a warning and do nothing if there are no
-    -- `references_with_function_call_info` (?
-    ---@type refactor.inline_func.ReferenceWithFunctionCallInfo[]
-    local references_with_function_call_info = iter(references)
+    -- `references_with_function_call` (?
+    ---@type refactor.inline_func.ReferenceWithFunctionCall[]
+    local references_with_function_call = iter(lsp_references)
       :map(
         ---@param r vim.quickfix.entry
         function(r)
           local buf = vim.fn.bufadd(r.filename)
 
-          local match_info = match_info_by_buf[buf]
+          local match = match_by_buf[buf]
           -- TODO: add range.vimscript
           local r_range = range(buf, r.lnum - 1, r.col - 1, r.end_lnum - 1, r.end_col - 1)
-          local function_call_info = iter(match_info.function_calls):find(
-            ---@param function_call_info refactor.FunctionCallInfo
-            function(function_call_info)
-              local function_call_range = range(buf, function_call_info.function_call:range())
+          local function_call = iter(match.function_calls):find(
+            ---@param function_call refactor.FunctionCall
+            function(function_call)
+              local function_call_range = range(buf, function_call.function_call:range())
               return function_call_range:has(r_range)
             end
           )
 
-          return { reference = r, function_call_info = function_call_info }
+          return { reference = r, function_call = function_call }
         end
       )
       :filter(
-        ---@param reference_with_function_call_info refactor.inline_func.ReferenceWithFunctionCallInfo
-        function(reference_with_function_call_info)
-          return reference_with_function_call_info.function_call_info ~= nil
+        ---@param reference_with_function_call refactor.inline_func.ReferenceWithFunctionCall
+        function(reference_with_function_call)
+          return reference_with_function_call.function_call ~= nil
         end
       )
       :totable()
 
-    local body_start_row, body_start_col = function_info.body[1]:start()
+    local body_start_row, body_start_col = function_.body[1]:start()
     local body_end_row, body_end_col ---@type integer, integer
-    if not function_info.returns_info or #function_info.returns_info == 0 then
-      body_end_row, body_end_col = function_info.body[#function_info.body]:end_()
+    if not function_.returns or #function_.returns == 0 then
+      body_end_row, body_end_col = function_.body[#function_.body]:end_()
     else
-      body_end_row, body_end_col = function_info.returns_info[1]["return"]:start()
+      body_end_row, body_end_col = function_.returns[1]["return"]:start()
     end
     local body_range = range(in_buf, body_start_row, body_start_col, body_end_row, body_end_col)
     local b_srow, b_scol, b_erow, b_ecol = body_range:to_extmark()
@@ -321,8 +320,8 @@ function M.inline_func(_, config)
         end
       )
       :join "\n"
-    local args = function_info.args
-      and iter(function_info.args)
+    local args = function_.args
+      and iter(function_.args)
         :map(
           ---@param arg TSNode
           function(arg)
@@ -330,8 +329,8 @@ function M.inline_func(_, config)
           end
         )
         :totable()
-    local function_return_values = (function_info.returns_info and function_info.returns_info[1].values)
-      and iter(function_info.returns_info[1].values)
+    local function_return_values = (function_.returns and function_.returns[1].values)
+      and iter(function_.returns[1].values)
         :map(
           ---@param return_value TSNode
           function(return_value)
@@ -342,15 +341,15 @@ function M.inline_func(_, config)
 
     ---@type {[integer]: refactor.TextEdit[]}
     local text_edits_by_buf = {}
-    iter(references_with_function_call_info):each(
-      ---@param r refactor.inline_func.ReferenceWithFunctionCallInfo
+    iter(references_with_function_call):each(
+      ---@param r refactor.inline_func.ReferenceWithFunctionCall
       function(r)
         local out_buf = vim.fn.bufadd(r.reference.filename)
         local inlined_function_lines = {} ---@type string[]
 
-        if args or r.function_call_info.args then
-          local params = r.function_call_info.args
-              and iter(r.function_call_info.args)
+        if args or r.function_call.args then
+          local params = r.function_call.args
+              and iter(r.function_call.args)
                 :map(
                   ---@param arg TSNode
                   function(arg)
@@ -372,7 +371,7 @@ function M.inline_func(_, config)
           vim.list_extend(inlined_function_lines, vim.split(args_assignment, "\n"))
         end
 
-        local fc_range = range(in_buf, (r.function_call_info.outside or r.function_call_info.function_call):range())
+        local fc_range = range(in_buf, (r.function_call.outside or r.function_call.function_call):range())
         local fc_start_row, _, fc_end_row = fc_range:to_extmark()
         local function_call = table.concat(api.nvim_buf_get_lines(out_buf, fc_start_row, fc_end_row, true), "\n")
 
@@ -380,9 +379,9 @@ function M.inline_func(_, config)
         local indented_body_without_return = indent(vim.bo[out_buf].expandtab, indent_amount, body_without_return)
         vim.list_extend(inlined_function_lines, vim.split(indented_body_without_return, "\n"))
 
-        if function_return_values or r.function_call_info.return_values then
-          local function_call_return_values = r.function_call_info.return_values
-              and iter(r.function_call_info.return_values)
+        if function_return_values or r.function_call.return_values then
+          local function_call_return_values = r.function_call.return_values
+              and iter(r.function_call.return_values)
                 :map(
                   ---@param return_value TSNode
                   function(return_value)
@@ -412,15 +411,15 @@ function M.inline_func(_, config)
       end
     )
 
-    local srow, scol, erow, ecol = (function_info.outside or function_info["function"]):range()
+    local srow, scol, erow, ecol = (function_.outside or function_["function"]):range()
     -- NOTE: deletes whole line instead of leaving an empty line
     if ecol > 0 and ecol == #api.nvim_buf_get_lines(0, erow, erow + 1, true)[1] then
       erow = erow + 1
       ecol = 0
     end
     local function_range = range(in_buf, srow, scol, erow, ecol)
-    if function_info.comments then
-      local highest_comment_range = range(in_buf, function_info.comments[1]:range())
+    if function_.comments then
+      local highest_comment_range = range(in_buf, function_.comments[1]:range())
       function_range.start_row, function_range.start_col =
         highest_comment_range.start_row, highest_comment_range.start_col
     end
@@ -434,7 +433,7 @@ function M.inline_func(_, config)
     apply_text_edits(text_edits_by_buf)
     if config.show_success_message then
       vim.notify(
-        ("Inlined %d function occurrences"):format(#references_with_function_call_info),
+        ("Inlined %d function occurrences"):format(#references_with_function_call),
         vim.log.levels.INFO,
         { title = "refactoring.nvim" }
       )

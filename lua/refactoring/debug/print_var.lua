@@ -110,9 +110,9 @@ function M.print_var(range_type, config)
   local scopes_for_range = require("refactoring.utils").scopes_for_range
   local get_declaration_scope = require("refactoring.utils").get_declaration_scope
   local indent = require("refactoring.utils").indent
-  local get_references_info = require("refactoring.utils").get_references_info
-  local get_output_statements_info = require("refactoring.utils").get_output_statements_info
-  local get_scopes_info = require("refactoring.utils").get_scopes_info
+  local get_references = require("refactoring.utils").get_references
+  local get_output_statements = require("refactoring.utils").get_output_statements
+  local get_scopes = require("refactoring.utils").get_scopes
   local query_error = require("refactoring.utils").query_error
   local get_statement_output_range = require("refactoring.debug.utils").get_statement_output_range
   local get_debug_path_for_range = require("refactoring.utils").get_debug_path_for_range
@@ -154,9 +154,9 @@ function M.print_var(range_type, config)
     local get_print_var = code_generation.print_var[lang]
     if not get_print_var then return code_gen_error("print_var", lang) end
 
-    local references = get_references_info(buf, nested_lang_tree, reference_query)
-    local output_statements = get_output_statements_info(buf, nested_lang_tree, output_statement_query)
-    local scopes_info = get_scopes_info(buf, nested_lang_tree, scope_query)
+    local references = get_references(buf, nested_lang_tree, reference_query)
+    local output_statements = get_output_statements(buf, nested_lang_tree, output_statement_query)
+    local scopes = get_scopes(buf, nested_lang_tree, scope_query)
 
     local selected_reference_pos = opts.output_location == "below"
         and pos(buf, selected_range.end_row, selected_range.end_col)
@@ -166,25 +166,25 @@ function M.print_var(range_type, config)
     if not output_range or not inserted_at then return end
 
     -- TODO: I also compute `declarations_before_output_range` in
-    -- `extract_func`. Is there a cleaner wat to do all this in both places?
-    local declarations_by_scope = get_declarations_by_scope(references, scopes_info, buf)
-    local scopes_for_selected_range = scopes_for_range(buf, scopes_info, selected_range)
+    -- `extract_func`. Is there a cleaner wat to do it in both places?
+    local declarations_by_scope = get_declarations_by_scope(references, scopes, buf)
+    local scopes_for_selected_range = scopes_for_range(buf, scopes, selected_range)
     local declarations_before_output_range = iter(references)
       :filter(
-        ---@param r refactor.ReferenceInfo
+        ---@param r refactor.Reference
         function(r)
           return r.declaration
         end
       )
       :filter(
-        ---@param r refactor.ReferenceInfo
+        ---@param r refactor.Reference
         function(r)
-          local declaration_scope = get_declaration_scope(declarations_by_scope, scopes_info, r, buf)
+          local declaration_scope = get_declaration_scope(declarations_by_scope, scopes, r, buf)
 
           local is_in_scope = false
           if declaration_scope then
             is_in_scope = iter(scopes_for_selected_range):any(
-              ---@param si refactor.ScopeInfo
+              ---@param si refactor.Scope
               function(si)
                 return si == declaration_scope
               end
@@ -196,7 +196,7 @@ function M.print_var(range_type, config)
         end
       )
       :map(
-        ---@param reference refactor.ReferenceInfo
+        ---@param reference refactor.Reference
         function(reference)
           return ts.get_node_text(reference.identifier, buf)
         end
@@ -232,10 +232,10 @@ function M.print_var(range_type, config)
       end
     )
 
-    ---@type refactor.ReferenceInfo[]
+    ---@type refactor.Reference[]
     local selected_references = iter(references)
       :filter(
-        ---@param r refactor.ReferenceInfo
+        ---@param r refactor.Reference
         function(r)
           local r_range = range(buf, r.identifier:range())
           return selected_range:has(r_range)
@@ -248,16 +248,16 @@ function M.print_var(range_type, config)
 
       return a_range < b_range
     end)
-    ---@type refactor.ReferenceInfo[]
+    ---@type refactor.Reference[]
     local filtered_references = iter(selected_references)
       :unique(
-        ---@param r refactor.ReferenceInfo
+        ---@param r refactor.Reference
         function(r)
           return ts.get_node_text(r.identifier, buf)
         end
       )
       :filter(
-        ---@param r refactor.ReferenceInfo
+        ---@param r refactor.Reference
         function(r)
           local identifier = ts.get_node_text(r.identifier, buf)
           return not r.function_call_identifier
@@ -275,7 +275,7 @@ function M.print_var(range_type, config)
     ---@type string[]
     local print_lines = iter(filtered_references)
       :map(
-        ---@param r refactor.ReferenceInfo
+        ---@param r refactor.Reference
         function(r)
           local identifier = ts.get_node_text(r.identifier, buf)
 
@@ -334,7 +334,7 @@ function M.print_var(range_type, config)
     table.insert(text_edits_by_buf[buf], { range = output_range, lines = print_lines })
 
     iter(filtered_references):each(
-      ---@param r refactor.ReferenceInfo
+      ---@param r refactor.Reference
       function(r)
         local identifier = ts.get_node_text(r.identifier, buf)
 

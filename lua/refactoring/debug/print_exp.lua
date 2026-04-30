@@ -93,7 +93,7 @@ function M.print_exp(range_type, config)
   local code_gen_error = require("refactoring.utils").code_gen_error
   local indent = require("refactoring.utils").indent
   local apply_text_edits = require("refactoring.utils").apply_text_edits
-  local get_output_statements_info = require("refactoring.utils").get_output_statements_info
+  local get_output_statements = require("refactoring.utils").get_output_statements
   local query_error = require("refactoring.utils").query_error
   local get_debug_path_for_range = require("refactoring.utils").get_debug_path_for_range
   local get_statement_output_range = require("refactoring.debug.utils").get_statement_output_range
@@ -131,7 +131,7 @@ function M.print_exp(range_type, config)
     local get_print_exp = code_generation.print_exp[lang]
     if not get_print_exp then return code_gen_error("print_exp", lang) end
 
-    local output_statements = get_output_statements_info(buf, nested_lang_tree, output_statement_query)
+    local output_statements = get_output_statements(buf, nested_lang_tree, output_statement_query)
 
     local selected_reference_pos = opts.output_location == "below"
         and pos(buf, selected_range.end_row, selected_range.end_col)

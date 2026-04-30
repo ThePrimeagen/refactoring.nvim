@@ -46,7 +46,7 @@ end
 ---@field variable_declaration? {[string]: nil|fun(opts: refactor.extract_var.code_generation.variable_declaration.Opts): string}
 ---@field variable? {[string]: nil|fun(opts: refactor.extract_var.code_generation.variable.Opts): string}
 
----@class refactor.ScopeInfo
+---@class refactor.Scope
 ---@field scope TSNode[]
 ---@field inside TSNode
 
@@ -57,9 +57,9 @@ function M.extract_var(range_type, config)
   local apply_text_edits = require("refactoring.utils").apply_text_edits
   local input = require("refactoring.utils").input
   local code_gen_error = require("refactoring.utils").code_gen_error
-  local get_scopes_info = require("refactoring.utils").get_scopes_info
+  local get_scopes = require("refactoring.utils").get_scopes
   local query_error = require("refactoring.utils").query_error
-  local get_output_statements_info = require("refactoring.utils").get_output_statements_info
+  local get_output_statements = require("refactoring.utils").get_output_statements
 
   local opts = config.refactor.extract_var
   local code_generation = opts.code_generation
@@ -123,8 +123,8 @@ function M.extract_var(range_type, config)
         if node_significant_text == selected_significant_text then table.insert(matching_nodes, node) end
       end
     end
-    local scopes_info = get_scopes_info(buf, nested_lang_tree, scope_query)
-    local output_statements = get_output_statements_info(buf, nested_lang_tree, output_statement_query)
+    local scopes = get_scopes(buf, nested_lang_tree, scope_query)
+    local output_statements = get_output_statements(buf, nested_lang_tree, output_statement_query)
 
     ---@type {[integer]: refactor.TextEdit[]}
     local text_edits_by_buf = {}
@@ -137,10 +137,10 @@ function M.extract_var(range_type, config)
       end
     )
 
-    ---@type {si: refactor.ScopeInfo, s: TSNode}|nil
-    local smallest_common_scope_with_node = iter(scopes_info)
+    ---@type {si: refactor.Scope, s: TSNode}|nil
+    local smallest_common_scope_with_node = iter(scopes)
       :map(
-        ---@param si refactor.ScopeInfo
+        ---@param si refactor.Scope
         function(si)
           local scope = iter(si.scope):find(
             ---@param s TSNode
@@ -166,8 +166,8 @@ function M.extract_var(range_type, config)
       )
       :fold(
         nil,
-        ---@param acc {si: refactor.ScopeInfo, s: TSNode}|nil
-        ---@param si refactor.ScopeInfo
+        ---@param acc {si: refactor.Scope, s: TSNode}|nil
+        ---@param si refactor.Scope
         ---@param s TSNode
         function(acc, si, s)
           if not acc then return { si = si, s = s } end
@@ -188,9 +188,9 @@ function M.extract_var(range_type, config)
     local smallest_common_inside_scope_range = range(buf, smallest_common_scope.inside:range())
 
     ---@type vim.Range[]
-    local nested_scope_ranges = iter(scopes_info)
+    local nested_scope_ranges = iter(scopes)
       :filter(
-        ---@param si refactor.ScopeInfo
+        ---@param si refactor.Scope
         function(si)
           if si == smallest_common_scope then return false end
 
@@ -200,7 +200,7 @@ function M.extract_var(range_type, config)
         end
       )
       :map(
-        ---@param si refactor.ScopeInfo
+        ---@param si refactor.Scope
         function(si)
           return range(buf, si.inside:range())
         end
@@ -214,10 +214,10 @@ function M.extract_var(range_type, config)
     -- all of them (this may exclude possible candidates for `matching_nodes`),
     -- so I'll need to use it to find the correct scope inside of which all of
     -- `matching_nodes` should be
-    ---@type nil|refactor.OutputStatementInfo
+    ---@type nil|refactor.OutputStatement
     local output_statement = iter(output_statements)
       :filter(
-        ---@param os refactor.OutputStatementInfo
+        ---@param os refactor.OutputStatement
         function(os)
           local os_range = range(buf, os.output_statement:range())
           local os_start_pos = pos(buf, os_range.start_row, os_range.start_col)
@@ -242,8 +242,8 @@ function M.extract_var(range_type, config)
       )
       :fold(
         nil,
-        ---@param acc nil|refactor.OutputStatementInfo
-        ---@param os refactor.OutputStatementInfo
+        ---@param acc nil|refactor.OutputStatement
+        ---@param os refactor.OutputStatement
         function(acc, os)
           if not acc then return os end
           local acc_start_pos = pos(buf, acc.output_statement:start())

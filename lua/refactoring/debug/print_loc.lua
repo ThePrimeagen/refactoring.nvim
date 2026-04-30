@@ -17,12 +17,12 @@ local M = {}
 ---@class refactor.print_loc.UserCodeGeneration
 ---@field print_loc? {[string]: nil|fun(opts: refactor.print_loc.code_generation.Opts): string}
 
----@class refactor.DebugPathSegmentInfo
+---@class refactor.DebugPathSegment
 ---@field debug_path_segment TSNode
 ---@field text string
 ---@field metadata vim.treesitter.query.TSMetadata
 
----@class refactor.OutputStatementInfo
+---@class refactor.OutputStatement
 ---@field output_statement TSNode
 ---@field inside TSNode|nil
 ---@field inside_only boolean|nil
@@ -101,7 +101,7 @@ function M.print_loc(range_type, config)
   local code_gen_error = require("refactoring.utils").code_gen_error
   local indent = require("refactoring.utils").indent
   local apply_text_edits = require("refactoring.utils").apply_text_edits
-  local get_output_statements_info = require("refactoring.utils").get_output_statements_info
+  local get_output_statements = require("refactoring.utils").get_output_statements
   local query_error = require("refactoring.utils").query_error
   local get_debug_path_for_range = require("refactoring.utils").get_debug_path_for_range
   local get_statement_output_range = require("refactoring.debug.utils").get_statement_output_range
@@ -137,7 +137,7 @@ function M.print_loc(range_type, config)
     local get_print_loc = code_generation.print_loc[lang]
     if not get_print_loc then return code_gen_error("print_loc", lang) end
 
-    local output_statements = get_output_statements_info(buf, nested_lang_tree, output_statement_query)
+    local output_statements = get_output_statements(buf, nested_lang_tree, output_statement_query)
 
     local selected_reference_pos = opts.output_location == "below"
         and pos(buf, selected_range.end_row, selected_range.end_col)
