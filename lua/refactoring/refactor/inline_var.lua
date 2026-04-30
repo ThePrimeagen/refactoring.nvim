@@ -16,7 +16,7 @@ local M = {}
 ---@class refactor.inline_var.UserCodeGeneration
 ---@field group_expression? {[string]: nil|fun(opts: refactor.inline_var.code_generation.group_expression.Opts): string}
 
----@param definition refactor.QfItem
+---@param definition vim.quickfix.entry
 ---@param variables_info refactor.VariableInfo[]
 ---@return nil|refactor.ProcessedVariableInfo
 local function get_definition_info(definition, variables_info)
@@ -74,8 +74,8 @@ end
 ---@field references refactor.ReferenceInfo[]
 
 --As a side effect, loads all the buffers for all of the definitions and references
----@param definitions refactor.QfItem[]
----@param references refactor.QfItem[]
+---@param definitions vim.quickfix.entry[]
+---@param references vim.quickfix.entry[]
 ---@param lang string
 ---@return nil|{[integer]: refactor.inline_var.MatchInfo}
 local function get_match_info(definitions, references, lang)
@@ -92,7 +92,7 @@ local function get_match_info(definitions, references, lang)
   local match_info = iter({ definitions, references })
     :flatten(1)
     :map(
-      ---@param item refactor.QfItem
+      ---@param item vim.quickfix.entry
       function(item)
         local buf = vim.fn.bufadd(item.filename)
         if not api.nvim_buf_is_loaded(buf) then vim.fn.bufload(buf) end
@@ -172,13 +172,14 @@ function M.inline_var(_, config)
   }
   local lang = nested_lang_tree:lang()
 
+  local is_preview = opts.preview_ns ~= nil
   local task = async.run(function()
     local results = async.await_all {
-      async.run(get_definitions),
-      async.run(get_references),
+      async.run(get_definitions, is_preview),
+      async.run(get_references, is_preview),
     }
-    local definitions = unpack(results[1]) ---@type refactor.QfItem[]
-    local references = unpack(results[2]) ---@type refactor.QfItem[]
+    local definitions = unpack(results[1]) ---@type vim.quickfix.entry[]
+    local references = unpack(results[2]) ---@type vim.quickfix.entry[]
 
     local match_info_by_buf = get_match_info(definitions, references, lang)
     if not match_info_by_buf then return end
@@ -186,10 +187,10 @@ function M.inline_var(_, config)
     local get_grouped_expression = code_generation.group_expression[lang]
     if not get_grouped_expression then return code_gen_error("group_expression", lang) end
 
-    ---@type {definition: refactor.QfItem, info: refactor.ProcessedVariableInfo}[]
+    ---@type {definition: vim.quickfix.entry, info: refactor.ProcessedVariableInfo}[]
     local definitions_with_info = iter(definitions)
       :map(
-        ---@param d refactor.QfItem
+        ---@param d vim.quickfix.entry
         function(d)
           local definition_buf = vim.fn.bufadd(d.filename)
           local variables_info = match_info_by_buf[definition_buf].variables
@@ -198,7 +199,7 @@ function M.inline_var(_, config)
         end
       )
       :filter(
-        ---@param dwi {definition: refactor.QfItem, info: refactor.ProcessedVariableInfo|nil}
+        ---@param dwi {definition: vim.quickfix.entry, info: refactor.ProcessedVariableInfo|nil}
         function(dwi)
           return dwi.info ~= nil
         end
@@ -217,7 +218,7 @@ function M.inline_var(_, config)
       or select(definitions_with_info, {
         prompt = "Mutliple definitions found, select one",
         format_item =
-          ---@param item {definition: refactor.QfItem, info: refactor.ProcessedVariableInfo}
+          ---@param item {definition: vim.quickfix.entry, info: refactor.ProcessedVariableInfo}
           function(item)
             local buf = vim.fn.bufadd(item.definition.filename)
             return ts.get_node_text(item.info.declaration, buf)
@@ -230,16 +231,16 @@ function M.inline_var(_, config)
     -- TODO: add pos.vimscript
     local definition_start = pos(definition_buf, definition.lnum - 1, definition.col - 1)
 
-    ---@type {reference: refactor.QfItem, info: refactor.ReferenceInfo|nil}[]
+    ---@type {reference: vim.quickfix.entry, info: refactor.ReferenceInfo|nil}[]
     local references_with_info = iter(references)
       :unique(
-        ---@param r refactor.QfItem
+        ---@param r vim.quickfix.entry
         function(r)
           return ("%d-%d-%d-%d"):format(r.lnum, r.col, r.end_lnum, r.end_col)
         end
       )
       :filter(
-        ---@param r refactor.QfItem
+        ---@param r vim.quickfix.entry
         function(r)
           local r_buf = vim.fn.bufadd(r.filename)
           if r_buf ~= definition_buf then return true end
@@ -250,7 +251,7 @@ function M.inline_var(_, config)
         end
       )
       :map(
-        ---@param r refactor.QfItem
+        ---@param r vim.quickfix.entry
         function(r)
           local reference_buf = vim.fn.bufadd(r.filename)
           -- TODO: add range.vimscript
@@ -280,7 +281,7 @@ function M.inline_var(_, config)
         end
       )
       :filter(
-        ---@param rwi {reference: refactor.QfItem, info: refactor.ReferenceInfo|nil}
+        ---@param rwi {reference: vim.quickfix.entry, info: refactor.ReferenceInfo|nil}
         function(rwi)
           return rwi.info ~= nil
         end
@@ -297,7 +298,7 @@ function M.inline_var(_, config)
     ---@type {[integer]: refactor.TextEdit[]}
     local text_edits_by_buf = {}
     iter(references_with_info):each(
-      ---@param rwi {reference: refactor.QfItem, info: refactor.ReferenceInfo|nil}
+      ---@param rwi {reference: vim.quickfix.entry, info: refactor.ReferenceInfo|nil}
       function(rwi)
         local reference = rwi.reference
         local buf = vim.fn.bufadd(reference.filename)
@@ -361,7 +362,7 @@ function M.inline_var(_, config)
     end
   end)
   task:raise_on_error()
-  if opts.preview_ns then task:wait() end
+  if is_preview then task:wait() end
 end
 
 return M

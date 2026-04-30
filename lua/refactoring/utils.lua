@@ -86,38 +86,45 @@ function M.indent(expandtab, size, text, opts)
   return indented, previous_size
 end
 
----@class refactor.QfItem
----@field filename string
----@field lnum integer
----@field end_lnum integer
----@field col integer
----@field end_col integer
----@field text string
----@field kind string?
+local cached_definitions ---@type vim.quickfix.entry[]|nil
+---@type async fun(): vim.quickfix.entry[]
+M.get_definitions = async.wrap(2, function(is_preview, cb)
+  if cached_definitions then return cb(cached_definitions) end
 
--- TODO: cache if inside of preview. The cache key must include the buffer and
--- cursor location. Actually, the cursor position may change because of the
--- preview, so I don't think I can do that. I may have to have a single,
--- global, cache and invalidate it as soon as possible
---
--- How to invalidate the cache?
--- - it can't be invalidated when no longer in preview, because preview may be canceled
--- - it could be invalidated in a one time autocmd. What event should I use? CursorMove, CursorMoveI and ModeChange?
----@type async fun(): refactor.QfItem[]
-M.get_definitions = async.wrap(1, function(cb)
   lsp.buf.definition {
     on_list = function(args)
+      if is_preview then cached_definitions = args.items end
+      api.nvim_create_autocmd("CmdlineLeave", {
+        group = api.nvim_create_augroup("refactoring-definitions-cache", { clear = true }),
+        once = true,
+        callback = function()
+          cached_definitions = nil
+        end,
+      })
+
       cb(args.items)
     end,
   }
 end)
 
----@type async fun(): refactor.QfItem[]
-M.get_references = async.wrap(1, function(cb)
+local cached_references ---@type vim.quickfix.entry[]|nil
+---@type async fun(): vim.quickfix.entry[]
+M.get_references = async.wrap(2, function(is_preview, cb)
+  if cached_references then return cb(cached_references) end
+
   lsp.buf.references({
     includeDeclaration = false,
   }, {
     on_list = function(args)
+      if is_preview then cached_references = args.items end
+      api.nvim_create_autocmd("CmdlineLeave", {
+        group = api.nvim_create_augroup("refactoring-references-cache", { clear = true }),
+        once = true,
+        callback = function()
+          cached_references = nil
+        end,
+      })
+
       cb(args.items)
     end,
   })

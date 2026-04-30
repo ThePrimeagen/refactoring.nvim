@@ -18,8 +18,8 @@ local M = {}
 ---@field assignment? {[string]: nil|fun(opts: refactor.inline_func.code_generation.assignment.Opts): string}
 
 --As a side effect, loads all the buffers for all of the definitions and references
----@param definitions refactor.QfItem[]
----@param references refactor.QfItem[]
+---@param definitions vim.quickfix.entry[]
+---@param references vim.quickfix.entry[]
 ---@param lang string
 ---@return nil|{[integer]: refactor.inline_func.ProcessedMatchInfo}
 local function get_processed_match_info(definitions, references, lang)
@@ -36,7 +36,7 @@ local function get_processed_match_info(definitions, references, lang)
   local match_info_by_buf = iter({ definitions, references })
     :flatten(1)
     :map(
-      ---@param item refactor.QfItem
+      ---@param item vim.quickfix.entry
       function(item)
         local buf = vim.fn.bufadd(item.filename)
         if not api.nvim_buf_is_loaded(buf) then vim.fn.bufload(buf) end
@@ -189,25 +189,26 @@ function M.inline_func(_, config)
   local get_assignment = code_generation.assignment[lang]
   if not get_assignment then return code_gen_error("assignment", lang) end
 
+  local is_preview = opts.preview_ns ~= nil
   local task = async.run(function()
     local results = async.await_all {
-      async.run(get_definitions),
-      async.run(get_references),
+      async.run(get_definitions, is_preview),
+      async.run(get_references, is_preview),
     }
-    local definitions = unpack(results[1]) ---@type refactor.QfItem[]
-    local references = unpack(results[2]) ---@type refactor.QfItem[]
+    local definitions = unpack(results[1]) ---@type vim.quickfix.entry[]
+    local references = unpack(results[2]) ---@type vim.quickfix.entry[]
 
     local match_info_by_buf = get_processed_match_info(definitions, references, lang)
     if not match_info_by_buf then return end
 
     ---@class refactor.inline_func.DefinitionWithFunctionInfo
-    ---@field definition refactor.QfItem
+    ---@field definition vim.quickfix.entry
     ---@field function_info refactor.ProcessedFunctionInfo
 
     ---@type refactor.inline_func.DefinitionWithFunctionInfo[]
     local definitions_with_function_info = iter(definitions)
       :map(
-        ---@param d refactor.QfItem
+        ---@param d vim.quickfix.entry
         function(d)
           local buf = vim.fn.bufadd(d.filename)
 
@@ -262,7 +263,7 @@ function M.inline_func(_, config)
     end
 
     ---@class refactor.inline_func.ReferenceWithFunctionCallInfo
-    ---@field reference refactor.QfItem
+    ---@field reference vim.quickfix.entry
     ---@field function_call_info refactor.FunctionCallInfo
 
     -- TODO: some LSPs (like lua_ls) may give a reference to a symbol that is
@@ -272,7 +273,7 @@ function M.inline_func(_, config)
     ---@type refactor.inline_func.ReferenceWithFunctionCallInfo[]
     local references_with_function_call_info = iter(references)
       :map(
-        ---@param r refactor.QfItem
+        ---@param r vim.quickfix.entry
         function(r)
           local buf = vim.fn.bufadd(r.filename)
 
@@ -440,7 +441,7 @@ function M.inline_func(_, config)
     end
   end)
   task:raise_on_error()
-  if opts.preview_ns then task:wait() end
+  if is_preview then task:wait() end
 end
 
 return M
