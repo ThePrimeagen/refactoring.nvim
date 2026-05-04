@@ -88,6 +88,7 @@ local extract_var_code_generation = {
 }
 extract_var_code_generation.variable_declaration.typescript =
   extract_var_code_generation.variable_declaration.javascript
+extract_var_code_generation.variable_declaration.tsx = extract_var_code_generation.variable_declaration.javascript
 extract_var_code_generation.variable_declaration.cpp = extract_var_code_generation.variable_declaration.c
 
 ---@type refactor.extract_func.CodeGeneration
@@ -739,6 +740,8 @@ extract_func_code_generation.function_call.cpp = extract_func_code_generation.fu
 extract_func_code_generation.return_statement.cpp = extract_func_code_generation.return_statement.c
 extract_func_code_generation.function_call.typescript = extract_func_code_generation.function_call.javascript
 extract_func_code_generation.return_statement.typescript = extract_func_code_generation.return_statement.javascript
+extract_func_code_generation.function_call.tsx = extract_func_code_generation.function_call.javascript
+extract_func_code_generation.return_statement.tsx = extract_func_code_generation.return_statement.javascript
 
 ---@type refactor.inline_func.CodeGeneration
 local inline_func_code_generation = {
@@ -855,6 +858,8 @@ local print_loc_code_generation = {
     end,
   },
 }
+print_loc_code_generation.print_loc.typescript = print_loc_code_generation.print_loc.javascript
+print_loc_code_generation.print_loc.tsx = print_loc_code_generation.print_loc.javascript
 
 -- TODO: escape `opts.expression` inside of literal string for all languages
 ---@type refactor.print_exp.CodeGeneration
@@ -916,6 +921,8 @@ local print_exp_code_generation = {
     end,
   },
 }
+print_exp_code_generation.print_exp.typescript = print_exp_code_generation.print_exp.javascript
+print_exp_code_generation.print_exp.tsx = print_exp_code_generation.print_exp.javascript
 
 ---@type refactor.inline_var.CodeGeneration
 local inline_var_code_generation = {
@@ -943,6 +950,8 @@ local inline_var_code_generation = {
     end,
   },
 }
+inline_var_code_generation.group_expression.typescript = inline_var_code_generation.group_expression.javascript
+inline_var_code_generation.group_expression.tsx = inline_var_code_generation.group_expression.javascript
 
 ---@type refactor.Config
 local default_config = {
