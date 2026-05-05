@@ -92,33 +92,37 @@
 
 (pair
   value: (identifier) @reference.identifier
-  (#set! reference_type read)
-  (#set! function_call_identifier))
+  (#set! reference_type read))
 
 (pair
   value: (member_expression) @reference.identifier
-  (#set! reference_type read)
-  (#set! function_call_identifier)
-  (#set! field))
+  (#set! reference_type read))
 
 (array
   (identifier) @reference.identifier
-  (#set! reference_type read)
-  (#set! function_call_identifier))
+  (#set! reference_type read))
 
 (array
   (member_expression) @reference.identifier
-  (#set! reference_type read)
-  (#set! function_call_identifier)
-  (#set! field))
+  (#set! reference_type read))
 
 (spread_element
   (identifier) @reference.identifier
-  (#set! reference_type read)
-  (#set! function_call_identifier))
+  (#set! reference_type read))
 
 (spread_element
   (member_expression) @reference.identifier
-  (#set! reference_type read)
-  (#set! function_call_identifier)
-  (#set! field))
+  (#set! reference_type read))
+
+(variable_declarator
+  name: (object_pattern
+    (shorthand_property_identifier_pattern) @reference.identifier)
+  (#set! declaration)
+  (#set! reference_type write))
+
+(variable_declarator
+  name: (object_pattern
+    (pair_pattern
+      value: (identifier) @reference.identifier))
+  (#set! declaration)
+  (#set! reference_type write))
