@@ -115,3 +115,14 @@
   name: (_) @reference.identifier
   (#set! reference_type write)
   (#set! declaration))
+
+(function_definition
+  parameters: (formal_parameters
+    (simple_parameter
+      name: (variable_name) @reference.identifier))
+  (#set! reference_type write)
+  (#set! declaration))
+
+((encapsed_string
+  (variable_name) @reference.identifier)
+  (#set! reference_type read))
