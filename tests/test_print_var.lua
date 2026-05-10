@@ -103,6 +103,26 @@ T["c"]["works"] = function()
   validate(lines, { 4, 6 }, expected_lines, " pviw")
 end
 
+T["cpp"] = MiniTest.new_set {
+  hooks = {
+    pre_case = function()
+      child.lua [[
+vim.api.nvim_create_autocmd('Filetype', {
+  pattern = 'cpp',
+  command = 'setlocal expandtab shiftwidth=2'
+})
+]]
+    end,
+  },
+}
+
+T["cpp"]["works"] = function()
+  local lines = read_file "./tests/files/print_var_works_before.cpp"
+  local expected_lines = read_file "./tests/files/print_var_works_after.cpp"
+  child.cmd "edit tmp.cpp"
+  validate(lines, { 4, 6 }, expected_lines, " pviw")
+end
+
 T["javascript"] = MiniTest.new_set {
   hooks = {
     pre_case = function()
