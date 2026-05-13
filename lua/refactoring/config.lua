@@ -985,6 +985,9 @@ local inline_var_code_generation = {
     go = function(opts)
       return ("(%s)"):format(opts.expression)
     end,
+    c_sharp = function(opts)
+      return ("(%s)"):format(opts.expression)
+    end,
   },
 }
 inline_var_code_generation.group_expression.typescript = inline_var_code_generation.group_expression.javascript
