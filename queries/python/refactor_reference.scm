@@ -28,6 +28,10 @@
   (identifier) @reference.identifier
   (#set! reference_type read))
 
+(comparison_operator
+  (identifier) @reference.identifier
+  (#set! reference_type read))
+
 (for_statement
   left: (identifier) @reference.identifier
   (#set! reference_type write)

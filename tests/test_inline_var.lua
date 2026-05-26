@@ -132,4 +132,25 @@ T["c"]["multiple assignment"] = function()
   validate(lines, { 4, 8 }, expected_lines)
 end
 
+T["python"] = MiniTest.new_set {
+  hooks = {
+    pre_case = function()
+      child.lua [[
+vim.api.nvim_create_autocmd('Filetype', {
+  pattern = 'python',
+  command = 'setlocal expandtab shiftwidth=4'
+})
+]]
+    end,
+  },
+}
+
+T["python"]["comparison operator"] = function()
+  local lines = read_file "./tests/files/inline_var_comparison_operator_before.py"
+  local expected_lines = read_file "./tests/files/inline_var_comparison_operator_after.py"
+
+  child.cmd "edit tmp.py"
+  validate(lines, { 2, 4 }, expected_lines)
+end
+
 return T

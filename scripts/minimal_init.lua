@@ -50,7 +50,14 @@ vim.lsp.config("clangd", {
     if init_result.offsetEncoding then client.offset_encoding = init_result.offsetEncoding end
   end,
 })
-vim.lsp.enable { "lua_ls", "clangd" }
+vim.lsp.config("pyright", {
+  cmd = { "pyright-langserver", "--stdio" },
+  filetypes = { "python" },
+  root_markers = {
+    ".git",
+  },
+})
+vim.lsp.enable { "lua_ls", "clangd", "pyright" }
 
 vim.g.mapleader = " "
 vim.keymap.set("n", "<leader>ai", function()
