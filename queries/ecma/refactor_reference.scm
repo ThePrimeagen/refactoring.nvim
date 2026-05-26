@@ -114,15 +114,13 @@
   (member_expression) @reference.identifier
   (#set! reference_type read))
 
-(variable_declarator
-  name: (object_pattern
-    (shorthand_property_identifier_pattern) @reference.identifier)
+((object_pattern
+  (shorthand_property_identifier_pattern) @reference.identifier)
   (#set! declaration)
   (#set! reference_type write))
 
-(variable_declarator
-  name: (object_pattern
-    (pair_pattern
-      value: (identifier) @reference.identifier))
+(object_pattern
+  (pair_pattern
+    value: (identifier) @reference.identifier)
   (#set! declaration)
   (#set! reference_type write))
