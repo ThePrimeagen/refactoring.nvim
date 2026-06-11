@@ -124,3 +124,12 @@
     value: (identifier) @reference.identifier)
   (#set! declaration)
   (#set! reference_type write))
+
+(array_pattern
+  (identifier) @reference.identifier
+  (#set! declaration)
+  (#set! reference_type write))
+
+(template_substitution
+  (identifier) @reference.identifier
+  (#set! reference_type read))
