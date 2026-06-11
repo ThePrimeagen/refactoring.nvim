@@ -6,9 +6,6 @@
   (setlocal_statement)
   (return_statement)
   (normal_statement)
-  (while_loop)
-  (for_loop)
-  (if_statement)
   (lua_statement)
   (range_statement)
   (ruby_statement)
@@ -68,4 +65,13 @@
 ] @output_statement
 
 (function_definition
+  (body) @output_statement.inside) @output_statement
+
+(for_loop
+  (body) @output_statement.inside) @output_statement
+
+(if_statement
+  (body) @output_statement.inside) @output_statement
+
+(while_loop
   (body) @output_statement.inside) @output_statement
