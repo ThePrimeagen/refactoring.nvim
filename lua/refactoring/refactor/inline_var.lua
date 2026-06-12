@@ -176,21 +176,19 @@ function M.inline_var(_, config)
 
   local is_preview = opts.preview_ns ~= nil
   local task = async.run(function()
-    local results = async.await_all {
-      async.run(get_lsp_definitions, is_preview),
-      async.run(get_lsp_references, is_preview),
-    }
-    local definitions = unpack(results[1]) ---@type vim.quickfix.entry[]
-    local references = unpack(results[2]) ---@type vim.quickfix.entry[]
+    local definitions_task = async.run(get_lsp_definitions, is_preview)
+    local references_task = async.run(get_lsp_references, is_preview)
+    local lsp_definitions = async.await(definitions_task) ---@type vim.quickfix.entry[]
+    local lsp_references = async.await(references_task) ---@type vim.quickfix.entry[]
 
-    local match_by_buf = get_match(definitions, references, lang)
+    local match_by_buf = get_match(lsp_definitions, lsp_references, lang)
     if not match_by_buf then return end
 
     local get_grouped_expression = code_generation.group_expression[lang]
     if not get_grouped_expression then return code_gen_error("group_expression", lang) end
 
     ---@type {lsp: vim.quickfix.entry, ts: refactor.ProcessedVariable}[]
-    local processed_definitions = iter(definitions)
+    local processed_definitions = iter(lsp_definitions)
       :map(
         ---@param d vim.quickfix.entry
         function(d)
@@ -234,7 +232,7 @@ function M.inline_var(_, config)
     local definition_start = pos(definition_buf, lsp_definition.lnum - 1, lsp_definition.col - 1)
 
     ---@type {lsp: vim.quickfix.entry, ts: refactor.Reference|nil}[]
-    local processed_references = iter(references)
+    local processed_references = iter(lsp_references)
       :unique(
         ---@param r vim.quickfix.entry
         function(r)

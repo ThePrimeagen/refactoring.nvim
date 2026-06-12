@@ -191,12 +191,10 @@ function M.inline_func(_, config)
 
   local is_preview = opts.preview_ns ~= nil
   local task = async.run(function()
-    local results = async.await_all {
-      async.run(get_lsp_definitions, is_preview),
-      async.run(get_lsp_references, is_preview),
-    }
-    local lsp_definitions = unpack(results[1]) ---@type vim.quickfix.entry[]
-    local lsp_references = unpack(results[2]) ---@type vim.quickfix.entry[]
+    local definitions_task = async.run(get_lsp_definitions, is_preview)
+    local references_task = async.run(get_lsp_references, is_preview)
+    local lsp_definitions = async.await(definitions_task) ---@type vim.quickfix.entry[]
+    local lsp_references = async.await(references_task) ---@type vim.quickfix.entry[]
 
     local match_by_buf = get_processed_match(lsp_definitions, lsp_references, lang)
     if not match_by_buf then return end
