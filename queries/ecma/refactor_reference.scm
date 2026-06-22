@@ -133,3 +133,15 @@
 (template_substitution
   (identifier) @reference.identifier
   (#set! reference_type read))
+
+(parenthesized_expression
+  (identifier) @reference.identifier
+  (#set! reference_type read))
+
+(unary_expression
+  (identifier) @reference.identifier
+  (#set! reference_type read))
+
+(ternary_expression
+  condition: (identifier) @reference.identifier
+  (#set! reference_type read))
