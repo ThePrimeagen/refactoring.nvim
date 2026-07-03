@@ -742,6 +742,7 @@ extract_func_code_generation.function_call.typescript = extract_func_code_genera
 extract_func_code_generation.return_statement.typescript = extract_func_code_generation.return_statement.javascript
 extract_func_code_generation.function_call.tsx = extract_func_code_generation.function_call.javascript
 extract_func_code_generation.return_statement.tsx = extract_func_code_generation.return_statement.javascript
+extract_func_code_generation.function_declaration.tsx = extract_func_code_generation.function_declaration.typescript
 
 ---@type refactor.inline_func.CodeGeneration
 local inline_func_code_generation = {
