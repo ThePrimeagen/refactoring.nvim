@@ -1,4 +1,4 @@
-[
+([
   (break_statement)
   (continue_statement)
   (debugger_statement)
@@ -14,6 +14,7 @@
   (try_statement)
   (with_statement)
 ] @output_statement
+  (#not-has-parent? @output_statement export_statement))
 
 (arrow_function
   body: (statement_block
@@ -46,17 +47,19 @@
     .
     (_) @output_statement.inside)) @output_statement
 
-(function_declaration
+((function_declaration
   body: (statement_block
     .
     (_) @output_statement.inside)) @output_statement
+  (#not-has-parent? @output_statement export_statement))
 
-(class_declaration
+((class_declaration
   (class_body
     (method_definition
       body: (statement_block
         .
         (_) @output_statement.inside) @output_statement)))
+  (#not-has-parent? @output_statement export_statement))
 
 (function_expression
   body: (statement_block
@@ -122,6 +125,7 @@
       (with_statement)
     ])) @output_statement
 
-(class_declaration
+((class_declaration
   body: (class_body
     (_) @output_statement.inside)) @output_statement
+  (#not-has-parent? @output_statement export_statement))
