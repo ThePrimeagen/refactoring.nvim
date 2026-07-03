@@ -526,7 +526,17 @@ local function extract_func(opts)
         end
 
         local node_range = range(in_buf, r.identifier:range())
-        return node_range <= selected_range and is_in_scope
+        return node_range < selected_range and is_in_scope
+      end
+    )
+    :map(reference_to_text)
+    :totable()
+  local declarations_after_selected_range = iter(declarations)
+    :filter(
+      ---@param r refactor.Reference
+      function(r)
+        local node_range = range(in_buf, r.identifier:range())
+        return node_range >= selected_range
       end
     )
     :map(reference_to_text)
@@ -581,7 +591,11 @@ local function extract_func(opts)
     :filter(
       ---@param v refactor.Variable
       function(v)
+        -- TODO: I should actually check if the declaration if before and has
+        -- the same scope as the write_declaration before taking it into
+        -- account
         return vim.list_contains(write_identifiers_inside_selected_range, v.identifier)
+          and not vim.list_contains(declarations_after_selected_range, v.identifier)
       end
     )
     :totable()
