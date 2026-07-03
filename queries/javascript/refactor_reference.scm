@@ -23,3 +23,7 @@
   (property_identifier) @reference.identifier
   (#set! declaration)
   (#set! reference_type write))
+
+(jsx_expression
+  (identifier) @reference.identifier
+  (#set! reference_type read))
