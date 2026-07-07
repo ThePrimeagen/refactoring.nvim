@@ -8,6 +8,14 @@ local ts = vim.treesitter
 local iter = vim.iter
 local api = vim.api
 
+---@param buf integer
+---@param scope refactor.Scope
+local function get_scope_inside_range(buf, scope)
+  local start_row, start_col = scope.inside[1]:start()
+  local end_row, end_col = scope.inside[#scope.inside]:end_()
+  return range(buf, start_row, start_col, end_row, end_col)
+end
+
 ---@param node TSNode
 ---@param buf integer
 ---@param acc string[]|nil
@@ -47,8 +55,8 @@ end
 ---@field variable? {[string]: nil|fun(opts: refactor.extract_var.code_generation.variable.Opts): string}
 
 ---@class refactor.Scope
----@field scope TSNode[]
----@field inside TSNode
+---@field scope TSNode[] possibly disjointed regions where variables in the scope are available
+---@field inside TSNode[] list of adjacent region definying a single inside of a "body" for the scope
 
 ---@param range_type 'v' | 'V' | ''
 ---@param config refactor.Config
@@ -185,7 +193,7 @@ function M.extract_var(range_type, config)
     end
     local smallest_common_scope = smallest_common_scope_with_node.si
 
-    local smallest_common_inside_scope_range = range(buf, smallest_common_scope.inside:range())
+    local smallest_common_inside_scope_range = get_scope_inside_range(buf, smallest_common_scope)
 
     ---@type vim.Range[]
     local nested_scope_ranges = iter(scopes)
@@ -194,15 +202,14 @@ function M.extract_var(range_type, config)
         function(si)
           if si == smallest_common_scope then return false end
 
-          local si_range = range(buf, si.inside:range())
-
+          local si_range = get_scope_inside_range(buf, si)
           return smallest_common_inside_scope_range:has(si_range)
         end
       )
       :map(
         ---@param si refactor.Scope
         function(si)
-          return range(buf, si.inside:range())
+          return get_scope_inside_range(buf, si)
         end
       )
       :totable()
