@@ -433,7 +433,7 @@ function M.get_scopes(buf, nested_lang_tree, query)
           scope.scope = nodes
         elseif name == "scope.inside" then
           scope = scope or {}
-          scope.inside = nodes[1]
+          scope.inside = nodes
         end
       end
       if scope then table.insert(scopes, scope) end

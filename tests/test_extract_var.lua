@@ -133,6 +133,13 @@ T["javascript"]["works"] = function()
   validate(lines, { 2, 0 }, expected_lines, " avi)", "foo<cr>")
 end
 
+T["javascript"]["scope.inside with multiple nodes"] = function()
+  local lines = read_file "./tests/files/extract_var_scope.inside_with_multiple_nodes_before.js"
+  local expected_lines = read_file "./tests/files/extract_var_scope.inside_with_multiple_nodes_after.js"
+  child.cmd "edit tmp.js"
+  validate(lines, { 4, 6 }, expected_lines, "vf|2h", " av", "foo<cr>")
+end
+
 T["c"] = MiniTest.new_set {
   hooks = {
     pre_case = function()

@@ -4,20 +4,17 @@
   declarator: (function_declarator
     parameters: (parameter_list) @scope)
   body: (compound_statement
-    .
-    (_) @scope.inside) @scope)
+    (_)* @scope.inside) @scope)
 
 (translation_unit) @scope @scope.inside
 
 (while_statement
   body: (compound_statement
-    .
-    (_) @scope.inside)) @scope
+    (_)* @scope.inside)) @scope
 
 (for_statement
   body: (compound_statement
-    .
-    (_) @scope.inside)) @scope
+    (_)* @scope.inside)) @scope
 
 (if_statement
   consequence: (_) @scope @scope.inside)
