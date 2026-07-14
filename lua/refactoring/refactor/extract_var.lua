@@ -56,7 +56,7 @@ end
 
 ---@class refactor.Scope
 ---@field scope TSNode[] possibly disjointed regions where variables in the scope are available
----@field inside TSNode[] list of adjacent region definying a single inside of a "body" for the scope
+---@field inside? TSNode[] list of adjacent region definying a single inside of a "body" for the scope
 
 ---@param range_type 'v' | 'V' | ''
 ---@param config refactor.Config
@@ -201,6 +201,7 @@ function M.extract_var(range_type, config)
         ---@param si refactor.Scope
         function(si)
           if si == smallest_common_scope then return false end
+          if not si.inside then return false end
 
           local si_range = get_scope_inside_range(buf, si)
           return smallest_common_inside_scope_range:has(si_range)
