@@ -14,7 +14,7 @@
   (try_statement)
   (with_statement)
 ] @output_statement
-  (#not-has-parent? @output_statement export_statement))
+  (#not-has-parent? @output_statement export_statement if_statement))
 
 (arrow_function
   body: (statement_block
