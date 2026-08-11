@@ -27,8 +27,13 @@
   right: (arrow_function)
   (#set! text @_name)) @debug_path_segment
 
+; const something = { a: () => {} }
+(pair
+  key: (_) @_name
+  value: (arrow_function)
+  (#set! text @_name)) @debug_path_segment
+
 ; [1, 2 , 3].reduce((a, b) => a + b)
 (arrow_function
-  (#not-has-parent? @debug_path_segment assignment_expression)
-  (#not-has-parent? @debug_path_segment variable_declarator)
+  (#not-has-parent? @debug_path_segment assignment_expression variable_declarator pair)
   (#set! text "(anon)")) @debug_path_segment
