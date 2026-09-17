@@ -26,6 +26,7 @@ local M = {}
 ---@field cleanup? refactor.debug.cleanup.UserOpts
 ---@field print_var? refactor.debug.print_var.UserOpts
 ---@field print_loc? refactor.debug.print_loc.UserOpts
+---@field print_exp? refactor.debug.print_exp.UserOpts
 
 ---@class refactor.Config
 ---@field show_success_message boolean
