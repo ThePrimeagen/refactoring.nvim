@@ -60,13 +60,14 @@ https://github.com/user-attachments/assets/70b15d18-197a-4135-abe0-1fb4a6c06319
 
 ## Installation
 
-`refactoring.nvim` requires Neovim `0.12`.
+`refactoring.nvim` requires Neovim `0.12.5`.
 
 <details>
 <summary>With <code>vim.pack</code></summary>
 
 ```lua
 vim.pack.add {
+  -- `async.nvim` is only required for Neovim 0.12. If you are using Neovim 0.13, you don't need it
   "https://github.com/lewis6991/async.nvim",
   "https://github.com/theprimeagen/refactoring.nvim"
 }
@@ -82,6 +83,7 @@ vim.pack.add {
 ```lua
 {
   "ThePrimeagen/refactoring.nvim",
+  -- `async.nvim` is only required for Neovim 0.12. If you are using Neovim 0.13, you don't need it
   dependencies = {
     "lewis6991/async.nvim",
   },
