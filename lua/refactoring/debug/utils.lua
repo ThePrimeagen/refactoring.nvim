@@ -1,4 +1,4 @@
-local range = require "refactoring.range"
+local range = vim.range
 local iter = vim.iter
 local api = vim.api
 
