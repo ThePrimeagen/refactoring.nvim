@@ -42,7 +42,7 @@
 ---     - Tree-sitter parser and queries (`refactor_comment`)
 ---@tag refactoring
 
-local async = require "async"
+local async = vim.async or require "async"
 local api = vim.api
 
 local M = {}

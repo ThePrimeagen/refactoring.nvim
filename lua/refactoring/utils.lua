@@ -1,7 +1,7 @@
 local api = vim.api
-local async = require "async"
-local range = require "refactoring.range"
-local pos = require "refactoring.pos"
+local async = vim.async or require "async"
+local range = vim.range
+local pos = vim.pos
 local lsp = vim.lsp
 local iter = vim.iter
 local ts = vim.treesitter
