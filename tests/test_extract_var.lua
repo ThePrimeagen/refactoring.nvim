@@ -126,6 +126,26 @@ vim.api.nvim_create_autocmd('Filetype', {
   },
 }
 
+T["lua"]["works for extracting a function into a variable"] = function()
+  local lines = read_file "./tests/files/works_for_extracting_a_function_into_a_variable_before.lua"
+  local expected_lines = read_file "./tests/files/works_for_extracting_a_function_into_a_variable_after.lua"
+  child.cmd "edit tmp.lua"
+  validate(lines, { 2, 8 }, expected_lines, "vjj av", "foo<cr>")
+end
+
+T["javascript"] = MiniTest.new_set {
+  hooks = {
+    pre_case = function()
+      child.lua [[
+vim.api.nvim_create_autocmd('Filetype', {
+  pattern = 'javascript',
+  command = 'setlocal expandtab shiftwidth=2'
+})
+]]
+    end,
+  },
+}
+
 T["javascript"]["works"] = function()
   local lines = read_file "./tests/files/extract_var_works_before.js"
   local expected_lines = read_file "./tests/files/extract_var_works_after.js"

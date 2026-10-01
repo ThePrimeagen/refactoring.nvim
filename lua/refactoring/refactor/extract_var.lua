@@ -158,7 +158,14 @@ function M.extract_var(range_type, config)
                 ---@param n TSNode
                 function(n)
                   local node_range = range(buf, n:range())
-                  return scope_range:has(node_range)
+                  -- NOTE: when extracting a function into a variable, this allows ignoring itself as `smallest_common_scope_with_node`
+                  local is_same_range = not (
+                    scope_range.start_row == node_range.start_row
+                    and scope_range.start_col == node_range.start_col
+                    and scope_range.end_row == node_range.end_row
+                    and scope_range.end_col == node_range.end_col
+                  )
+                  return scope_range:has(node_range) and is_same_range
                 end
               )
             end
@@ -242,6 +249,14 @@ function M.extract_var(range_type, config)
               return os_start_pos <= node_start_pos
             end
           )
+          _G.aux = _G.aux or {}
+          table.insert(_G.aux, {
+            os_range,
+            not os.inside_only,
+            smallest_common_inside_scope_range:has(os_range),
+            not is_in_nested_scope,
+            is_before_matching_nodes,
+          })
           return not os.inside_only
             and smallest_common_inside_scope_range:has(os_range)
             and not is_in_nested_scope
