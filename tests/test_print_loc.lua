@@ -97,4 +97,24 @@ T["lua"]["works midline statement"] = function()
   validate(lines, { 2, 41 }, expected_lines, " pp", " pP")
 end
 
+T["kotlin"] = MiniTest.new_set {
+  hooks = {
+    pre_case = function()
+      child.lua [[
+vim.api.nvim_create_autocmd('Filetype', {
+  pattern = 'kotlin',
+  command = 'setlocal expandtab shiftwidth=4'
+})
+]]
+    end,
+  },
+}
+
+T["kotlin"]["works"] = function()
+  local lines = read_file "./tests/files/print_loc_works_before.kt"
+  local expected_lines = read_file "./tests/files/print_loc_works_after.kt"
+  child.cmd "edit tmp.kt"
+  validate(lines, { 5, 12 }, expected_lines, " pp")
+end
+
 return T

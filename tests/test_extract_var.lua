@@ -240,6 +240,26 @@ T["java"]["works"] = function()
   validate(lines, { 7, 0 }, expected_lines, " avi)", "foo<cr>")
 end
 
+T["kotlin"] = MiniTest.new_set {
+  hooks = {
+    pre_case = function()
+      child.lua [[
+vim.api.nvim_create_autocmd('Filetype', {
+  pattern = 'kotlin',
+  command = 'setlocal expandtab shiftwidth=4'
+})
+]]
+    end,
+  },
+}
+
+T["kotlin"]["works"] = function()
+  local lines = read_file "./tests/files/extract_var_works_before.kt"
+  local expected_lines = read_file "./tests/files/extract_var_works_after.kt"
+  child.cmd "edit tmp.kt"
+  validate(lines, { 5, 0 }, expected_lines, " avi)", "foo<cr>")
+end
+
 T["php"] = MiniTest.new_set {
   hooks = {
     pre_case = function()

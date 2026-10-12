@@ -76,4 +76,24 @@ T["lua"]["works"] = function()
   validate(lines, { 5, 5 }, expected_lines, " pEiW")
 end
 
+T["kotlin"] = MiniTest.new_set {
+  hooks = {
+    pre_case = function()
+      child.lua [[
+vim.api.nvim_create_autocmd('Filetype', {
+  pattern = 'kotlin',
+  command = 'setlocal expandtab shiftwidth=4'
+})
+]]
+    end,
+  },
+}
+
+T["kotlin"]["works"] = function()
+  local lines = read_file "./tests/files/print_exp_works_before.kt"
+  local expected_lines = read_file "./tests/files/print_exp_works_after.kt"
+  child.cmd "edit tmp.kt"
+  validate(lines, { 2, 32 }, expected_lines, " pei(", 'F";', " pe$")
+end
+
 return T

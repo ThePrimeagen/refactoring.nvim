@@ -59,6 +59,9 @@ local extract_var_code_generation = {
     java = function(opts)
       return ("var %s = %s;"):format(opts.name, opts.value)
     end,
+    kotlin = function(opts)
+      return ("val %s = %s"):format(opts.name, opts.value)
+    end,
     php = function(opts)
       return ("$%s = %s;"):format(opts.name, opts.value)
     end,
@@ -281,6 +284,21 @@ func%s %s(%s)%s {
 private %s %s(%s) {
 %s
 }]]):format(return_type, opts.name, args, opts.body)
+    end,
+    kotlin = function(opts)
+      local return_type = #opts.return_values == 0 and "" or (": %s"):format(opts.return_values[1].type or "P")
+      local args = iter(opts.args)
+        :map(
+          ---@param v refactor.Variable
+          function(v)
+            return ("%s: %s"):format(v.identifier, v.type or "P")
+          end
+        )
+        :join ", "
+      return ([[
+private fun %s(%s)%s {
+%s
+}]]):format(opts.name, args, return_type, opts.body)
     end,
     php = function(opts)
       local args = iter(opts.args)
@@ -517,6 +535,27 @@ endfunction]]):format(opts.name, args, opts.body)
 
       return ("var %s = %s(%s);"):format(opts.return_values[1].identifier, opts.name, args)
     end,
+    kotlin = function(opts)
+      local args = iter(opts.args)
+        :map(
+          ---@param v refactor.Variable
+          function(v)
+            return v.identifier
+          end
+        )
+        :join ", "
+      if #opts.return_values == 0 then return ("%s(%s)"):format(opts.name, args) end
+
+      if #opts.return_values > 1 then
+        vim.notify(
+          "The extracted function requires multiple return values; only the first one is returned",
+          vim.log.levels.WARN,
+          { title = "refactoring.nvim" }
+        )
+      end
+
+      return ("val %s = %s(%s)"):format(opts.return_values[1].identifier, opts.name, args)
+    end,
     php = function(opts)
       local args = iter(opts.args)
         :map(
@@ -673,6 +712,9 @@ endfunction]]):format(opts.name, args, opts.body)
     end,
     java = function(opts)
       return ("\n\nreturn %s;"):format(opts.return_values[1].identifier)
+    end,
+    kotlin = function(opts)
+      return ("\n\nreturn %s"):format(opts.return_values[1].identifier)
     end,
     php = function(opts)
       if #opts.return_values == 1 then return ("\n\nreturn %s;"):format(opts.return_values[1].identifier) end
@@ -841,6 +883,14 @@ local print_var_code_generation = {
         opts.identifier
       )
     end,
+    kotlin = function(opts)
+      return ('println($$"""%s %s %s: $${%s}""")'):format(
+        opts.debug_path,
+        opts.identifier_str,
+        opts.count,
+        opts.identifier
+      )
+    end,
   },
 }
 print_var_code_generation.print_var.typescript = print_var_code_generation.print_var.javascript
@@ -878,6 +928,9 @@ local print_loc_code_generation = {
     end,
     php = function(opts)
       return ([[printf('%s %s ');]]):format(opts.debug_path, opts.count)
+    end,
+    kotlin = function(opts)
+      return ('println($$"""%s %s""")'):format(opts.debug_path, opts.count)
     end,
   },
 }
@@ -958,6 +1011,14 @@ local print_exp_code_generation = {
         opts.expression
       )
     end,
+    kotlin = function(opts)
+      return ('println($$"""%s %s %s: $${%s}""")'):format(
+        opts.debug_path,
+        opts.expression_str,
+        opts.count,
+        opts.expression
+      )
+    end,
   },
 }
 print_exp_code_generation.print_exp.typescript = print_exp_code_generation.print_exp.javascript
@@ -988,6 +1049,9 @@ local inline_var_code_generation = {
       return ("(%s)"):format(opts.expression)
     end,
     c_sharp = function(opts)
+      return ("(%s)"):format(opts.expression)
+    end,
+    kotlin = function(opts)
       return ("(%s)"):format(opts.expression)
     end,
   },
