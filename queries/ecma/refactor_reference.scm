@@ -145,3 +145,12 @@
 (ternary_expression
   condition: (identifier) @reference.identifier
   (#set! reference_type read))
+
+(subscript_expression
+  object: (identifier) @reference.identifier
+  (#set! reference_type read))
+
+(subscript_expression
+  object: (member_expression) @reference.identifier
+  (#set! reference_type read)
+  (#set! field))
