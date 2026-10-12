@@ -219,6 +219,7 @@ The `:Refactor` command can be used to run any refactor. It supports previewing 
 - Go
 - Java
 - JavaScript/Typescript/Jsx/Tsx
+- Kotlin
 - Lua
 - Php
 - Powershell

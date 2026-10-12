@@ -3,3 +3,4 @@
 .nvim.lua
 deps/
 doc/tags
+.gradle/

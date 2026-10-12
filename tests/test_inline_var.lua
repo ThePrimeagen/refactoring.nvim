@@ -33,13 +33,6 @@ local set_cursor = function(row, col)
   child.api.nvim_win_set_cursor(0, { row, col })
 end
 
----@param ms integer
-local sleep = function(ms)
-  vim.uv.sleep(ms)
-  -- Poke child's event loop to make it up to date
-  child.api.nvim_eval "1"
-end
-
 ---@param lines string
 ---@param cursor {[1]: integer, [2]: integer}
 ---@param expected_lines string
@@ -47,8 +40,17 @@ local function validate(lines, cursor, expected_lines)
   set_lines(lines)
   set_cursor(cursor[1], cursor[2])
   child.lua [[vim.wait(1000, function() return #vim.lsp.get_clients({ bufnr = 0 }) == 1  end)]]
+  child.lua [[vim.wait(1000, function()
+    local _, err = vim.lsp.buf_request_sync(0, "textDocument/references", function(client)
+      local params = vim.lsp.util.make_position_params(0, client.offset_encoding)
+      params.context = { includeDeclaration = false }
+      return params
+    end)
+    return err == nil
+  end)]]
+  child.lua [[vim.b.prev_changedtick = vim.b.changedtick]]
   child.type_keys " ai"
-  sleep(1500)
+  child.lua [[vim.wait(10 * 1000, function() return vim.b.changedtick ~= vim.b.prev_changedtick end)]]
   eq(get_lines(), vim.split(expected_lines, "\n"))
 end
 
@@ -151,6 +153,28 @@ T["python"]["comparison operator"] = function()
 
   child.cmd "edit tmp.py"
   validate(lines, { 2, 4 }, expected_lines)
+end
+
+T["kotlin"] = MiniTest.new_set {
+  hooks = {
+    pre_case = function()
+      child.lua [[
+vim.api.nvim_create_autocmd('Filetype', {
+  pattern = 'kotlin',
+  command = 'setlocal expandtab shiftwidth=4'
+})
+]]
+    end,
+  },
+}
+
+T["kotlin"]["comparison operator"] = function()
+  if vim.env.CI ~= nil then MiniTest.skip "Kotlin LSP is too heavy to be executed in CI timely" end
+  local lines = read_file "./tests/files/inline_var_comparison_operator_before.kt"
+  local expected_lines = read_file "./tests/files/inline_var_comparison_operator_after.kt"
+
+  child.cmd "edit tests/files/kotlin_project/tmp.kt"
+  validate(lines, { 2, 8 }, expected_lines)
 end
 
 return T

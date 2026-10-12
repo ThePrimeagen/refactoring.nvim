@@ -57,7 +57,20 @@ vim.lsp.config("pyright", {
     ".git",
   },
 })
-vim.lsp.enable { "lua_ls", "clangd", "pyright" }
+vim.lsp.config("kotlin_lsp", {
+  filetypes = { "kotlin" },
+  cmd = { "intellij-server", "--stdio" },
+  root_markers = {
+    "settings.gradle",
+    "settings.gradle.kts",
+    "pom.xml",
+    "build.gradle",
+    "build.gradle.kts",
+    "workspace.json",
+  },
+  workspace_required = true,
+})
+vim.lsp.enable { "lua_ls", "clangd", "pyright", "kotlin_lsp" }
 
 vim.g.mapleader = " "
 vim.keymap.set("n", "<leader>ai", function()

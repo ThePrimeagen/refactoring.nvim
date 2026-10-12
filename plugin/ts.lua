@@ -160,6 +160,7 @@ local get_type = {
 get_type.c_sharp = get_type.c
 get_type.go = get_type.c
 get_type.java = get_type.c
+get_type.kotlin = get_type.c
 get_type.php = get_type.c
 get_type.python = get_type.c
 
