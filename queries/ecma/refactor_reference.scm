@@ -154,3 +154,17 @@
   object: (member_expression) @reference.identifier
   (#set! reference_type read)
   (#set! field))
+
+(subscript_expression
+  index: (identifier) @reference.identifier
+  (#set! reference_type read))
+
+(subscript_expression
+  index: (member_expression) @reference.identifier
+  (#set! reference_type read)
+  (#set! field))
+
+(for_in_statement
+  left: (identifier) @reference.identifier
+  (#set! declaration)
+  (#set! reference_type write))
