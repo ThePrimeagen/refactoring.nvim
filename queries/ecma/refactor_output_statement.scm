@@ -19,38 +19,38 @@
 (arrow_function
   body: (statement_block
     .
-    (_) @output_statement.inside)
+    (_)? @output_statement.inside)
   (#set! inside_only)) @output_statement
 
 (do_statement
   body: (statement_block
     .
-    (_) @output_statement.inside)) @output_statement
+    (_)? @output_statement.inside)) @output_statement
 
 (while_statement
   body: (statement_block
     .
-    (_) @output_statement.inside)) @output_statement
+    (_)? @output_statement.inside)) @output_statement
 
 (catch_clause
   body: (statement_block
     .
-    (_) @output_statement.inside)) @output_statement
+    (_)? @output_statement.inside)) @output_statement
 
 (for_in_statement
   body: (statement_block
     .
-    (_) @output_statement.inside)) @output_statement
+    (_)? @output_statement.inside)) @output_statement
 
 (for_statement
   body: (statement_block
     .
-    (_) @output_statement.inside)) @output_statement
+    (_)? @output_statement.inside)) @output_statement
 
 ((function_declaration
   body: (statement_block
     .
-    (_) @output_statement.inside)) @output_statement
+    (_)? @output_statement.inside)) @output_statement
   (#not-has-parent? @output_statement export_statement))
 
 ((class_declaration
@@ -58,24 +58,24 @@
     (method_definition
       body: (statement_block
         .
-        (_) @output_statement.inside) @output_statement)))
+        (_)? @output_statement.inside) @output_statement)))
   (#not-has-parent? @output_statement export_statement))
 
 (function_expression
   body: (statement_block
     .
-    (_) @output_statement.inside)) @output_statement
+    (_)? @output_statement.inside)) @output_statement
 
 (if_statement
   consequence: (statement_block
     .
-    (_) @output_statement.inside)) @output_statement
+    (_)? @output_statement.inside)) @output_statement
 
 (if_statement
   alternative: (else_clause
     (statement_block
       .
-      (_) @output_statement.inside)) @output_statement)
+      (_)? @output_statement.inside)) @output_statement)
 
 ; any statement except `statement_block`
 (if_statement
@@ -127,5 +127,5 @@
 
 ((class_declaration
   body: (class_body
-    (_) @output_statement.inside)) @output_statement
+    (_)? @output_statement.inside)) @output_statement
   (#not-has-parent? @output_statement export_statement))
