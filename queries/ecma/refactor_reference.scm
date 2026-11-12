@@ -168,3 +168,7 @@
   left: (identifier) @reference.identifier
   (#set! declaration)
   (#set! reference_type write))
+
+(for_in_statement
+  right: (identifier) @reference.identifier
+  (#set! reference_type read))
