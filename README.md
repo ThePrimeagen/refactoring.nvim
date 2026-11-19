@@ -225,6 +225,7 @@ The `:Refactor` command can be used to run any refactor. It supports previewing 
 - Powershell
 - Python
 - Ruby
+- Rust
 - Vimscript
 
 ## Adding/improving support for a language

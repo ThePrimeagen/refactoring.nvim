@@ -177,4 +177,40 @@ T["kotlin"]["comparison operator"] = function()
   validate(lines, { 2, 8 }, expected_lines)
 end
 
+T["rust"] = MiniTest.new_set {
+  hooks = {
+    pre_case = function()
+      child.lua [[
+vim.api.nvim_create_autocmd('Filetype', {
+  pattern = 'rust',
+  command = 'setlocal expandtab shiftwidth=4'
+})
+]]
+    end,
+  },
+}
+
+T["rust"]["comparison operator"] = function()
+  local lines = read_file "./tests/files/inline_var_comparison_operator_before.rs"
+  local expected_lines = read_file "./tests/files/inline_var_comparison_operator_after.rs"
+
+  child.cmd "edit tests/files/rust_project/src/main.rs"
+  -- NOTE: rust-analyzer answers with empty results while it's indexing the
+  -- project, so wait until it actually finds references
+  set_lines(lines)
+  set_cursor(2, 8)
+  child.lua [[vim.wait(30 * 1000, function()
+    local results = vim.lsp.buf_request_sync(0, "textDocument/references", function(client)
+      local params = vim.lsp.util.make_position_params(0, client.offset_encoding)
+      params.context = { includeDeclaration = false }
+      return params
+    end)
+    for _, r in pairs(results or {}) do
+      if r.result and #r.result > 0 then return true end
+    end
+    return false
+  end, 200)]]
+  validate(lines, { 2, 8 }, expected_lines)
+end
+
 return T

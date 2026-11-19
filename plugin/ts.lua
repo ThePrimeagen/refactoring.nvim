@@ -102,6 +102,27 @@ local infer_type = {
     end
     return type
   end,
+  rust = function(opts)
+    local type ---@type string|vim.NIL
+    local node_type = opts.value:type()
+    if node_type == "integer_literal" or node_type == "float_literal" then
+      -- `1u8`, `2.0f32`
+      local suffix = ts.get_node_text(opts.value, opts.source):match "([iuf]%d+)$"
+        or ts.get_node_text(opts.value, opts.source):match "([iu]size)$"
+      type = suffix or (node_type == "integer_literal" and "i32" or "f64")
+    elseif node_type == "string_literal" or node_type == "raw_string_literal" then
+      type = "&str"
+    elseif node_type == "char_literal" then
+      type = "char"
+    elseif node_type == "boolean_literal" then
+      type = "bool"
+    elseif node_type == "identifier" then
+      type = { identifier = ts.get_node_text(opts.value, opts.source) }
+    else
+      type = vim.NIL
+    end
+    return type
+  end,
 }
 infer_type.typescript = infer_type.javascript
 
@@ -152,6 +173,21 @@ local get_type = {
         ---@param t TSNode
         function(t)
           return ts.get_node_text(t, opts.source)
+        end
+      )
+      :totable()
+  end,
+  rust = function(opts)
+    if not opts.types then return end
+    return iter(opts.types)
+      :map(
+        ---@param t TSNode
+        function(t)
+          local text = ts.get_node_text(t, opts.source)
+          if t:type() ~= "self_parameter" then return text end
+          -- `&self` -> `&Self`, `&'a mut self` -> `&'a mut Self`, `mut self` -> `Self`
+          text = text:gsub("^mut%s+", "")
+          return (text:gsub("self$", "Self"))
         end
       )
       :totable()

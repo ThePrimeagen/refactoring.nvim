@@ -71,6 +71,9 @@ local extract_var_code_generation = {
     ruby = function(opts)
       return ("%s = %s"):format(opts.name, opts.value)
     end,
+    rust = function(opts)
+      return ("let %s = %s;"):format(opts.name, opts.value)
+    end,
     vim = function(opts)
       return ("let l:%s = %s"):format(opts.name, opts.value)
     end,
@@ -351,6 +354,60 @@ param (%s)
 %s
 }]]):format(opts.name, args, opts.body)
     end,
+    rust = function(opts)
+      local return_identifiers = iter(opts.return_values)
+        :map(
+          ---@param v refactor.Variable
+          function(v)
+            return v.identifier
+          end
+        )
+        :totable()
+      -- `self` must always be the first parameter
+      local sorted_args = vim.list_extend(
+        iter(opts.args)
+          :filter(
+            ---@param v refactor.Variable
+            function(v)
+              return v.identifier == "self"
+            end
+          )
+          :totable(),
+        iter(opts.args)
+          :filter(
+            ---@param v refactor.Variable
+            function(v)
+              return v.identifier ~= "self"
+            end
+          )
+          :totable()
+      )
+      local args = iter(sorted_args)
+        :map(
+          ---@param v refactor.Variable
+          function(v)
+            -- arguments that are modified inside of the function need to be mutable
+            local mut = (v.identifier ~= "self" and vim.list_contains(return_identifiers, v.identifier)) and "mut "
+              or ""
+            return ("%s%s: %s"):format(mut, v.identifier, v.type or "P")
+          end
+        )
+        :join ", "
+      local return_type = #opts.return_values == 0 and ""
+        or #opts.return_values == 1 and (" -> %s"):format(opts.return_values[1].type or "P")
+        or (" -> (%s)"):format(iter(opts.return_values)
+          :map(
+            ---@param v refactor.Variable
+            function(v)
+              return v.type or "P"
+            end
+          )
+          :join ", ")
+      return ([[
+fn %s(%s)%s {
+%s
+}]]):format(opts.name, args, return_type, opts.body)
+    end,
     python = function(opts)
       local args = iter(opts.args)
         :map(
@@ -595,6 +652,50 @@ endfunction]]):format(opts.name, args, opts.body)
 
       return ("$out = %s %s"):format(opts.name, args)
     end,
+    rust = function(opts)
+      ---@type refactor.Variable[]
+      local sorted_args = vim.list_extend(
+        iter(opts.args)
+          :filter(
+            ---@param v refactor.Variable
+            function(v)
+              return v.identifier == "self"
+            end
+          )
+          :totable(),
+        iter(opts.args)
+          :filter(
+            ---@param v refactor.Variable
+            function(v)
+              return v.identifier ~= "self"
+            end
+          )
+          :totable()
+      )
+      local args = iter(sorted_args)
+        :map(
+          ---@param v refactor.Variable
+          function(v)
+            return v.identifier
+          end
+        )
+        :join ", "
+      local name = opts.method and ("Self::%s"):format(opts.name) or opts.name
+      if #opts.return_values == 0 then return ("%s(%s);"):format(name, args) end
+      if #opts.return_values == 1 then
+        return ("let %s = %s(%s);"):format(opts.return_values[1].identifier, name, args)
+      end
+
+      local return_values = iter(opts.return_values)
+        :map(
+          ---@param v refactor.Variable
+          function(v)
+            return v.identifier
+          end
+        )
+        :join ", "
+      return ("let (%s) = %s(%s);"):format(return_values, name, args)
+    end,
     python = function(opts)
       local args = iter(opts.args)
         :map(
@@ -753,6 +854,19 @@ endfunction]]):format(opts.name, args, opts.body)
         :join ", "
       return ("\n\nreturn %s"):format(return_values)
     end,
+    rust = function(opts)
+      if #opts.return_values == 1 then return ("\n\n%s"):format(opts.return_values[1].identifier) end
+
+      local return_values = iter(opts.return_values)
+        :map(
+          ---@param v refactor.Variable
+          function(v)
+            return v.identifier
+          end
+        )
+        :join ", "
+      return ("\n\n(%s)"):format(return_values)
+    end,
     ruby = function(opts)
       local return_values = iter(opts.return_values)
         :map(
@@ -809,6 +923,13 @@ local inline_func_code_generation = {
     end,
   },
 }
+
+--- Escapes text to be used inside of a Rust format string literal
+---@param text string
+---@return string
+local function rust_escape(text)
+  return (text:gsub("\\", "\\\\"):gsub('"', '\\"'):gsub("{", "{{"):gsub("}", "}}"))
+end
 
 ---@type refactor.print_var.CodeGeneration
 local print_var_code_generation = {
@@ -891,6 +1012,14 @@ local print_var_code_generation = {
         opts.identifier
       )
     end,
+    rust = function(opts)
+      return ([[println!("%s %s %s: {:?}", %s);]]):format(
+        rust_escape(opts.debug_path),
+        rust_escape(opts.identifier_str),
+        opts.count,
+        opts.identifier
+      )
+    end,
   },
 }
 print_var_code_generation.print_var.typescript = print_var_code_generation.print_var.javascript
@@ -931,6 +1060,9 @@ local print_loc_code_generation = {
     end,
     kotlin = function(opts)
       return ('println($$"""%s %s""")'):format(opts.debug_path, opts.count)
+    end,
+    rust = function(opts)
+      return ([[println!("%s %s");]]):format(rust_escape(opts.debug_path), opts.count)
     end,
   },
 }
@@ -1019,6 +1151,14 @@ local print_exp_code_generation = {
         opts.expression
       )
     end,
+    rust = function(opts)
+      return ([[println!("%s %s %s: {:?}", %s);]]):format(
+        rust_escape(opts.debug_path),
+        rust_escape(opts.expression_str),
+        opts.count,
+        opts.expression
+      )
+    end,
   },
 }
 print_exp_code_generation.print_exp.typescript = print_exp_code_generation.print_exp.javascript
@@ -1052,6 +1192,9 @@ local inline_var_code_generation = {
       return ("(%s)"):format(opts.expression)
     end,
     kotlin = function(opts)
+      return ("(%s)"):format(opts.expression)
+    end,
+    rust = function(opts)
       return ("(%s)"):format(opts.expression)
     end,
   },
