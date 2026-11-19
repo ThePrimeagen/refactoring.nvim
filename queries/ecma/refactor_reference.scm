@@ -172,3 +172,7 @@
 (for_in_statement
   right: (identifier) @reference.identifier
   (#set! reference_type read))
+
+(await_expression
+  (identifier) @reference.identifier
+  (#set! reference_type read))
