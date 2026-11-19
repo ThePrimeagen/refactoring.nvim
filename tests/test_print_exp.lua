@@ -96,4 +96,24 @@ T["kotlin"]["works"] = function()
   validate(lines, { 2, 32 }, expected_lines, " pei(", 'F";', " pe$")
 end
 
+T["rust"] = MiniTest.new_set {
+  hooks = {
+    pre_case = function()
+      child.lua [[
+vim.api.nvim_create_autocmd('Filetype', {
+  pattern = 'rust',
+  command = 'setlocal expandtab shiftwidth=4'
+})
+]]
+    end,
+  },
+}
+
+T["rust"]["works"] = function()
+  local lines = read_file "./tests/files/print_exp_works_before.rs"
+  local expected_lines = read_file "./tests/files/print_exp_works_after.rs"
+  child.cmd "edit tmp.rs"
+  validate(lines, { 2, 18 }, expected_lines, " pei(", "Gk^", " pE$")
+end
+
 return T
