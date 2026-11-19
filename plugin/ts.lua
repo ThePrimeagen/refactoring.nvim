@@ -102,6 +102,55 @@ local infer_type = {
     end
     return type
   end,
+  rust = function(opts)
+    local type ---@type string|vim.NIL
+    local node_type = opts.value:type()
+    local text = ts.get_node_text(opts.value, opts.source)
+    if node_type == "integer_literal" and text:match "u8$" then
+      type = "u8"
+    elseif node_type == "integer_literal" and text:match "u16$" then
+      type = "u16"
+    elseif node_type == "integer_literal" and text:match "u32$" then
+      type = "u32"
+    elseif node_type == "integer_literal" and text:match "u64$" then
+      type = "u64"
+    elseif node_type == "integer_literal" and text:match "u128$" then
+      type = "u128"
+    elseif node_type == "integer_literal" and text:match "usize$" then
+      type = "usize"
+    elseif node_type == "integer_literal" and text:match "i8$" then
+      type = "i8"
+    elseif node_type == "integer_literal" and text:match "i16$" then
+      type = "i16"
+    elseif node_type == "integer_literal" and text:match "i32$" then
+      type = "i32"
+    elseif node_type == "integer_literal" and text:match "i64$" then
+      type = "i64"
+    elseif node_type == "integer_literal" and text:match "i128$" then
+      type = "i128"
+    elseif node_type == "integer_literal" and text:match "isize$" then
+      type = "isize"
+    elseif node_type == "float_literal" and text:match "f32$" then
+      type = "f32"
+    elseif node_type == "float_literal" and text:match "f64$" then
+      type = "f64"
+    elseif node_type == "integer_literal" then
+      type = "i32"
+    elseif node_type == "float_literal" then
+      type = "f64"
+    elseif node_type == "string_literal" or node_type == "raw_string_literal" then
+      type = "&str"
+    elseif node_type == "char_literal" then
+      type = "char"
+    elseif node_type == "boolean_literal" then
+      type = "bool"
+    elseif node_type == "identifier" then
+      type = { identifier = ts.get_node_text(opts.value, opts.source) }
+    else
+      type = vim.NIL
+    end
+    return type
+  end,
 }
 infer_type.typescript = infer_type.javascript
 
@@ -152,6 +201,22 @@ local get_type = {
         ---@param t TSNode
         function(t)
           return ts.get_node_text(t, opts.source)
+        end
+      )
+      :totable()
+  end,
+  rust = function(opts)
+    if not opts.types then return end
+    return iter(opts.types)
+      :map(
+        ---@param t TSNode
+        function(t)
+          local text = ts.get_node_text(t, opts.source)
+          if t:type() ~= "self_parameter" then return text end
+          if text == "&self" then return "&Self" end
+          if text == "mut self" then return "Self" end
+          if text == "&mut self" then return "&mut Self" end
+          error(("Unexpected text %s for self_parameter for rust"):format(text))
         end
       )
       :totable()

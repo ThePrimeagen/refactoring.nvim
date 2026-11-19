@@ -39,18 +39,21 @@ end
 local function validate(lines, cursor, expected_lines)
   set_lines(lines)
   set_cursor(cursor[1], cursor[2])
-  child.lua [[vim.wait(1000, function() return #vim.lsp.get_clients({ bufnr = 0 }) == 1  end)]]
-  child.lua [[vim.wait(1000, function()
-    local _, err = vim.lsp.buf_request_sync(0, "textDocument/references", function(client)
-      local params = vim.lsp.util.make_position_params(0, client.offset_encoding)
-      params.context = { includeDeclaration = false }
-      return params
-    end)
-    return err == nil
-  end)]]
   child.lua [[vim.b.prev_changedtick = vim.b.changedtick]]
+  child.lua [[vim.wait(5 * 1000, function()
+    local client = vim.lsp.get_clients({ bufnr = 0 })[1]
+    if not client then return false end
+
+    local params = vim.lsp.util.make_position_params(0, client.offset_encoding)
+    params.context = { includeDeclaration = false }
+    local result, err = client:request_sync("textDocument/references", params)
+    if not result or err then return false end
+    if not result.result or #result.result == 0 or result.err then return false end
+
+    return true
+  end)]]
   child.type_keys " aI"
-  child.lua [[vim.wait(10 * 1000, function() return vim.b.changedtick ~= vim.b.prev_changedtick end)]]
+  child.lua [[vim.wait(1000, function() return vim.b.changedtick ~= vim.b.prev_changedtick end)]]
   eq(get_lines(), vim.split(expected_lines, "\n"))
 end
 
