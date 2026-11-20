@@ -70,7 +70,13 @@ vim.lsp.config("kotlin_lsp", {
   },
   workspace_required = true,
 })
-vim.lsp.enable { "lua_ls", "clangd", "pyright", "kotlin_lsp" }
+vim.lsp.config("rust_analyzer", {
+  cmd = { "rust-analyzer" },
+  filetypes = { "rust" },
+  root_markers = { "rust-project.json", "Cargo.toml" },
+  workspace_required = true,
+})
+vim.lsp.enable { "lua_ls", "clangd", "pyright", "kotlin_lsp", "rust_analyzer" }
 
 vim.g.mapleader = " "
 vim.keymap.set("n", "<leader>ai", function()

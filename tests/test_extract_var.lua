@@ -360,4 +360,24 @@ T["powershell"]["works"] = function()
   validate(lines, { 2, 0 }, expected_lines, "f'", " avf'", "foo<cr>")
 end
 
+T["rust"] = MiniTest.new_set {
+  hooks = {
+    pre_case = function()
+      child.lua [[
+vim.api.nvim_create_autocmd('Filetype', {
+  pattern = 'rust',
+  command = 'setlocal expandtab shiftwidth=4'
+})
+]]
+    end,
+  },
+}
+
+T["rust"]["works"] = function()
+  local lines = read_file "./tests/files/extract_var_works_before.rs"
+  local expected_lines = read_file "./tests/files/extract_var_works_after.rs"
+  child.cmd "edit tmp.rs"
+  validate(lines, { 7, 10 }, expected_lines, " avi)", "foo<cr>")
+end
+
 return T
