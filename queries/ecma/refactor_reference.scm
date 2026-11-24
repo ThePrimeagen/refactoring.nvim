@@ -176,3 +176,24 @@
 (await_expression
   (identifier) @reference.identifier
   (#set! reference_type read))
+
+(import_statement
+  (import_clause
+    (named_imports
+      (import_specifier
+        name: (_) @reference.identifier)))
+  (#set! declaration)
+  (#set! reference_type write))
+
+(import_statement
+  (import_clause
+    (namespace_import
+      (identifier) @reference.identifier))
+  (#set! declaration)
+  (#set! reference_type write))
+
+(import_statement
+  (import_clause
+    (identifier) @reference.identifier)
+  (#set! declaration)
+  (#set! reference_type write))
