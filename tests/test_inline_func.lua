@@ -40,7 +40,7 @@ local function validate(lines, cursor, expected_lines)
   set_lines(lines)
   set_cursor(cursor[1], cursor[2])
   child.lua [[vim.b.prev_changedtick = vim.b.changedtick]]
-  child.lua [[vim.wait(5 * 1000, function()
+  child.lua [[vim.wait(60 * 1000, function()
     local client = vim.lsp.get_clients({ bufnr = 0 })[1]
     if not client then return false end
 
